@@ -15,7 +15,6 @@ from flask import Flask
 from flask import send_from_directory
 from flask_restful import reqparse, abort, Api, Resource
 from flask import render_template, make_response
-from bs4 import BeautifulSoup
 import requests
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
