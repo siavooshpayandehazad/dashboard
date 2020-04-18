@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+<head>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+ <script src="{{ url_for('static', filename='daypilot-all.min.js') }}" type="text/javascript"></script>
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+ <script type="text/javascript">
+             function cmd(activity, date, Theme, element){
+                 console.log(Theme);
+                 $.ajax({
+                     type: "POST",
+                     url: "http://localhost:5000/home",
+                     data: {"activity":activity,"date":date},
+                 });
+                 if(Theme == "Dark"){
+                   element.style.backgroundColor = "#525252";
+                 }else{
+                   element.style.backgroundColor = "#3288bd";
+                 }
+             }
+
+             function count(){
+                 console.log("counter: count up");
+                 $.ajax({
+                     type: "POST",
+                     url: "http://localhost:5000/home",
+                     data: {"counter":"countup"},
+                 });
+                 var div = document.getElementById("counterDiv")
+                 div.innerHTML = parseInt(div.innerHTML, 10)+1;
+             }
+
+             function reset(){
+                 console.log("counter: reset");
+                 $.ajax({
+                     type: "POST",
+                     url: "http://localhost:5000/home",
+                     data: {"counter":"reset"},
+                 });
+                 var div = document.getElementById("counterDiv")
+                 div.innerHTML= 0;
+             }
+ </script>
+
+ <script type="text/javascript">
+             function moodSelect(mood, date){
+                // console.log(document.getElementById(date))
+                 $.ajax({
+                     type: "POST",
+                     url: "http://localhost:5000/home",
+                     data: {"mood":mood,"date":date},
+                 });
+                 if (mood=="great") {
+                   document.getElementById(date).style.backgroundColor  = "#1d91c0";
+                 }else if (mood=="good") {
+                   document.getElementById(date).style.backgroundColor  = "#80cdc1";
+                 }else if (mood=="ok") {
+                   document.getElementById(date).style.backgroundColor  = "#ccece6";
+                 }else if (mood=="bad") {
+                    document.getElementById(date).style.backgroundColor  = "#fddbc7";
+                 }else{
+                    document.getElementById(date).style.backgroundColor  = "#f4a582";
+               }
+             }
+ </script>
+
+    <title>My Journal</title>
+</head>
+
+{%if pageTheme=="Dark"%}
+<body class="featured">
+{% else %}
+<body>
+{% endif %}
+
+  <div class = "tabBar">
+    <a  class="tabBar" href="http://localhost:5000/home"><div class="tabButton tbSelected"> <b>Main</b> </div> </a>
+    <a  class="tabBar" href="http://localhost:5000/journal"> <div class="tabButton" ><b>Journal</b></div></a>
+    <a  class="tabBar" href="http://localhost:5000/todoList"> <div class="tabButton" ><b>Org.</b></div></a>
+    <a  class="tabBar" href="http://localhost:5000/Lists"> <div class="tabButton" ><b>Lists</b></div></a>
+    <a  class="tabBar" style="float:right; margin-right:5px;" href="http://localhost:5000/settings"> <i class="fa myGear">&#xf013;</i></a>
+    <div class="divider"></div>
+  </div>
+
+  <div>
+    <!-- Header! -->
+    <h1 style= "font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% if PageMonth > 1  %}
+      <a class= "arrow" href="http://localhost:5000/home?date={{PageYear}}-{{'%02d' % (PageMonth-1)}}">&#9668;</a>
+    {% else %}
+      <a class= "arrow" href="http://localhost:5000/home?date={{PageYear-1}}-{{'%02d' % (12)}}">&#9668;</a>
+    {% endif %}
+    {{titleDate}}
+    {% if PageMonth < 12  %}
+      <a class= "arrow" href="http://localhost:5000/home?date={{PageYear}}-{{'%02d' % (PageMonth+1)}}">&#9658;</a>
+    {% else %}
+      <a class= "arrow" href="http://localhost:5000/home?date={{PageYear+1}}-{{'%02d' % (1)}}">&#9658;</a>
+    {% endif %}
+    </h1>
+
+
+    <!--TODO: add some other functionality!-->
+
+    <div style="width:120px;float:left; margin-right:10px;margin-top:5px;">
+
+      <div style="float:right;">
+      <!-- weather widget start -->
+      {%if pageTheme=="Dark"%}
+        <script type='text/javascript' src='https://darksky.net/widget/default-small/55.7081,13.1973/uk12/en.js?width=100%&height=60&title=Full Forecast&textColor=d9d9d9&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=&units=uk'></script>
+      {%else%}
+        <script type='text/javascript' src='https://darksky.net/widget/default-small/55.7081,13.1973/uk12/en.js?width=100%&height=60&title=Full Forecast&textColor=1b46ae&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=&units=uk'></script>
+      {%endif%}
+      <!-- weather widget end -->
+      </div>
+
+
+      <div style="margin-left: 10px;margin-top: 30px;float:left; min-width:100px; position: relative;">
+        <div onclick= "count()" style="position: absolute; top: 12%; left: 35%; border-radius: 10px; width:23px; height:23px;"></div>
+        <div onclick= "reset()" style="position: absolute; top: 50%; left: 60%; border-radius: 10px; width:23px; height:23px;"></div>
+        <div id= "counterDiv" style="position: absolute; top: 43%; left: 17%; transform: rotate(17deg); text-align: center;
+                                     background-color: white;  width:35px; height:18px;">
+          {{counterValue}}
+        </div>
+        <img src= "{{url_for('static', filename = 'tally-counter.png')}}" float="right" width="100" alt="page1_Large">
+      </div>
+    </div>
+
+    <!-- Activity Tracker-->
+    <div class = "activityTracker">
+        <h2  class="title lightbg">Acitivity Tracker</h2>
+          <table border="0" style="margin-bottom:10px; margin-right:10px; margin-left:10px;">
+            <tr><td></td>
+            {% for day in days %}
+              {% if day != None  %}
+                {% if (day == today) and highlight%}
+                  <td  class="todayMarker">{{day}}</td>
+                {%else%}
+                    {% if days.index(day)%7 == 5 or days.index(day)%7 == 6  %}
+                      <td style="text-align: center;" bgColor="#d9d9d9">{{day}}</td>
+                    {%else%}
+                      <td style="text-align: center;" bgColor=white>{{day}}</td>
+                    {%endif%}
+                {%endif%}
+              {%endif%}
+            {%endfor%}
+            </tr>
+            {% for activity in activityList%}
+              <tr><td><b><font style="font-family:Courier New;">{{activity}}</font></b></td>
+                {% for day in days %}
+                  {% if day != None  %}
+                    {% set ns = namespace (found = 0)%}
+                    {%for item in activities%}
+                        {%if (item[1].split("-")[2]|int == day) and (item[0] == activity) %}
+                            {%set ns.found = 1 %}
+                        {%endif%}
+                    {%endfor%}
+                    {%if ns.found== 1 %}
+                      <td class="tracker found" style="min-width:17px", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
+                    {% else %}
+                      <td class="tracker" style="min-width:17px" onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
+                    {% endif %}
+                  {%endif%}
+              {%endfor%}
+              </tr>
+            {%endfor%}
+          </table>
+        </div>
+      </div>
+
+
+    <!-- Mood Tracker-->
+    <div class="moodTracker">
+      <h2  class="title lightbg">Mood Tracker</h2>
+      <table style="width:50%; margin-left: 10px; float:left;  margin-bottom: 10px;">
+        <tr> <th class="moodTracker"> M </th> <th class="moodTracker"> T </th>
+             <th class="moodTracker"> W </th> <th class="moodTracker"> T </th>
+             <th class="moodTracker"> F </th> <th class="moodTracker"> S </th>
+             <th class="moodTracker"> S </th>
+        </tr>
+        {% for day in days %}
+          {% if day != None  %}
+            {% if days.index(day)%7 == 0  %}
+              </tr> <tr>
+            {% endif %}
+            {% set ns1 = namespace (found = 0)%}
+            {% for item in moods%}
+              {%if item[1].split("-")[2]|int == day %}
+                    {%set ns1.found = 1 %}
+                    {% if item[0] == 'awful' %}
+                      <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#f4a582">{{ day }}</td>
+                    {% elif item[0] == 'bad' %}
+                      <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#fddbc7">{{ day }}</td>
+                    {% elif item[0] == 'ok' %}
+                      <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#ccece6">{{ day }}</td>
+                    {% elif item[0] == 'good' %}
+                      <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#80cdc1">{{ day }}</td>
+                    {% elif item[0] == 'great' %}
+                      <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#1d91c0">{{ day }}</td>
+                    {% endif %}
+              {% endif %}
+            {% endfor %}
+            {%if ns1.found== 0 %}
+              <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="white">{{ day }}</td>
+            {% endif %}
+          {% else %}
+            <td>  </td>
+          {% endif %}
+        {% endfor %}
+        </tr>
+      </table>
+      <table style="width:20%;  margin-right: 10px; float:right; margin-top:22px;">
+        <tr> <td class="moodselector" bgcolor="#f4a582" onclick="return moodSelect('Awful', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td> Awful!  </td> </tr>
+        <tr> <td class="moodselector" bgcolor="#fddbc7" onclick="return moodSelect('bad', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Bad  </td> </tr>
+        <tr> <td class="moodselector" bgcolor="#ccece6" onclick="return moodSelect('ok', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> O.K.  </td> </tr>
+        <tr> <td class="moodselector" bgcolor="#80cdc1" onclick="return moodSelect('good', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Good  </td> </tr>
+        <tr> <td class="moodselector" bgcolor="#1d91c0" onclick="return moodSelect('great', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Great  </td> </tr>
+      </table>
+    </div>
+
+
+
+    <div style="margin-left: 5px;float:left; min-width:130px;">
+      {%if pageTheme=="Dark"%}
+      <img src= "{{url_for('static', filename = 'page1_Large_dark.png')}}" float="right" width="110" alt="page1_Large_dark">
+      {% else %}
+      <img src= "{{url_for('static', filename = 'page1_Large.png')}}" float="right" width="130" alt="page1_Large">
+      {% endif %}
+    </div>
+
+
+
+    <div style="width:100%; margin-left:5px; float:left; min-width:200px;">
+      <div class="divider" style="width:85%; height:4px; float:left; margin-left: 5%; margin-top: 18px;"></div>
+      <img src= "{{url_for('static', filename = 'page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
+    </div>
+
+</body>
+
+
+</html>

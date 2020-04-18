@@ -1,0 +1,384 @@
+:root {
+  --title-clr: #08306b;
+  --title-lightbg-clr:#08306b;
+  --tabbtn-clr: #08519c;
+  --tabbtn-slctd-clr: #4292c6;
+  --tabbtn-hvr-clr: #fdbf6f;
+  --tabbtn-font-clr: white;
+  --divider-clr: #4292c6;
+  --tracker-hvr-clr: #deebf7;
+  --tracker-fnd-hvr-clr: #3288bd;
+  --dailyentry-clr: #9ecae1;
+  --bckgrnd-clr: #deebf7;
+  --arrow-clr: #08306b;
+  --DSfont-clr:black;
+  --DSfontFilled-clr:black;
+  --DSFilled-bg-clr: #dadaeb;
+  --DStoday-bg-clr:#4292c6;
+  --DSfontToday-clr:white;
+  --logText-clr: black;
+  --moodtracker-bg-clr:white;
+  --activityracker-bg-clr:white;
+  --myGear-clr:#08519c;
+  --todoTasks-brdr-clr:#9ecae1;
+  --submit-bg-clr:#2171b5;
+  --submit-bg-hvr-clr:#4292c6;
+  --newTodo-brdr-clr:#08519c;
+  --titleNewTask-clr:black;
+  --settingpage-txt-color: black;
+  --todayMarker-bg-clr:#fddbc7;
+}
+
+
+.featured {
+  --title-clr: #f0f0f0;
+  --title-lightbg-clr: black;
+  --tabbtn-clr: #969696;
+  --tabbtn-slctd-clr: #d9d9d9;
+  --tabbtn-hvr-clr: #fdbf6f;
+  --tabbtn-font-clr: black;
+  --divider-clr: #d9d9d9;
+  --tracker-hvr-clr: #bdbdbd;
+  --tracker-fnd-hvr-clr: #525252;
+  --dailyentry-clr: #bdbdbd;
+  --bckgrnd-clr: black;
+  --arrow-clr: white;
+  --DSfont-clr:white;
+  --DSfontFilled-clr:black;
+  --DSfontToday-clr:black;
+  --DSFilled-bg-clr: #969696;
+  --DStoday-bg-clr: #d9d9d9;
+  --logText-clr: white;
+  --moodtracker-bg-clr:white;
+  --activityracker-bg-clr:white;
+  --myGear-clr:white;
+  --todoTasks-brdr-clr:#969696;
+  --submit-bg-clr:#737373;
+  --submit-bg-hvr-clr:#969696;
+  --newTodo-brdr-clr:#737373;
+  --titleNewTask-clr:white;
+  --settingpage-txt-color:white;
+  --todayMarker-bg-clr:#d9d9d9;
+}
+
+body{
+  background-color: var(--bckgrnd-clr);
+}
+
+body.journal{
+  background-repeat:no-repeat; background-position: 120% 380px;
+}
+
+h1{
+  font-family:Impact;
+  color: var(--title-clr);
+}
+
+h2.title {
+  text-align: center;
+  margin-bottom:10px;
+  margin-top:1px;
+  text-decoration: underline;
+  font-family:Impact;
+  color: var(--title-clr);
+}
+
+h2.lightbg {
+  color: var(--title-lightbg-clr);
+}
+
+h2.journal{
+  text-decoration: none;
+  margin-left: 279px;
+  margin-top:5px;
+  margin-bottom: 5px;
+  float:left;
+}
+
+
+h2.photos {
+  text-align: left;
+  margin-bottom:10px;
+  margin-top:1px;
+  text-decoration: underline;
+  font-family:Impact;
+  color: var(--title-clr);
+}
+
+div.moodTracker {
+  border-radius:12px;
+  background-color:var(--moodtracker-bg-clr);
+  width: 290px;
+  float: left;
+  margin-bottom:10px;
+  margin-left:10px;
+}
+
+div.activityTracker {
+  border-radius:12px;
+  background-color:var(--activityracker-bg-clr);
+  min-width: 750px;
+  min-height: 300px;
+  float:left;
+  margin-left:10px;
+}
+
+div.dailyEntry{
+ border-radius:12px;
+ width:32%; height:280px;
+ float:right;
+ margin-right:20px;
+ margin-top: 30px;
+ background-color: var(--dailyentry-clr);
+ }
+div.logText{
+  color: var(--logText-clr);
+}
+ div.tabBar{
+   width:100%;
+   height:30px;
+ }
+
+ div.tabButton{
+   width: 70px; height: 25px;
+   margin-left: 2px;
+   margin-right: 2px;
+   padding-top:5px;
+   border-radius:5px 5px 0px 0px;
+   color:var(--tabbtn-font-clr);
+   float:left;
+   text-align: center;
+   background-color: var(--tabbtn-clr);
+ }
+
+ div.tbSelected{
+   background-color: var(--tabbtn-slctd-clr);
+ }
+
+ div.tabButton:hover {
+   background-color: var(--tabbtn-hvr-clr);
+ }
+
+div.todoTasks{
+  margin-left: 0.5%;
+  margin-bottom: 10px;
+  float:left;
+  width:32%;
+  height: 350px;
+  border-box;
+  border: 3px solid var(--todoTasks-brdr-clr);
+  background-color: white;
+  border-radius: 6px;
+}
+
+div.todoTasksScorlable{
+  overflow-y: scroll;
+  height: 300px;
+}
+
+div.ScrumContainerScrollable{
+  width:97%;
+  height: 350px;
+  overflow-y: scroll;
+  margin-bottom: 10px;
+  background-color:white;
+  border-radius: 20px;
+  float: left; margin-left:1%;
+}
+
+div.ScrumContainer{
+  width:23.75%;
+  min-height: 400px;
+  margin-bottom: 10px;
+  background-color:white;
+  border-radius: 5px;
+  float: left; margin-left:1%;
+}
+
+div.ScrumCard{
+  width:95%;
+  border: solid black 3px;
+  border-radius: 10px;
+  float: left;
+  margin-left:2.5%;
+  margin-bottom:5px;
+  margin-top:7px;
+}
+
+div.NewScrumCardContainer{
+  margin-left:10%;
+  background-color: white;
+  height:35px;
+  width:70%;
+  border-radius:10px;
+  float:left;
+}
+div.scrumCardDivider{
+  width:55%;
+  margin-left: 5px;
+  margin-top: 5px;
+  height:2px;
+}
+
+div.divider{
+  width:100%;
+  height:10px;
+  float:left;
+  background-color: var(--divider-clr);
+}
+
+div.settingpage{
+  color: var(--settingpage-txt-color);
+}
+
+td.tracker:hover {
+ background-color:  var(--tracker-hvr-clr);
+}
+
+td.found {
+ background-color:  var(--tracker-fnd-hvr-clr);
+}
+
+td.moodselector{
+  min-width:17px;
+  min-height:17px;
+  border-radius:5px;
+  border: 1px solid white;
+}
+
+td.moodselector:hover{
+  border: 1px solid black;
+}
+
+/*-----------    journal day selector!   ----------*/
+td.DS{
+  min-width: 20px;
+  text-align: center;
+}
+
+td.DSFilled{
+  background-color:  var(--DSFilled-bg-clr);
+  border-radius: 7px 7px 0px 0px;
+}
+
+td.DStoday{
+  min-width: 35px;
+  background-color: var(--DStoday-bg-clr);
+  border-radius: 7px 7px 0px 0px;
+}
+
+td.DSbottom{
+  border-radius: 0px 0px 0px 0px;
+}
+
+td.todayMarker{
+  background-color: var(--todayMarker-bg-clr);
+  border-radius:10px;
+  text-align: center;
+}
+/*------------------------------------------------*/
+
+th.moodTracker{
+  text-align: center;
+}
+
+th.addButton{
+  min-width:27px;
+}
+th.addButton:hover{
+  border-radius: 15px;
+  background-color: #c7e9c0;
+}
+
+ul.todoList{
+  list-style: none;
+  padding-left: 10px;
+}
+
+a.tabBar{
+  font-family:Times;
+  text-decoration: none;
+  color : #000;
+}
+
+a.arrow{
+  text-decoration: none;
+  color : var(--arrow-clr);
+}
+a.arrow:hover{
+  color: #b2182b;
+}
+
+span.date{
+  color: #4292c6;
+  font-size: 10px;
+  float:right;
+  margin-right:10px;
+}
+
+span.scrumSpan{
+  float:right;
+  margin-right:5px;
+}
+
+span.scrumSpan:hover{
+  color: #fb6a4a;
+}
+
+.fa.fa-trash-o:hover{
+  color:red;
+}
+
+input[type=submit] {
+    padding:5px 15px;
+    border:0 none;
+    cursor:pointer;
+    color:white;
+    border-radius: 5px;
+    background:var(--submit-bg-clr);
+}
+
+input[type=submit]:hover {
+    background:var(--submit-bg-hvr-clr);
+}
+
+input.newTodo{
+  width:600px;
+  height:30px;
+  box-sizing: border-box;
+  border: 2px solid var(--newTodo-brdr-clr);
+  outline:None;
+  border-radius: 4px;
+}
+
+textarea.dailyEntry{
+  margin-left: 5%;
+  min-height:200px;
+  width:90%;
+  outline:None;
+  resize:None
+}
+
+font.DSfont{
+  font-size: 80%;
+  color:var(--DSfont-clr);
+}
+
+font.DSfontFilled{
+  font-size: 80%;
+  color:var(--DSfontFilled-clr);
+}
+
+font.DSfontToday{
+  color:var(--DSfontToday-clr);
+}
+
+i.myGear{
+  font-size: 30px;
+  color: var(--myGear-clr);
+}
+
+b.titleNewTask{
+  margin-left:20%;
+  color:var(--titleNewTask-clr);
+}
