@@ -1,4 +1,4 @@
 flask-restful
 beautifulsoup4
 requests
-Flask==0.10.1
+Flask==1.0
