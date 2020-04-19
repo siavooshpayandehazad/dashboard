@@ -10,14 +10,32 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
   <script type="text/javascript">
-              function submitEntry(){
-                var newText = document.getElementById("dailyEntry").value;
-                $.ajax({ type: "POST",
-                    url: "http://localhost:5000/journal",
-                    data: {"log":newText, "date": document.getElementById("dailyEntry").name},
-                });
-                document.getElementById("todayslog").innerHTML = newText.replace(/\n/g, "<br>");;
-              }
+    function submitEntry(){
+      var newText = document.getElementById("dailyEntry").value;
+      $.ajax({ type: "POST",
+          url: "http://localhost:5000/journal",
+          data: {"log":newText, "date": document.getElementById("dailyEntry").name},
+      });
+      document.getElementById("todayslog").innerHTML = newText.replace(/\n/g, "<br>");;
+    }
+
+    async function isLoggedIn () {
+      const token = localStorage.getItem('token')
+      if (!token) return false
+      return true
+    }
+
+    async function autoRedirect () {
+      const validLogin = await isLoggedIn()
+      if (!validLogin)
+        window.location.replace('/home')
+    }
+
+    function logout(){
+      localStorage.setItem('token',"false")
+      window.location.replace('/home')
+    }
+    autoRedirect();
   </script>
 </head>
 
@@ -32,6 +50,7 @@
     <a  class="tabBar" href="http://localhost:5000/journal"> <div class="tabButton tbSelected"><b>Journal</b></div></a>
     <a  class="tabBar" href="http://localhost:5000/todoList"> <div class="tabButton" ><b>Org.</b></div></a>
     <a  class="tabBar" href="http://localhost:5000/Lists"> <div class="tabButton" ><b>Lists</b></div></a>
+    <a  class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out" style="font-size: 30px; color:white;" aria-hidden="true" onclick="logout()"></i></a>
     <a  class="tabBar" style="float:right; margin-right:5px;" href="http://localhost:5000/settings"> <i class="fa myGear">&#xf013;</i></a>
     <div class="divider"></div>
   </div>

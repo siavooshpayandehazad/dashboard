@@ -5,70 +5,67 @@
 <head>
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
- <script src="{{ url_for('static', filename='daypilot-all.min.js') }}" type="text/javascript"></script>
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
- <script type="text/javascript">
-             function cmd(activity, date, Theme, element){
-                 console.log(Theme);
-                 $.ajax({
-                     type: "POST",
-                     url: "http://localhost:5000/home",
-                     data: {"activity":activity,"date":date},
-                 });
-                 if(Theme == "Dark"){
-                   element.style.backgroundColor = "#525252";
-                 }else{
-                   element.style.backgroundColor = "#3288bd";
-                 }
-             }
-
-             function count(){
-                 console.log("counter: count up");
-                 $.ajax({
-                     type: "POST",
-                     url: "http://localhost:5000/home",
-                     data: {"counter":"countup"},
-                 });
-                 var div = document.getElementById("counterDiv")
-                 div.innerHTML = parseInt(div.innerHTML, 10)+1;
-             }
-
-             function reset(){
-                 console.log("counter: reset");
-                 $.ajax({
-                     type: "POST",
-                     url: "http://localhost:5000/home",
-                     data: {"counter":"reset"},
-                 });
-                 var div = document.getElementById("counterDiv")
-                 div.innerHTML= 0;
-             }
- </script>
 
  <script type="text/javascript">
-             function moodSelect(mood, date){
-                // console.log(document.getElementById(date))
-                 $.ajax({
-                     type: "POST",
-                     url: "http://localhost:5000/home",
-                     data: {"mood":mood,"date":date},
-                 });
-                 if (mood=="great") {
-                   document.getElementById(date).style.backgroundColor  = "#1d91c0";
-                 }else if (mood=="good") {
-                   document.getElementById(date).style.backgroundColor  = "#80cdc1";
-                 }else if (mood=="ok") {
-                   document.getElementById(date).style.backgroundColor  = "#ccece6";
-                 }else if (mood=="bad") {
-                    document.getElementById(date).style.backgroundColor  = "#fddbc7";
-                 }else{
-                    document.getElementById(date).style.backgroundColor  = "#f4a582";
-               }
-             }
- </script>
+  function cmd(activity, date, Theme, element){
+     console.log(Theme);
+     $.ajax({
+         type: "POST",
+         url: "http://localhost:5000/home",
+         data: {"activity":activity,"date":date},
+     });
+     if(Theme == "Dark"){
+       element.style.backgroundColor = "#525252";
+     }else{
+       element.style.backgroundColor = "#3288bd";
+     }
+  }
 
-    <title>My Journal</title>
+  function count(){
+     console.log("counter: count up");
+     $.ajax({
+         type: "POST",
+         url: "http://localhost:5000/home",
+         data: {"counter":"countup"},
+     });
+     var div = document.getElementById("counterDiv")
+     div.innerHTML = parseInt(div.innerHTML, 10)+1;
+  }
+
+  function reset(){
+     console.log("counter: reset");
+     $.ajax({
+         type: "POST",
+         url: "http://localhost:5000/home",
+         data: {"counter":"reset"},
+     });
+     var div = document.getElementById("counterDiv")
+     div.innerHTML= 0;
+  }
+
+  function moodSelect(mood, date){
+       // console.log(document.getElementById(date))
+       $.ajax({
+           type: "POST",
+           url: "http://localhost:5000/home",
+           data: {"mood":mood,"date":date},
+         });
+         if (mood=="great") {
+           document.getElementById(date).style.backgroundColor  = "#1d91c0";
+         }else if (mood=="good") {
+           document.getElementById(date).style.backgroundColor  = "#80cdc1";
+         }else if (mood=="ok") {
+           document.getElementById(date).style.backgroundColor  = "#ccece6";
+         }else if (mood=="bad") {
+           document.getElementById(date).style.backgroundColor  = "#fddbc7";
+         }else{
+           document.getElementById(date).style.backgroundColor  = "#f4a582";
+         }
+       }
+ </script>
+ <title>My Journal</title>
 </head>
 
 {%if pageTheme=="Dark"%}
@@ -76,12 +73,54 @@
 {% else %}
 <body>
 {% endif %}
+<div id="overlay">
+  <div style="border-radius: 20px; margin-left: 40%; margin-top: 20%;width:200px;height:70px;background-color:white; text-align: center;">
+    enter your password</br>
+    <input type="password" id="password"><br>
+    <input type="submit" style="margin-left: 30%; margin-top: 5px;" onclick="login()">
+  </div>
+</div>
+
+<script type="text/javascript">
+  function login(){
+    var password = document.getElementById("password").value;
+     document.getElementById("password").value = "";
+    $.ajax({
+        type: "POST",
+        url: "http://localhost:5000/home",
+        data: {"password": password},
+    }).success(function(result){
+      if (result == "success"){
+        localStorage.setItem('token',"true");
+        document.getElementById("overlay").style.display = "none";
+        document.getElementById("password").style.backgroundColor = "white";
+      }
+      else{
+        document.getElementById("password").style.backgroundColor = "#fc9272";
+      }
+    })
+  }
+
+  function checkLoggedIn () {
+    const token = localStorage.getItem('token');
+    if (token === "false"){
+      document.getElementById("overlay").style.display = "block";
+    }
+  }
+
+  function logout(){
+    document.getElementById("overlay").style.display = "block";
+    localStorage.setItem('token',"false");
+  }
+  checkLoggedIn();
+</script>
 
   <div class = "tabBar">
     <a  class="tabBar" href="http://localhost:5000/home"><div class="tabButton tbSelected"> <b>Main</b> </div> </a>
     <a  class="tabBar" href="http://localhost:5000/journal"> <div class="tabButton" ><b>Journal</b></div></a>
     <a  class="tabBar" href="http://localhost:5000/todoList"> <div class="tabButton" ><b>Org.</b></div></a>
     <a  class="tabBar" href="http://localhost:5000/Lists"> <div class="tabButton" ><b>Lists</b></div></a>
+    <a  class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out" style="font-size: 30px; color:white;" aria-hidden="true" onclick="logout()"></i></a>
     <a  class="tabBar" style="float:right; margin-right:5px;" href="http://localhost:5000/settings"> <i class="fa myGear">&#xf013;</i></a>
     <div class="divider"></div>
   </div>
@@ -239,6 +278,4 @@
     </div>
 
 </body>
-
-
 </html>

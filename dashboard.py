@@ -23,7 +23,7 @@ api = Api(app)
 parser = reqparse.RequestParser()
 for item in ['activity', 'display', 'date', 'log', 'mood', 'todo', 'done',
              'type', 'name', 'delete', 'cardProj', 'cardTask', 'currentList',
-             'destList', 'priority', 'Theme', 'counter']:
+             'destList', 'priority', 'Theme', 'counter', 'password']:
     parser.add_argument(item)
 
 conn  =  sqlite3.connect("journal.db",  check_same_thread=False)
@@ -43,6 +43,7 @@ class dash(Resource):
             pageTheme = "Dark"
             c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
             c.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
+            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", "None"))
             print("could not fetch page theme! replacing with default values")
 
         if args['date'] is not None:
@@ -90,6 +91,22 @@ class dash(Resource):
 
     def post(self):
         args = parser.parse_args()
+        if args['password'] is not None:
+            c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("password",))
+            try:
+                password = c.fetchall()[0][1]
+            except:
+                raise ValueError("password is missing!")
+            if password == "None":
+                return "success", 200
+            else:
+                if not verify_password(password, args['password']):
+                    print("login failed!")
+                    return "failed", 200
+                else:
+                    print("login succeded!")
+                    return "success", 200
+
         if args['counter'] is not None:
             if args['counter'] == "countup":
                 c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("counter",))
@@ -314,11 +331,29 @@ class settings(Resource):
 
     def post(self):
         args = parser.parse_args()
-        pageTheme = args['Theme']
-        print(pageTheme)
-        c.execute("""DELETE from settings where parameter = ? """, ("Theme", ))
-        c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", pageTheme))
-        conn.commit()
+        if args['Theme'] is not None:
+            pageTheme = args['Theme']
+            print(pageTheme)
+            c.execute("""DELETE from settings where parameter = ? """, ("Theme", ))
+            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", pageTheme))
+            conn.commit()
+        if args['password'] is not None:
+            pass_dict = eval((args['password']))
+            currntpwd = pass_dict["currntpwd"]
+            newpwd = pass_dict["newpwd"]
+            c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("password",))
+            try:
+                hashed_password = c.fetchall()[0][1]
+            except:
+                raise ValueError("password is missing!")
+            if (hashed_password == "None") or verify_password(hashed_password, currntpwd):
+                c.execute("""DELETE from settings where parameter = ? """, ("password", ))
+                c.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", hash_password(newpwd)))
+                conn.commit()
+                return "succeded", 200
+            else:
+                return "failed", 200
+
         return "nothing here!", 200
 
 class Lists(Resource):

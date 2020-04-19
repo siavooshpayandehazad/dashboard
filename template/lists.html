@@ -26,6 +26,7 @@
     <a  class="tabBar" href="http://localhost:5000/journal"> <div class="tabButton"><b>Journal</b></div></a>
     <a  class="tabBar" href="http://localhost:5000/todoList"> <div class="tabButton" ><b>Org.</b></div></a>
     <a  class="tabBar" href="http://localhost:5000/Lists"> <div class="tabButton tbSelected" ><b>Lists</b></div></a>
+    <a  class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out" style="font-size: 30px; color:white;" aria-hidden="true" onclick="logout()"></i></a>
     <a  class="tabBar" style="float:right; margin-right:5px;" href="http://localhost:5000/settings"> <i class="fa myGear">&#xf013;</i></a>
     <div class="divider"></div>
   </div>
@@ -130,5 +131,9 @@ function submitonEnter(event) {
           event.srcElement.value = "";
       }
   };
+  function logout(){
+    localStorage.setItem('token',"false")
+    window.location.replace('/home')
+  }
 </script>
 </html>

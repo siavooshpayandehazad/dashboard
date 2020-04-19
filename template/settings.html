@@ -22,6 +22,10 @@
         document.body.className = "";
       }
     }
+    function logout(){
+      localStorage.setItem('token',"false")
+      window.location.replace('/home')
+    }
   </script>
 </head>
 
@@ -36,6 +40,7 @@
     <a  class="tabBar" href="http://localhost:5000/journal"> <div class="tabButton" ><b>Journal</b></div></a>
     <a  class="tabBar" href="http://localhost:5000/todoList"> <div class="tabButton" ><b>Org.</b></div></a>
     <a  class="tabBar" href="http://localhost:5000/Lists"> <div class="tabButton" ><b>Lists</b></div></a>
+    <a  class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out" style="font-size: 30px; color:white;" aria-hidden="true" onclick="logout()"></i></a>
     <a  class="tabBar" style="float:right; margin-right:5px;" href="http://localhost:5000/settings"> <i class="fa myGear">&#xf013;</i></a>
     <div class="divider"></div>
   </div>
@@ -46,6 +51,13 @@
    to download your DB, click <a href="/downloadDB/" target = "blank">here</a>.
    <br>
    <div class="divider" style="width:40%;height:2px;margin-top:20px;"></div><br>
+
+  <h4>Change password</h4>
+  current password:  <input type="password" id="currentpwd" name="currentpwd"><br>
+  new password:      <input type="password" id="newpwd" name="newpwd"><br>
+  <input type="submit" style="margin-left: 23%;margin-top: 5px;" onclick="resetPass()">
+  <br>
+  <div class="divider" style="width:40%;height:2px;margin-top:20px;"></div><br>
 
   <h4>Themes</h4>
     choose the color theme:
@@ -75,5 +87,24 @@
   * the activities will appear in the same order that you define here!
 </div>
 </body>
+
+<script type="text/javascript">
+function resetPass(){
+  const currntpwd = document.getElementById("currentpwd").value;
+  const newpwd = document.getElementById("newpwd").value;
+  $.ajax({
+      type: "POST",
+      url: "http://localhost:5000/settings",
+      data: {"password": JSON.stringify({"currntpwd":currntpwd, "newpwd":newpwd})},
+  }).success(function(result){
+    if (result=="succeded"){
+      alert("password updated successfully")
+    }else{
+      alert("failed to update the password")
+    }
+  }
+  );
+}
+</script>
 
 </html>
