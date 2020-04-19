@@ -19,7 +19,7 @@
   --logText-clr: black;
   --moodtracker-bg-clr:white;
   --activityracker-bg-clr:white;
-  --myGear-clr:#08519c;
+  --icon-clr:#08519c;
   --todoTasks-brdr-clr:#9ecae1;
   --submit-bg-clr:#2171b5;
   --submit-bg-hvr-clr:#4292c6;
@@ -51,7 +51,7 @@
   --logText-clr: white;
   --moodtracker-bg-clr:white;
   --activityracker-bg-clr:white;
-  --myGear-clr:white;
+  --icon-clr:white;
   --todoTasks-brdr-clr:#969696;
   --submit-bg-clr:#737373;
   --submit-bg-hvr-clr:#969696;
@@ -375,7 +375,12 @@ font.DSfontToday{
 
 i.myGear{
   font-size: 30px;
-  color: var(--myGear-clr);
+  color: var(--icon-clr);
+}
+
+i.fa-sign-out{
+  font-size: 30px;
+  color: var(--icon-clr);
 }
 
 b.titleNewTask{

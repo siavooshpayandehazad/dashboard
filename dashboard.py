@@ -202,7 +202,6 @@ class todoList(Resource):
 
         headers = {'Content-Type': 'text/html'}
         args = parser.parse_args()
-        print(args)
         if args['date'] is not None:
             todaysDate = args['date']
             tomorrowsDate = todaysDate # TODO: fix this!
@@ -333,7 +332,6 @@ class settings(Resource):
         args = parser.parse_args()
         if args['Theme'] is not None:
             pageTheme = args['Theme']
-            print(pageTheme)
             c.execute("""DELETE from settings where parameter = ? """, ("Theme", ))
             c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", pageTheme))
             conn.commit()
