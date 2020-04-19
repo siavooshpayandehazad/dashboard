@@ -136,7 +136,23 @@ def backupDatabase(conn):
             backupCon.close()
 
 
-def hash_password(password:str) -> any:
+def fetchSettingParamFromDB(cursor, param):
+    cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, (param,))
+    try:
+        parameter = cursor.fetchall()[0][1]
+    except:
+        raise ValueError(f"parameter {param} is missing in DB!")
+    return parameter
+
+
+def updateSettingParam(cursor, connection, param, value):
+    cursor.execute("""DELETE from settings where parameter = ? """, (param, ))
+    cursor.execute("""INSERT INTO settings VALUES(?, ?)""", (param, value))
+    connection.commit()
+    return None
+
+
+def hashPassword(password:str) -> any:
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
     pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
                                 salt, 100000)
@@ -144,7 +160,7 @@ def hash_password(password:str) -> any:
     return (salt + pwdhash).decode('ascii')
 
 
-def verify_password(stored_password: str, provided_password: str) -> bool:
+def verifyPassword(stored_password: str, provided_password: str) -> bool:
     salt = stored_password[:64]
     stored_password = stored_password[64:]
     pwdhash = hashlib.pbkdf2_hmac('sha512',

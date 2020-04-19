@@ -36,9 +36,8 @@ generateDBTables(c)
 class dash(Resource):
     def get(self):
         args = parser.parse_args()
-        c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("Theme",))
         try:
-            pageTheme = c.fetchall()[0][1]
+            pageTheme = fetchSettingParamFromDB(c, "Theme")
         except:
             pageTheme = "Dark"
             c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
@@ -74,33 +73,23 @@ class dash(Resource):
 
         # highlights the current day in the activity tracker page!
         highlight = shouldHighlight(pageYear, pageMonth)
-
-        c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("counter",))
-        counterValue_str = c.fetchall()
-        if len(counterValue_str)==0:
-            counterValue = 0
-        else:
-            counterValue = counterValue_str[0][1]
+        counterValue = fetchSettingParamFromDB(c, "counter")
 
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth=int(pageMonth),
-                                             today = datetime.date.today().day, moods = monthsMoods, activities = monthsActivities,
-                                             activityList =activityList, days=moodTrackerDays,
-                                             highlight=highlight, pageTheme=pageTheme,
+                                             today = datetime.date.today().day, moods = monthsMoods,
+                                             activities = monthsActivities, activityList =activityList,
+                                             days=moodTrackerDays, highlight=highlight, pageTheme=pageTheme,
                                              counterValue=counterValue),200,headers)
 
     def post(self):
         args = parser.parse_args()
         if args['password'] is not None:
-            c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("password",))
-            try:
-                password = c.fetchall()[0][1]
-            except:
-                raise ValueError("password is missing!")
+            password = fetchSettingParamFromDB(c, "password")
             if password == "None":
                 return "success", 200
             else:
-                if not verify_password(password, args['password']):
+                if not verifyPassword(password, args['password']):
                     print("login failed!")
                     return "failed", 200
                 else:
@@ -109,9 +98,7 @@ class dash(Resource):
 
         if args['counter'] is not None:
             if args['counter'] == "countup":
-                c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("counter",))
-                counterValue_str = c.fetchall()
-                counterVal = 1 if len(counterValue_str)==0 else int(counterValue_str[0][1])+1
+                counterVal = int(fetchSettingParamFromDB(c, "counter")) + 1
             elif args['counter'] == "reset":    # reset the counter
                 counterVal = 0
             c.execute("""DELETE from settings where parameter = ? """, ("counter", ))
@@ -151,8 +138,7 @@ class dash(Resource):
 class journal(Resource):
     def get(self):
         args = parser.parse_args()
-        c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("Theme",))
-        pageTheme = c.fetchall()[0][1]
+        pageTheme = fetchSettingParamFromDB(c, "Theme")
 
         headers = {'Content-Type': 'text/html'}
         if args['date'] is not None:
@@ -197,8 +183,7 @@ class journal(Resource):
 
 class todoList(Resource):
     def get(self):
-        c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("Theme",))
-        pageTheme = c.fetchall()[0][1]
+        pageTheme = fetchSettingParamFromDB(c, "Theme")
 
         headers = {'Content-Type': 'text/html'}
         args = parser.parse_args()
@@ -219,34 +204,19 @@ class todoList(Resource):
 
         c.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? and done = 'false' """, ( tomorrowsDate, getThirtyDaysFromNow(day, month, year) ) )
         thisMonthsEvents = sorted(c.fetchall(), key=lambda tup: tup[1])
-        #print(getMonthsBeginning(month, year), getNextMonthsBeginning(month, year))
 
         c.execute("""SELECT * FROM todoList WHERE date = ? """, (todaysDate,))
         todayTodos = c.fetchall()
 
         monthsBeginning = datetime.datetime.strptime(f"{year}-{month}-01", '%Y-%m-%d')
         monthsBeginningWeekDay = monthsBeginning.weekday()
-
-        c.execute("""SELECT * FROM scrumBoard WHERE stage = ? """, ("backlog", ))
-        Backlog = [(task, proj, priority) for task, proj, stage, priority, done_date in c.fetchall()]
-
-        c.execute("""SELECT * FROM scrumBoard WHERE stage = ? """, ("todo", ))
-        ScrumTodo = [(task, proj, priority) for task, proj, stage, priority, done_date in c.fetchall()]
-
-        c.execute("""SELECT * FROM scrumBoard WHERE stage = ? """, ("in progress", ))
-        inProgress = [(task, proj, priority) for task, proj, stage, priority, done_date in c.fetchall()]
-
-        c.execute("""SELECT * FROM scrumBoard WHERE stage = ? """, ("done", ))
-        done = [(task, proj, priority) for task, proj, stage, priority, done_date in c.fetchall()]
-
-        # sort based on priority
-        Backlog = sorted(Backlog, key = lambda x: x[2])
-        ScrumTodo = sorted(ScrumTodo, key = lambda x: x[2])
-        inProgress = sorted(inProgress, key = lambda x: x[2])
-        done = sorted(done, key = lambda x: x[2])
+        scrumBoardLists = {}
+        for stage in ["backlog", "todo", "in progress", "done"]:
+            c.execute("""SELECT * FROM scrumBoard WHERE stage = ? """, (stage, ))
+            # sort based on priority
+            scrumBoardLists[stage] = sorted([(task, proj, priority) for task, proj, stage, priority, done_date in c.fetchall()], key = lambda x: x[2])
 
         # find all the tasks done during this month's period!
-
         monthsEnd = getMonthsEnd(month, year)
         c.execute("""SELECT * FROM scrumBoard WHERE done_date >= ? and done_date <= ? """, (monthsBeginning.date(),  monthsEnd.date()))
         doneTasks = sorted([int(done_date.split("-")[2]) for proj, task,  stage, priority, done_date in c.fetchall()])
@@ -257,14 +227,15 @@ class todoList(Resource):
             ChartDoneTasks.append(current_done)
         ChartMonthDays = [str(i) for i in range(1, numberOfDays+1)]
         if todaysDate == str(datetime.date.today()):
-            thisMonthTasksNum = len(done)+len(inProgress)+len(ScrumTodo)
+            thisMonthTasksNum = len(scrumBoardLists["done"])+len(scrumBoardLists["in progress"])+len(scrumBoardLists["todo"])
         else:
             thisMonthTasksNum = ChartDoneTasks[-1]
         ChartthisMonthTasks = [thisMonthTasksNum for i in range(numberOfDays)]
         return make_response(render_template('todo.html', day = day, month = month, year=year, weekDay = daysOfTheWeek[weekDay],
                                              monthsBeginning=monthsBeginningWeekDay, todayTodos=todayTodos, overDue = all_due_events,
                                              numberOfDays=numberOfDays, thisMonthsEvents = thisMonthsEvents,
-                                             Backlog = Backlog, ScrumTodo=ScrumTodo, inProgress=inProgress, done=done,
+                                             Backlog = scrumBoardLists["backlog"], ScrumTodo=scrumBoardLists["todo"],
+                                             inProgress=scrumBoardLists["in progress"], done=scrumBoardLists["done"],
                                              ChartMonthDays = ChartMonthDays, ChartDoneTasks=ChartDoneTasks,
                                              ChartthisMonthTasks= ChartthisMonthTasks, pageTheme=pageTheme),200,headers)
 
@@ -276,7 +247,7 @@ class todoList(Resource):
                 todaysDate = str(datetime.date.today())
             else:
                 todaysDate = args['date']
-                if len(todaysDate.split("-")[2]) == 1:  # check for cases like: 2019-05-2
+                if checkIfDateValid(todaysDate):
                     return "date format not valid, should be YYYY-MM-DD", 404
             todo = args['todo'].lower()
 
@@ -324,62 +295,39 @@ class todoList(Resource):
 class settings(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
-        c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("Theme",))
-        pageTheme = c.fetchall()[0][1]
+        pageTheme = fetchSettingParamFromDB(c, "Theme")
         return make_response(render_template('settings.html', activityList=activityList, pageTheme=pageTheme),200,headers)
 
     def post(self):
         args = parser.parse_args()
         if args['Theme'] is not None:
             pageTheme = args['Theme']
-            c.execute("""DELETE from settings where parameter = ? """, ("Theme", ))
-            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", pageTheme))
-            conn.commit()
+            updateSettingParam(c, conn, "Theme", pageTheme)
         if args['password'] is not None:
             pass_dict = eval((args['password']))
-            currntpwd = pass_dict["currntpwd"]
-            newpwd = pass_dict["newpwd"]
-            c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("password",))
-            try:
-                hashed_password = c.fetchall()[0][1]
-            except:
-                raise ValueError("password is missing!")
-            if (hashed_password == "None") or verify_password(hashed_password, currntpwd):
-                c.execute("""DELETE from settings where parameter = ? """, ("password", ))
-                c.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", hash_password(newpwd)))
-                conn.commit()
+            hashed_password = fetchSettingParamFromDB(c, "password")
+            if (hashed_password == "None") or verifyPassword(hashed_password, pass_dict["currntpwd"]):
+                updateSettingParam(c, conn, "password", hashPassword(pass_dict["newpwd"]))
                 return "succeded", 200
-            else:
-                return "failed", 200
-
+            return "failed", 200
         return "nothing here!", 200
 
 class Lists(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
-        c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("Theme",))
-        pageTheme = c.fetchall()[0][1]
-
-        c.execute("""SELECT * FROM lists WHERE type = ? """, ("book", ))
-        readList = sorted(sorted([(name, done) for name, done, type in c.fetchall()]), key=lambda x: x[1])
-
-        c.execute("""SELECT * FROM lists WHERE type = ? """, ("movie", ))
-        movieList = sorted(sorted([(name, done) for name, done, type in c.fetchall()]), key=lambda x: x[1])
-
-        c.execute("""SELECT * FROM lists WHERE type = ? """, ("anime", ))
-        animeList = sorted(sorted([(name, done) for name, done, type in c.fetchall()]), key=lambda x: x[1])
-
-        c.execute("""SELECT * FROM lists WHERE type = ? """, ("bucketList", ))
-        bucketList = sorted(sorted([(name, done) for name, done, type in c.fetchall()]), key=lambda x: x[1])
-
-        return make_response(render_template('lists.html', readList = readList,
-                                             animeList=animeList, movieList = movieList, bucketList=bucketList,
-                                              pageTheme=pageTheme),200,headers)
+        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        lists = {}
+        for listName in ["book", "movie", "anime", "bucketList"]:
+            c.execute("""SELECT * FROM lists WHERE type = ? """, (listName, ))
+            lists[listName] = sorted(sorted([(name, done) for name, done, type in c.fetchall()]), key=lambda x: x[1])
+        return make_response(render_template('lists.html', readList = lists["book"],
+                                             animeList=lists["anime"], movieList = lists["movie"],
+                                             bucketList=lists["bucketList"],
+                                             pageTheme=pageTheme),200,headers)
 
     def post(self):
         args = parser.parse_args()
         if args['delete'] == '1':
-            print("here")
             c.execute("""DELETE from lists where name = ? and type = ?  """, (args["name"].lower(), args["type"]))
         else:
             c.execute("""DELETE from lists where name = ? and type = ? """, (args["name"].lower(), args["type"]))

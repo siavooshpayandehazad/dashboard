@@ -35,12 +35,12 @@ def test_getThirtyDaysFromNow():
     assert getThirtyDaysFromNow(2,10,2020) == datetime.datetime.strptime("2020-11-01", '%Y-%m-%d')
 
 
-def test_hash_password():
-    assert type(hash_password("password")) is str
-    assert len(hash_password("password"))==(64+128)
+def test_hashPassword():
+    assert type(hashPassword("password")) is str
+    assert len(hashPassword("password"))==(64+128)
 
 
-def test_verify_password():
-    assert type(verify_password(hash_password("password"), "password")) is bool
-    assert verify_password(hash_password("password"), "password") == True
-    assert verify_password(hash_password("password"), "not password") == False
+def test_verifyPassword():
+    assert type(verifyPassword(hashPassword("password"), "password")) is bool
+    assert verifyPassword(hashPassword("password"), "password") == True
+    assert verifyPassword(hashPassword("password"), "not password") == False
