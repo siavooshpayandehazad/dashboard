@@ -101,9 +101,7 @@ class dash(Resource):
                 counterVal = int(fetchSettingParamFromDB(c, "counter")) + 1
             elif args['counter'] == "reset":    # reset the counter
                 counterVal = 0
-            c.execute("""DELETE from settings where parameter = ? """, ("counter", ))
-            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", counterVal))
-            conn.commit()
+            updateSettingParam(c, conn, "counter", counterVal)
 
         if args['date'] is None:
             todaysDate = str(datetime.date.today())
@@ -170,8 +168,8 @@ class journal(Resource):
                 todaysDate = str(datetime.date.today())
             else:
                 todaysDate = args['date']
-                if len(todaysDate.split("-")[2]) == 1:  # check for cases like: 2019-05-2
-                    return "date format not valid, should be YYYY-MM-DD", 404
+                if not checkIfDateValid(todaysDate):  # check for cases like: 2019-05-2
+                    return "date format not valid, should be YYYY-MM-DD", 400
             log = args['log'].lower()
             c.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate, ))
             if len(c.fetchall()) > 0:
@@ -247,7 +245,7 @@ class todoList(Resource):
                 todaysDate = str(datetime.date.today())
             else:
                 todaysDate = args['date']
-                if checkIfDateValid(todaysDate):
+                if not checkIfDateValid(todaysDate):
                     return "date format not valid, should be YYYY-MM-DD", 404
             todo = args['todo'].lower()
 
@@ -312,7 +310,7 @@ class settings(Resource):
             return "failed", 200
         return "nothing here!", 200
 
-class Lists(Resource):
+class lists(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
@@ -344,7 +342,7 @@ api.add_resource(dash, '/home')
 api.add_resource(journal, '/journal')
 api.add_resource(todoList, '/todoList')
 api.add_resource(settings, '/settings')
-api.add_resource(Lists, '/Lists')
+api.add_resource(lists, '/lists')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
