@@ -41,15 +41,15 @@
 
         <h2 class="title" style="text-decoration: none; margin-left: 22%;margin-top:5px; margin-bottom: 0px; float:left;">
           {% if month > 1  %}
-            <a class= "arrow"  href="http://localhost:5000/todoList?date={{year}}-{{'%02d' % (month-1)}}-{{'%02d' % (day)}}">&#9668;</a>
+            <a class= "arrow"  href="/todoList?date={{year}}-{{'%02d' % (month-1)}}-{{'%02d' % (day)}}">&#9668;</a>
           {% else %}
-            <a class= "arrow"  href="http://localhost:5000/todoList?date={{year-1}}-{{'%02d' % (12)}}-{{'%02d' % (day)}}">&#9668;</a>
+            <a class= "arrow"  href="/todoList?date={{year-1}}-{{'%02d' % (12)}}-{{'%02d' % (day)}}">&#9668;</a>
           {% endif %}
           {{year}}-{{'%02d' % (month)}}
           {% if month < 12  %}
-            <a class= "arrow" href="http://localhost:5000/todoList?date={{year}}-{{'%02d' % (month+1)}}-{{'%02d' % (day)}}">&#9658;</a>
+            <a class= "arrow" href="/todoList?date={{year}}-{{'%02d' % (month+1)}}-{{'%02d' % (day)}}">&#9658;</a>
           {% else %}
-            <a class= "arrow" href="http://localhost:5000/todoList?date={{year+1}}-{{'%02d' % (1)}}-{{'%02d' % (day)}}">&#9658;</a>
+            <a class= "arrow" href="/todoList?date={{year+1}}-{{'%02d' % (1)}}-{{'%02d' % (day)}}">&#9658;</a>
           {% endif %}
         </h2>
 
@@ -62,7 +62,7 @@
               {%if i+1 == day %}
                 <td class="DS DStoday"><font class="DSfontToday"><b>{{ns2.daysOfTheWeekCap[(i+monthsBeginning)%7]}}</b></font></td>
               {%else%}
-                <td style=" min-width: 15px; text-align: center;"><a class="arrow" href="http://localhost:5000/todoList?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i+1)}}"><font class="DSfont">{{ns1.daysOfTheWeek[(i+monthsBeginning)%7]}}</font></a></td>
+                <td style=" min-width: 15px; text-align: center;"><a class="arrow" href="/todoList?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i+1)}}"><font class="DSfont">{{ns1.daysOfTheWeek[(i+monthsBeginning)%7]}}</font></a></td>
               {%endif%}
               {%endfor%}
             </tr>
@@ -71,7 +71,7 @@
                 {% if i == day  %}
                   <td  class="DS DStoday DSbottom"> <font class="DSfontToday"><b>{{i}}</b></a></font></td>
                 {%else%}
-                  <td class="DS DSbottom"><a class= "arrow" href="http://localhost:5000/todoList?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i)}}"><font class="DSfont"><b>{{i}}</b></font></a></td>
+                  <td class="DS DSbottom"><a class= "arrow" href="/todoList?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i)}}"><font class="DSfont"><b>{{i}}</b></font></a></td>
                 {%endif%}
               {%endfor%}
             </tr>

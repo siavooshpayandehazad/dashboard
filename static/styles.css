@@ -383,6 +383,11 @@ i.fa-sign-out{
   color: var(--icon-clr);
 }
 
+i.fa-sign-out:hover{
+  color: #b2182b;
+};
+
+
 b.titleNewTask{
   margin-left:20%;
   color:var(--titleNewTask-clr);
