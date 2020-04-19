@@ -1,6 +1,8 @@
 import os, datetime
 import sqlite3
 import hashlib, binascii
+from typing import Any
+
 
 def getTodaysLogs(db_c, todaysDate):
     db_c.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate,))
@@ -78,7 +80,7 @@ def getOneMonthsFromNow(day, month, year):
         return datetime.datetime.strptime(f"{year+1}-{month}-{day}", '%Y-%m-%d')
 
 
-def numberOfDaysInMonth(month):
+def numberOfDaysInMonth(month: str) -> int:
     if int(month) in [1, 3, 5, 7, 8, 10, 12]:
         numberOfDays = 31
     elif int(month) == 2:
@@ -88,13 +90,17 @@ def numberOfDaysInMonth(month):
     return numberOfDays
 
 
-def checkIfDateValid(date):
+def checkIfDateValid(date: str) -> bool:
     if len(date.split("-")[2]) < 2 or len(date.split("-")[1]) < 2 or len(date.split("-")[0]) < 4:
         return False
     return True
 
 
-def shouldHighlight(pageYear, pageMonth):
+def shouldHighlight(pageYear:str, pageMonth:str) -> bool:
+    """
+    returns True if the pageYear and pageMonth are the same as the current month
+    and year. returns False otherwise.
+    """
     highlight = True
     if (pageYear != str(datetime.date.today().year)) or (pageMonth != str(datetime.date.today().month).zfill(2)):
         highlight = False
@@ -119,16 +125,16 @@ def backupDatabase(conn):
         if(backupCon):
             backupCon.close()
 
-import hashlib, binascii, os
 
-def hash_password(password):
+def hash_password(password:str) -> any:
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
     pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
                                 salt, 100000)
     pwdhash = binascii.hexlify(pwdhash)
     return (salt + pwdhash).decode('ascii')
 
-def verify_password(stored_password, provided_password):
+
+def verify_password(stored_password: str, provided_password: str) -> bool:
     salt = stored_password[:64]
     stored_password = stored_password[64:]
     pwdhash = hashlib.pbkdf2_hmac('sha512',
