@@ -217,7 +217,7 @@ class todoList(Resource):
         weekDay = datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d').weekday()
         numberOfDays = numberOfDaysInMonth(month)
 
-        c.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? and done = 'false' """, ( tomorrowsDate, getOneMonthsFromNow(day, month, year) ) )
+        c.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? and done = 'false' """, ( tomorrowsDate, getThirtyDaysFromNow(day, month, year) ) )
         thisMonthsEvents = sorted(c.fetchall(), key=lambda tup: tup[1])
         #print(getMonthsBeginning(month, year), getNextMonthsBeginning(month, year))
 

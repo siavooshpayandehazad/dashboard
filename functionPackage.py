@@ -2,6 +2,7 @@ import os, datetime
 import sqlite3
 import hashlib, binascii
 from typing import Any
+import re
 
 
 def getTodaysLogs(db_c, todaysDate):
@@ -49,7 +50,9 @@ def generateDBTables(db_conn_handel):
              name text, done text, type text)""")
 
 
-def sparateDayMonthYear(todaysDate):
+def sparateDayMonthYear(todaysDate:str) -> tuple:
+    if not checkIfDateValid(todaysDate):
+        raise ValueError("Wrong date format is passed!")
     day = int(todaysDate.split("-")[2])
     month = int(todaysDate.split("-")[1])
     year = int(todaysDate.split("-")[0])
@@ -66,14 +69,17 @@ def getMonthsEnd(month, year):
     return  (getNextMonthsBeginning(month, year)-datetime.timedelta(days=1))
 
 
-def getNextMonthsBeginning(month, year):
+def getNextMonthsBeginning(month: int, year: int) -> datetime:
     if month < 12:
         return datetime.datetime.strptime(f"{year}-{month+1}-01", '%Y-%m-%d')
     else:
         return datetime.datetime.strptime(f"{year+1}-01-01", '%Y-%m-%d')
 
 
-def getOneMonthsFromNow(day, month, year):
+def getThirtyDaysFromNow(day: int, month: int, year: int) -> datetime:
+    """
+    returns a datetime object, thirty days in future of the input value
+    """
     if month < 12:
         return datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d')+datetime.timedelta(days=30)
     else:
@@ -91,7 +97,11 @@ def numberOfDaysInMonth(month: str) -> int:
 
 
 def checkIfDateValid(date: str) -> bool:
-    if len(date.split("-")[2]) < 2 or len(date.split("-")[1]) < 2 or len(date.split("-")[0]) < 4:
+    """
+    check format of the date
+    """
+    checkFormat = re.compile(r'\d\d\d\d-\d\d-\d\d')
+    if checkFormat.match(date) is None:
         return False
     return True
 
