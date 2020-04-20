@@ -59,7 +59,7 @@ class dash(Resource):
         # this is a list that contains a bunch of Nones for the days of the week that are in the
         # previous month. this is used for the moodtracker in order to add the empty spaces in the beginning of the month.
         monthsBeginningWeekDay = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d').weekday()
-        moodTrackerDays = [None for i in range(0, monthsBeginningWeekDay)] + list(range(1, numberOfDaysInMonth(pageMonth)+1))
+        moodTrackerDays = [None for i in range(0, monthsBeginningWeekDay)] + list(range(1, numberOfDaysInMonth(pageYear, pageMonth)+1))
 
         # list of current month's moods and activities.
         monthsActivities = []
@@ -90,10 +90,8 @@ class dash(Resource):
                 return "success", 200
             else:
                 if not verifyPassword(password, args['password']):
-                    print("login failed!")
                     return "failed", 200
                 else:
-                    print("login succeded!")
                     return "success", 200
 
         if args['counter'] is not None:
@@ -103,52 +101,27 @@ class dash(Resource):
                 counterVal = 0
             updateSettingParam(c, conn, "counter", counterVal)
 
-        if args['date'] is None:
-            todaysDate = str(datetime.date.today())
-        else:
-            todaysDate = args['date']
-            if not checkIfDateValid(todaysDate):  # check for cases like: 2019-05-2
-                return "date format not valid, should be YYYY-MM-DD", 400
+        todaysDate = parseDate(args['date'])
 
         if args['mood'] is not None:
-            mood = args['mood'].lower()
-            if mood not in moodList:
-                return "mood not found", 400
-
-            c.execute("""SELECT * FROM moodTracker WHERE date = ?""", (todaysDate,))
-            for oldMood, todaysDate in c.fetchall():
-                c.execute("""DELETE from moodTracker where date = ? and mood_name = ?""", (todaysDate, oldMood))
-            c.execute("""INSERT INTO moodTracker VALUES(?, ?)""", (mood, todaysDate))
-            conn.commit()
-            print(f"added mood {mood} for date: {todaysDate}")
-
+            return addTrackerItemToTable(args['mood'].lower(), "mood_name", moodList, "moodTracker", todaysDate)
         if args['activity'] is not None:
-            activity = args['activity'].lower()
-            if activity not in activityList:
-                return "activity not found", 400
-            c.execute("""SELECT * FROM activityTracker WHERE date = ? and activity_name = ?""", (todaysDate, activity))
-            if (args['activity'], todaysDate) not in c.fetchall():
-                c.execute("""INSERT INTO activityTracker VALUES(?, ?)""", (activity, todaysDate))
-                conn.commit()
-                print(f"added activity {activity} for date: {todaysDate}")
+            return addTrackerItemToTable(args['activity'].lower(), "activity_name", activityList, "activityTracker", todaysDate)
+
         return "Done", 200
 
 class journal(Resource):
     def get(self):
         args = parser.parse_args()
         pageTheme = fetchSettingParamFromDB(c, "Theme")
-
         headers = {'Content-Type': 'text/html'}
-        if args['date'] is not None:
-            todaysDate = args['date']
-        else:
-            todaysDate = str(datetime.date.today())
 
+        todaysDate = parseDate(args['date'])
         day, month, year = sparateDayMonthYear(todaysDate)
         photoDir=os.getcwd()+"/static/photos/"+str(year)+"/"+todaysDate
         todayPhotos =  allPotosInDir(photoDir, year, todaysDate)
         todaysLog, todaysLogText = getTodaysLogs(c, todaysDate)
-        numberOfDays = numberOfDaysInMonth(month)
+        numberOfDays = numberOfDaysInMonth(year, month)
         monthsBeginning = getMonthsBeginning(month, year).weekday()
 
         c.execute("""SELECT * FROM logTracker WHERE date >= ? and date <= ? """, (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(), ))
@@ -162,14 +135,8 @@ class journal(Resource):
 
     def post(self):
         args = parser.parse_args()
-        todaysDate = str(datetime.date.today())
         if args['log'] is not None:
-            if args['date'] is None:
-                todaysDate = str(datetime.date.today())
-            else:
-                todaysDate = args['date']
-                if not checkIfDateValid(todaysDate):  # check for cases like: 2019-05-2
-                    return "date format not valid, should be YYYY-MM-DD", 400
+            todaysDate = parseDate(args['date'])
             log = args['log'].lower()
             c.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate, ))
             if len(c.fetchall()) > 0:
@@ -185,20 +152,16 @@ class todoList(Resource):
 
         headers = {'Content-Type': 'text/html'}
         args = parser.parse_args()
-        if args['date'] is not None:
-            todaysDate = args['date']
-            tomorrowsDate = todaysDate # TODO: fix this!
-            all_due_events=[]
-        else:
-            todaysDate = str(datetime.date.today())
-            tomorrowsDate = str(datetime.date.today()+datetime.timedelta(days=1))
+        all_due_events=[]
+        todaysDate = parseDate(args['date'])
+        tomorrowsDate = str(datetime.datetime.strptime(todaysDate, '%Y-%m-%d')+datetime.timedelta(days=1))
         if todaysDate == str(datetime.date.today()):
             c.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (datetime.date.today(),))
             all_due_events = sorted(c.fetchall(), key=lambda tup: tup[1])
 
         day, month, year = sparateDayMonthYear(todaysDate)
         weekDay = datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d').weekday()
-        numberOfDays = numberOfDaysInMonth(month)
+        numberOfDays = numberOfDaysInMonth(year, month)
 
         c.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? and done = 'false' """, ( tomorrowsDate, getThirtyDaysFromNow(day, month, year) ) )
         thisMonthsEvents = sorted(c.fetchall(), key=lambda tup: tup[1])
@@ -206,7 +169,7 @@ class todoList(Resource):
         c.execute("""SELECT * FROM todoList WHERE date = ? """, (todaysDate,))
         todayTodos = c.fetchall()
 
-        monthsBeginning = datetime.datetime.strptime(f"{year}-{month}-01", '%Y-%m-%d')
+        monthsBeginning = getMonthsBeginning(month, year)
         monthsBeginningWeekDay = monthsBeginning.weekday()
         scrumBoardLists = {}
         for stage in ["backlog", "todo", "in progress", "done"]:
@@ -241,14 +204,8 @@ class todoList(Resource):
         args = parser.parse_args()
 
         if args['todo'] is not None:
-            if args['date'] is None:
-                todaysDate = str(datetime.date.today())
-            else:
-                todaysDate = args['date']
-                if not checkIfDateValid(todaysDate):
-                    return "date format not valid, should be YYYY-MM-DD", 404
+            todaysDate = parseDate(args['date'])
             todo = args['todo'].lower()
-
             c.execute("""DELETE from todoList where date = ? and task = ?""", (todaysDate, todo))
             if args['delete'] is None:
                 c.execute("""INSERT INTO todoList VALUES(?, ?, ?)""", (todo, todaysDate, args['done']))

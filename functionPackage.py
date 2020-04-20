@@ -27,6 +27,27 @@ def allPotosInDir(photoDir, year, date):
     return todayPhotos
 
 
+def parseDate(dateVal):
+    if dateVal is None:
+        return str(datetime.date.today())
+    else:
+        if not checkIfDateValid(dateVal):
+            raise ValueError("date format not valid, should be YYYY-MM-DD")
+        return dateVal
+
+
+def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str, date: str):
+    if item not in itemList:
+        return item+" not found", 400
+    c.execute("SELECT * FROM "+tableName+" WHERE date = ?", (date,))
+    for oldItem, todaysDate in c.fetchall():
+        c.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, oldItem))
+    c.execute("INSERT INTO "+tableName+" VALUES(?, ?)", (item, date))
+    conn.commit()
+    print(f"{tableName}:: added {item} for date: {date}")
+    return "Done", 200
+
+
 def generateDBTables(db_conn_handel):
     db_conn_handel.execute("""CREATE TABLE if not exists activityTracker (
              activity_name text, date text)""")
@@ -56,8 +77,8 @@ def sparateDayMonthYear(todaysDate:str) -> tuple:
     day = int(todaysDate.split("-")[2])
     month = int(todaysDate.split("-")[1])
     year = int(todaysDate.split("-")[0])
-    if day>numberOfDaysInMonth(month):
-        day = numberOfDaysInMonth(month)
+    if day>numberOfDaysInMonth(year, month):
+        day = numberOfDaysInMonth(year, month)
     return day, month, year
 
 
@@ -66,7 +87,7 @@ def getMonthsBeginning(month, year):
 
 
 def getMonthsEnd(month, year):
-    return  (getNextMonthsBeginning(month, year)-datetime.timedelta(days=1))
+    return  getNextMonthsBeginning(month, year)-datetime.timedelta(days=1)
 
 
 def getNextMonthsBeginning(month: int, year: int) -> datetime:
@@ -86,13 +107,8 @@ def getThirtyDaysFromNow(day: int, month: int, year: int) -> datetime:
         return datetime.datetime.strptime(f"{year+1}-{month}-{day}", '%Y-%m-%d')
 
 
-def numberOfDaysInMonth(month: str) -> int:
-    if int(month) in [1, 3, 5, 7, 8, 10, 12]:
-        numberOfDays = 31
-    elif int(month) == 2:
-        numberOfDays= 28
-    else:
-        numberOfDays= 30
+def numberOfDaysInMonth(year: str, month: str) -> int:
+    numberOfDays = int(getMonthsEnd(month, year).day)
     return numberOfDays
 
 
