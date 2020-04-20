@@ -18,7 +18,7 @@ def test_sparateDayMonthYear():
     # check basic functionality
     assert type(sparateDayMonthYear("2020-10-02")) is tuple
     assert sparateDayMonthYear("2020-10-02") == (2, 10, 2020)
-    assert sparateDayMonthYear("2020-02-32") == (28, 2, 2020)
+    assert sparateDayMonthYear("2020-02-32") == (29, 2, 2020) #leap year!
     # check exception handling
     with pytest.raises(ValueError):
         sparateDayMonthYear("2020-m0-02")
