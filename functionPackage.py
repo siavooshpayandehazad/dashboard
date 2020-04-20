@@ -36,14 +36,16 @@ def parseDate(dateVal):
         return dateVal
 
 
-def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str, date: str):
+def addTrackerItemToTable(item: str, itemName: str, itemList,
+                          tableName: str, date: str, dbCursur, dbConnection):
     if item not in itemList:
         return item+" not found", 400
-    c.execute("SELECT * FROM "+tableName+" WHERE date = ?", (date,))
-    for oldItem, todaysDate in c.fetchall():
-        c.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, oldItem))
-    c.execute("INSERT INTO "+tableName+" VALUES(?, ?)", (item, date))
-    conn.commit()
+    dbCursur.execute("SELECT * FROM "+tableName+" WHERE date = ?", (date,))
+    if itemName == "mood_name":     # trying to remove old mood from the table
+        for oldItem, todaysDate in dbCursur.fetchall():
+            dbCursur.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, oldItem))
+    dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?)", (item, date))
+    dbConnection.commit()
     print(f"{tableName}:: added {item} for date: {date}")
     return "Done", 200
 
@@ -108,7 +110,7 @@ def getThirtyDaysFromNow(day: int, month: int, year: int) -> datetime:
 
 
 def numberOfDaysInMonth(year: str, month: str) -> int:
-    numberOfDays = int(getMonthsEnd(month, year).day)
+    numberOfDays = int(getMonthsEnd(int(month), (year)).day)
     return numberOfDays
 
 

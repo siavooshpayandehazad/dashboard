@@ -104,9 +104,9 @@ class dash(Resource):
         todaysDate = parseDate(args['date'])
 
         if args['mood'] is not None:
-            return addTrackerItemToTable(args['mood'].lower(), "mood_name", moodList, "moodTracker", todaysDate)
+            return addTrackerItemToTable(args['mood'].lower(), "mood_name", moodList, "moodTracker", todaysDate, c, conn)
         if args['activity'] is not None:
-            return addTrackerItemToTable(args['activity'].lower(), "activity_name", activityList, "activityTracker", todaysDate)
+            return addTrackerItemToTable(args['activity'].lower(), "activity_name", activityList, "activityTracker", todaysDate, c, conn)
 
         return "Done", 200
 
