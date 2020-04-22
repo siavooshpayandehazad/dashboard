@@ -26,11 +26,8 @@ for item in ['activity', 'display', 'date', 'log', 'mood', 'todo', 'done',
              'destList', 'priority', 'Theme', 'counter', 'password']:
     parser.add_argument(item)
 
-conn  =  sqlite3.connect("journal.db",  check_same_thread=False)
-# making a backup of the database...
+conn, c = createDB("journal.db")
 backupDatabase(conn)
-
-c = conn.cursor()
 generateDBTables(c)
 
 class dash(Resource):

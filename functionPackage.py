@@ -50,26 +50,26 @@ def addTrackerItemToTable(item: str, itemName: str, itemList,
     return "Done", 200
 
 
-def generateDBTables(db_conn_handel):
-    db_conn_handel.execute("""CREATE TABLE if not exists activityTracker (
+def createDB(DBName):
+    DBConnection  =  sqlite3.connect(DBName,  check_same_thread=False)
+    DBCursor = DBConnection.cursor()
+    return DBConnection, DBCursor
+
+
+def generateDBTables(DBCursor):
+    DBCursor.execute("""CREATE TABLE if not exists activityTracker (
              activity_name text, date text)""")
-
-    db_conn_handel.execute("""CREATE TABLE if not exists moodTracker (
+    DBCursor.execute("""CREATE TABLE if not exists moodTracker (
              mood_name text, date text)""")
-
-    db_conn_handel.execute("""CREATE TABLE if not exists logTracker (
+    DBCursor.execute("""CREATE TABLE if not exists logTracker (
              log text, date text)""")
-
-    db_conn_handel.execute("""CREATE TABLE if not exists todoList (
+    DBCursor.execute("""CREATE TABLE if not exists todoList (
              task text, date text, done text)""")
-
-    db_conn_handel.execute("""CREATE TABLE if not exists scrumBoard (
+    DBCursor.execute("""CREATE TABLE if not exists scrumBoard (
              project text, task text, stage text, priority text, done_date text)""")
-
-    db_conn_handel.execute("""CREATE TABLE if not exists settings (
+    DBCursor.execute("""CREATE TABLE if not exists settings (
              parameter text, value text)""")
-
-    db_conn_handel.execute("""CREATE TABLE if not exists lists (
+    DBCursor.execute("""CREATE TABLE if not exists lists (
              name text, done text, type text)""")
 
 
@@ -84,11 +84,11 @@ def sparateDayMonthYear(todaysDate:str) -> tuple:
     return day, month, year
 
 
-def getMonthsBeginning(month, year):
+def getMonthsBeginning(month: int, year: int) -> datetime:
     return  datetime.datetime.strptime(f"{year}-{month}-01", '%Y-%m-%d')
 
 
-def getMonthsEnd(month, year):
+def getMonthsEnd(month: int, year: int) -> datetime:
     return  getNextMonthsBeginning(month, year)-datetime.timedelta(days=1)
 
 
@@ -110,7 +110,7 @@ def getThirtyDaysFromNow(day: int, month: int, year: int) -> datetime:
 
 
 def numberOfDaysInMonth(year: str, month: str) -> int:
-    numberOfDays = int(getMonthsEnd(int(month), (year)).day)
+    numberOfDays = int(getMonthsEnd(int(month), int(year)).day)
     return numberOfDays
 
 
@@ -154,19 +154,19 @@ def backupDatabase(conn):
             backupCon.close()
 
 
-def fetchSettingParamFromDB(cursor, param):
-    cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, (param,))
+def fetchSettingParamFromDB(DBCursor, param):
+    DBCursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, (param,))
     try:
-        parameter = cursor.fetchall()[0][1]
+        parameter = DBCursor.fetchall()[0][1]
     except:
         raise ValueError(f"parameter {param} is missing in DB!")
     return parameter
 
 
-def updateSettingParam(cursor, connection, param, value):
-    cursor.execute("""DELETE from settings where parameter = ? """, (param, ))
-    cursor.execute("""INSERT INTO settings VALUES(?, ?)""", (param, value))
-    connection.commit()
+def updateSettingParam(DBCursor, DBConnection, param, value):
+    DBCursor.execute("""DELETE from settings where parameter = ? """, (param, ))
+    DBCursor.execute("""INSERT INTO settings VALUES(?, ?)""", (param, value))
+    DBConnection.commit()
     return None
 
 
