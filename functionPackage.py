@@ -5,9 +5,9 @@ from typing import Any
 import re
 
 
-def getTodaysLogs(db_c, todaysDate):
-    db_c.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate,))
-    logValue = db_c.fetchall()
+def getTodaysLogs(dbCursur, todaysDate):
+    dbCursur.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate,))
+    logValue = dbCursur.fetchall()
     if len(logValue)>0:
         todaysLog = logValue[0][0].replace("\n","<br>")
         todaysLogText = logValue[0][0]
@@ -50,6 +50,20 @@ def addTrackerItemToTable(item: str, itemName: str, itemList,
     return "Done", 200
 
 
+def collectMonthsActivityAndMood(pageMonth: int, pageYear: int, dbCursur):
+    activities = []
+    moods = []
+    dbCursur.execute("""SELECT * FROM activityTracker WHERE date >= ? and date < ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(),
+               getMonthsEnd(pageMonth, pageYear).date(),))
+    activities += dbCursur.fetchall()
+    dbCursur.execute("""SELECT * FROM moodTracker WHERE date >= ? and date < ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(),
+               getMonthsEnd(pageMonth, pageYear).date(),))
+    moods += dbCursur.fetchall()
+    return activities, moods
+
+
 def createDB(DBName):
     DBConnection  =  sqlite3.connect(DBName,  check_same_thread=False)
     DBCursor = DBConnection.cursor()
@@ -76,12 +90,16 @@ def generateDBTables(DBCursor):
 def sparateDayMonthYear(todaysDate:str) -> tuple:
     if not checkIfDateValid(todaysDate):
         raise ValueError("Wrong date format is passed!")
-    day = int(todaysDate.split("-")[2])
-    month = int(todaysDate.split("-")[1])
-    year = int(todaysDate.split("-")[0])
-    if day>numberOfDaysInMonth(year, month):
-        day = numberOfDaysInMonth(year, month)
+    year, month, day = [int(m) for m in todaysDate.split("-")]
+    day = min(day, numberOfDaysInMonth(month, year))
     return day, month, year
+
+
+def setupSettingTable(dbCursur, dbConnection):
+    c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
+    c.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
+    c.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", "None"))
+    conn.commit()
 
 
 def getMonthsBeginning(month: int, year: int) -> datetime:
@@ -109,8 +127,8 @@ def getThirtyDaysFromNow(day: int, month: int, year: int) -> datetime:
         return datetime.datetime.strptime(f"{year+1}-{month}-{day}", '%Y-%m-%d')
 
 
-def numberOfDaysInMonth(year: str, month: str) -> int:
-    numberOfDays = int(getMonthsEnd(int(month), int(year)).day)
+def numberOfDaysInMonth(month: int, year: int) -> int:
+    numberOfDays = int(getMonthsEnd(month, year).day)
     return numberOfDays
 
 
@@ -129,10 +147,9 @@ def shouldHighlight(pageYear:str, pageMonth:str) -> bool:
     returns True if the pageYear and pageMonth are the same as the current month
     and year. returns False otherwise.
     """
-    highlight = True
     if (pageYear != str(datetime.date.today().year)) or (pageMonth != str(datetime.date.today().month).zfill(2)):
-        highlight = False
-    return highlight
+        return False
+    return True
 
 
 def progress(status, remaining, total):

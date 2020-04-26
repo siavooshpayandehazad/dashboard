@@ -37,14 +37,11 @@ class dash(Resource):
             pageTheme = fetchSettingParamFromDB(c, "Theme")
         except:
             pageTheme = "Dark"
-            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
-            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
-            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", "None"))
+            setupSettingTable(c, conn)
             print("could not fetch page theme! replacing with default values")
 
         if args['date'] is not None:
-            pageMonth = args['date'].split("-")[1]
-            pageYear = args['date'].split("-")[0]
+            pageYear, pageMonth = args['date'].split("-")
         else:
             pageMonth = str(datetime.date.today().month).zfill(2)
             pageYear = str(datetime.date.today().year)
@@ -53,21 +50,12 @@ class dash(Resource):
         pageTitle = "DashBoard "
         titleDate = monthsOfTheYear[int(pageMonth)-1]+"-"+pageYear
 
-        # this is a list that contains a bunch of Nones for the days of the week that are in the
+        # moodTrackerDays is a list that contains a bunch of Nones for the days of the week that are in the
         # previous month. this is used for the moodtracker in order to add the empty spaces in the beginning of the month.
         monthsBeginningWeekDay = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d').weekday()
-        moodTrackerDays = [None for i in range(0, monthsBeginningWeekDay)] + list(range(1, numberOfDaysInMonth(pageYear, pageMonth)+1))
-
+        moodTrackerDays = [None for i in range(0, monthsBeginningWeekDay)] + list(range(1, numberOfDaysInMonth(int(pageMonth), int(pageYear))+1))
         # list of current month's moods and activities.
-        monthsActivities = []
-        monthsMoods = []
-        for i in range(0, 32):
-            dayOfMonth = pageYear+"-"+pageMonth+"-"+str(i).zfill(2)
-            c.execute("""SELECT * FROM activityTracker WHERE date = ? """, (dayOfMonth,))
-            monthsActivities+=c.fetchall()
-            c.execute("""SELECT * FROM moodTracker WHERE date = ? """, (dayOfMonth,))
-            monthsMoods+=c.fetchall()
-
+        monthsActivities, monthsMoods = collectMonthsActivityAndMood(int(pageMonth), int(pageYear), c)
         # highlights the current day in the activity tracker page!
         highlight = shouldHighlight(pageYear, pageMonth)
         counterValue = fetchSettingParamFromDB(c, "counter")
@@ -75,7 +63,7 @@ class dash(Resource):
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth=int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
-                                             activities = monthsActivities, activityList =activityList,
+                                             activities = monthsActivities, activityList = activityList,
                                              days=moodTrackerDays, highlight=highlight, pageTheme=pageTheme,
                                              counterValue=counterValue),200,headers)
 
@@ -112,13 +100,12 @@ class journal(Resource):
         args = parser.parse_args()
         pageTheme = fetchSettingParamFromDB(c, "Theme")
         headers = {'Content-Type': 'text/html'}
-
         todaysDate = parseDate(args['date'])
         day, month, year = sparateDayMonthYear(todaysDate)
         photoDir=os.getcwd()+"/static/photos/"+str(year)+"/"+todaysDate
         todayPhotos =  allPotosInDir(photoDir, year, todaysDate)
         todaysLog, todaysLogText = getTodaysLogs(c, todaysDate)
-        numberOfDays = numberOfDaysInMonth(year, month)
+        numberOfDays = numberOfDaysInMonth(int(month), int(year))
         monthsBeginning = getMonthsBeginning(month, year).weekday()
 
         c.execute("""SELECT * FROM logTracker WHERE date >= ? and date <= ? """, (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(), ))
@@ -158,7 +145,7 @@ class todoList(Resource):
 
         day, month, year = sparateDayMonthYear(todaysDate)
         weekDay = datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d').weekday()
-        numberOfDays = numberOfDaysInMonth(year, month)
+        numberOfDays = numberOfDaysInMonth(int(month), int(year))
 
         c.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? and done = 'false' """, ( tomorrowsDate, getThirtyDaysFromNow(day, month, year) ) )
         thisMonthsEvents = sorted(c.fetchall(), key=lambda tup: tup[1])
