@@ -138,7 +138,6 @@ class todoList(Resource):
         args = parser.parse_args()
         all_due_events=[]
         todaysDate = parseDate(args['date'])
-        tomorrowsDate = str(datetime.datetime.strptime(todaysDate, '%Y-%m-%d')+datetime.timedelta(days=1))
         if todaysDate == str(datetime.date.today()):
             c.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (datetime.date.today(),))
             all_due_events = sorted(c.fetchall(), key=lambda tup: tup[1])
@@ -146,8 +145,7 @@ class todoList(Resource):
         day, month, year = sparateDayMonthYear(todaysDate)
         weekDay = datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d').weekday()
         numberOfDays = numberOfDaysInMonth(int(month), int(year))
-
-        c.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? and done = 'false' """, ( tomorrowsDate, getThirtyDaysFromNow(day, month, year) ) )
+        c.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? and done = 'false' """, (getNextDay(todaysDate), getThirtyDaysFromNow(day, month, year)))
         thisMonthsEvents = sorted(c.fetchall(), key=lambda tup: tup[1])
 
         c.execute("""SELECT * FROM todoList WHERE date = ? """, (todaysDate,))

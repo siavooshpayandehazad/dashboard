@@ -109,6 +109,8 @@ def getMonthsBeginning(month: int, year: int) -> datetime:
 def getMonthsEnd(month: int, year: int) -> datetime:
     return  getNextMonthsBeginning(month, year)-datetime.timedelta(days=1)
 
+def getNextDay(currentDay: str) -> str:
+    return str((datetime.datetime.strptime(currentDay, '%Y-%m-%d')+datetime.timedelta(days=1)).date())
 
 def getNextMonthsBeginning(month: int, year: int) -> datetime:
     if month < 12:
