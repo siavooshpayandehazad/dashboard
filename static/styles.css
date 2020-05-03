@@ -271,6 +271,17 @@ td.DSbottom{
   border-radius: 0px 0px 0px 0px;
 }
 
+td.trackerLabel{
+  border: 1px solid white;
+  border-radius: 3px;
+}
+
+td.trackerHeader{
+  border: 1px solid white;
+  border-radius: 3px;
+  text-align: center;
+}
+
 td.todayMarker{
   background-color: var(--todayMarker-bg-clr);
   border-radius:10px;

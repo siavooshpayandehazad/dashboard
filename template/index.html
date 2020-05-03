@@ -112,6 +112,22 @@
     document.getElementById("overlay").style.display = "block";
     localStorage.setItem('token',"false");
   }
+
+  function mouseOverTracker(item){
+    var rowLabel = $(item).parent().children()[0];
+    var colNum = $(item).parent().children().index($(item));
+    var colLabel = $(item).parent().parent().children()[0].cells[colNum]
+    rowLabel.style.borderColor = "#fdbf6f";
+    colLabel.style.borderColor = "#fdbf6f";
+  }
+
+  function mouseOutTracker(item){
+    var rowLabel = $(item).parent().children()[0];
+    var colNum = $(item).parent().children().index($(item));
+    var colLabel = $(item).parent().parent().children()[0].cells[colNum]
+    rowLabel.style.borderColor = "white";
+    colLabel.style.borderColor = "white";
+  }
   checkLoggedIn();
 </script>
 
@@ -179,16 +195,16 @@
                   <td  class="todayMarker">{{day}}</td>
                 {%else%}
                     {% if days.index(day)%7 == 5 or days.index(day)%7 == 6  %}
-                      <td style="text-align: center;" bgColor="#d9d9d9">{{day}}</td>
+                      <td class="trackerHeader" bgColor="#d9d9d9">{{day}}</td>
                     {%else%}
-                      <td style="text-align: center;" bgColor=white>{{day}}</td>
+                      <td class="trackerHeader" bgColor=white>{{day}}</td>
                     {%endif%}
                 {%endif%}
               {%endif%}
             {%endfor%}
             </tr>
             {% for activity in activityList%}
-              <tr><td><b><font style="font-family:Courier New;">{{activity}}</font></b></td>
+              <tr><td class="trackerLabel"><b><font style="font-family:Courier New;">{{activity}}</font></b></td>
                 {% for day in days %}
                   {% if day != None  %}
                     {% set ns = namespace (found = 0)%}
@@ -198,9 +214,9 @@
                         {%endif%}
                     {%endfor%}
                     {%if ns.found== 1 %}
-                      <td class="tracker found" style="min-width:17px", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
+                      <td class="tracker found" style="min-width:17px", onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
                     {% else %}
-                      <td class="tracker" style="min-width:17px" onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
+                      <td class="tracker" style="min-width:17px" onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
                     {% endif %}
                   {%endif%}
               {%endfor%}
