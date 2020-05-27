@@ -64,12 +64,14 @@ class dash(Resource):
         counterValue = fetchSettingParamFromDB(c, "counter")
         chartWeights = generateWeightChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         monthsWorkHours = generateWorkTrakcerChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        monthsSleepTimes = generateSleepChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         ChartMonthDays = [str(i) for i in range(1, numberOfDays+1)]
         HR_Min, HR_Max = generateHRChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth=int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
                                              monthsWeights = chartWeights, ChartMonthDays = ChartMonthDays,
+                                             monthsSleepTimes=monthsSleepTimes,
                                              HR_Min = HR_Min, HR_Max = HR_Max, monthsWorkHours = monthsWorkHours,
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
                                              activityList = activityList, days=moodTrackerDays, highlight=highlight, pageTheme=pageTheme,
@@ -99,6 +101,8 @@ class dash(Resource):
             return addTrackerItemToTable(args['value'].split(","), "", [], "HRTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'weight':
             return addTrackerItemToTable(args['value'].lower(), "weight", [], "weightTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] == 'sleep':
+            return addTrackerItemToTable(args['value'].lower(), "", [], "sleepTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'WorkHours':
             return addTrackerItemToTable(args['value'].lower(), "work_hour", [], "workHourTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'mood':

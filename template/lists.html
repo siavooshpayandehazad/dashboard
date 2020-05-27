@@ -45,14 +45,14 @@
                 <li>
                   <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
                   <span class="task" type={{Type}}>{{item}}</span>
-                  <span style="float:right; margin-right:10px;" onclick="deleteTodo(event)"><i class="fa fa-trash-o"></i> </span>
+                  <span style="float:right; margin-right:10px;" onclick="deleteItem(event)"><i class="fa fa-trash-o"></i> </span>
                 </li>
               {%else%}
               {% set ns.done_numbers = ns.done_numbers + 1 %}
                 <li>
                   <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
                   <span class="task" type={{Type}}>{{item}}</span>
-                  <span style="float:right; margin-right:10px;" onclick="deleteTodo(event)"><i class="fa fa-trash-o"></i> </span>
+                  <span style="float:right; margin-right:10px;" onclick="deleteItem(event)"><i class="fa fa-trash-o"></i> </span>
                 </li>
               {%endif%}
             {%endfor%}
@@ -68,7 +68,7 @@
 
 <script type="text/javascript">
 
-function deleteTodo(item) {
+function deleteItem(item) {
       var listItem = event.srcElement.parentElement.parentElement;
       $.ajax({ type: "POST",
           url: "http://localhost:5000/lists",
@@ -111,7 +111,7 @@ function submitonEnter(event) {
           li.appendChild(span1);
 
           var span2 = document.createElement("span");
-          span2.onclick = function () {deleteTodo(this);}
+          span2.onclick = function () {deleteItem(this);}
           span2.style.float = "right";
           span2.style.marginRight = "10px";
 

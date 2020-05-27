@@ -37,20 +37,21 @@
 {% endwith %}
 
   <div class="settingpage">
-  <h4>Database management</h4>
-   Upload your database here: (TO DO...) <br>
-   to download your DB, click <a href="/downloadDB/" target = "blank">here</a>.
-   <br>
-   <div class="divider" style="width:40%;height:2px;margin-top:20px;"></div><br>
 
-  <h4>Change password</h4>
-  current password:  <input type="password" id="currentpwd" name="currentpwd"><br>
-  new password:      <input type="password" id="newpwd" name="newpwd"><br>
-  <input type="submit" style="margin-left: 23%;margin-top: 5px;" onclick="resetPass()">
-  <br>
-  <div class="divider" style="width:40%;height:2px;margin-top:20px;"></div><br>
-
-  <h4>Themes</h4>
+  <div style="width: 30%;float:left;margin-right: 5%;">
+    <h4>Database management</h4>
+     Upload your database here: (TO DO...) <br><br>
+     To download your DB, click <a href="/downloadDB/" target = "blank" style="color:orange">here</a>.
+  </div>
+  <div style="width: 30%;float:left; margin-right: 5%;">
+    <h4>Change password</h4>
+    <div style="width: 250px;">current password:  <input style= "float:right;" type="password" id="currentpwd" name="currentpwd"></div>
+    <br>
+    <div style="width: 250px; margin-top:-10px;">new password:    <input  style= "float:right;" type="password" id="newpwd" name="newpwd"></div>
+    <input type="submit" style="float: left; margin-left: 200px;margin-top: 10px;" onclick="resetPass()">
+  </div>
+  <div style="width: 30%;float:left">
+    <h4>Themes</h4>
     choose the color theme:
     <select id="ThemeSelector" onchange="selected()" >
       {%if pageTheme=="Dark"%}
@@ -64,18 +65,21 @@
         <option>Dark</option>
       {% endif %}
     </select>
+  </div>
 
-  <br>
-  <div class="divider" style="width:40%;height:2px;margin-top:20px;"></div><br>
 
-  <h4>Activity Tracker Setting (TO DO...)</h4>
-  you can enter the activities you are interested in the field <br>
-  bellow (in a comma separated list):
-  <form action="javascript:;" onsubmit="return submitEntry();">
-     <textarea id="activities" type="text" cols="40" rows="5" style="margin-top: 5px;margin-left: 1%; min-height:100px;width:28%; outline:None; resize:None">{{activityList|string()}}</textarea><br>
-     <input type="submit" style="margin-left: 23%;margin-top: 5px;">
-  </form>
-  * the activities will appear in the same order that you define here!
+  <div class="divider" style="width:100%;height:2px;margin-top:20px;"></div>
+
+  <div style="width: 100%;float:left">
+    <h4>Activity Tracker Setting (TO DO...)</h4>
+    you can enter the activities you are interested in the field <br>
+    bellow (in a comma separated list):
+    <form action="javascript:;" onsubmit="return submitEntry();">
+       <textarea id="activities" type="text" cols="40" rows="5" style="margin-top: 5px;margin-left: 1%; min-height:100px;width:28%; outline:None; resize:None">{{activityList|string()}}</textarea><br>
+       <input type="submit" style="margin-left: 23%;margin-top: 5px;">
+    </form>
+    * the activities will appear in the same order that you define here!
+  </div>
 </div>
 </body>
 

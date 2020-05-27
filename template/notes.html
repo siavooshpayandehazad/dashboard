@@ -196,9 +196,9 @@
       </div>
   </div>
 
-  <div style= "width:86%; min-height:500px; background-color:black; border: 3px solid white; border-radius:20px; margin-top: 10px; float:left">
+  <div class="notebook_background">
     <h2 class="title"> <span id ="notebookName">{{Notebooks.keys()|sort()|first}}</span> Notebook </h3>
-    <div style= "width:16%; height:484px; overflow-y: scroll; background-color:black; border: 3px solid white; border-radius:20px; margin-left: 1%; margin-top: 10px; margin-bottom: 10px; float:left; color:white;">
+    <div class="ToCDiv" style= "">
         <h2 class="title"> ToC </h3>
         <div id="tocContent" style="margin-left:5px; margin-top: 5px;">
           <ol class = "ToC">
@@ -215,10 +215,10 @@
         </div>
     </div>
 
-    <div style= "width:80%; height:484px; background-color:black; border: 3px solid white; border-radius:20px; margin-left: 1%; margin-top: 10px; margin-bottom: 10px; float:left; color:white;">
+    <div class="chapterContent">
       <h2 class="title"> <span id ="chapterName">{{Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first}}</span></h3>
       <i class="fa fa-edit editIcon" style ="float:right; margin-right:10px;  margin-top: 10px;" onclick="editMode(this)"></i><br>
-      <div id="chapterContent" style="overflow-y: scroll; height:360px; width:96%; margin-left:15px; margin-top: 15px;">
+      <div id="chapterContent">
           {{Notebooks[Notebooks.keys()|sort()|first][Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first]|safe}}
       </div>
     </div>

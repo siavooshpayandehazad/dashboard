@@ -161,6 +161,21 @@ def generateWorkTrakcerChartData(pageMonth: int, pageYear: int, numberOfDays: in
         workTrackerData.append(work_hour)
     return workTrackerData
 
+def generateSleepChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+    monthsSleepHours = []
+    dbCursur.execute("""SELECT * FROM sleepTracker WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
+    monthsSleepHours += dbCursur.fetchall()
+
+    sleepTrackerData=[]
+
+    for i in range(1, numberOfDays+1):
+        sleep_hour = "nan"
+        for item in monthsSleepHours:
+            if int(item[1].split("-")[2]) == i:
+                sleep_hour = float(item[0])
+        sleepTrackerData.append(sleep_hour)
+    return sleepTrackerData
 
 def createDB(DBName):
     DBConnection  =  sqlite3.connect(DBName,  check_same_thread=False)
@@ -171,6 +186,8 @@ def createDB(DBName):
 def generateDBTables(DBCursor):
     DBCursor.execute("""CREATE TABLE if not exists HRTracker (
              HR_Min text, HR_Max text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists sleepTracker (
+             sleepTime text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists weightTracker (
              weight text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists workHourTracker (

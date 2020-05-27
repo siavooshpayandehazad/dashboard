@@ -106,7 +106,7 @@
 
     <div style="margin-left: 5px;float:left; min-width:130px;">
       {%if pageTheme=="Dark"%}
-      <img src= "{{url_for('static', filename = 'page1_Large_dark.png')}}" float="right" width="110" alt="page1_Large_dark">
+      <img src= "{{url_for('static', filename = 'page1_Large_dark.png')}}" float="right" width="140" alt="page1_Large_dark">
       {% else %}
       <img src= "{{url_for('static', filename = 'page1_Large.png')}}" float="right" width="130" alt="page1_Large">
       {% endif %}
@@ -117,171 +117,37 @@
       <img src= "{{url_for('static', filename = 'page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
     </div>
 
-    <div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
-      <div style="margin-top: 10px; margin-right: 20px; width: 220px; float:right" >
-        Add Work Hours: <input type="text" id="workHourVal" name="date" style="width: 50px; ">
-        <i class="fa fa-check" id="submitToGraph" onclick="submitWHours()"></i>
-      </div>
-      <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Work Hours Tracker</h2>
-      <div style="float:left; width:90%; margin-left:5%">
-        <canvas  height="100px" id="WHTracker"></canvas>
-      </div>
-    </div>
+    {% with monthsWorkHours = monthsWorkHours, ChartMonthDays = ChartMonthDays %}
+        {% include "trackerModules/workHourTracker.html" %}
+    {% endwith %}
 
     <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
       <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
       <img src= "{{url_for('static', filename = 'page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
     </div>
 
-    <div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
-      <div style="margin-top: 10px; margin-right: 20px; width: 150px; float:right" >
-        Weight: <input type="text" id="weightVal" name="date" style="width: 50px; ">
-        <i class="fa fa-check" id="submitToGraph" onclick="submitWeight()"></i>
-      </div>
-      <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Weight Tracker</h2>
-      <div style="float:left; width:90%; margin-left:5%">
-        <canvas  height="100px" id="weigthTracker"></canvas>
-      </div>
-    </div>
+    {% with monthsWeights = monthsWeights, ChartMonthDays = ChartMonthDays %}
+        {% include "trackerModules/weightTracker.html" %}
+    {% endwith %}
 
-    <div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
-      <div style="margin-top: 10px; margin-right: 20px; width: 150px; float:right">
-        <i class="fa fa-check" id="submitToGraph" onclick="submitHR()" style="float:right;" onclick="submitHR()"></i>
-        <div style="float:left">
-          HR Min: <input type="text" id="HRMin" style="width: 50px;">
-        </div>
-        <div style="float:left">
-          HR Max: <input type="text" id="HRMax" style="width: 50px; ">
-        </div>
+    {% with HR_Max = HR_Max, HR_Min = HR_Min, ChartMonthDays = ChartMonthDays %}
+        {% include "trackerModules/heartRateTracker.html" %}
+    {% endwith %}
 
-      </div>
-      <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Heart Rate Tracker</h2>
-      <div style="float:left; width:90%; margin-left:5%">
-        <canvas  height="100px" id="HRTracker"></canvas>
-      </div>
-    </div>
+    {% with monthsSleepTimes = monthsSleepTimes, ChartMonthDays = ChartMonthDays %}
+        {% include "trackerModules/sleepTracker.html" %}
+    {% endwith %}
 </body>
 
 <script>
 
-var myLineChart, c = 0, label = 0, randomnum, interval;
-
-
 function renderchart() {
-   var ctx = document.getElementById("HRTracker").getContext('2d');
-   myLineChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-         labels: {{ChartMonthDays|safe}},
-         datasets: [{
-            label: "HR Min",
-            data: {{HR_Min|safe}},
-            backgroundColor: ['rgba(0,0,0, 0)'],
-            borderColor: ['rgba(33,113,181, 1)'],
-            borderWidth: 2
-         }, {
-            label: "HR Max",
-            data: {{HR_Max|safe}},
-            backgroundColor: ['rgba(0,0,0, 0)'],
-            borderColor: ['rgba(252,78,42, 1)'],
-            borderWidth: 2
-         }]
-      },
-      options: { scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
-   });
-
-   var ctx = document.getElementById("weigthTracker").getContext('2d');
-   myLineChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-         labels: {{ChartMonthDays|safe}},
-         datasets: [{
-            label: "Weight",
-            data: {{monthsWeights|safe}},
-            backgroundColor: ['rgba(128,205,193, 0.3)'],
-            borderColor: ['rgba(53,151,143, 1)'],
-            borderWidth: 2,
-            spanGaps: true
-         }
-       ]
-      },
-      options: { scales: { yAxes: [{ ticks:{ suggestedMin: 60, beginAtZero: false }}]}}
-   });
-
-   var WH_BG_Colors = []
-   var WH_B_Colors = []
-   var monthsWorkHoursTemp = {{monthsWorkHours | safe}}
-   monthsWorkHoursTemp.forEach((item, i) => {
-     if(parseInt(item)<4){
-       WH_BG_Colors.push('rgba(252,146,114, 1)')
-       WH_B_Colors.push('rgba(203,24,29, 1)')
-     }else if(parseInt(item)<6){
-       WH_BG_Colors.push('rgba(254,196,79, 1)')
-       WH_B_Colors.push('rgba(236,112,20, 1)')
-     }else if(parseInt(item)>8){
-       WH_BG_Colors.push('rgba(128,205,193, 1)')
-       WH_B_Colors.push('rgba(53,151,143, 1)')
-     }else{
-      WH_BG_Colors.push('rgba(107,174,214, 1)')
-      WH_B_Colors.push('rgba(33,113,181, 1)')
-     }
-
-   });
-
-
-   var ctx = document.getElementById("WHTracker").getContext('2d');
-   myLineChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-         labels: {{ChartMonthDays|safe}},
-         datasets: [{
-            label: "Working Hours",
-            data: {{monthsWorkHours|safe}},
-            backgroundColor: WH_BG_Colors,
-            borderColor: WH_B_Colors,
-            borderWidth: 2,
-         }
-       ]
-      },
-      options: { scales: { yAxes: [{ticks:{suggestedMax: 10, beginAtZero: true }}]}}
-   });
+   renderWorkHourChart();
+   renderHeartRateChart();
+   renderWeightTrackerChart();
+   renderSleepTrackerChart();
 }
 
 window.onload = renderchart;
-
-function submitWHours(){
-  var worHours = document.getElementById("workHourVal").value;
-  $.ajax({
-      type: "POST",
-      url: "http://localhost:5000/home",
-      data: {"tracker_type":"WorkHours", "value": worHours},
-  });
-  document.getElementById("workHourVal").value = "";
-  renderchart()
-}
-
-function submitWeight(){
-  var weight = document.getElementById("weightVal").value;
-  $.ajax({
-      type: "POST",
-      url: "http://localhost:5000/home",
-      data: {"tracker_type":"weight", "value": weight},
-  });
-  document.getElementById("weightVal").value = "";
-  renderchart()
-}
-
-function submitHR(){
-  var HRMin = document.getElementById("HRMin").value;
-  var HRMax = document.getElementById("HRMax").value;
-  $.ajax({
-      type: "POST",
-      url: "http://localhost:5000/home",
-      data: {"tracker_type":"HR", "value" : HRMin + ',' + HRMax},
-  });
-  document.getElementById("HRMin").value = "";
-  document.getElementById("HRMax").value = "";
-  renderchart()
-}
 </script>
 </html>
