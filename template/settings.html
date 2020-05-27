@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
   <title>My Journal</title>
 
   <script type="text/javascript">
@@ -22,10 +23,6 @@
         document.body.className = "";
       }
     }
-    function logout(){
-      localStorage.setItem('token',"false")
-      window.location.replace('/home')
-    }
   </script>
 </head>
 
@@ -35,15 +32,9 @@
 <body>
 {% endif %}
 
-  <div class = "tabBar">
-    <a  class="tabBar" href="/home"><div class="tabButton"> <b>Main</b> </div> </a>
-    <a  class="tabBar" href="/journal"> <div class="tabButton" ><b>Journal</b></div></a>
-    <a  class="tabBar" href="/todoList"> <div class="tabButton" ><b>Org.</b></div></a>
-    <a  class="tabBar" href="/lists"> <div class="tabButton" ><b>Lists</b></div></a>
-    <a  class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out" onclick="logout()"></i></a>
-    <a  class="tabBar" style="float:right; margin-right:5px;" href="/settings"> <i class="fa myGear">&#xf013;</i></a>
-    <div class="divider"></div>
-  </div>
+{% with page="settings" %}
+    {% include "header.html" %}
+{% endwith %}
 
   <div class="settingpage">
   <h4>Database management</h4>

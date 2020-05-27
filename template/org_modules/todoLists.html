@@ -1,0 +1,193 @@
+
+<div style="float:left;width:100%;margin-bottom:10px;margin-top:0px;">
+
+    <img src= "{{url_for('static', filename = 'page_todo.png')}}" style="float:right; vertical-align: top; margin-right: 3%;"  height="84px"  alt="page_todo">
+
+    <h1 style="margin-top:15px;margin-right:1px;width:20%;float:left;"> <font style="text-decoration: underline;"> Todo List </font></h1>
+
+    <h2 class="title" style="text-decoration: none; margin-right: 22%; margin-left: 22%; margin-top:5px; margin-bottom: 0px; float:left;">
+      {% if month > 1  %}
+        <a class= "arrow"  href="/org?date={{year}}-{{'%02d' % (month-1)}}-{{'%02d' % (day)}}">&#9668;</a>
+      {% else %}
+        <a class= "arrow"  href="/org?date={{year-1}}-{{'%02d' % (12)}}-{{'%02d' % (day)}}">&#9668;</a>
+      {% endif %}
+      {{year}}-{{'%02d' % (month)}}
+      {% if month < 12  %}
+        <a class= "arrow" href="/org?date={{year}}-{{'%02d' % (month+1)}}-{{'%02d' % (day)}}">&#9658;</a>
+      {% else %}
+        <a class= "arrow" href="/org?date={{year+1}}-{{'%02d' % (1)}}-{{'%02d' % (day)}}">&#9658;</a>
+      {% endif %}
+    </h2>
+    <div style="float:left; margin-top:10px;">
+      <table border="0" style="border-spacing: 0px;">
+        <tr>
+          {% set ns1 = namespace (daysOfTheWeek = "MTWTFSS")%}
+          {% set ns2 = namespace (daysOfTheWeekCap = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])%}
+          {% for i in range(0, numberOfDays) %}
+          {%if i+1 == day %}
+            <td class="DS DStoday"><font class="DSfontToday"><b>{{ns2.daysOfTheWeekCap[(i+monthsBeginning)%7]}}</b></font></td>
+          {%else%}
+            <td style=" min-width: 15px; text-align: center;"><a class="arrow" href="/org?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i+1)}}"><font class="DSfont">{{ns1.daysOfTheWeek[(i+monthsBeginning)%7]}}</font></a></td>
+          {%endif%}
+          {%endfor%}
+        </tr>
+        <tr style="margin-bottom:0px;">
+          {% for i in range(1, numberOfDays+1) %}
+            {% if i == day  %}
+              <td  class="DS DStoday DSbottom"> <font class="DSfontToday"><b>{{i}}</b></a></font></td>
+            {%else%}
+              <td class="DS DSbottom"><a class= "arrow" href="/org?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i)}}"><font class="DSfont"><b>{{i}}</b></font></a></td>
+            {%endif%}
+          {%endfor%}
+        </tr>
+      </table>
+  </div>
+  <div class="divider" style="width:94%; height:5px; margin-left: 3%; float:left;"></div>
+</div>
+
+<br>
+
+<div style = "width:100%;">
+<b class="titleNewTask">Add new task:</b> <input id="task", name ="{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}",  type="text" class="newTodo"><br>
+</div><br>
+
+<!--Today's tasks-->
+<div class = "todoTasks">
+<h2 class="title lightbg">&nbsp;Todays tasks: </h2>
+<div class ="todoTasksScorlable">
+<ul id = "todayList" class="todoList">
+  {%for todo, date, done in todayTodos%}
+    {%if done == 'false'%}
+      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
+        <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
+        <span class="task">{{todo}}</span>
+        <span style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o"></i> </span>
+        <span class="date" style="display: none;">{{date}}</span> &nbsp;
+      </li>
+    {%else%}
+      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
+        <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
+        <span class="task">{{todo}}</span>
+        <span style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o"></i> </span>
+        <span class="date" style="display: none;">{{date}}</span> &nbsp;
+      </li>
+    {%endif%}
+  {%endfor%}
+</ul>
+</div>
+</div>
+<!--Over due tasks-->
+<div class = "todoTasks">
+<h2 class="title" style="color:#ef3b2c">&nbsp;Over Due: </h2>
+<div class ="todoTasksScorlable">
+<ul class="todoList">
+  {%for todo, date, done in overDue%}
+    {%if done == 'false'%}
+      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
+          <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
+          <span class="task">{{todo}}</span>
+          <span style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o"></i> </span>
+          <span class="date">{{date}}</span> &nbsp;
+      </li>
+    {%else%}
+      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
+          <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
+          <span style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o"></i> </span>
+          <span class="task">{{todo}}</span> <span class="date">{{date}}</span>  &nbsp;
+      </li>
+    {%endif%}
+  {%endfor%}
+</ul>
+</div>
+</div>
+<!--next Month's tasks-->
+<div class = "todoTasks">
+   <h2  class="title lightbg">Next month at a glance</h2>
+   <div class ="todoTasksScorlable">
+   <ul class="todoList">
+     {%for thisMonthTask in thisMonthsEvents%}
+     <li style ="word-wrap: break-word; width:95%; white-space: normal;">
+       <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
+       <span class="task">{{thisMonthTask[0]}}</span>
+       <span style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o"></i> </span>
+       <span class="date">{{thisMonthTask[1]}}</span> &nbsp;
+     </li>
+     {%endfor%}
+  </ul>
+  </div>
+ </div>
+
+<script type="text/javascript">
+
+  function deleteTodo(item) {
+      var listItem = event.target.parentElement.parentElement;
+      console.log('deleting item', listItem.querySelector(".task").innerHTML, listItem.querySelector(".date").innerHTML)
+      $.ajax({ type: "POST",
+          url: "http://localhost:5000/org",
+          data: {"entry": "todo",
+                 "value": listItem.querySelector(".task").innerHTML,
+                 "date": listItem.querySelector(".date").innerHTML,
+                 "delete": '1'}
+      });
+      listItem.remove();
+    }
+
+   function boxchange(event) {
+      var listItem = event.target.parentElement;
+      $.ajax({ type: "POST",
+          url: "http://localhost:5000/org",
+          data: {"entry": "todo",
+                 "value": listItem.querySelector(".task").innerHTML,
+                 "date": listItem.querySelector(".date").innerHTML,
+                 "done": listItem.querySelector("input").checked}
+      });
+    }
+
+
+    document.getElementById('task').addEventListener('keypress', function submitonEnter(event) {
+      if (event.keyCode == 13) {
+              //console.log(document.getElementById("task").value)
+              $.ajax({ type: "POST",
+                  url: "http://localhost:5000/org",
+                  data: {"entry": "todo",
+                         "value": document.getElementById("task").value,
+                         "date": document.getElementById("task").name,
+                         "done": 'false'}
+              });
+              // add the new element to the list!
+              var li = document.createElement("li");
+              li.setAttribute("style", "word-wrap: break-word; width:95%; white-space: normal;");
+              var input = document.createElement("input");
+              input.setAttribute('type', 'checkbox');
+              input.setAttribute('onchange', 'boxchange(event)');
+              input.setAttribute('style', 'margin-right:10px');
+              var span1 = document.createElement("span");
+              span1.setAttribute("class", "task");
+              span1.innerHTML= document.getElementById("task").value;
+
+              var span3 = document.createElement("span");
+              span3.setAttribute("class", "date");
+              span3.style.display = "none"
+              span3.innerHTML = document.getElementById("task").name;
+
+              li.appendChild(input);
+              li.appendChild(span1);
+              li.appendChild(span3);
+
+              var span2 = document.createElement("span");
+              span2.onclick = function () {deleteTodo(this);}
+              span2.style.float = "right";
+              span2.style.marginRight = "10px";
+
+              var i = document.createElement("i");
+              i.setAttribute('class',"fa fa-trash-o");
+              span2.appendChild(i);
+              li.innerHTML += "&nbsp";
+              li.appendChild(span2);
+              var ul = document.getElementById("todayList");
+              ul.appendChild(li)
+              // clear the text in the input line!
+              document.getElementById("task").value = "";
+          }
+      });
+</script>

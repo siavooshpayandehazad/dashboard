@@ -9,33 +9,27 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
   <script type="text/javascript">
     function submitEntry(){
       var newText = document.getElementById("dailyEntry").value;
       $.ajax({ type: "POST",
           url: "http://localhost:5000/journal",
-          data: {"log":newText, "date": document.getElementById("dailyEntry").name},
+          data: {"entry": "log", "value":newText, "date": document.getElementById("dailyEntry").name},
       });
       document.getElementById("todayslog").innerHTML = newText.replace(/\n/g, "<br>");;
     }
-
-    async function isLoggedIn () {
-      const token = localStorage.getItem('token')
-      if (!token) return false
-      return true
+    function validateForm() {
+      var fileName = document.forms["photoUploader"]["file"].value;
+      if (fileName == "") {
+        alert("Name must be filled out");
+        return false;
+      }
+      if(fileName.split(".")[1].toLowerCase()!=="jpg"){
+        alert("only jpg files are allowed");
+        return false;
+      }
     }
-
-    async function autoRedirect () {
-      const validLogin = await isLoggedIn()
-      if (!validLogin)
-        window.location.replace('/home')
-    }
-
-    function logout(){
-      localStorage.setItem('token',"false")
-      window.location.replace('/home')
-    }
-    autoRedirect();
   </script>
 </head>
 
@@ -45,15 +39,9 @@
   <body  class="journal" background="{{url_for('static', filename='journal_background.png') }}">
 {% endif %}
 
-  <div class = "tabBar">
-    <a  class="tabBar" href="/home"><div class="tabButton"> <b>Main</b> </div> </a>
-    <a  class="tabBar" href="/journal"> <div class="tabButton tbSelected"><b>Journal</b></div></a>
-    <a  class="tabBar" href="/todoList"> <div class="tabButton" ><b>Org.</b></div></a>
-    <a  class="tabBar" href="/lists"> <div class="tabButton" ><b>Lists</b></div></a>
-    <a  class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out" aria-hidden="true" onclick="logout()"></i></a>
-    <a  class="tabBar" style="float:right; margin-right:5px;" href="/settings"> <i class="fa myGear">&#xf013;</i></a>
-    <div class="divider"></div>
-  </div>
+{% with page="journal" %}
+    {% include "header.html" %}
+{% endwith %}
 
   <!-- daily entry -->
   <div class="dailyEntry">
@@ -119,15 +107,22 @@
     <div class="divider" style="width:96.5%; height:5px; float:left; margin-bottom:10px;"></div>
   </div>
 
-  <div  style="width:65%; height: 400px;float:left;">
+  <div  style="width:65%; min-height: 400px; float:left;">
     <div id= "todayslog" class="logText">
       {% autoescape false %}
       {{log}}
       {% endautoescape %}
     </div>
-
+    <hr>
+    <div  style="width:350px; background-color: white; margin-top: 10px; margin-bottom: 10px; padding: 10px 10px 10px 10px;border-radius:10px;">
+      Upload a photo:
+      <form  name="photoUploader" action = "http://localhost:5000/uploader" method = "POST" enctype = "multipart/form-data" style="margin-top:5px;" onsubmit="return validateForm()">
+          <input type = "file" name = "file" />
+          <input type="text" name="date" value = "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" style ="display:none;">
+          <input type = "submit" style="float:right;" value="Upload" />
+      </form>
+    </div>
     {%if todayPhotos|length >0%}
-      </br>
       <div style="margin-bottom:10px;">
         <hr>
         <h2 class="photos">   photos: </h2>

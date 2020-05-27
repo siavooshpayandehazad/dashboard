@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+<head>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+  input[type='checkbox']:checked + span{
+    text-decoration:line-through;
+  }
+  </style>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+ <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+ <title>My Journal</title>
+</head>
+
+{%if pageTheme=="Dark"%}
+  <body class="featured">
+{% else %}
+  <body>
+{% endif %}
+
+{% with page="org" %}
+    {% include "header.html" %}
+{% endwith %}
+
+{% with month = month, year = year, day = day,
+        numberOfDays = numberOfDays, monthsBeginning = monthsBeginning,
+        todayTodos = todayTodos, overDue = overDue,
+        thisMonthsEvents = thisMonthsEvents %}
+    {% include "org_modules/todoLists.html" %}
+{% endwith %}
+
+<div class="divider"></div>
+
+{% with ChartMonthDays = ChartMonthDays,
+        ChartDoneTasks = ChartDoneTasks,
+        ChartthisMonthTasks = ChartthisMonthTasks %}
+    {% include "org_modules/scrumBoard.html" %}
+{% endwith %}
+
+<div class="divider"></div>
+
+</body>
+
+
+
+</html>

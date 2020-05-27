@@ -1,0 +1,335 @@
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
+<div style="width:100%; margin-bottom:20px; float:left;">
+  <!-- new scrum card gen -->
+  <div style="width:100%; margin-bottom:10px;float:left;">
+    <img src= "{{url_for('static', filename = 'todo_scrum.png')}}" style="float:right; vertical-align: top; height: 120px;margin-right:1.2%;" alt="page_todo">
+    <h1 style="margin-top:15px;margin-right:1px;width:60%;float:left;"> <font style="text-decoration: underline;"> Projects Scrum Board </font></h1>
+      <div class="NewScrumCardContainer">
+        &nbsp;<b> define new task: </b>&nbsp;
+        &nbsp; Project name: <input id="projInput", type="text",  style="width:10%; outline:None;"  value=" ">
+        &nbsp; Task name: <input id="taskInput", type="text", style="width:25%; outline:None;"  value=" ">
+        &nbsp; Proirity:
+        <select id="priorityInput" >
+          <option value="1">1 (high)</option>
+          <option value="2">2 (med)</option>
+          <option value="3">3 (low)</option>
+        </select>
+        &nbsp;&nbsp;<buton onclick="makeNewCard()"><font size="5" style="color:green"><b>+</b></font> </buton>
+      </div>
+  </div>
+  <!--Backlog-->
+  <div class="ScrumContainer">
+     <h2  class="title lightbg">Backlog</h2>
+     <div class="ScrumContainerScrollable" id = "backlogList" ondrop="drop(event, this)" ondragover="allowDrop(event)">
+       {%for item in Backlog%}
+        {%if item[2]=="1"%}
+          <div class = "ScrumCard" id="{{'backlog_'+(Backlog.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #08519c; background-color:#9ecae1;" draggable="true" ondragstart="drag(event)">
+        {%elif item[2]=="2"%}
+          <div class = "ScrumCard" id="{{'backlog_'+(Backlog.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #4292c6; background-color:#c6dbef;" draggable="true" ondragstart="drag(event)">
+        {%else%}
+          <div class = "ScrumCard" id="{{'backlog_'+(Backlog.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #9ecae1; background-color:#deebf7;" draggable="true" ondragstart="drag(event)">
+        {%endif%}
+             &nbsp;<b><font id="projectName" size="2">{{item[0]}}</font></b><br>
+             <div style="width:90%; margin-left:5%;"><font id="taskName" size="3">{{item[1]}}</font></div>
+             <div class= "scrumCardDivider" style="background-color: #4292c6;"></div>
+             <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive"></i></span>
+             <span class = "scrumSpan" onclick="deleteCard(event)"><i class="fa fa-trash-o"></i></span>
+        </div>
+     {%endfor%}
+   </div>
+  </div>
+  <!--Todo-->
+  <div class="ScrumContainer">
+     <h2  class="title lightbg">ToDo</h2>
+     <div class="ScrumContainerScrollable" id = "todoList" ondrop="drop(event, this)" ondragover="allowDrop(event)">
+       {%for item in ScrumTodo%}
+        {%if item[2]=="1"%}
+          <div class = "ScrumCard" id="{{'todo_'+(ScrumTodo.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #6a51a3; background-color:#bcbddc;" draggable="true" ondragstart="drag(event)">
+        {%elif item[2]=="2"%}
+          <div class = "ScrumCard" id="{{'todo_'+(ScrumTodo.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #9e9ac8; background-color:#dadaeb;" draggable="true" ondragstart="drag(event)">
+        {%else%}
+          <div class = "ScrumCard" id="{{'todo_'+(ScrumTodo.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #bcbddc; background-color:#efedf5;" draggable="true" ondragstart="drag(event)">
+        {%endif%}
+             &nbsp;<b><font id="projectName" size="2">{{item[0]}}</font></b><br>
+             <div style="width:90%; margin-left:5%;"><font id="taskName" size="3">{{item[1]}}</font></div>
+             <div class= "scrumCardDivider" style="background-color: #6a51a3;"></div>
+             <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive"></i></span>
+             <span class = "scrumSpan" onclick="deleteCard(event)"><i class="fa fa-trash-o"></i></span>
+        </div>
+     {%endfor%}
+   </div>
+  </div>
+  <!--In progress-->
+  <div class="ScrumContainer">
+     <h2  class="title lightbg">In progress</h2>
+     <div class="ScrumContainerScrollable" ondrop="drop(event, this)" ondragover="allowDrop(event)">
+       {%for item in inProgress%}
+          {%if item[2]=="1"%}
+           <div class = "ScrumCard" id="{{'in progress_'+(inProgress.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #ec7014; background-color:#fee391;" draggable="true" ondragstart="drag(event)">
+          {%elif item[2]=="2"%}
+           <div class = "ScrumCard" id="{{'in progress_'+(inProgress.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #fe9929; background-color:#fff7bc;" draggable="true" ondragstart="drag(event)">
+          {%else%}
+           <div class = "ScrumCard" id="{{'in progress_'+(inProgress.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #fee391; background-color:#ffffe5;" draggable="true" ondragstart="drag(event)">
+          {%endif%}
+           &nbsp;<b><font id="projectName" size="2">{{item[0]}}</font></b><br>
+           <div style="width:90%; margin-left:5%;"><font id="taskName" size="3">{{item[1]}}</font></div>
+           <div class = "scrumCardDivider" style="background-color: #fe9929;"></div>
+           <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive"></i></span>
+           <span class = "scrumSpan" onclick="deleteCard(event)"><i class="fa fa-trash-o"></i></span>
+        </div>
+     {%endfor%}
+   </div>
+  </div>
+  <!--Done-->
+  <div class="ScrumContainer">
+    <h2  class="title lightbg">Done</h2>
+      <div class="ScrumContainerScrollable" ondrop="drop(event, this)" ondragover="allowDrop(event)">
+        {%for item in done%}
+            {%if item[2]=="1"%}
+              <div class = "ScrumCard" id="{{'done_'+(done.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #238b45; background-color:#c7e9c0;" draggable="true" ondragstart="drag(event)">
+            {%elif item[2]=="2"%}
+              <div class = "ScrumCard" id="{{'done_'+(done.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #74c476; background-color:#e5f5e0;" draggable="true" ondragstart="drag(event)">
+            {%else%}
+              <div class = "ScrumCard" id="{{'done_'+(done.index(item)|string)+'_'+(item[2]|string)}}" style="border-color: #c7e9c0; background-color:#f7fcf5;" draggable="true" ondragstart="drag(event)">
+            {%endif%}
+              &nbsp;<b><font id="projectName" size="2">{{item[0]}}</font></b><br>
+              <div style="width:90%; margin-left:5%;"><font id="taskName" size="3">{{item[1]}}</font></div>
+              <div class= "scrumCardDivider" style="background-color: #74c476;"></div>
+              <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive"></i></span>
+              <span class = "scrumSpan"  onclick="deleteCard(event)"><i class="fa fa-trash-o"></i></span>
+            </div>
+          {%endfor%}
+     </div>
+  </div>
+
+  <div style="width:98%;min-height:300px;background-color:white;margin-left:1%;border-radius:10px;text-align:center;float:left;">
+    <h2  class="title lightbg">Items done this month</h2>
+    <div style="float:left; width:90%; margin-left:5%">
+      <canvas  height="60" id="tasksDoneThisMonth"></canvas>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+    function deleteCard(event){
+      var cardProj = event.target.parentElement.parentElement.querySelector("#projectName").innerHTML;
+      var cardTask =  event.target.parentElement.parentElement.querySelector("#taskName").innerHTML;
+      var currentList = event.target.parentElement.parentElement.id.split("_")[0];
+      $.ajax({ type: "POST",
+          url: "http://localhost:5000/org",
+          data: {"cardProj": cardProj, "cardTask": cardTask,
+                 "delete": "1" , "currentList": currentList}
+      });
+      event.target.parentElement.parentElement.remove();
+    }
+
+    function makeNewCard(){
+        var project = document.getElementById("projInput").value;
+        var task = document.getElementById("taskInput").value;
+        var priority = document.getElementById("priorityInput").value;
+        console.log(project, task);
+        $.ajax({ type: "POST",
+            url: "http://localhost:5000/org",
+            data: {"cardProj": project, "cardTask": task, "priority": priority}
+        });
+
+        var backlogList = document.getElementById("backlogList")
+
+        var cardDiv = document.createElement("div");
+        cardDiv.innerHTML += "&nbsp";
+        var b = document.createElement("b");
+        var projFont = document.createElement("font");
+        projFont.setAttribute('id', 'projectName');
+        projFont.setAttribute('size', '2');
+        projFont.innerHTML = project
+        b.appendChild(projFont);
+        cardDiv.appendChild(b);
+        cardDiv.innerHTML += "<br>";
+
+        cardDiv.setAttribute('class', "ScrumCard");
+        cardDiv.setAttribute('id', "todo_"+backlogList.childElementCount+"_"+priority);
+        cardDiv.setAttribute('draggable', "true");
+        cardDiv.setAttribute('ondragstart', "drag(event)");
+
+        if (priority=="1"){
+          cardDiv.setAttribute('style', "border-color: #08519c; background-color:#9ecae1;");
+        }else if (priority=="2") {
+          cardDiv.setAttribute('style', "border-color: #4292c6; background-color:#c6dbef;");
+        }else if (priority=="3") {
+          cardDiv.setAttribute('style', "border-color: #9ecae1; background-color:#deebf7;");
+        }
+        var textDiv = document.createElement("div");
+        textDiv.setAttribute('style', "width:90%; margin-left:5%;")
+        var textFont = document.createElement("font");
+        textFont.setAttribute('id',"taskName");
+        textFont.setAttribute('size',"3");
+        textFont.innerHTML=task;
+        textDiv.appendChild(textFont);
+
+        var divider = document.createElement("div");
+        divider.setAttribute('class',"scrumCardDivider")
+        divider.setAttribute('style',"background-color: #4292c6;")
+
+        var archiveSpan = document.createElement("span");
+        archiveSpan.setAttribute('class', 'scrumSpan');
+        archiveSpan.setAttribute('onclick', 'archivecard(event)');
+        var archivei = document.createElement("i");
+        archivei.setAttribute('class', 'fa fa-archive');
+        archiveSpan.appendChild(archivei);
+
+        var delSpan = document.createElement("span");
+        delSpan.setAttribute('class', 'scrumSpan');
+        delSpan.setAttribute('onclick', 'archivecard(event)');
+        var deli = document.createElement("i");
+        deli.setAttribute('class', 'fa fa-trash-o');
+        delSpan.appendChild(deli);
+
+        cardDiv.appendChild(textDiv);
+        cardDiv.appendChild(divider);
+        cardDiv.appendChild(archiveSpan);
+        cardDiv.appendChild(delSpan);
+
+        backlogList.appendChild(cardDiv);
+
+        document.getElementById("projInput").value = "";
+        document.getElementById("taskInput").value = "";
+      }
+
+      function archivecard(event){
+        // this function archives a scrum card! once a card is archvie, the user can
+        // not see it any more. but the data is in the database!
+          var cardProj = event.target.parentElement.parentElement.querySelector("#projectName").innerHTML;
+          var cardTask = event.target.parentElement.parentElement.querySelector("#taskName").innerHTML;
+          var currentList = event.target.parentElement.parentElement.id.split("_")[0];
+          //console.log(cardProj,cardTask, currentList)
+          $.ajax({ type: "POST",
+              url: "http://localhost:5000/org",
+              data: {"cardProj": cardProj, "cardTask": cardTask,
+                     "currentList": currentList , "destList": "archive"}
+          });
+          event.target.parentElement.parentElement.remove();
+        }
+
+        function allowDrop(ev) {
+          ev.preventDefault();
+        }
+
+        function drag(ev) {
+          ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev, target) {
+          ev.preventDefault();
+          var data = ev.dataTransfer.getData("text");
+          var currentList = ev.dataTransfer.getData("text").split("_")[0];
+          var priority = ev.dataTransfer.getData("text").split("_")[2];
+          var destList = ev.target.parentElement.querySelector(".title").innerHTML.toLowerCase();
+          var cardProj = document.getElementById(data).querySelector("#projectName").innerHTML;
+          var cardTask = document.getElementById(data).querySelector("#taskName").innerHTML;
+
+          ev.target.appendChild(document.getElementById(data));
+
+          $.ajax({ type: "POST",
+              url: "http://localhost:5000/org",
+              data: {"cardProj": cardProj, "cardTask": cardTask, "priority": priority,
+                     "currentList": currentList , "destList": destList}
+          });
+          // here im fixing the color of the moved card!
+          if(destList == "backlog"){
+            document.getElementById(data).querySelector(".scrumCardDivider").style.backgroundColor = "#4292c6";
+            if(priority == "1"){
+              document.getElementById(data).style.backgroundColor = "#9ecae1";
+              document.getElementById(data).style.borderColor = "#08519c";
+            }else if (priority=="2") {
+              document.getElementById(data).style.backgroundColor = "#c6dbef";
+              document.getElementById(data).style.borderColor = "#4292c6";
+            }else if (priority=="3") {
+              document.getElementById(data).style.backgroundColor = "#deebf7";
+              document.getElementById(data).style.borderColor = "#9ecae1";
+            }
+           }else if(destList == "todo"){
+              document.getElementById(data).querySelector(".scrumCardDivider").style.backgroundColor = "#6a51a3";
+              if(priority == "1"){
+                document.getElementById(data).style.backgroundColor = "#bcbddc";
+                document.getElementById(data).style.borderColor = "#6a51a3";
+              }else if (priority=="2") {
+                document.getElementById(data).style.backgroundColor = "#dadaeb";
+                document.getElementById(data).style.borderColor = "#9e9ac8";
+              }else if (priority=="3") {
+                document.getElementById(data).style.backgroundColor = "#efedf5";
+                document.getElementById(data).style.borderColor = "#bcbddc";
+              }
+          }else if (destList == "in progress") {
+            document.getElementById(data).querySelector(".scrumCardDivider").style.backgroundColor = "#fe9929";
+            if(priority == "1"){
+              document.getElementById(data).style.backgroundColor = "#fee391";
+              document.getElementById(data).style.borderColor = "#ec7014";
+            }else if (priority=="2") {
+              document.getElementById(data).style.backgroundColor = "#fff7bc";
+              document.getElementById(data).style.borderColor = "#fe9929";
+            }else if (priority=="3") {
+              document.getElementById(data).style.backgroundColor = "#ffffe5";
+              document.getElementById(data).style.borderColor = "#fee391";
+            }
+          }else if (destList == "done") {
+            document.getElementById(data).querySelector(".scrumCardDivider").style.backgroundColor = "#74c476";
+            if(priority == "1"){
+              document.getElementById(data).style.backgroundColor = "#c7e9c0";
+              document.getElementById(data).style.borderColor = "#238b45";
+            }else if (priority=="2") {
+              document.getElementById(data).style.backgroundColor = "#e5f5e0";
+              document.getElementById(data).style.borderColor = "#74c476";
+            }else if (priority=="3") {
+              document.getElementById(data).style.backgroundColor = "#f7fcf5";
+              document.getElementById(data).style.borderColor = "#c7e9c0";
+            }
+          }
+          event.target.parentElement.style.background = "";
+          event.target.style.background = "";
+        }
+
+        document.addEventListener("dragenter", function(event) {
+          // highlight potential drop target when the draggable element enters it
+          if (event.target.className == "ScrumContainerScrollable") {
+            event.target.parentElement.style.background = "#ffffe5";
+            event.target.style.background = "#ffffe5";
+          }
+        }, false);
+
+        document.addEventListener("dragleave", function(event) {
+          // reset background of potential drop target when the draggable element leaves it
+          if (event.target.className == "ScrumContainerScrollable") {
+            event.target.parentElement.style.background = "";
+            event.target.style.background = "";
+          }
+        }, false);
+
+
+        var myLineChart, c = 0, label = 0, randomnum, interval;
+
+        function renderchart() {
+           var ctx = document.getElementById("tasksDoneThisMonth").getContext('2d');
+           myLineChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                 labels: {{ChartMonthDays|safe}},
+                 datasets: [{
+                    label: '# of tasks done',
+                    data: {{ChartDoneTasks|safe}},
+                    backgroundColor: ['rgba(128,205,193, 0.3)'],
+                    borderColor: ['rgba(53,151,143, 1)'],
+                    borderWidth: 2
+                 },
+                 {  label: '# of tasks to be done',
+                    data: {{ChartthisMonthTasks|safe}},
+                    backgroundColor: ['rgba(256,256,256, 0.3)'],
+                    borderColor: ['rgba(251,106,74, 1)'],
+                    borderWidth: 2
+                 }]
+              },
+              options: { scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
+           });
+        }
+    window.onload = renderchart;
+  </script>

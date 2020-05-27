@@ -2,3 +2,5 @@ flask-restful
 requests
 flask>=1.0.0
 pytest
+python-dateutil
+werkzeug==0.16.1

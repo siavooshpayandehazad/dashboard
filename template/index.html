@@ -1,70 +1,13 @@
 <!DOCTYPE html>
 
-
 <html lang="en">
 <head>
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
 
- <script type="text/javascript">
-  function cmd(activity, date, Theme, element){
-     console.log(Theme);
-     $.ajax({
-         type: "POST",
-         url: "http://localhost:5000/home",
-         data: {"activity":activity,"date":date},
-     });
-     if(Theme == "Dark"){
-       element.style.backgroundColor = "#525252";
-     }else{
-       element.style.backgroundColor = "#3288bd";
-     }
-  }
-
-  function count(){
-     console.log("counter: count up");
-     $.ajax({
-         type: "POST",
-         url: "http://localhost:5000/home",
-         data: {"counter":"countup"},
-     });
-     var div = document.getElementById("counterDiv")
-     div.innerHTML = parseInt(div.innerHTML, 10)+1;
-  }
-
-  function reset(){
-     console.log("counter: reset");
-     $.ajax({
-         type: "POST",
-         url: "http://localhost:5000/home",
-         data: {"counter":"reset"},
-     });
-     var div = document.getElementById("counterDiv")
-     div.innerHTML= 0;
-  }
-
-  function moodSelect(mood, date){
-       // console.log(document.getElementById(date))
-       $.ajax({
-           type: "POST",
-           url: "http://localhost:5000/home",
-           data: {"mood":mood,"date":date},
-         });
-         if (mood=="great") {
-           document.getElementById(date).style.backgroundColor  = "#1d91c0";
-         }else if (mood=="good") {
-           document.getElementById(date).style.backgroundColor  = "#80cdc1";
-         }else if (mood=="ok") {
-           document.getElementById(date).style.backgroundColor  = "#ccece6";
-         }else if (mood=="bad") {
-           document.getElementById(date).style.backgroundColor  = "#fddbc7";
-         }else{
-           document.getElementById(date).style.backgroundColor  = "#f4a582";
-         }
-       }
- </script>
  <title>My Journal</title>
 </head>
 
@@ -113,33 +56,12 @@
     localStorage.setItem('token',"false");
   }
 
-  function mouseOverTracker(item){
-    var rowLabel = $(item).parent().children()[0];
-    var colNum = $(item).parent().children().index($(item));
-    var colLabel = $(item).parent().parent().children()[0].cells[colNum]
-    rowLabel.style.borderColor = "#fdbf6f";
-    colLabel.style.borderColor = "#fdbf6f";
-  }
-
-  function mouseOutTracker(item){
-    var rowLabel = $(item).parent().children()[0];
-    var colNum = $(item).parent().children().index($(item));
-    var colLabel = $(item).parent().parent().children()[0].cells[colNum]
-    rowLabel.style.borderColor = "white";
-    colLabel.style.borderColor = "white";
-  }
   checkLoggedIn();
 </script>
 
-  <div class = "tabBar">
-    <a  class="tabBar" href="/home"><div class="tabButton tbSelected"> <b>Main</b> </div> </a>
-    <a  class="tabBar" href="/journal"> <div class="tabButton" ><b>Journal</b></div></a>
-    <a  class="tabBar" href="/todoList"> <div class="tabButton" ><b>Org.</b></div></a>
-    <a  class="tabBar" href="/lists"> <div class="tabButton" ><b>Lists</b></div></a>
-    <a  class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out" aria-hidden="true" onclick="logout()"></i></a>
-    <a  class="tabBar" style="float:right; margin-right:5px;" href="/settings"> <i class="fa myGear">&#xf013;</i></a>
-    <div class="divider"></div>
-  </div>
+  {% with page="index" %}
+    {% include "header.html" %}
+  {% endwith %}
 
   <div>
     <!-- Header! -->
@@ -157,9 +79,6 @@
     {% endif %}
     </h1>
 
-
-    <!--TODO: add some other functionality!-->
-
     <div style="width:120px;float:left; margin-right:10px;margin-top:5px;">
 
       <div style="float:right;">
@@ -172,110 +91,17 @@
       <!-- weather widget end -->
       </div>
 
+    {% with counterValue = counterValue %}
+        {% include "trackerModules/counter.html" %}
+    {% endwith %}
 
-      <div style="margin-left: 10px;margin-top: 30px;float:left; min-width:100px; position: relative;">
-        <div onclick= "count()" style="position: absolute; top: 12%; left: 35%; border-radius: 10px; width:23px; height:23px;"></div>
-        <div onclick= "reset()" style="position: absolute; top: 50%; left: 60%; border-radius: 10px; width:23px; height:23px;"></div>
-        <div id= "counterDiv" style="position: absolute; top: 43%; left: 17%; transform: rotate(17deg); text-align: center;
-                                     background-color: white;  width:35px; height:18px;">
-          {{counterValue}}
-        </div>
-        <img src= "{{url_for('static', filename = 'tally-counter.png')}}" float="right" width="100" alt="page1_Large">
-      </div>
-    </div>
+    {% with days = days, highlight=highlight,today=today, activityList=activityList, monthsActivitiesPlanned=monthsActivitiesPlanned%}
+        {% include "trackerModules/activityTracker.html" %}
+    {% endwith %}
 
-    <!-- Activity Tracker-->
-    <div class = "activityTracker">
-        <h2  class="title lightbg">Acitivity Tracker</h2>
-          <table border="0" style="margin-bottom:10px; margin-right:10px; margin-left:10px;">
-            <tr><td></td>
-            {% for day in days %}
-              {% if day != None  %}
-                {% if (day == today) and highlight%}
-                  <td  class="todayMarker">{{day}}</td>
-                {%else%}
-                    {% if days.index(day)%7 == 5 or days.index(day)%7 == 6  %}
-                      <td class="trackerHeader" bgColor="#d9d9d9">{{day}}</td>
-                    {%else%}
-                      <td class="trackerHeader" bgColor=white>{{day}}</td>
-                    {%endif%}
-                {%endif%}
-              {%endif%}
-            {%endfor%}
-            </tr>
-            {% for activity in activityList%}
-              <tr><td class="trackerLabel"><b><font style="font-family:Courier New;">{{activity}}</font></b></td>
-                {% for day in days %}
-                  {% if day != None  %}
-                    {% set ns = namespace (found = 0)%}
-                    {%for item in activities%}
-                        {%if (item[1].split("-")[2]|int == day) and (item[0] == activity) %}
-                            {%set ns.found = 1 %}
-                        {%endif%}
-                    {%endfor%}
-                    {%if ns.found== 1 %}
-                      <td class="tracker found" style="min-width:17px", onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
-                    {% else %}
-                      <td class="tracker" style="min-width:17px" onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
-                    {% endif %}
-                  {%endif%}
-              {%endfor%}
-              </tr>
-            {%endfor%}
-          </table>
-        </div>
-      </div>
-
-
-    <!-- Mood Tracker-->
-    <div class="moodTracker">
-      <h2  class="title lightbg">Mood Tracker</h2>
-      <table style="width:50%; margin-left: 10px; float:left;  margin-bottom: 10px;">
-        <tr> <th class="moodTracker"> M </th> <th class="moodTracker"> T </th>
-             <th class="moodTracker"> W </th> <th class="moodTracker"> T </th>
-             <th class="moodTracker"> F </th> <th class="moodTracker"> S </th>
-             <th class="moodTracker"> S </th>
-        </tr>
-        {% for day in days %}
-          {% if day != None  %}
-            {% if days.index(day)%7 == 0  %}
-              </tr> <tr>
-            {% endif %}
-            {% set ns1 = namespace (found = 0)%}
-            {% for item in moods%}
-              {%if item[1].split("-")[2]|int == day %}
-                    {%set ns1.found = 1 %}
-                    {% if item[0] == 'awful' %}
-                      <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#f4a582">{{ day }}</td>
-                    {% elif item[0] == 'bad' %}
-                      <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#fddbc7">{{ day }}</td>
-                    {% elif item[0] == 'ok' %}
-                      <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#ccece6">{{ day }}</td>
-                    {% elif item[0] == 'good' %}
-                      <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#80cdc1">{{ day }}</td>
-                    {% elif item[0] == 'great' %}
-                      <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#1d91c0">{{ day }}</td>
-                    {% endif %}
-              {% endif %}
-            {% endfor %}
-            {%if ns1.found== 0 %}
-              <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="white">{{ day }}</td>
-            {% endif %}
-          {% else %}
-            <td>  </td>
-          {% endif %}
-        {% endfor %}
-        </tr>
-      </table>
-      <table style="width:20%;  margin-right: 10px; float:right; margin-top:22px;">
-        <tr> <td class="moodselector" bgcolor="#f4a582" onclick="return moodSelect('Awful', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td> Awful!  </td> </tr>
-        <tr> <td class="moodselector" bgcolor="#fddbc7" onclick="return moodSelect('bad', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Bad  </td> </tr>
-        <tr> <td class="moodselector" bgcolor="#ccece6" onclick="return moodSelect('ok', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> O.K.  </td> </tr>
-        <tr> <td class="moodselector" bgcolor="#80cdc1" onclick="return moodSelect('good', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Good  </td> </tr>
-        <tr> <td class="moodselector" bgcolor="#1d91c0" onclick="return moodSelect('great', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Great  </td> </tr>
-      </table>
-    </div>
-
+    {% with days = days, moods = moods, PageYear=PageYear, PageMonth=PageMonth, today=today %}
+        {% include "trackerModules/moodTracker.html" %}
+    {% endwith %}
 
 
     <div style="margin-left: 5px;float:left; min-width:130px;">
@@ -286,12 +112,176 @@
       {% endif %}
     </div>
 
-
-
-    <div style="width:100%; margin-left:5px; float:left; min-width:200px;">
-      <div class="divider" style="width:85%; height:4px; float:left; margin-left: 5%; margin-top: 18px;"></div>
+    <div style="width:100%; margin-left:5px;  margin-bottom: 10px; float:left; min-width:200px;">
+      <div class="divider" style="width:90%; height:4px; float:left; margin-left: 3.3%; margin-top: 18px;"></div>
       <img src= "{{url_for('static', filename = 'page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
     </div>
 
+    <div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
+      <div style="margin-top: 10px; margin-right: 20px; width: 220px; float:right" >
+        Add Work Hours: <input type="text" id="workHourVal" name="date" style="width: 50px; ">
+        <i class="fa fa-check" id="submitToGraph" onclick="submitWHours()"></i>
+      </div>
+      <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Work Hours Tracker</h2>
+      <div style="float:left; width:90%; margin-left:5%">
+        <canvas  height="100px" id="WHTracker"></canvas>
+      </div>
+    </div>
+
+    <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
+      <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
+      <img src= "{{url_for('static', filename = 'page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
+    </div>
+
+    <div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
+      <div style="margin-top: 10px; margin-right: 20px; width: 150px; float:right" >
+        Weight: <input type="text" id="weightVal" name="date" style="width: 50px; ">
+        <i class="fa fa-check" id="submitToGraph" onclick="submitWeight()"></i>
+      </div>
+      <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Weight Tracker</h2>
+      <div style="float:left; width:90%; margin-left:5%">
+        <canvas  height="100px" id="weigthTracker"></canvas>
+      </div>
+    </div>
+
+    <div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
+      <div style="margin-top: 10px; margin-right: 20px; width: 150px; float:right">
+        <i class="fa fa-check" id="submitToGraph" onclick="submitHR()" style="float:right;" onclick="submitHR()"></i>
+        <div style="float:left">
+          HR Min: <input type="text" id="HRMin" style="width: 50px;">
+        </div>
+        <div style="float:left">
+          HR Max: <input type="text" id="HRMax" style="width: 50px; ">
+        </div>
+
+      </div>
+      <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Heart Rate Tracker</h2>
+      <div style="float:left; width:90%; margin-left:5%">
+        <canvas  height="100px" id="HRTracker"></canvas>
+      </div>
+    </div>
 </body>
+
+<script>
+
+var myLineChart, c = 0, label = 0, randomnum, interval;
+
+
+function renderchart() {
+   var ctx = document.getElementById("HRTracker").getContext('2d');
+   myLineChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+         labels: {{ChartMonthDays|safe}},
+         datasets: [{
+            label: "HR Min",
+            data: {{HR_Min|safe}},
+            backgroundColor: ['rgba(0,0,0, 0)'],
+            borderColor: ['rgba(33,113,181, 1)'],
+            borderWidth: 2
+         }, {
+            label: "HR Max",
+            data: {{HR_Max|safe}},
+            backgroundColor: ['rgba(0,0,0, 0)'],
+            borderColor: ['rgba(252,78,42, 1)'],
+            borderWidth: 2
+         }]
+      },
+      options: { scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
+   });
+
+   var ctx = document.getElementById("weigthTracker").getContext('2d');
+   myLineChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+         labels: {{ChartMonthDays|safe}},
+         datasets: [{
+            label: "Weight",
+            data: {{monthsWeights|safe}},
+            backgroundColor: ['rgba(128,205,193, 0.3)'],
+            borderColor: ['rgba(53,151,143, 1)'],
+            borderWidth: 2,
+            spanGaps: true
+         }
+       ]
+      },
+      options: { scales: { yAxes: [{ ticks:{ suggestedMin: 60, beginAtZero: false }}]}}
+   });
+
+   var WH_BG_Colors = []
+   var WH_B_Colors = []
+   var monthsWorkHoursTemp = {{monthsWorkHours | safe}}
+   monthsWorkHoursTemp.forEach((item, i) => {
+     if(parseInt(item)<4){
+       WH_BG_Colors.push('rgba(252,146,114, 1)')
+       WH_B_Colors.push('rgba(203,24,29, 1)')
+     }else if(parseInt(item)<6){
+       WH_BG_Colors.push('rgba(254,196,79, 1)')
+       WH_B_Colors.push('rgba(236,112,20, 1)')
+     }else if(parseInt(item)>8){
+       WH_BG_Colors.push('rgba(128,205,193, 1)')
+       WH_B_Colors.push('rgba(53,151,143, 1)')
+     }else{
+      WH_BG_Colors.push('rgba(107,174,214, 1)')
+      WH_B_Colors.push('rgba(33,113,181, 1)')
+     }
+
+   });
+
+
+   var ctx = document.getElementById("WHTracker").getContext('2d');
+   myLineChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+         labels: {{ChartMonthDays|safe}},
+         datasets: [{
+            label: "Working Hours",
+            data: {{monthsWorkHours|safe}},
+            backgroundColor: WH_BG_Colors,
+            borderColor: WH_B_Colors,
+            borderWidth: 2,
+         }
+       ]
+      },
+      options: { scales: { yAxes: [{ticks:{suggestedMax: 10, beginAtZero: true }}]}}
+   });
+}
+
+window.onload = renderchart;
+
+function submitWHours(){
+  var worHours = document.getElementById("workHourVal").value;
+  $.ajax({
+      type: "POST",
+      url: "http://localhost:5000/home",
+      data: {"tracker_type":"WorkHours", "value": worHours},
+  });
+  document.getElementById("workHourVal").value = "";
+  renderchart()
+}
+
+function submitWeight(){
+  var weight = document.getElementById("weightVal").value;
+  $.ajax({
+      type: "POST",
+      url: "http://localhost:5000/home",
+      data: {"tracker_type":"weight", "value": weight},
+  });
+  document.getElementById("weightVal").value = "";
+  renderchart()
+}
+
+function submitHR(){
+  var HRMin = document.getElementById("HRMin").value;
+  var HRMax = document.getElementById("HRMax").value;
+  $.ajax({
+      type: "POST",
+      url: "http://localhost:5000/home",
+      data: {"tracker_type":"HR", "value" : HRMin + ',' + HRMax},
+  });
+  document.getElementById("HRMin").value = "";
+  document.getElementById("HRMax").value = "";
+  renderchart()
+}
+</script>
 </html>

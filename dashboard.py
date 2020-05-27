@@ -11,24 +11,27 @@ import sqlite3
 import datetime
 import sys, os
 from package import *
-from flask import Flask
+from flask import Flask, request, url_for, redirect
 from flask import send_from_directory
 from flask_restful import reqparse, abort, Api, Resource
 from flask import render_template, make_response
+from werkzeug import secure_filename
 import requests
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
 
 parser = reqparse.RequestParser()
-for item in ['activity', 'display', 'date', 'log', 'mood', 'todo', 'done',
+for item in ['tracker_type', 'value', 'display', 'date', 'done',
              'type', 'name', 'delete', 'cardProj', 'cardTask', 'currentList',
-             'destList', 'priority', 'Theme', 'counter', 'password']:
+             'destList', 'priority', 'Theme', 'counter', 'password', 'planner',
+             'entry', 'notebook', 'chapter']:
     parser.add_argument(item)
 
 conn, c = createDB("journal.db")
 backupDatabase(conn)
 generateDBTables(c)
+
 
 class dash(Resource):
     def get(self):
@@ -49,22 +52,27 @@ class dash(Resource):
         headers = {'Content-Type': 'text/html'}
         pageTitle = "DashBoard "
         titleDate = monthsOfTheYear[int(pageMonth)-1]+"-"+pageYear
-
+        numberOfDays = numberOfDaysInMonth(int(pageMonth), int(pageYear))
         # moodTrackerDays is a list that contains a bunch of Nones for the days of the week that are in the
         # previous month. this is used for the moodtracker in order to add the empty spaces in the beginning of the month.
         monthsBeginningWeekDay = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d').weekday()
-        moodTrackerDays = [None for i in range(0, monthsBeginningWeekDay)] + list(range(1, numberOfDaysInMonth(int(pageMonth), int(pageYear))+1))
+        moodTrackerDays = [None for i in range(0, monthsBeginningWeekDay)] + list(range(1, numberOfDays+1))
         # list of current month's moods and activities.
-        monthsActivities, monthsMoods = collectMonthsActivityAndMood(int(pageMonth), int(pageYear), c)
+        monthsActivities, monthsActivitiesPlanned, monthsMoods = collectMonthsData(int(pageMonth), int(pageYear), c)
         # highlights the current day in the activity tracker page!
         highlight = shouldHighlight(pageYear, pageMonth)
         counterValue = fetchSettingParamFromDB(c, "counter")
-
+        chartWeights = generateWeightChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        monthsWorkHours = generateWorkTrakcerChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        ChartMonthDays = [str(i) for i in range(1, numberOfDays+1)]
+        HR_Min, HR_Max = generateHRChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth=int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
-                                             activities = monthsActivities, activityList = activityList,
-                                             days=moodTrackerDays, highlight=highlight, pageTheme=pageTheme,
+                                             monthsWeights = chartWeights, ChartMonthDays = ChartMonthDays,
+                                             HR_Min = HR_Min, HR_Max = HR_Max, monthsWorkHours = monthsWorkHours,
+                                             activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
+                                             activityList = activityList, days=moodTrackerDays, highlight=highlight, pageTheme=pageTheme,
                                              counterValue=counterValue),200,headers)
 
     def post(self):
@@ -87,13 +95,22 @@ class dash(Resource):
             updateSettingParam(c, conn, "counter", counterVal)
 
         todaysDate = parseDate(args['date'])
-
-        if args['mood'] is not None:
-            return addTrackerItemToTable(args['mood'].lower(), "mood_name", moodList, "moodTracker", todaysDate, c, conn)
-        if args['activity'] is not None:
-            return addTrackerItemToTable(args['activity'].lower(), "activity_name", activityList, "activityTracker", todaysDate, c, conn)
-
+        if args['tracker_type'] == 'HR':
+            return addTrackerItemToTable(args['value'].split(","), "", [], "HRTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] == 'weight':
+            return addTrackerItemToTable(args['value'].lower(), "weight", [], "weightTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] == 'WorkHours':
+            return addTrackerItemToTable(args['value'].lower(), "work_hour", [], "workHourTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] == 'mood':
+            return addTrackerItemToTable(args['value'].lower(), "mood_name", moodList, "moodTracker", todaysDate, False, False, c, conn)
+        if args['tracker_type'] == "activity":
+            delete = True if args['delete']=="true" else False;
+            if args['planner'] == "True":
+                return addTrackerItemToTable(args['value'].lower(), "activity_name", activityList, "activityPlanner", todaysDate, delete, False, c, conn)
+            else:
+                return addTrackerItemToTable(args['value'].lower(), "activity_name", activityList, "activityTracker", todaysDate, delete, False, c, conn)
         return "Done", 200
+
 
 class journal(Resource):
     def get(self):
@@ -119,9 +136,9 @@ class journal(Resource):
 
     def post(self):
         args = parser.parse_args()
-        if args['log'] is not None:
+        if args['entry'] == 'log':
             todaysDate = parseDate(args['date'])
-            log = args['log'].lower()
+            log = args['value'].lower()
             c.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate, ))
             if len(c.fetchall()) > 0:
                 c.execute("""DELETE from logTracker where date = ?""", (todaysDate, ))
@@ -130,7 +147,8 @@ class journal(Resource):
             print(f"added log for date: {todaysDate}")
         return "Done", 200
 
-class todoList(Resource):
+
+class org(Resource):
     def get(self):
         pageTheme = fetchSettingParamFromDB(c, "Theme")
 
@@ -174,7 +192,7 @@ class todoList(Resource):
         else:
             thisMonthTasksNum = ChartDoneTasks[-1]
         ChartthisMonthTasks = [thisMonthTasksNum for i in range(numberOfDays)]
-        return make_response(render_template('todo.html', day = day, month = month, year=year, weekDay = daysOfTheWeek[weekDay],
+        return make_response(render_template('org.html', day = day, month = month, year=year, weekDay = daysOfTheWeek[weekDay],
                                              monthsBeginning=monthsBeginningWeekDay, todayTodos=todayTodos, overDue = all_due_events,
                                              numberOfDays=numberOfDays, thisMonthsEvents = thisMonthsEvents,
                                              Backlog = scrumBoardLists["backlog"], ScrumTodo=scrumBoardLists["todo"],
@@ -185,9 +203,9 @@ class todoList(Resource):
     def post(self):
         args = parser.parse_args()
 
-        if args['todo'] is not None:
+        if args['entry'] == 'todo':
             todaysDate = parseDate(args['date'])
-            todo = args['todo'].lower()
+            todo = args['value'].lower()
             c.execute("""DELETE from todoList where date = ? and task = ?""", (todaysDate, todo))
             if args['delete'] is None:
                 c.execute("""INSERT INTO todoList VALUES(?, ?, ?)""", (todo, todaysDate, args['done']))
@@ -210,17 +228,19 @@ class todoList(Resource):
                     tasks = c.fetchall()
                     if len(tasks)>0:
                         priority = tasks[0][-2]
+                    else:
+                        priority = args['priority']
 
                     if destList == "done":
-                        c.execute("""DELETE from scrumBoard where project = ? and task = ? and stage = ?""", (proj, task, currentList))
+                        c.execute("""DELETE from scrumBoard where project = ? and task = ? """, (proj, task))
                         c.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, destList, priority, str(datetime.date.today())))
                     elif destList == "archive":
-                        c.execute("""SELECT * FROM scrumBoard WHERE project = ? and task = ? and stage = ? """, (proj, task, currentList))
+                        c.execute("""SELECT * FROM scrumBoard WHERE project = ? and task = ? """, (proj, task))
                         date = c.fetchall()[0][-1]
-                        c.execute("""DELETE from scrumBoard where project = ? and task = ? and stage = ?""", (proj, task, currentList))
+                        c.execute("""DELETE from scrumBoard where project = ? and task = ? """, (proj, task))
                         c.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, destList, priority, str(date)))
                     else:
-                        c.execute("""DELETE from scrumBoard where project = ? and task = ? and stage = ?""", (proj, task, currentList))
+                        c.execute("""DELETE from scrumBoard where project = ? and task = ? """, (proj, task))
                         c.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, destList, priority, " "))
                     conn.commit()
             else:   # its a new card!
@@ -228,6 +248,7 @@ class todoList(Resource):
                 c.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, "backlog", priority, " "))
                 conn.commit()
         return "Done", 200
+
 
 class settings(Resource):
     def get(self):
@@ -247,7 +268,8 @@ class settings(Resource):
                 updateSettingParam(c, conn, "password", hashPassword(pass_dict["newpwd"]))
                 return "succeded", 200
             return "failed", 200
-        return "nothing here!", 200
+        return "Done", 200
+
 
 class lists(Resource):
     def get(self):
@@ -270,6 +292,21 @@ class lists(Resource):
             c.execute("""DELETE from lists where name = ? and type = ? """, (args["name"].lower(), args["type"]))
             c.execute("""INSERT INTO lists VALUES(?, ?, ?)""", (args["name"].lower(), args["done"], args["type"]))
         conn.commit()
+        return "Done", 200
+
+
+class notes(Resource):
+    def get(self):
+        headers = {'Content-Type': 'text/html'}
+        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        Notebooks = fetchNotebooks(c)
+        return make_response(render_template('notes.html', pageTheme=pageTheme, Notebooks=Notebooks),200,headers)
+
+    def post(self):
+        args = parser.parse_args()
+        c.execute("""DELETE from Notes where Notebook = ? and Chapter = ?  """, (args["notebook"], args["chapter"]))
+        c.execute("""INSERT into Notes  VALUES(?, ?, ?)  """, (args["notebook"], args["chapter"], args['entry']))
+        conn.commit()
         return "nothing here!", 200
 
 
@@ -277,11 +314,42 @@ class lists(Resource):
 def downloadDB():
     return send_from_directory(directory=".", filename="journal.db", as_attachment="True", attachment_filename="sqlite_database.db")
 
+
+@app.route('/uploader', methods = ['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        date  = request.form['date']
+        year = date.split("-")[0]
+        folderName = date
+        if not os.path.isdir("./static/photos/"+year):
+            os.mkdir("./static/photos/"+year)
+        if not os.path.isdir("./static/photos/"+year+"/"+folderName):
+            os.mkdir("./static/photos/"+year+"/"+folderName)
+        f = request.files['file']
+        f.save(os.path.join("./static/photos/"+year+"/"+folderName, secure_filename(f.filename)))
+        return redirect(url_for('journal'), 200)
+
+
+@app.route('/shutdown', methods = ['POST'])
+def shutdown_server():
+    if request.method == 'POST':
+        print("shutdown request recieved...")
+        shutdownReq = request.environ.get('werkzeug.server.shutdown')
+        if shutdownReq is None:
+            raise RuntimeError('Not running with the Werkzeug Server')
+        shutdownReq()
+        print("closing the DB connection...")
+        conn.close()
+        print("shutting down the server...")
+        return "server is shutting down..."
+
+
 api.add_resource(dash, '/home')
 api.add_resource(journal, '/journal')
-api.add_resource(todoList, '/todoList')
+api.add_resource(org, '/org')
 api.add_resource(settings, '/settings')
 api.add_resource(lists, '/lists')
+api.add_resource(notes, '/notes')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

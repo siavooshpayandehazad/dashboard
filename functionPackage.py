@@ -3,7 +3,7 @@ import sqlite3
 import hashlib, binascii
 from typing import Any
 import re
-
+from dateutil.relativedelta import relativedelta
 
 def getTodaysLogs(dbCursur, todaysDate):
     dbCursur.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate,))
@@ -36,32 +36,130 @@ def parseDate(dateVal):
         return dateVal
 
 
-def addTrackerItemToTable(item: str, itemName: str, itemList,
-                          tableName: str, date: str, dbCursur, dbConnection):
-    if item not in itemList:
+def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
+                          date: str, delete: bool, deleteDay: bool, dbCursur,
+                          dbConnection):
+    if itemList and (item not in itemList):
         return item+" not found", 400
     dbCursur.execute("SELECT * FROM "+tableName+" WHERE date = ?", (date,))
-    if itemName == "mood_name":     # trying to remove old mood from the table
+    if tableName == "workHourTracker":
+        fetchedData = dbCursur.fetchall()
+        if len(fetchedData)>0:
+            item = float(fetchedData[0][0])+float(item)
+    if tableName == "moodTracker":     # trying to remove old mood from the table
         for oldItem, todaysDate in dbCursur.fetchall():
             dbCursur.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, oldItem))
-    dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?)", (item, date))
+    else:
+        if deleteDay:
+            dbCursur.execute("DELETE from "+tableName+" where date = ?", (date,))
+        else:
+            dbCursur.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, item))
+    if not delete:
+        if tableName == "HRTracker":
+            dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?, ?)", (item[0], item[1], date))
+        else:
+            dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?)", (item, date))
+        print(f"{tableName}:: added {item} for date: {date}")
+    else:
+        print(f"{tableName}:: removed {item} from date: {date}")
     dbConnection.commit()
-    print(f"{tableName}:: added {item} for date: {date}")
     return "Done", 200
 
 
-def collectMonthsActivityAndMood(pageMonth: int, pageYear: int, dbCursur):
+def collectMonthsData(pageMonth: int, pageYear: int, dbCursur):
     activities = []
+    activitiesPlannes = []
     moods = []
-    dbCursur.execute("""SELECT * FROM activityTracker WHERE date >= ? and date < ?  """,
+    dbCursur.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
               (getMonthsBeginning(pageMonth, pageYear).date(),
                getMonthsEnd(pageMonth, pageYear).date(),))
     activities += dbCursur.fetchall()
-    dbCursur.execute("""SELECT * FROM moodTracker WHERE date >= ? and date < ?  """,
+    dbCursur.execute("""SELECT * FROM activityPlanner WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(),
+               getMonthsEnd(pageMonth, pageYear).date(),))
+    activitiesPlannes += dbCursur.fetchall()
+    dbCursur.execute("""SELECT * FROM moodTracker WHERE date >= ? and date <= ?  """,
               (getMonthsBeginning(pageMonth, pageYear).date(),
                getMonthsEnd(pageMonth, pageYear).date(),))
     moods += dbCursur.fetchall()
-    return activities, moods
+    return activities, activitiesPlannes, moods
+
+
+def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+    lastMonthsBeginning = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-relativedelta(months=+1)
+    lastMonthsEnd = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-datetime.timedelta(days=1)
+
+    lastMonthsWeights = []
+    dbCursur.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
+              (lastMonthsBeginning.date(), lastMonthsEnd.date(),))
+    lastMonthsWeights += dbCursur.fetchall()
+
+    monthsWeights = []
+    dbCursur.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
+    monthsWeights += dbCursur.fetchall()
+
+    start_weight = "nan"
+    if len(lastMonthsWeights)>0:
+        start_weight = float(sorted(lastMonthsWeights, key = lambda x: int(x[1].split("-")[2]))[0][0])
+    else:
+        if len(monthsWeights)>0:
+            start_weight = float(sorted(monthsWeights, key = lambda x: int(x[1].split("-")[2]))[0][0])
+
+
+    chartWeights=[]
+    for i in range(1, numberOfDays+1):
+        currentMonth = int(str(datetime.date.today()).split("-")[1])
+        weight = "nan"
+        for item in monthsWeights:
+            if int(item[1].split("-")[2]) == i:
+                weight = float(item[0])
+        # fix the beginning of the month by extending the first value to beginning
+        if (i == 1) and (weight == 'nan'):
+            weight = start_weight
+        # fix the end of the month by extending the last value to the end...
+        # do not do it for current month
+        if (i == numberOfDays) and (weight == 'nan') and currentMonth != pageMonth:
+            recordedDays = [x for x in chartWeights if (x != 'nan') ]
+            if len(recordedDays)>0:
+                weight = recordedDays[-1]
+        chartWeights.append(weight)
+    return chartWeights
+
+
+def generateHRChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+    monthsHR = []
+    dbCursur.execute("""SELECT * FROM HRTracker WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
+    monthsHR += dbCursur.fetchall()
+
+    chartHR_Min=[]
+    chartHR_Max=[]
+    for i in range(1, numberOfDays+1):
+        hr_min = "nan"
+        hr_max = "nan"
+        for item in monthsHR:
+            if int(item[2].split("-")[2]) == i:
+                hr_min, hr_max = float(item[0]), float(item[1])
+        chartHR_Min.append(hr_min)
+        chartHR_Max.append(hr_max)
+    return chartHR_Min, chartHR_Max
+
+def generateWorkTrakcerChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+    monthsWorkHours = []
+    dbCursur.execute("""SELECT * FROM workHourTracker WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
+    monthsWorkHours += dbCursur.fetchall()
+
+    workTrackerData=[]
+
+    for i in range(1, numberOfDays+1):
+        work_hour = "0"
+        for item in monthsWorkHours:
+            if int(item[1].split("-")[2]) == i:
+                work_hour = float(item[0])
+        workTrackerData.append(work_hour)
+    return workTrackerData
 
 
 def createDB(DBName):
@@ -71,7 +169,15 @@ def createDB(DBName):
 
 
 def generateDBTables(DBCursor):
+    DBCursor.execute("""CREATE TABLE if not exists HRTracker (
+             HR_Min text, HR_Max text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists weightTracker (
+             weight text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists workHourTracker (
+             work_hour text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists activityTracker (
+             activity_name text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists activityPlanner (
              activity_name text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists moodTracker (
              mood_name text, date text)""")
@@ -85,7 +191,8 @@ def generateDBTables(DBCursor):
              parameter text, value text)""")
     DBCursor.execute("""CREATE TABLE if not exists lists (
              name text, done text, type text)""")
-
+    DBCursor.execute("""CREATE TABLE if not exists Notes (
+             Notebook text, Chapter text, Content text)""")
 
 def sparateDayMonthYear(todaysDate:str) -> tuple:
     if not checkIfDateValid(todaysDate):
@@ -181,6 +288,16 @@ def fetchSettingParamFromDB(DBCursor, param):
         raise ValueError(f"parameter {param} is missing in DB!")
     return parameter
 
+
+def fetchNotebooks(dbCursur):
+    dbCursur.execute("""SELECT * FROM Notes """)
+    noteBooksContent = dbCursur.fetchall()
+    noteBooks = {}
+    for item in noteBooksContent:
+        chapters = noteBooks.get(item[0], {})
+        chapters[item[1]] = item[2]
+        noteBooks[item[0]] = chapters
+    return noteBooks
 
 def updateSettingParam(DBCursor, DBConnection, param, value):
     DBCursor.execute("""DELETE from settings where parameter = ? """, (param, ))

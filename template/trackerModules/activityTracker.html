@@ -1,0 +1,142 @@
+<script type="text/javascript">
+ function plannerToggle(item){
+    if(item.checked){
+      title = "Activity Planner"
+      color = "#ec7014"
+    }else{
+      title = "Activity Tracker"
+      color = "black"
+    }
+    titles = document.getElementsByClassName("title")
+    for (var i = 0; i < titles.length; i++) {
+      if (titles.item(i).innerHTML.includes("Activity")){
+        titles.item(i).innerHTML = title;
+        titles.item(i).style.color = color;
+      }
+    }
+
+  }
+
+  function cmd(activity, date, Theme, element){
+      planner = document.getElementById("planner");
+      erase = document.getElementById("eraserCheckbox").checked;
+      if(erase){
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:5000/home",
+            data: {tracker_type: "activity", "value":activity, "date":date, "planner": "True", "delete": erase},
+        });
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:5000/home",
+            data: {tracker_type: "activity", "value":activity, "date":date,"planner": "False", "delete": erase},
+        });
+        element.style.backgroundColor = "#FFFFFF";
+      }else{
+        if(planner.checked){
+          $.ajax({
+              type: "POST",
+              url: "http://localhost:5000/home",
+              data: {tracker_type: "activity", "value":activity, "date":date, "planner": "True", "delete": erase},
+          });
+          element.style.backgroundColor = "#FAD8AD";
+        }else{
+          $.ajax({
+              type: "POST",
+              url: "http://localhost:5000/home",
+              data: {tracker_type: "activity", "value":activity, "date":date,"planner": "False", "delete": erase},
+          });
+          if(Theme == "Dark"){
+            element.style.backgroundColor = "#525252";
+          }else{
+            element.style.backgroundColor = "#3288bd";
+          }
+        }
+      }
+   }
+   function eraserClicked(item){
+      eraser = document.getElementById("eraser")
+      if(item.checked){
+        eraser.style.color="#ec7014";
+      }else {
+        eraser.style.color="#525252"
+      }
+   }
+   function mouseOverTracker(item){
+     var rowLabel = $(item).parent().children()[0];
+     var colNum = $(item).parent().children().index($(item));
+     var colLabel = $(item).parent().parent().children()[0].cells[colNum]
+     rowLabel.style.borderColor = "#fdbf6f";
+     colLabel.style.borderColor = "#fdbf6f";
+   }
+
+   function mouseOutTracker(item){
+     var rowLabel = $(item).parent().children()[0];
+     var colNum = $(item).parent().children().index($(item));
+     var colLabel = $(item).parent().parent().children()[0].cells[colNum]
+     rowLabel.style.borderColor = "white";
+     colLabel.style.borderColor = "white";
+   }
+</script>
+
+<!-- Activity Tracker-->
+<div class = "activityTracker">
+    <label class="switch" style="float:left">
+      <input type="checkbox" id= "planner" onclick="plannerToggle(this)" unchecked>
+      <span class="slider round"></span>
+    </label>
+    <label style="float: left; margin-left: 5px; margin-top: 5px;">
+      <input type="checkbox" id= "eraserCheckbox" onclick="eraserClicked(this)" style="width:0; height:0; opacity:0" unchecked>
+      <i class="fa fa-eraser" id="eraser" style="font-size:20px;" ></i>
+    </label>
+
+
+
+    <h2  class="title lightbg">Activity Tracker</h2>
+      <table border="0" style="margin-bottom:10px; margin-right:10px; margin-left:10px;">
+        <tr><td></td>
+        {% for day in days %}
+          {% if day != None  %}
+            {% if (day == today) and highlight%}
+              <td  class="todayMarker">{{day}}</td>
+            {%else%}
+                {% if days.index(day)%7 == 5 or days.index(day)%7 == 6  %}
+                  <td class="trackerHeader" bgColor="#d9d9d9">{{day}}</td>
+                {%else%}
+                  <td class="trackerHeader" bgColor=white>{{day}}</td>
+                {%endif%}
+            {%endif%}
+          {%endif%}
+        {%endfor%}
+        </tr>
+        {% for activity in activityList%}
+          <tr><td class="trackerLabel"><b><font style="font-family:Courier New;">{{activity}}</font></b></td>
+            {% for day in days %}
+              {% if day != None  %}
+                {% set ns = namespace (found = 0, planned=0)%}
+                {%for item in activities%}
+                    {%if (item[1].split("-")[2]|int == day) and (item[0] == activity) %}
+                        {%set ns.found = 1 %}
+                    {%endif%}
+                {%endfor%}
+                {%for item in monthsActivitiesPlanned%}
+                    {%if (item[1].split("-")[2]|int == day) and (item[0] == activity) %}
+                        {%set ns.planned = 1 %}
+                    {%endif%}
+                {%endfor%}
+                {%if ns.found== 1 %}
+                  <td class="tracker found" style="min-width:17px", onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
+                {% else %}
+                  {%if ns.planned== 1 %}
+                    <td class="tracker planned" style="min-width:17px" onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
+                  {% else %}
+                    <td class="tracker" style="min-width:17px" onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
+                  {% endif %}
+                {% endif %}
+              {%endif%}
+          {%endfor%}
+          </tr>
+        {%endfor%}
+      </table>
+    </div>
+  </div>

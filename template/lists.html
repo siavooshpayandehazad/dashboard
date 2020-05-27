@@ -13,6 +13,7 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </head>
 
 {%if pageTheme=="Dark"%}
@@ -21,15 +22,9 @@
   <body  class="journal" background="{{url_for('static', filename='journal_background.png') }}">
 {% endif %}
 
-  <div class = "tabBar">
-    <a  class="tabBar" href="/home"><div class="tabButton"> <b>Main</b> </div> </a>
-    <a  class="tabBar" href="/journal"> <div class="tabButton"><b>Journal</b></div></a>
-    <a  class="tabBar" href="/todoList"> <div class="tabButton" ><b>Org.</b></div></a>
-    <a  class="tabBar" href="/lists"> <div class="tabButton tbSelected" ><b>Lists</b></div></a>
-    <a  class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out" aria-hidden="true" onclick="logout()"></i></a>
-    <a  class="tabBar" style="float:right; margin-right:5px;" href="/settings"> <i class="fa myGear">&#xf013;</i></a>
-    <div class="divider"></div>
-  </div>
+{% with page="lists" %}
+    {% include "header.html" %}
+{% endwith %}
 
   {%for listName, listContent, Type in [("Book List", readList, "book"),
                                         ("Anime List", animeList, "anime"),
@@ -131,9 +126,5 @@ function submitonEnter(event) {
           event.srcElement.value = "";
       }
   };
-  function logout(){
-    localStorage.setItem('token',"false")
-    window.location.replace('/home')
-  }
 </script>
 </html>

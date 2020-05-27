@@ -8,6 +8,7 @@
   --divider-clr: #4292c6;
   --tracker-hvr-clr: #deebf7;
   --tracker-fnd-hvr-clr: #3288bd;
+  --tracker-plnd-hvr-clr: #FAD8AD;
   --dailyentry-clr: #9ecae1;
   --bckgrnd-clr: #deebf7;
   --arrow-clr: #08306b;
@@ -40,6 +41,7 @@
   --divider-clr: #d9d9d9;
   --tracker-hvr-clr: #bdbdbd;
   --tracker-fnd-hvr-clr: #525252;
+  --tracker-plnd-hvr-clr: #FAD8AD;
   --dailyentry-clr: #bdbdbd;
   --bckgrnd-clr: black;
   --arrow-clr: white;
@@ -64,16 +66,13 @@
 body{
   background-color: var(--bckgrnd-clr);
 }
-
 body.journal{
   background-repeat:no-repeat; background-position: 120% 380px;
 }
-
 h1{
   font-family:Impact;
   color: var(--title-clr);
 }
-
 h2.title {
   text-align: center;
   margin-bottom:10px;
@@ -82,11 +81,9 @@ h2.title {
   font-family:Impact;
   color: var(--title-clr);
 }
-
 h2.lightbg {
   color: var(--title-lightbg-clr);
 }
-
 h2.journal{
   text-decoration: none;
   margin-left: 279px;
@@ -94,8 +91,6 @@ h2.journal{
   margin-bottom: 5px;
   float:left;
 }
-
-
 h2.photos {
   text-align: left;
   margin-bottom:10px;
@@ -104,7 +99,6 @@ h2.photos {
   font-family:Impact;
   color: var(--title-clr);
 }
-
 div.moodTracker {
   border-radius:12px;
   background-color:var(--moodtracker-bg-clr);
@@ -113,7 +107,6 @@ div.moodTracker {
   margin-bottom:10px;
   margin-left:10px;
 }
-
 div.activityTracker {
   border-radius:12px;
   background-color:var(--activityracker-bg-clr);
@@ -122,7 +115,6 @@ div.activityTracker {
   float:left;
   margin-left:10px;
 }
-
 div.dailyEntry{
  border-radius:12px;
  width:32%; height:280px;
@@ -130,16 +122,15 @@ div.dailyEntry{
  margin-right:20px;
  margin-top: 30px;
  background-color: var(--dailyentry-clr);
- }
+}
 div.logText{
   color: var(--logText-clr);
 }
- div.tabBar{
+div.tabBar{
    width:100%;
    height:30px;
- }
-
- div.tabButton{
+}
+div.tabButton{
    width: 70px; height: 25px;
    margin-left: 2px;
    margin-right: 2px;
@@ -149,16 +140,13 @@ div.logText{
    float:left;
    text-align: center;
    background-color: var(--tabbtn-clr);
- }
-
- div.tbSelected{
+}
+div.tbSelected{
    background-color: var(--tabbtn-slctd-clr);
- }
-
- div.tabButton:hover {
+}
+div.tabButton:hover {
    background-color: var(--tabbtn-hvr-clr);
- }
-
+}
 div.todoTasks{
   margin-left: 0.5%;
   margin-bottom: 10px;
@@ -170,12 +158,10 @@ div.todoTasks{
   background-color: white;
   border-radius: 6px;
 }
-
 div.todoTasksScorlable{
   overflow-y: scroll;
   height: 300px;
 }
-
 div.ScrumContainerScrollable{
   width:97%;
   height: 350px;
@@ -185,7 +171,6 @@ div.ScrumContainerScrollable{
   border-radius: 20px;
   float: left; margin-left:1%;
 }
-
 div.ScrumContainer{
   width:23.75%;
   min-height: 400px;
@@ -194,7 +179,6 @@ div.ScrumContainer{
   border-radius: 5px;
   float: left; margin-left:1%;
 }
-
 div.ScrumCard{
   width:95%;
   border: solid black 3px;
@@ -204,7 +188,6 @@ div.ScrumCard{
   margin-bottom:5px;
   margin-top:7px;
 }
-
 div.NewScrumCardContainer{
   margin-left:10%;
   background-color: white;
@@ -219,80 +202,66 @@ div.scrumCardDivider{
   margin-top: 5px;
   height:2px;
 }
-
 div.divider{
   width:100%;
   height:10px;
   float:left;
   background-color: var(--divider-clr);
 }
-
 div.settingpage{
   color: var(--settingpage-txt-color);
 }
-
 td.tracker:hover {
  background-color:  var(--tracker-hvr-clr);
 }
-
 td.found {
  background-color:  var(--tracker-fnd-hvr-clr);
 }
-
+td.planned {
+ background-color:   var(--tracker-plnd-hvr-clr);
+}
 td.moodselector{
   min-width:17px;
   min-height:17px;
   border-radius:5px;
   border: 1px solid white;
 }
-
 td.moodselector:hover{
   border: 1px solid black;
 }
-
-/*-----------    journal day selector!   ----------*/
 td.DS{
   min-width: 20px;
   text-align: center;
 }
-
 td.DSFilled{
   background-color:  var(--DSFilled-bg-clr);
   border-radius: 7px 7px 0px 0px;
 }
-
 td.DStoday{
   min-width: 35px;
   background-color: var(--DStoday-bg-clr);
   border-radius: 7px 7px 0px 0px;
 }
-
 td.DSbottom{
   border-radius: 0px 0px 0px 0px;
 }
-
 td.trackerLabel{
   border: 1px solid white;
   border-radius: 3px;
 }
-
 td.trackerHeader{
   border: 1px solid white;
   border-radius: 3px;
   text-align: center;
 }
-
 td.todayMarker{
   background-color: var(--todayMarker-bg-clr);
   border-radius:10px;
   text-align: center;
 }
-/*------------------------------------------------*/
-
 th.moodTracker{
   text-align: center;
 }
-
 th.addButton{
   min-width:27px;
 }
@@ -300,18 +269,15 @@ th.addButton:hover{
   border-radius: 15px;
   background-color: #c7e9c0;
 }
-
 ul.todoList{
   list-style: none;
   padding-left: 10px;
 }
-
 a.tabBar{
   font-family:Times;
   text-decoration: none;
   color : #000;
 }
-
 a.arrow{
   text-decoration: none;
   color : var(--arrow-clr);
@@ -319,27 +285,22 @@ a.arrow{
 a.arrow:hover{
   color: #b2182b;
 }
-
 span.date{
   color: #4292c6;
   font-size: 10px;
   float:right;
   margin-right:10px;
 }
-
 span.scrumSpan{
   float:right;
   margin-right:5px;
 }
-
 span.scrumSpan:hover{
   color: #fb6a4a;
 }
-
 .fa.fa-trash-o:hover{
   color:red;
 }
-
 input[type=submit] {
     padding:5px 15px;
     border:0 none;
@@ -348,11 +309,9 @@ input[type=submit] {
     border-radius: 5px;
     background:var(--submit-bg-clr);
 }
-
 input[type=submit]:hover {
     background:var(--submit-bg-hvr-clr);
 }
-
 input.newTodo{
   width:600px;
   height:30px;
@@ -361,7 +320,6 @@ input.newTodo{
   outline:None;
   border-radius: 4px;
 }
-
 textarea.dailyEntry{
   margin-left: 5%;
   min-height:200px;
@@ -369,42 +327,42 @@ textarea.dailyEntry{
   outline:None;
   resize:None
 }
-
 font.DSfont{
   font-size: 80%;
   color:var(--DSfont-clr);
 }
-
 font.DSfontFilled{
   font-size: 80%;
   color:var(--DSfontFilled-clr);
 }
-
 font.DSfontToday{
   color:var(--DSfontToday-clr);
 }
-
 i.myGear{
   font-size: 30px;
   color: var(--icon-clr);
 }
-
+i.myGear:hover{
+  color: #b2182b;
+}
+i.fa-power-off{
+  font-size: 30px;
+  color: var(--icon-clr);
+}
+i.fa-power-off:hover{
+  color: #b2182b;
+}
 i.fa-sign-out{
   font-size: 30px;
   color: var(--icon-clr);
 }
-
 i.fa-sign-out:hover{
   color: #b2182b;
 }
-
-
 b.titleNewTask{
   margin-left:20%;
   color:var(--titleNewTask-clr);
 }
-
-
 #overlay {
   position: fixed;
   display: none;
@@ -416,4 +374,108 @@ b.titleNewTask{
   bottom: 0;
   background-color: rgba(0,0,0,0.9);
   z-index: 2;
+}
+.switch {
+position: relative;
+display: inline-block;
+width: 40px;
+height: 24px;
+margin-top: 3px;
+margin-left: 3px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #525252;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+input:checked + .slider {
+  background-color: #ec7014;
+}
+input:focus + .slider {
+  box-shadow: 0 0 1px #ec7014;
+}
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(16px);
+}
+.slider.round {
+  border-radius: 24px;
+}
+.slider.round:before {
+  border-radius: 10px;
+}
+#eraser {
+  color:#525252;
+}
+#eraser:hover {
+  color: #ec7014;
+}
+#submitToGraph{
+  border: 1px solid black;
+  border-radius: 10px;
+}
+#submitToGraph:hover {
+  border: 1px solid #ec7014;
+  color: #ec7014;
+}
+.notebookLabel {
+  width:100%;
+  height:30px;
+  background-color:#252525;
+  border: 3px solid white;
+  padding-top: 10px;
+  border-radius:15px 0px 0px 15px;
+  text-align:center;
+  color:white
+}
+.selected {
+  background-color: #cc4c02;
+}
+.notebookLabel:hover{
+  background-color:#525252;
+}
+.ToC{
+  list-style: none;
+}
+.ToCLabel{
+  margin-left: -20px;
+}
+.ToCLabel:hover{
+  color:#cc4c02;
+}
+.addToC{
+  margin-left: -15px;
+  margin-top:-15px;
+  list-style-type: none;
+}
+.notebookLabels{
+  width:12%;
+  height:506px;
+  overflow-y: scroll;
+  margin-right: 0px;
+  float:left;
+  margin-top: 30px;
 }
