@@ -1,0 +1,44 @@
+<script type="text/javascript">
+function renderWeightTrackerChart(){
+  var ctx = document.getElementById("weigthTracker").getContext('2d');
+  var WeightLineChart = new Chart(ctx, {
+     type: 'line',
+     data: {
+        labels: {{ChartMonthDays|safe}},
+        datasets: [{
+           label: "Weight (kg)",
+           data: {{monthsWeights|safe}},
+           backgroundColor: ['rgba(128,205,193, 0.3)'],
+           borderColor: ['rgba(53,151,143, 1)'],
+           borderWidth: 2,
+           spanGaps: true
+        }
+      ]
+     },
+     options: { scales: { yAxes: [{ ticks:{ suggestedMin: 60, beginAtZero: false }}]}}
+  });
+}
+
+function submitWeight(){
+  var weight = document.getElementById("weightVal").value;
+  $.ajax({
+      type: "POST",
+      url: "http://localhost:5000/home",
+      data: {"tracker_type":"weight", "value": weight},
+  });
+  document.getElementById("weightVal").value = "";
+  renderWeightTrackerChart();
+}
+</script>
+
+
+<div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
+  <div style="margin-top: 10px; margin-right: 20px; width: 150px; float:right" >
+    Weight: <input type="text" id="weightVal" name="date" style="width: 50px; ">
+    <i class="fa fa-check" id="submitToGraph" onclick="submitWeight()"></i>
+  </div>
+  <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Weight Tracker</h2>
+  <div style="float:left; width:90%; margin-left:5%">
+    <canvas  height="100px" id="weigthTracker"></canvas>
+  </div>
+</div>

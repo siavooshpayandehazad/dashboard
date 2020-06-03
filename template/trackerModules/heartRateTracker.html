@@ -1,0 +1,57 @@
+<script type="text/javascript">
+function renderHeartRateChart(){
+  var ctx = document.getElementById("HRTracker").getContext('2d');
+  var HRLineChart = new Chart(ctx, {
+     type: 'line',
+     data: {
+        labels: {{ChartMonthDays|safe}},
+        datasets: [{
+           label: "HR Min (bpm)",
+           data: {{HR_Min|safe}},
+           backgroundColor: ['rgba(0,0,0, 0)'],
+           borderColor: ['rgba(33,113,181, 1)'],
+           borderWidth: 2,
+           spanGaps: true
+        }, {
+           label: "HR Max (bpm)",
+           data: {{HR_Max|safe}},
+           backgroundColor: ['rgba(0,0,0, 0)'],
+           borderColor: ['rgba(252,78,42, 1)'],
+           borderWidth: 2,
+           spanGaps: true
+        }]
+     },
+     options: { scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
+  });
+}
+function submitHR(){
+  var HRMin = document.getElementById("HRMin").value;
+  var HRMax = document.getElementById("HRMax").value;
+  $.ajax({
+      type: "POST",
+      url: "http://localhost:5000/home",
+      data: {"tracker_type":"HR", "value" : HRMin + ',' + HRMax},
+  });
+  document.getElementById("HRMin").value = "";
+  document.getElementById("HRMax").value = "";
+  renderHeartRateChart();
+}
+</script>
+
+
+<div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
+  <div style="margin-top: 10px; margin-right: 20px; width: 150px; float:right">
+    <i class="fa fa-check" id="submitToGraph" onclick="submitHR()" style="float:right;" onclick="submitHR()"></i>
+    <div style="float:left">
+      HR Min: <input type="text" id="HRMin" style="width: 50px;">
+    </div>
+    <div style="float:left">
+      HR Max: <input type="text" id="HRMax" style="width: 50px; ">
+    </div>
+
+  </div>
+  <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Heart Rate Tracker</h2>
+  <div style="float:left; width:90%; margin-left:5%">
+    <canvas  height="100px" id="HRTracker"></canvas>
+  </div>
+</div>
