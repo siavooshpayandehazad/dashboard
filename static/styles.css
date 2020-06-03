@@ -146,6 +146,7 @@ div.tbSelected{
 }
 div.tabButton:hover {
    background-color: var(--tabbtn-hvr-clr);
+   cursor: pointer;
 }
 div.todoTasks{
   margin-left: 0.5%;
@@ -228,6 +229,7 @@ td.moodselector{
 }
 td.moodselector:hover{
   border: 1px solid black;
+  cursor: pointer;
 }
 td.DS{
   min-width: 20px;
@@ -344,6 +346,7 @@ i.myGear{
 }
 i.myGear:hover{
   color: #b2182b;
+  cursor: pointer;
 }
 i.fa-power-off{
   font-size: 30px;
@@ -351,6 +354,7 @@ i.fa-power-off{
 }
 i.fa-power-off:hover{
   color: #b2182b;
+  cursor: pointer;
 }
 i.fa-sign-out{
   font-size: 30px;
@@ -358,6 +362,7 @@ i.fa-sign-out{
 }
 i.fa-sign-out:hover{
   color: #b2182b;
+  cursor: pointer;
 }
 b.titleNewTask{
   margin-left:20%;
@@ -431,6 +436,7 @@ input:checked + .slider:before {
   color:#525252;
 }
 #eraser:hover {
+  cursor: pointer;
   color: #ec7014;
 }
 #submitToGraph{
@@ -438,6 +444,7 @@ input:checked + .slider:before {
   border-radius: 10px;
 }
 #submitToGraph:hover {
+  cursor: pointer;
   border: 1px solid #ec7014;
   color: #ec7014;
 }
@@ -455,6 +462,7 @@ input:checked + .slider:before {
   background-color: #cc4c02;
 }
 .notebookLabel:hover{
+  cursor: pointer;
   background-color:#525252;
 }
 .ToC{
@@ -464,6 +472,7 @@ input:checked + .slider:before {
   margin-left: -20px;
 }
 .ToCLabel:hover{
+  cursor: pointer;
   color:#cc4c02;
 }
 .addToC{
@@ -481,7 +490,7 @@ input:checked + .slider:before {
 }
 #chapterContent{
   overflow-y: scroll;
-  height:360px;
+  height:390px;
   width:96%;
   margin-left:15px;
   margin-top: 15px;
@@ -518,4 +527,8 @@ div.chapterContent{
   margin-bottom: 10px;
   float:left;
   color:var(--logText-clr);
+}
+.editIcon:hover{
+  cursor: pointer;
+  color:#cc4c02;
 }

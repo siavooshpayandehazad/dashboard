@@ -65,6 +65,45 @@ def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
     dbConnection.commit()
     return "Done", 200
 
+def addsSavingItemToTable(item: str, date: str, dbCursur, dbConnection):
+    month = "-".join(date.split("-")[0:2])
+    dbCursur.execute("SELECT * FROM savingTracker WHERE month = ?", (month,))
+    fetchedData = dbCursur.fetchall()
+
+    if len(fetchedData)>0:
+        item = float(fetchedData[0][0])+float(item)
+    else:
+        # get last months value
+        currentMonth = int(date.split("-")[1])
+        currentYear = int(date.split("-")[0])
+        counter = 12
+        lastMonthFetch = []
+        while((len(lastMonthFetch)==0)):
+            if currentMonth != 1:
+                MonthVal = currentMonth-1
+                YearVal = currentYear
+            else:
+                MonthVal = 12
+                YearVal = currentYear -1
+
+            lastMonthVal = str(YearVal)+"-"+str(MonthVal).zfill(2)
+            dbCursur.execute("SELECT * FROM savingTracker WHERE month = ?", (lastMonthVal,))
+            lastMonthFetch = dbCursur.fetchall()
+            currentMonth = MonthVal
+            currentYear = YearVal
+            counter -= 1
+            if counter <= 0:
+                break;
+        if len(lastMonthFetch)>0:
+            lastMonthVal = float(lastMonthFetch[0][0])
+        else:
+            lastMonthVal = 0
+        item = float(lastMonthVal)+float(item)
+
+    dbCursur.execute("DELETE from savingTracker where month = ?", (month,))
+    dbCursur.execute("INSERT INTO savingTracker VALUES(?, ?)", (item, month))
+    dbConnection.commit()
+    return "Done", 200
 
 def collectMonthsData(pageMonth: int, pageYear: int, dbCursur):
     activities = []
@@ -161,6 +200,21 @@ def generateWorkTrakcerChartData(pageMonth: int, pageYear: int, numberOfDays: in
         workTrackerData.append(work_hour)
     return workTrackerData
 
+def generateSavingTrackerChartData(pageYear: int, dbCursur):
+    yearsSavings = []
+    dbCursur.execute("""SELECT * FROM savingTracker WHERE month >= ? and month <= ?  """,
+              (pageYear+"-"+"01", pageYear+"-"+"12"))
+    yearsSavings += dbCursur.fetchall()
+
+    savingTrackerData=[]
+    for i in range(1, 13):
+        savingsVal = "nan"
+        for item in yearsSavings:
+            if int(item[1].split("-")[1]) == i:
+                savingsVal = float(item[0])
+        savingTrackerData.append(savingsVal)
+    return savingTrackerData
+
 def generateSleepChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsSleepHours = []
     dbCursur.execute("""SELECT * FROM sleepTracker WHERE date >= ? and date <= ?  """,
@@ -188,6 +242,8 @@ def generateDBTables(DBCursor):
              HR_Min text, HR_Max text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists sleepTracker (
              sleepTime text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists savingTracker (
+             saving text, month text)""")
     DBCursor.execute("""CREATE TABLE if not exists weightTracker (
              weight text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists workHourTracker (

@@ -67,12 +67,14 @@ class dash(Resource):
         monthsSleepTimes = generateSleepChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         ChartMonthDays = [str(i) for i in range(1, numberOfDays+1)]
         HR_Min, HR_Max = generateHRChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        YearsSavings = generateSavingTrackerChartData(pageYear, c)
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth=int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
                                              monthsWeights = chartWeights, ChartMonthDays = ChartMonthDays,
                                              monthsSleepTimes=monthsSleepTimes,
                                              HR_Min = HR_Min, HR_Max = HR_Max, monthsWorkHours = monthsWorkHours,
+                                             ChartYearMonths=monthsOfTheYear, YearsSavings=YearsSavings,
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
                                              activityList = activityList, days=moodTrackerDays, highlight=highlight, pageTheme=pageTheme,
                                              counterValue=counterValue),200,headers)
@@ -105,6 +107,8 @@ class dash(Resource):
             return addTrackerItemToTable(args['value'].lower(), "", [], "sleepTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'WorkHours':
             return addTrackerItemToTable(args['value'].lower(), "work_hour", [], "workHourTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] == 'saving':
+            return addsSavingItemToTable(args['value'].lower(), todaysDate, c, conn)
         if args['tracker_type'] == 'mood':
             return addTrackerItemToTable(args['value'].lower(), "mood_name", moodList, "moodTracker", todaysDate, False, False, c, conn)
         if args['tracker_type'] == "activity":
