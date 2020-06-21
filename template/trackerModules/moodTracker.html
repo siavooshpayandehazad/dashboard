@@ -9,9 +9,9 @@
          if (mood=="great") {
            document.getElementById(date).style.backgroundColor  = "#1d91c0";
          }else if (mood=="good") {
-           document.getElementById(date).style.backgroundColor  = "#80cdc1";
+           document.getElementById(date).style.backgroundColor  = "#9FDED0";
          }else if (mood=="ok") {
-           document.getElementById(date).style.backgroundColor  = "#ccece6";
+           document.getElementById(date).style.backgroundColor  = "#deebf7";
          }else if (mood=="bad") {
            document.getElementById(date).style.backgroundColor  = "#fddbc7";
          }else{
@@ -43,9 +43,9 @@
                 {% elif item[0] == 'bad' %}
                   <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#fddbc7">{{ day }}</td>
                 {% elif item[0] == 'ok' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#ccece6">{{ day }}</td>
+                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#deebf7">{{ day }}</td>
                 {% elif item[0] == 'good' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#80cdc1">{{ day }}</td>
+                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#9FDED0">{{ day }}</td>
                 {% elif item[0] == 'great' %}
                   <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#1d91c0">{{ day }}</td>
                 {% endif %}
@@ -63,8 +63,8 @@
   <table style="width:20%;  margin-right: 10px; float:right; margin-top:22px;">
     <tr> <td class="moodselector" bgcolor="#f4a582" onclick="return moodSelect('Awful', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td> Awful!  </td> </tr>
     <tr> <td class="moodselector" bgcolor="#fddbc7" onclick="return moodSelect('bad', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Bad  </td> </tr>
-    <tr> <td class="moodselector" bgcolor="#ccece6" onclick="return moodSelect('ok', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> O.K.  </td> </tr>
-    <tr> <td class="moodselector" bgcolor="#80cdc1" onclick="return moodSelect('good', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Good  </td> </tr>
+    <tr> <td class="moodselector" bgcolor="#deebf7" onclick="return moodSelect('ok', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> O.K.  </td> </tr>
+    <tr> <td class="moodselector" bgcolor="#9FDED0" onclick="return moodSelect('good', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Good  </td> </tr>
     <tr> <td class="moodselector" bgcolor="#1d91c0" onclick="return moodSelect('great', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Great  </td> </tr>
   </table>
 </div>

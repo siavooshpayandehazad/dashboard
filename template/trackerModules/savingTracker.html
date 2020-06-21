@@ -1,13 +1,27 @@
 <script type="text/javascript">
-function renderSavingTrackerChart(){
+var myAnnualSavings = {{YearsSavings|safe}}
+
+function renderSavingTrackerChart(savingChange){
   var ctx = document.getElementById("savingTracker").getContext('2d');
+
+  var today = new Date();
+  var month = String(today.getMonth());
+  if (savingChange){
+    if (monthsWorkHoursTemp[parseInt(month)] != "nan"){
+      myAnnualSavings[parseInt(month)] = parseFloat(myAnnualSavings[parseInt(month)]) + parseFloat(savingChange);
+    }else{
+      myAnnualSavings[parseInt(month)] = parseFloat(savingChange);
+    }
+
+  }
+
   var SavingLineChart = new Chart(ctx, {
      type: 'line',
      data: {
         labels: {{ChartYearMonths|safe}},
         datasets: [{
            label: "Current Savings (kr)",
-           data: {{YearsSavings|safe}},
+           data: myAnnualSavings,
            backgroundColor: ['rgba(54,144,192, 0.3)'],
            borderColor: ['rgba(54,144,192, 1)'],
            borderWidth: 2,
@@ -27,7 +41,7 @@ function submitSaving(date){
       data: {"tracker_type":"saving", "value": saving, "date": date},
   });
   document.getElementById("savingVal").value = "";
-  renderWeightTrackerChart();
+  renderSavingTrackerChart(saving);
 }
 </script>
 
@@ -37,7 +51,8 @@ function submitSaving(date){
     This Month's savings: <input type="text" id="savingVal" name="date" style="width: 50px; ">
     <i class="fa fa-check" id="submitToGraph" onclick="submitSaving('{{PageYear}}-{{'%02d' % (PageMonth)}}-01')"></i>
   </div>
-  <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Savings Tracker</h2>
+  <i class="fa fa-money" style="float:left; margin-left:10px; margin-top:10px;"></i>
+  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Savings Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">
     <canvas  height="100px" id="savingTracker"></canvas>
   </div>

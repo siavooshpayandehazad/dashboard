@@ -1,20 +1,32 @@
 <script type="text/javascript">
-function renderHeartRateChart(){
+var hr_Min = {{HR_Min|safe}};
+var hr_Max = {{HR_Max|safe}};
+
+function renderHeartRateChart(hrMin, hrMax){
   var ctx = document.getElementById("HRTracker").getContext('2d');
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  if (hrMin){
+    hr_Min[dd-1] = hrMin;
+  }
+  if (hrMin){
+    hr_Max[dd-1] = hrMax;
+  }
+
   var HRLineChart = new Chart(ctx, {
      type: 'line',
      data: {
         labels: {{ChartMonthDays|safe}},
         datasets: [{
            label: "HR Min (bpm)",
-           data: {{HR_Min|safe}},
+           data: hr_Min,
            backgroundColor: ['rgba(0,0,0, 0)'],
            borderColor: ['rgba(33,113,181, 1)'],
            borderWidth: 2,
            spanGaps: true
         }, {
            label: "HR Max (bpm)",
-           data: {{HR_Max|safe}},
+           data: hr_Max,
            backgroundColor: ['rgba(0,0,0, 0)'],
            borderColor: ['rgba(252,78,42, 1)'],
            borderWidth: 2,
@@ -24,6 +36,7 @@ function renderHeartRateChart(){
      options: { scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
   });
 }
+
 function submitHR(){
   var HRMin = document.getElementById("HRMin").value;
   var HRMax = document.getElementById("HRMax").value;
@@ -34,7 +47,7 @@ function submitHR(){
   });
   document.getElementById("HRMin").value = "";
   document.getElementById("HRMax").value = "";
-  renderHeartRateChart();
+  renderHeartRateChart(HRMin, HRMax);
 }
 </script>
 
@@ -50,7 +63,8 @@ function submitHR(){
     </div>
 
   </div>
-  <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Heart Rate Tracker</h2>
+  <i class="fa fa-heart" aria-hidden="true"  style="float:left; margin-left:10px; margin-top:10px;"></i>
+  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Heart Rate Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">
     <canvas  height="100px" id="HRTracker"></canvas>
   </div>

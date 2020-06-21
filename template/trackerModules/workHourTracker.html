@@ -1,9 +1,19 @@
 <script type="text/javascript">
+  var monthsWorkHoursTemp = {{monthsWorkHours | safe}}
 
-  function renderWorkHourChart(){
+  function renderWorkHourChart(addHours){
     var WH_BG_Colors = []
     var WH_B_Colors = []
-    var monthsWorkHoursTemp = {{monthsWorkHours | safe}}
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    if (addHours){
+      if (monthsWorkHoursTemp[dd-1] != "nan"){
+        monthsWorkHoursTemp[dd-1] = parseFloat(monthsWorkHoursTemp[dd-1]) + parseFloat(addHours);
+      }else{
+        monthsWorkHoursTemp[dd-1] = parseFloat(addHours);
+      }
+    }
+
     monthsWorkHoursTemp.forEach((item, i) => {
       if(parseInt(item)<4){
         WH_BG_Colors.push('rgba(252,146,114, 1)')
@@ -22,6 +32,7 @@
     });
 
 
+
     var ctx = document.getElementById("WHTracker").getContext('2d');
     var WHBarChart = new Chart(ctx, {
        type: 'bar',
@@ -29,7 +40,7 @@
           labels: {{ChartMonthDays|safe}},
           datasets: [{
              label: "Working Hours (hr)",
-             data: {{monthsWorkHours|safe}},
+             data: monthsWorkHoursTemp,
              backgroundColor: WH_BG_Colors,
              borderColor: WH_B_Colors,
              borderWidth: 2,
@@ -48,7 +59,7 @@
         data: {"tracker_type":"WorkHours", "value": worHours},
     });
     document.getElementById("workHourVal").value = "";
-    renderWorkHourChart()
+    renderWorkHourChart(worHours)
   }
 
 </script>
@@ -58,8 +69,8 @@
     Add Work Hours: <input type="text" id="workHourVal" name="date" style="width: 50px; ">
     <i class="fa fa-check" id="submitToGraph" onclick="submitWHours()"></i>
   </div>
-
-  <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Work Hours Tracker</h2>
+  <i class="fa fa-wrench" style="float:left; margin-left:10px; margin-top:10px;"></i>
+  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Work Hours Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">
     <canvas  height="100px" id="WHTracker"></canvas>
   </div>

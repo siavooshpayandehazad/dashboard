@@ -40,10 +40,15 @@ def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
                           date: str, delete: bool, deleteDay: bool, dbCursur,
                           dbConnection):
     if itemList and (item not in itemList):
-        return item+" not found", 400
-    dbCursur.execute("SELECT * FROM "+tableName+" WHERE date = ?", (date,))
+        return item + " not found", 400
+    try:
+        dbCursur.execute("SELECT * FROM "+tableName+" WHERE date = ?", (date,))
+    except:
+        print("something went wrong while trying to fetch data!")
+        return "Something went wrong", 400
     if tableName == "workHourTracker":
         fetchedData = dbCursur.fetchall()
+        print(f"@{datetime.datetime.now()} :: adding {item} time to todays work hours")
         if len(fetchedData)>0:
             item = float(fetchedData[0][0])+float(item)
     if tableName == "moodTracker":     # trying to remove old mood from the table

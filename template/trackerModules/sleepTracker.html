@@ -1,9 +1,11 @@
 <script type="text/javascript">
-function renderSleepTrackerChart(){
+var monthsSleepHoursTemp = {{monthsSleepTimes | safe}};
+
+function renderSleepTrackerChart(sleepTime){
 
   var Sleep_BG_Colors = []
   var Sleep_B_Colors = []
-  var monthsSleepHoursTemp = {{monthsSleepTimes | safe}}
+
   monthsSleepHoursTemp.forEach((item, i) => {
     if(parseInt(item)<7){
       Sleep_BG_Colors.push('rgba(218,218,235, 1)')
@@ -21,13 +23,19 @@ function renderSleepTrackerChart(){
   });
 
   var ctx = document.getElementById("sleepTracker").getContext('2d');
+  var sleepTimes= {{monthsSleepTimes|safe}};
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  if (sleepTime){
+    sleepTimes[dd-1] = sleepTime;
+  }
   var WeightBarChart = new Chart(ctx, {
      type: 'bar',
      data: {
         labels: {{ChartMonthDays|safe}},
         datasets: [{
            label: "Sleep time (hr)",
-           data: {{monthsSleepTimes|safe}},
+           data: sleepTimes,
            backgroundColor: Sleep_BG_Colors,
            //borderColor: Sleep_B_Colors,
            borderWidth: 2,
@@ -47,7 +55,7 @@ function submitSleep(){
       data: {"tracker_type":"sleep", "value": sleep},
   });
   document.getElementById("sleeptVal").value = "";
-  renderSleepTrackerChart();
+  renderSleepTrackerChart(sleep);
 }
 </script>
 
@@ -57,7 +65,8 @@ function submitSleep(){
     Sleep time: <input type="text" id="sleeptVal" name="date" style="width: 50px; ">
     <i class="fa fa-check" id="submitToGraph" onclick="submitSleep()"></i>
   </div>
-  <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Sleep Tracker</h2>
+  <i class="fa fa-moon-o" style="float:left; margin-left:10px; margin-top:10px;"></i>
+  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Sleep Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">
     <canvas  height="100px" id="sleepTracker"></canvas>
   </div>

@@ -295,8 +295,10 @@ class lists(Resource):
     def post(self):
         args = parser.parse_args()
         if args['delete'] == '1':
+            print(f"deleted {args['name'].lower()} from {args['type']}")
             c.execute("""DELETE from lists where name = ? and type = ?  """, (args["name"].lower(), args["type"]))
         else:
+            print(f"added {args['name'].lower()} to {args['type']} as {args['done']} ")
             c.execute("""DELETE from lists where name = ? and type = ? """, (args["name"].lower(), args["type"]))
             c.execute("""INSERT INTO lists VALUES(?, ?, ?)""", (args["name"].lower(), args["done"], args["type"]))
         conn.commit()

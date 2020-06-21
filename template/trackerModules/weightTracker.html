@@ -1,13 +1,21 @@
 <script type="text/javascript">
-function renderWeightTrackerChart(){
+var weights= {{monthsWeights|safe}};
+
+function renderWeightTrackerChart(weight){
   var ctx = document.getElementById("weigthTracker").getContext('2d');
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  if (weight){
+    weights[dd-1] = weight;
+  }
+
   var WeightLineChart = new Chart(ctx, {
      type: 'line',
      data: {
         labels: {{ChartMonthDays|safe}},
         datasets: [{
            label: "Weight (kg)",
-           data: {{monthsWeights|safe}},
+           data: weights,
            backgroundColor: ['rgba(128,205,193, 0.3)'],
            borderColor: ['rgba(53,151,143, 1)'],
            borderWidth: 2,
@@ -27,7 +35,7 @@ function submitWeight(){
       data: {"tracker_type":"weight", "value": weight},
   });
   document.getElementById("weightVal").value = "";
-  renderWeightTrackerChart();
+  renderWeightTrackerChart(weight);
 }
 </script>
 
