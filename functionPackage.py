@@ -41,11 +41,9 @@ def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
                           dbConnection):
     if itemList and (item not in itemList):
         return item + " not found", 400
-    try:
-        dbCursur.execute("SELECT * FROM "+tableName+" WHERE date = ?", (date,))
-    except:
-        print("something went wrong while trying to fetch data!")
-        return "Something went wrong", 400
+
+    dbCursur.execute("SELECT * FROM " + tableName + " WHERE date = ?", (date,))
+
     if tableName == "workHourTracker":
         fetchedData = dbCursur.fetchall()
         print(f"@{datetime.datetime.now()} :: adding {item} time to todays work hours")
@@ -272,6 +270,7 @@ def generateDBTables(DBCursor):
     DBCursor.execute("""CREATE TABLE if not exists Notes (
              Notebook text, Chapter text, Content text)""")
 
+
 def sparateDayMonthYear(todaysDate:str) -> tuple:
     if not checkIfDateValid(todaysDate):
         raise ValueError("Wrong date format is passed!")
@@ -284,7 +283,7 @@ def setupSettingTable(dbCursur, dbConnection):
     c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
     c.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
     c.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", "None"))
-    conn.commit()
+    dbConnection.commit()
 
 
 def getMonthsBeginning(month: int, year: int) -> datetime:

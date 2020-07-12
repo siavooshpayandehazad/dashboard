@@ -30,6 +30,31 @@
         return false;
       }
     }
+    function uploadPhoto(){
+      var uploader = document.getElementById("uploader")
+      if(uploader.style.display === "none"){
+        uploader.style.display = 'block';
+      }else{
+        uploader.style.display = 'none';
+      }
+    }
+    function photoClicked(item){
+      var overlay = document.getElementById("PhotoOverlay")
+      overlay.style.display = "block";
+      var img = document.createElement('img');
+      img.src = item.src;
+      img.id = "PhotoOverlayPicture"
+      img.style.height = "80%";
+      img.style.float = "center";
+      img.style.marginTop = "5%";
+      overlay.appendChild(img);
+    }
+    function closeOverlay(){
+      var img = document.getElementById("PhotoOverlayPicture")
+      img.remove();
+      var overlay = document.getElementById("PhotoOverlay")
+      overlay.style.display = "none";
+    }
   </script>
 </head>
 
@@ -42,6 +67,9 @@
 {% with page="journal" %}
     {% include "header.html" %}
 {% endwith %}
+  <div id="PhotoOverlay" style="text-align:center">
+    <i class="fa fa-times" aria-hidden="true" style="color:white; font-size: 30px; float:right" onclick="closeOverlay()"></i>
+  </div>
 
   <!-- daily entry -->
   <div class="dailyEntry">
@@ -113,29 +141,38 @@
       {{log}}
       {% endautoescape %}
     </div>
-    <hr>
-    <div  style="width:350px; background-color: white; margin-top: 10px; margin-bottom: 10px; padding: 10px 10px 10px 10px;border-radius:10px;">
-      Upload a photo:
-      <form  name="photoUploader" action = "http://localhost:5000/uploader" method = "POST" enctype = "multipart/form-data" style="margin-top:5px;" onsubmit="return validateForm()">
-          <input type = "file" name = "file" />
-          <input type="text" name="date" value = "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" style ="display:none;">
-          <input type = "submit" style="float:right;" value="Upload" />
-      </form>
-    </div>
-    {%if todayPhotos|length >0%}
+
+
       <div style="margin-bottom:10px;">
         <hr>
-        <h2 class="photos">   photos: </h2>
-        {% for photo in todayPhotos%}
-          <img src= "static/photos/{{ photo }}" alt="image alt text" width="120"/>
-        {% endfor %}
+        <h2 class="photos" style="float:left">   photos </h2>
+        <i class="fa fa-upload" style="float:right; color:white;" aria-hidden="true" onclick="uploadPhoto()"></i>
+        <br><br>
+        <div  id = "uploader" style="display:none; width:350px; background-color: white; margin-top: 20px; margin-bottom: 10px; padding: 10px 10px 10px 10px;border-radius:10px;">
+          Upload a photo:
+          <form  name="photoUploader" action = "http://localhost:5000/uploader" method = "POST" enctype = "multipart/form-data" style="margin-top:5px;" onsubmit="return validateForm()">
+              <input type = "file" name = "file" />
+              <input type="text" name="date" value = "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" style ="display:none;">
+              <input type = "submit" style="float:right;" value="Upload" />
+          </form>
+        </div>
+        <br>
+        <div style="float:left">
+        {%if todayPhotos|length >0%}
+          {% for photo in todayPhotos%}
+            <img src= "static/photos/{{ photo }}" alt="image alt text" onclick="photoClicked(this)"class="journalPhoto"/>
+          {% endfor %}
+        {%endif%}
+        </div>
       </div>
-    {%endif%}
+
   </div>
 
   <div style="margin-right: 20px;float:right;">
-    <img src= "{{url_for('static', filename = 'journal_overlay.png')}}" float="right" width="120" alt="roy">
+    <img src= "{{url_for('static', filename = 'journal_overlay.png')}}" float="right" width = "120" alt="roy">
   </div>
+
+
 
   </body>
 </html>

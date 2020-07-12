@@ -39,7 +39,10 @@
               url: "http://localhost:5000/home",
               data: {tracker_type: "activity", "value":activity, "date":date, "planner": "True", "delete": erase},
           });
-          element.style.backgroundColor = "#FAD8AD";
+          if ((element.style.backgroundColor != "rgb(82, 82, 82)")
+             && (element.style.backgroundColor != "rgb(50, 136, 189)")){
+           element.style.backgroundColor = "#FAD8AD";
+          }
         }else{
           $.ajax({
               type: "POST",

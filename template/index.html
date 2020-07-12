@@ -121,6 +121,11 @@
         {% include "trackerModules/workHourTracker.html" %}
     {% endwith %}
 
+    {% with YearsSavings = YearsSavings, ChartYearMonths = ChartYearMonths,
+            PageYear = PageYear, PageMonth = PageMonth%}
+        {% include "trackerModules/savingTracker.html" %}
+    {% endwith %}
+    
     <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
       <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
       <img src= "{{url_for('static', filename = 'page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
@@ -143,11 +148,6 @@
       <div class="divider" style="width:90%; height:4px; float:left; margin-left: 3.3%; margin-top: 18px;"></div>
       <img src= "{{url_for('static', filename = 'page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
     </div>
-
-    {% with YearsSavings = YearsSavings, ChartYearMonths = ChartYearMonths,
-            PageYear = PageYear, PageMonth = PageMonth%}
-        {% include "trackerModules/savingTracker.html" %}
-    {% endwith %}
 
 </body>
 
