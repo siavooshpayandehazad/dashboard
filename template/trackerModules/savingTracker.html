@@ -1,19 +1,8 @@
 <script type="text/javascript">
 var myAnnualSavings = {{YearsSavings|safe}}
 
-function renderSavingTrackerChart(savingChange){
+function renderSavingTrackerChart(){
   var ctx = document.getElementById("savingTracker").getContext('2d');
-
-  var today = new Date();
-  var month = String(today.getMonth());
-  if (savingChange){
-    if (monthsWorkHoursTemp[parseInt(month)] != "nan"){
-      myAnnualSavings[parseInt(month)] = parseFloat(myAnnualSavings[parseInt(month)]) + parseFloat(savingChange);
-    }else{
-      myAnnualSavings[parseInt(month)] = parseFloat(savingChange);
-    }
-
-  }
 
   var SavingLineChart = new Chart(ctx, {
      type: 'line',
@@ -29,28 +18,31 @@ function renderSavingTrackerChart(savingChange){
         }
       ]
      },
-     options: { scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
-  });
-}
+     options: { scales: { yAxes: [{ ticks:{ beginAtZero: true }}]},
+               onClick: function(event, array){
+                 var selectedMonth = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
+                 var selectedVal =  myAnnualSavings[selectedMonth-1]
+                 var date = {{PageYear}}+"-"+zeroPad(selectedMonth, 2)+"-01";
+                 var newVal = window.prompt("Add saving for the month " + selectedMonth + "?", 0);
+                 if (isNaN(newVal) || (newVal===null)){return;}
 
-function submitSaving(date){
-  var saving = document.getElementById("savingVal").value;
-  $.ajax({
-      type: "POST",
-      url: "http://localhost:5000/home",
-      data: {"tracker_type":"saving", "value": saving, "date": date},
+                 // submit new value
+                 $.ajax({
+                     type: "POST",
+                     url: "http://localhost:5000/home",
+                     data: {"tracker_type":"saving", "value": newVal, "date": date},
+                 });
+                 ////update the step value
+                 myAnnualSavings[selectedMonth-1] = parseInt(myAnnualSavings[selectedMonth-1]) + parseInt(newVal);
+                 this.update();
+               }
+            }
   });
-  document.getElementById("savingVal").value = "";
-  renderSavingTrackerChart(saving);
 }
 </script>
 
 
 <div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
-  <div style="margin-top: 10px; margin-right: 20px; width: 250px; float:right" >
-    This Month's savings: <input type="text" id="savingVal" name="date" style="width: 50px; ">
-    <i class="fa fa-check" id="submitToGraph" onclick="submitSaving('{{PageYear}}-{{'%02d' % (PageMonth)}}-01')"></i>
-  </div>
   <i class="fa fa-money" style="float:left; margin-left:10px; margin-top:10px;"></i>
   <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Savings Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">

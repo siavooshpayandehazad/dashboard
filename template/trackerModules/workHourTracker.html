@@ -1,18 +1,9 @@
 <script type="text/javascript">
   var monthsWorkHoursTemp = {{monthsWorkHours | safe}}
 
-  function renderWorkHourChart(addHours){
+  function renderWorkHourChart(){
     var WH_BG_Colors = []
     var WH_B_Colors = []
-    var today = new Date();
-    var dd = String(today.getDate()).padStart(2, '0');
-    if (addHours){
-      if (monthsWorkHoursTemp[dd-1] != "nan"){
-        monthsWorkHoursTemp[dd-1] = parseFloat(monthsWorkHoursTemp[dd-1]) + parseFloat(addHours);
-      }else{
-        monthsWorkHoursTemp[dd-1] = parseFloat(addHours);
-      }
-    }
 
     monthsWorkHoursTemp.forEach((item, i) => {
       if(parseInt(item)<4){
@@ -31,8 +22,6 @@
 
     });
 
-
-
     var ctx = document.getElementById("WHTracker").getContext('2d');
     var WHBarChart = new Chart(ctx, {
        type: 'bar',
@@ -47,7 +36,26 @@
           }
         ]
        },
-       options: { scales: { yAxes: [{ticks:{suggestedMax: 10, beginAtZero: true }}]}}
+       options: { scales: { yAxes: [{ticks:{suggestedMax: 10, beginAtZero: true }}]},
+                  onClick: function(event, array){
+
+                    var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
+                    var selectedVal = monthsWorkHoursTemp[selectedDay-1]
+                    var newVal = window.prompt("Add work hours for day " + selectedDay + "?", 0);
+                    // check if cancel is pressed
+                    if (isNaN(newVal) || (newVal===null)){return;}
+                    var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
+                    // submit new value
+                    $.ajax({
+                        type: "POST",
+                        url: "http://localhost:5000/home",
+                        data: {"tracker_type":"WorkHours", "value": newVal, "date": date},
+                    });
+                    //update the step value
+                    monthsWorkHoursTemp[selectedDay-1] = parseFloat(monthsWorkHoursTemp[selectedDay-1])+parseFloat(newVal);
+                    this.update();
+                  }
+                }
     });
   }
 
@@ -65,10 +73,6 @@
 </script>
 
 <div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
-  <div style="margin-top: 10px; margin-right: 20px; width: 220px; float:right" >
-    Add Work Hours: <input type="text" id="workHourVal" name="date" style="width: 50px; ">
-    <i class="fa fa-check" id="submitToGraph" onclick="submitWHours()"></i>
-  </div>
   <i class="fa fa-wrench" style="float:left; margin-left:10px; margin-top:10px;"></i>
   <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Work Hours Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">

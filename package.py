@@ -1,4 +1,4 @@
-activityList = ["reading", "swedish", "english", "arabic", "programming", "meditation", "excercise", "steps",  "running", "walking", "chores"]
+activityList = ["reading", "swedish", "english", "arabic", "programming", "meditation", "excercise", "running", "walking", "chores"]
 
 moodList = ["awful", "bad", "ok", "good", "great"]
 

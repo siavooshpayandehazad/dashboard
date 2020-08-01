@@ -47,6 +47,8 @@
       img.style.height = "80%";
       img.style.float = "center";
       img.style.marginTop = "5%";
+      img.onclick= function() {closeOverlay()}
+
       overlay.appendChild(img);
     }
     function closeOverlay(){
@@ -54,6 +56,26 @@
       img.remove();
       var overlay = document.getElementById("PhotoOverlay")
       overlay.style.display = "none";
+    }
+    function nextPic(){
+      var img = document.getElementById("PhotoOverlayPicture");
+      var allIMGs = document.getElementsByClassName("journalPhoto");
+      for (i = 0; i < allIMGs.length; i++) {
+        if (allIMGs[i].src == img.src){
+          img.src = allIMGs[(i+1)%allIMGs.length].src;
+          return;
+        }
+      }
+    }
+    function prevPic(){
+      var img = document.getElementById("PhotoOverlayPicture");
+      var allIMGs = document.getElementsByClassName("journalPhoto");
+      for (i = 0; i < allIMGs.length; i++) {
+        if (allIMGs[i].src == img.src){
+          img.src = allIMGs[(i-1+allIMGs.length)%allIMGs.length].src;
+          return;
+        }
+      }
     }
   </script>
 </head>
@@ -68,7 +90,15 @@
     {% include "header.html" %}
 {% endwith %}
   <div id="PhotoOverlay" style="text-align:center">
-    <i class="fa fa-times" aria-hidden="true" style="color:white; font-size: 30px; float:right" onclick="closeOverlay()"></i>
+    <div style="float:left; width:100%; ">
+      <i id="closeButton" class="fa fa-times" aria-hidden="true" onclick="closeOverlay()" ></i>
+    </div>
+    <div onclick="prevPic()"  style="float:left; width:10%; height:100%;">
+        <i class="fa fa-chevron-left" style="color:white; font-size: 40px; margin-top:200px;" aria-hidden="true"></i>
+    </div>
+    <div onclick="nextPic()" style="float:right; width:10%; height:100%;">
+        <i class="fa fa-chevron-right" style="color:white; font-size: 40px; margin-top:200px;" aria-hidden="true"></i>
+    </div>
   </div>
 
   <!-- daily entry -->
@@ -160,7 +190,7 @@
         <div style="float:left">
         {%if todayPhotos|length >0%}
           {% for photo in todayPhotos%}
-            <img src= "static/photos/{{ photo }}" alt="image alt text" onclick="photoClicked(this)"class="journalPhoto"/>
+            <img src= "static/photos/{{ photo }}" alt="image alt text" onclick="photoClicked(this)" class="journalPhoto"/>
           {% endfor %}
         {%endif%}
         </div>

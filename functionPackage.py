@@ -12,8 +12,8 @@ def getTodaysLogs(dbCursur, todaysDate):
         todaysLog = logValue[0][0].replace("\n","<br>")
         todaysLogText = logValue[0][0]
     else:
-        todaysLog = "<hr><b>work related</b><br><br>"
-        todaysLogText = "<hr><b>work related</b>\n\n"
+        todaysLog = " "
+        todaysLogText = " "
     return todaysLog, todaysLogText
 
 
@@ -230,9 +230,49 @@ def generateSleepChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbC
         sleep_hour = "nan"
         for item in monthsSleepHours:
             if int(item[1].split("-")[2]) == i:
-                sleep_hour = float(item[0])
+                try:
+                    sleep_hour = float(item[0])
+                except:
+                    sleep_hour = "nan"
         sleepTrackerData.append(sleep_hour)
     return sleepTrackerData
+
+def generateStepChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+    monthsSteps = []
+    dbCursur.execute("""SELECT * FROM stepTracker WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
+    monthsSteps += dbCursur.fetchall()
+
+    stepsTrackerData=[]
+
+    for i in range(1, numberOfDays+1):
+        step_value = "nan"
+        for item in monthsSteps:
+            if int(item[1].split("-")[2]) == i and item[0].isnumeric():
+                try:
+                    step_value = float(item[0])
+                except:
+                    step_value = "nan"
+        stepsTrackerData.append(step_value)
+    return stepsTrackerData
+
+def generateRunningChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+    monthsRuns = []
+    dbCursur.execute("""SELECT * FROM runningTracker WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
+    monthsRuns += dbCursur.fetchall()
+    runningTrackerData=[]
+
+    for i in range(1, numberOfDays+1):
+        run_value = "nan"
+        for item in monthsRuns:
+            if int(item[1].split("-")[2]) == i:
+                try:
+                    run_value = float(item[0])
+                except:
+                    run_value = "nan"
+        runningTrackerData.append(run_value)
+    return runningTrackerData
 
 def createDB(DBName):
     DBConnection  =  sqlite3.connect(DBName,  check_same_thread=False)
@@ -251,6 +291,10 @@ def generateDBTables(DBCursor):
              weight text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists workHourTracker (
              work_hour text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists stepTracker (
+             steps text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists runningTracker (
+             run text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists activityTracker (
              activity_name text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists activityPlanner (

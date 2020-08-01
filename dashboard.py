@@ -42,7 +42,6 @@ class dash(Resource):
             pageTheme = "Dark"
             setupSettingTable(c, conn)
             print("could not fetch page theme! replacing with default values")
-
         if args['date'] is not None:
             pageYear, pageMonth = args['date'].split("-")
         else:
@@ -65,6 +64,8 @@ class dash(Resource):
         chartWeights = generateWeightChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         monthsWorkHours = generateWorkTrakcerChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         monthsSleepTimes = generateSleepChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        monthsSteps = generateStepChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        monthsRuns = generateRunningChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         ChartMonthDays = [str(i) for i in range(1, numberOfDays+1)]
         HR_Min, HR_Max = generateHRChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         YearsSavings = generateSavingTrackerChartData(pageYear, c)
@@ -72,7 +73,7 @@ class dash(Resource):
                                              PageYear = int(pageYear), PageMonth=int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
                                              monthsWeights = chartWeights, ChartMonthDays = ChartMonthDays,
-                                             monthsSleepTimes=monthsSleepTimes,
+                                             monthsSleepTimes=monthsSleepTimes, monthsSteps=monthsSteps, monthsRuns=monthsRuns,
                                              HR_Min = HR_Min, HR_Max = HR_Max, monthsWorkHours = monthsWorkHours,
                                              ChartYearMonths=monthsOfTheYear, YearsSavings=YearsSavings,
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
@@ -105,6 +106,10 @@ class dash(Resource):
             return addTrackerItemToTable(args['value'].lower(), "weight", [], "weightTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'sleep':
             return addTrackerItemToTable(args['value'].lower(), "", [], "sleepTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] == 'running':
+            return addTrackerItemToTable(args['value'].lower(), "", [], "runningTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] == 'steps':
+            return addTrackerItemToTable(args['value'].lower(), "", [], "stepTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'WorkHours':
             return addTrackerItemToTable(args['value'].lower(), "work_hour", [], "workHourTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'saving':

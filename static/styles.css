@@ -552,3 +552,12 @@ div.chapterContent{
   z-index: 2;
   cursor: pointer;
 }
+#closeButton{
+  color:white;
+  font-size: 30px;
+  float:right
+}
+#closeButton:hover{
+  color: #b2182b;
+  cursor: pointer;
+}

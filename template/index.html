@@ -125,7 +125,7 @@
             PageYear = PageYear, PageMonth = PageMonth%}
         {% include "trackerModules/savingTracker.html" %}
     {% endwith %}
-    
+
     <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
       <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
       <img src= "{{url_for('static', filename = 'page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
@@ -139,8 +139,16 @@
         {% include "trackerModules/heartRateTracker.html" %}
     {% endwith %}
 
-    {% with monthsSleepTimes = monthsSleepTimes, ChartMonthDays = ChartMonthDays %}
+    {% with monthsSleepTimes = monthsSleepTimes, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth %}
         {% include "trackerModules/sleepTracker.html" %}
+    {% endwith %}
+
+    {% with monthsSteps = monthsSteps, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth %}
+        {% include "trackerModules/stepTracker.html" %}
+    {% endwith %}
+
+    {% with monthsRuns = monthsRuns, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth %}
+        {% include "trackerModules/runningTracker.html" %}
     {% endwith %}
 
 
@@ -159,6 +167,8 @@ function renderchart() {
    renderWeightTrackerChart();
    renderSleepTrackerChart();
    renderSavingTrackerChart();
+   renderStepTrackerChart();
+   renderRunningTrackerChart();
 }
 
 window.onload = renderchart;
