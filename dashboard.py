@@ -289,12 +289,13 @@ class lists(Resource):
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
         lists = {}
-        for listName in ["book", "movie", "anime", "bucketList"]:
+        for listName in ["book", "movie", "anime", "bucketList", "toLearnList"]:
             c.execute("""SELECT * FROM lists WHERE type = ? """, (listName, ))
             lists[listName] = sorted(sorted([(name, done) for name, done, type in c.fetchall()]), key=lambda x: x[1])
         return make_response(render_template('lists.html', readList = lists["book"],
                                              animeList=lists["anime"], movieList = lists["movie"],
                                              bucketList=lists["bucketList"],
+                                             toLearnList=lists["toLearnList"],
                                              pageTheme=pageTheme),200,headers)
 
     def post(self):

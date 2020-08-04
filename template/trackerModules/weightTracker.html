@@ -32,7 +32,7 @@ function renderWeightTrackerChart(){
                         data: {"tracker_type":"weight", "value": newVal, "date": date},
                     });
                     //update the step value
-                    weights[selectedDay-1] = parseInt(newVal);
+                    weights[selectedDay-1] = parseFloat(newVal);
                     this.update();
                   }
               }
