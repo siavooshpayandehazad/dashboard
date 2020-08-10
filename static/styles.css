@@ -102,7 +102,6 @@ h2.photos {
 div.moodTracker {
   border-radius:12px;
   background-color:var(--moodtracker-bg-clr);
-  width: 290px;
   float: left;
   margin-bottom:10px;
   margin-left:10px;
@@ -559,5 +558,18 @@ div.chapterContent{
 }
 #closeButton:hover{
   color: #b2182b;
+  cursor: pointer;
+}
+div.moodSelectorPopUp{
+  position: fixed;
+}
+
+.moodSelectorCell{
+  min-width:20px;
+  border-radius:5px;
+  text-align: center;
+}
+
+.moodSelectorCell:hover{
   cursor: pointer;
 }

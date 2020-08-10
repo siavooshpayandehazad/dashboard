@@ -1,29 +1,74 @@
 
 <script type="text/javascript">
   function moodSelect(mood, date){
-       $.ajax({
-           type: "POST",
-           url: "http://localhost:5000/home",
-           data: {tracker_type: "mood", "value":mood,"date":date},
-         });
-         if (mood=="great") {
-           document.getElementById(date).style.backgroundColor  = "#1d91c0";
-         }else if (mood=="good") {
-           document.getElementById(date).style.backgroundColor  = "#9FDED0";
-         }else if (mood=="ok") {
-           document.getElementById(date).style.backgroundColor  = "#deebf7";
-         }else if (mood=="bad") {
-           document.getElementById(date).style.backgroundColor  = "#fddbc7";
-         }else{
-           document.getElementById(date).style.backgroundColor  = "#f4a582";
-         }
-       }
+    var moodTrackerPopups = document.getElementsByClassName("moodSelectorPopUp");
+    for (i = 0; i < moodTrackerPopups.length; i++) {
+      moodTrackerPopups[i].remove();
+    }
+    $.ajax({
+       type: "POST",
+       url: "http://localhost:5000/home",
+       data: {tracker_type: "mood", "value":mood,"date":date},
+     });
+     if (mood=="great") {
+       document.getElementById(date).style.backgroundColor  = "#1d91c0";
+     }else if (mood=="good") {
+       document.getElementById(date).style.backgroundColor  = "#9FDED0";
+     }else if (mood=="ok") {
+       document.getElementById(date).style.backgroundColor  = "#deebf7";
+     }else if (mood=="bad") {
+       document.getElementById(date).style.backgroundColor  = "#fddbc7";
+     }else{
+       document.getElementById(date).style.backgroundColor  = "#f4a582";
+     }
+  }
+  function moodSelector(event, item){
+    var moodTrackerPopups = document.getElementsByClassName("moodSelectorPopUp");
+    if(moodTrackerPopups.length>0){
+      for (i = 0; i < moodTrackerPopups.length; i++) {
+        moodTrackerPopups[i].remove();
+      }
+      return ;
+    }
+    var div = document.createElement("div");
+    div.classList.add("moodSelectorPopUp");
+    div.style.left = event.clientX+2+"px";
+    div.style.top = event.clientY+2+"px";
+    div.style.backgroundColor = "white";
+    div.style.border = "solid black 2px";
+    div.style.borderRadius = "5px";
+    div.style.width = "100px";
+
+    var table = document.createElement("table");
+    var moods = ["Great", "Good", "OK", "Bad", "Awful"]
+    var bgcolors = ["#1d91c0", "#9FDED0", "#deebf7", "#fddbc7", "#f4a582"]
+    for (i = 0; i < 5; i++) {
+      var row = document.createElement("tr");
+      var c1  = document.createElement("td");
+      var c2  = document.createElement("td");
+      c1.classList.add("moodselector")
+      c1.style.backgroundColor = bgcolors[i];
+      c1.onclick=function selectMood(){
+        var mood = this.nextSibling.innerHTML.toLowerCase();
+        var date = '{{PageYear}}-{{'%02d' % (PageMonth)}}-'+zeroPad(item.innerHTML, 2);
+        console.log(mood, date)
+        moodSelect(mood, date)
+      };
+      c2.innerHTML = moods[i];
+      row.appendChild(c1);
+      row.appendChild(c2);
+      table.appendChild(row);
+    }
+    div.appendChild(table);
+    var moodTracker = document.getElementsByClassName("moodTracker")[0];
+    moodTracker.appendChild(div);
+  }
 </script>
 
 <!-- Mood Tracker-->
 <div class="moodTracker">
   <h2  class="title lightbg">Mood Tracker</h2>
-  <table style="width:50%; margin-left: 10px; float:left;  margin-bottom: 10px;">
+  <table style="width:50%; margin-left: 10px; margin-right: 10px; float:left;  margin-bottom: 10px;">
     <tr> <th class="moodTracker"> M </th> <th class="moodTracker"> T </th>
          <th class="moodTracker"> W </th> <th class="moodTracker"> T </th>
          <th class="moodTracker"> F </th> <th class="moodTracker"> S </th>
@@ -39,32 +84,25 @@
           {%if item[1].split("-")[2]|int == day %}
                 {%set ns1.found = 1 %}
                 {% if item[0] == 'awful' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#f4a582">{{ day }}</td>
+                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#f4a582" onclick="moodSelector(event, this)">{{ day }}</td>
                 {% elif item[0] == 'bad' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#fddbc7">{{ day }}</td>
+                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#fddbc7" onclick="moodSelector(event, this)">{{ day }}</td>
                 {% elif item[0] == 'ok' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#deebf7">{{ day }}</td>
+                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#deebf7" onclick="moodSelector(event, this)">{{ day }}</td>
                 {% elif item[0] == 'good' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#9FDED0">{{ day }}</td>
+                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#9FDED0" onclick="moodSelector(event, this)">{{ day }}</td>
                 {% elif item[0] == 'great' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="#1d91c0">{{ day }}</td>
+                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#1d91c0" onclick="moodSelector(event, this)">{{ day }}</td>
                 {% endif %}
           {% endif %}
         {% endfor %}
         {%if ns1.found== 0 %}
-          <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" style="min-width:20px; border-radius:5px; text-align: center;",  bgcolor="white">{{ day }}</td>
+          <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="white" onclick="moodSelector(event, this)">{{ day }}</td>
         {% endif %}
       {% else %}
         <td>  </td>
       {% endif %}
     {% endfor %}
     </tr>
-  </table>
-  <table style="width:20%;  margin-right: 10px; float:right; margin-top:22px;">
-    <tr> <td class="moodselector" bgcolor="#f4a582" onclick="return moodSelect('Awful', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td> Awful!  </td> </tr>
-    <tr> <td class="moodselector" bgcolor="#fddbc7" onclick="return moodSelect('bad', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Bad  </td> </tr>
-    <tr> <td class="moodselector" bgcolor="#deebf7" onclick="return moodSelect('ok', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> O.K.  </td> </tr>
-    <tr> <td class="moodselector" bgcolor="#9FDED0" onclick="return moodSelect('good', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Good  </td> </tr>
-    <tr> <td class="moodselector" bgcolor="#1d91c0" onclick="return moodSelect('great', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (today)}}');"></td> <td align="left"> Great  </td> </tr>
   </table>
 </div>

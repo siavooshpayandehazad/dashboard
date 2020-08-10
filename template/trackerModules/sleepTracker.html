@@ -16,23 +16,57 @@ function renderSleepTrackerChart(){
     }
   });
 
+  var sum = 0;
+  var count = 0;
+  var avg = 0;
+  var avgLine = [];
+  var last = 0;
+  for( var i = 0; i < monthsSleepHoursTemp.length; i++ ){
+    if(! isNaN(monthsSleepHoursTemp[i])){ // its a number
+      sum = sum + monthsSleepHoursTemp[i];
+      count = count + 1;
+      last = i;
+    }
+  }
+  if(count>0){
+    avg = sum/count;
+  }
+  for( var i = 0; i <= last; i++ ){
+      avgLine.push(avg);
+  }
+
   var ctx = document.getElementById("sleepTracker").getContext('2d');
   var SleepChart = new Chart(ctx, {
      type: 'bar',
      data: {
         labels: {{ChartMonthDays|safe}},
         datasets: [{
+          label: "Avg. sleep (hr)",
+          type: 'line',
+          data: avgLine,
+          backgroundColor: ['rgba(239,59,44, 0)'],
+          borderColor: ['rgba(239,59,44, 1)'],
+          borderDash: [3,5],
+          borderWidth: 3,
+          spanGaps: true,
+          pointRadius: 0,
+       }, {
            label: "Sleep time (hr)",
            data: monthsSleepHoursTemp,
            backgroundColor: Sleep_BG_Colors,
            borderColor: Sleep_B_Colors,
            borderWidth: 2,
-           spanGaps: true
+           spanGaps: true,
         }
+
       ]
      },
      options: { scales: { yAxes: [{ ticks:{beginAtZero: true }}]},
                 onClick: function(event, array){
+                  if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
+                     (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
+                    return;
+                  }
                   var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
                   var selectedVal =  monthsSleepHoursTemp[selectedDay-1]
                   var newVal = window.prompt("Update sleep for day " + selectedDay + "?", selectedVal);

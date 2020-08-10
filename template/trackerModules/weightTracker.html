@@ -4,11 +4,40 @@ var weights= {{monthsWeights|safe}};
 function renderWeightTrackerChart(){
   var ctx = document.getElementById("weigthTracker").getContext('2d');
 
+  var sum = 0;
+  var count = 0;
+  var avg = 0;
+  var avgLine = [];
+  var last = 0;
+  for( var i = 0; i < weights.length; i++ ){
+    if(! isNaN(weights[i])){ // its a number
+      sum = sum + weights[i];
+      count = count + 1;
+      last = i;
+    }
+  }
+  if(count>0){
+    avg = sum/count;
+  }
+  for( var i = 0; i <= last; i++ ){
+    avgLine.push(avg);
+  }
+
   var WeightLineChart = new Chart(ctx, {
      type: 'line',
      data: {
         labels: {{ChartMonthDays|safe}},
         datasets: [{
+          label: "Avg. weight",
+          type: 'line',
+          data: avgLine,
+          backgroundColor: ['rgba(239,59,44, 0)'],
+          borderColor: ['rgba(239,59,44, 1)'],
+          borderDash: [5,5],
+          borderWidth: 3,
+          spanGaps: true,
+          pointRadius: 0,
+       },{
            label: "Weight (kg)",
            data: weights,
            backgroundColor: ['rgba(128,205,193, 0.3)'],
@@ -20,6 +49,10 @@ function renderWeightTrackerChart(){
      },
      options: { scales: { yAxes: [{ ticks:{ suggestedMin: 60, beginAtZero: false }}]},
                 onClick: function(event, array){
+                    if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
+                       (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
+                      return;
+                    }
                     var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
                     var selectedVal =  weights[selectedDay-1]
                     var newVal = window.prompt("Update weigtht for day " + selectedDay + "?", selectedVal);

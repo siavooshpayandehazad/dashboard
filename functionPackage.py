@@ -196,7 +196,7 @@ def generateWorkTrakcerChartData(pageMonth: int, pageYear: int, numberOfDays: in
     workTrackerData=[]
 
     for i in range(1, numberOfDays+1):
-        work_hour = "0"
+        work_hour = "0"     # set to zero in order to avoid failing when adding value 
         for item in monthsWorkHours:
             if int(item[1].split("-")[2]) == i:
                 work_hour = float(item[0])
