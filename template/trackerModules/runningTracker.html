@@ -1,0 +1,64 @@
+<script type="text/javascript">
+var monthsRunning = {{monthsRuns | safe}};
+
+
+function renderRunningTrackerChart(){
+
+  var Running_BG_Colors = []
+  var Running_B_Colors = []
+  monthsRunning.forEach((item, i) => {
+    if(parseFloat(item)<5){
+      Running_BG_Colors.push('rgba(254,217,118, 1)');
+      Running_B_Colors.push('rgba(254,178,76, 1)');
+    }else{
+      Running_BG_Colors.push('rgba(253,141,60, 1)');
+      Running_B_Colors.push('rgba(253,141,60, 1)');
+    }
+  });
+
+  var ctx = document.getElementById("runningTracker").getContext('2d');
+  var RunningBarChart = new Chart(ctx, {
+     type: 'bar',
+     data: {
+        labels: {{ChartMonthDays|safe}},
+        datasets: [{
+           label: "Running Distance (Km)",
+           data: monthsRunning,
+           backgroundColor: Running_BG_Colors,
+           borderColor: Running_B_Colors,
+           borderWidth: 2,
+           spanGaps: true
+        }
+      ]
+     },
+     options: { scales: { yAxes: [{ ticks:{suggestedMax: 15, beginAtZero: true }}]},
+                onClick: function(event, array){
+                  if (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end){
+                    return;
+                  }
+                  var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
+                  var selectedVal =  monthsRunning[selectedDay-1]
+                  var newVal = window.prompt("Update running for day " + selectedDay + "?", selectedVal);
+                  if (isNaN(newVal) || (newVal===null)){return;}
+                  var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
+                  // submit new value
+                  $.ajax({
+                      type: "POST",
+                      url: "http://localhost:5000/home",
+                      data: {"tracker_type":"running", "value": newVal, "date": date},
+                  });
+                  //update the step value
+                  monthsRunning[selectedDay-1] = newVal;
+                  this.update();
+                }
+           }
+  });
+}
+</script>
+
+<div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
+  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Running Tracker</h2>
+  <div style="float:left; width:90%; margin-left:5%">
+    <canvas  height="100px" id="runningTracker"></canvas>
+  </div>
+</div>
