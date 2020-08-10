@@ -1,6 +1,8 @@
 <script type="text/javascript">
 var monthsSteps = {{monthsSteps | safe}};
 const zeroPad = (num, places) => String(num).padStart(places, '0')
+var avgSteps = calculateAvg(monthsSteps);
+
 
 
 function renderStepTrackerChart(){
@@ -18,25 +20,6 @@ function renderStepTrackerChart(){
     }
   });
 
-  var sum = 0;
-  var count = 0;
-  var avg = 0;
-  var avgLine = [];
-  var last = 0;
-  for( var i = 0; i < monthsSteps.length; i++ ){
-    if(! isNaN(monthsSteps[i])){ // its a number
-      sum = sum + monthsSteps[i];
-      count = count + 1;
-      last = i;
-    }
-  }
-  if(count>0){
-    avg = sum/count;
-  }
-  for( var i = 0; i <= last; i++ ){
-    avgLine.push(avg);
-  }
-
   var ctx = document.getElementById("stepTracker").getContext('2d');
   var StepBarChart = new Chart(ctx, {
      type: 'bar',
@@ -45,13 +28,13 @@ function renderStepTrackerChart(){
         datasets: [{
           label: "Avg. Steps/day",
           type: 'line',
-          data: avgLine,
+          data: avgSteps,
           backgroundColor: ['rgba(239,59,44, 0)'],
           borderColor: ['rgba(239,59,44, 1)'],
           borderDash: [3,5],
           borderWidth: 3,
           spanGaps: true,
-          pointRadius: 0,
+          pointRadius: 0
        },{
            label: "Steps/day",
            data: monthsSteps,
@@ -81,6 +64,10 @@ function renderStepTrackerChart(){
                    });
                    //update the step value
                    monthsSteps[selectedDay-1] = parseInt(newVal);
+                   newAvg = calculateAvg(monthsSteps);
+                   for(var i = 0; i < newAvg.length; i++ ){
+                     avgSteps[i] = newAvg[i];
+                   }
                    this.update();
                  }
               }

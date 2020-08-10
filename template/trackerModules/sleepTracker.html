@@ -1,5 +1,6 @@
 <script type="text/javascript">
 var monthsSleepHoursTemp = {{monthsSleepTimes | safe}};
+var avgSleep = calculateAvg(monthsSleepHoursTemp);
 
 function renderSleepTrackerChart(){
 
@@ -16,24 +17,6 @@ function renderSleepTrackerChart(){
     }
   });
 
-  var sum = 0;
-  var count = 0;
-  var avg = 0;
-  var avgLine = [];
-  var last = 0;
-  for( var i = 0; i < monthsSleepHoursTemp.length; i++ ){
-    if(! isNaN(monthsSleepHoursTemp[i])){ // its a number
-      sum = sum + monthsSleepHoursTemp[i];
-      count = count + 1;
-      last = i;
-    }
-  }
-  if(count>0){
-    avg = sum/count;
-  }
-  for( var i = 0; i <= last; i++ ){
-      avgLine.push(avg);
-  }
 
   var ctx = document.getElementById("sleepTracker").getContext('2d');
   var SleepChart = new Chart(ctx, {
@@ -43,7 +26,7 @@ function renderSleepTrackerChart(){
         datasets: [{
           label: "Avg. sleep (hr)",
           type: 'line',
-          data: avgLine,
+          data: avgSleep,
           backgroundColor: ['rgba(239,59,44, 0)'],
           borderColor: ['rgba(239,59,44, 1)'],
           borderDash: [3,5],
@@ -79,7 +62,11 @@ function renderSleepTrackerChart(){
                       data: {"tracker_type":"sleep", "value": newVal, "date": date},
                   });
                   //update the step value
-                  monthsSleepHoursTemp[selectedDay-1] = newVal;
+                  monthsSleepHoursTemp[selectedDay-1] = parseFloat(newVal);
+                  newAvg = calculateAvg(monthsSleepHoursTemp);
+                  for(var i = 0; i < newAvg.length; i++ ){
+                    avgSleep[i] = newAvg[i];
+                  }
                   this.update();
                 }
 

@@ -1,0 +1,23 @@
+<script type="text/javascript">
+  function calculateAvg(valList){
+    var sum = 0;
+    var count = 0;
+    var avg = 0;
+    var avgLine = [];
+    var last = 0;
+    for( var i = 0; i < valList.length; i++ ){
+      if((!isNaN(valList[i])) && (monthsWorkHoursTemp[i]!=0)){ // its a number
+        sum = sum + valList[i];
+        count = count + 1;
+        last = i;
+      }
+    }
+    if(count>0){
+      avg = sum/count;
+    }
+    for( var i = 0; i <= last; i++ ){
+      avgLine.push(avg);
+    }
+    return avgLine;
+  }
+</script>

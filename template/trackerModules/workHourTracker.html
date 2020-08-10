@@ -1,5 +1,6 @@
 <script type="text/javascript">
   var monthsWorkHoursTemp = {{monthsWorkHours | safe}}
+  var avgWork = calculateAvg(monthsWorkHoursTemp);
 
   function renderWorkHourChart(){
     var WH_BG_Colors = []
@@ -21,25 +22,7 @@
       }
 
     });
-
-    var sum = 0;
-    var count = 0;
-    var avg = 0;
-    var avgLine = [];
-    var last = 0;
-    for( var i = 0; i < monthsWorkHoursTemp.length; i++ ){
-      if(monthsWorkHoursTemp[i]!=0){ // its a number
-        sum = sum + monthsWorkHoursTemp[i];
-        count = count + 1;
-        last = i;
-      }
-    }
-    if(count>0){
-      avg = sum/count;
-    }
-    for( var i = 0; i <= last; i++ ){
-        avgLine.push(avg);
-    }
+    
     var ctx = document.getElementById("WHTracker").getContext('2d');
     var WHBarChart = new Chart(ctx, {
        type: 'bar',
@@ -48,7 +31,7 @@
           datasets: [{
             label: "Avg. Working Hours (hr)",
             type: 'line',
-            data: avgLine,
+            data: avgWork,
             backgroundColor: ['rgba(239,59,44, 0)'],
             borderColor: ['rgba(239,59,44, 1)'],
             borderDash: [3,5],
@@ -84,6 +67,10 @@
                     });
                     //update the step value
                     monthsWorkHoursTemp[selectedDay-1] = parseFloat(monthsWorkHoursTemp[selectedDay-1])+parseFloat(newVal);
+                    newAvg = calculateAvg(monthsWorkHoursTemp);
+                    for(var i = 0; i < newAvg.length; i++ ){
+                      avgWork[i] = newAvg[i];
+                    }
                     this.update();
                   }
                 }
