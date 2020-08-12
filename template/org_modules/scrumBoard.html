@@ -1,5 +1,4 @@
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
 <div style="width:100%; margin-bottom:20px; float:left;">
   <!-- new scrum card gen -->
   <div style="width:100%; margin-bottom:10px;float:left;">
@@ -319,16 +318,20 @@
                     data: {{ChartDoneTasks|safe}},
                     backgroundColor: ['rgba(128,205,193, 0.3)'],
                     borderColor: ['rgba(53,151,143, 1)'],
-                    borderWidth: 2
+                    tension: 0,
+                    borderWidth: 2,
+                    pointStyle: 'circle',
                  },
                  {  label: '# of tasks to be done',
                     data: {{ChartthisMonthTasks|safe}},
                     backgroundColor: ['rgba(256,256,256, 0.3)'],
                     borderColor: ['rgba(251,106,74, 1)'],
-                    borderWidth: 2
+                    borderWidth: 2,
+                    pointStyle: 'circle',
                  }]
               },
-              options: { scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
+              options: {  legend: {labels: {usePointStyle: true}},
+                          scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
            });
         }
     window.onload = renderchart;

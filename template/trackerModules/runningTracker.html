@@ -1,5 +1,6 @@
 <script type="text/javascript">
 var monthsRunning = {{monthsRuns | safe}};
+var monthsPace = {{monthsPaces | safe}};
 
 
 function renderRunningTrackerChart(){
@@ -21,34 +22,75 @@ function renderRunningTrackerChart(){
      type: 'bar',
      data: {
         labels: {{ChartMonthDays|safe}},
-        datasets: [{
+        datasets: [
+        {
+           label: "Avg. Pace (Min/Km)",
+           data: monthsPace,
+           type: 'line',
+           yAxisID: 'y-axis-1',
+           backgroundColor: ['rgba(54,144,192, 0)'],
+           borderColor: ['rgba(54,144,192, 1)'],
+           borderWidth: 2,
+           pointRadius: 2,
+           spanGaps: true,
+           pointStyle: 'cicle',
+        },{
            label: "Running Distance (Km)",
            data: monthsRunning,
+           yAxisID: 'y-axis-0',
            backgroundColor: Running_BG_Colors,
            borderColor: Running_B_Colors,
            borderWidth: 2,
-           spanGaps: true
-        }
+           spanGaps: true,
+           pointStyle: 'rect',
+        },
       ]
      },
-     options: { scales: { yAxes: [{ ticks:{suggestedMax: 15, beginAtZero: true }}]},
+     options: { legend: {labels: {usePointStyle: true}},
+                scales: {
+                yAxes: [{
+                        id: 'y-axis-0',
+                        type: 'linear',
+                        position: 'left',
+                        ticks:{suggestedMax: 15, beginAtZero: true },
+                        }, {
+                        id: 'y-axis-1',
+                        type: 'linear',
+                        position: 'right',
+                        ticks: {suggestedMax: 8, beginAtZero: true },
+                      }]
+                },
                 onClick: function(event, array){
+                  console.log(this.scales['x-axis-0'].ticks.fontColor)
                   if (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end){
                     return;
                   }
+                  var graph;
                   var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
-                  var selectedVal =  monthsRunning[selectedDay-1]
-                  var newVal = window.prompt("Update running for day " + selectedDay + "?", selectedVal);
+                  var selectedVal;
+                  var newVal;
+                  if((this.getDatasetMeta(0).hidden == null) && (this.getDatasetMeta(1).hidden == null)){
+                    window.alert("you should turn one of the graphs off in order to enter data...")
+                    return;
+                  }else if (this.getDatasetMeta(0).hidden == true && this.getDatasetMeta(1).hidden == null){
+                    graph = "running"
+                    selectedVal =  monthsRunning[selectedDay-1];
+                    newVal = window.prompt("Update running for day " + selectedDay + "?", selectedVal);
+                    monthsRunning[selectedDay-1] = newVal;
+                  }else{
+                    graph = "pace"
+                    selectedVal = monthsPace[selectedDay-1];
+                    newVal = window.prompt("Update pace for day " + selectedDay + "?", selectedVal);
+                    monthsPace[selectedDay-1] = newVal;
+                  }
                   if (isNaN(newVal) || (newVal===null)){return;}
                   var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
                   // submit new value
                   $.ajax({
                       type: "POST",
                       url: "http://localhost:5000/home",
-                      data: {"tracker_type":"running", "value": newVal, "date": date},
+                      data: {"tracker_type":graph, "value": newVal, "date": date},
                   });
-                  //update the step value
-                  monthsRunning[selectedDay-1] = newVal;
                   this.update();
                 }
            }
@@ -56,7 +98,7 @@ function renderRunningTrackerChart(){
 }
 </script>
 
-<div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
+<div class="graphCard">
   <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Running Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">
     <canvas  height="100px" id="runningTracker"></canvas>

@@ -69,11 +69,13 @@ class dash(Resource):
         ChartMonthDays = [str(i) for i in range(1, numberOfDays+1)]
         HR_Min, HR_Max = generateHRChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         YearsSavings = generateSavingTrackerChartData(pageYear, c)
+        monthsPaces = generatePaceChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth=int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
                                              monthsWeights = chartWeights, ChartMonthDays = ChartMonthDays,
                                              monthsSleepTimes=monthsSleepTimes, monthsSteps=monthsSteps, monthsRuns=monthsRuns,
+                                             monthsPaces = monthsPaces,
                                              HR_Min = HR_Min, HR_Max = HR_Max, monthsWorkHours = monthsWorkHours,
                                              ChartYearMonths=monthsOfTheYear, YearsSavings=YearsSavings,
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
@@ -108,6 +110,8 @@ class dash(Resource):
             return addTrackerItemToTable(args['value'].lower(), "", [], "sleepTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'running':
             return addTrackerItemToTable(args['value'].lower(), "", [], "runningTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] == 'pace':
+            return addTrackerItemToTable(args['value'].lower(), "", [], "paceTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'steps':
             return addTrackerItemToTable(args['value'].lower(), "", [], "stepTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'WorkHours':

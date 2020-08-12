@@ -23,17 +23,22 @@ function renderHeartRateChart(hrMin, hrMax){
            backgroundColor: ['rgba(0,0,0, 0)'],
            borderColor: ['rgba(33,113,181, 1)'],
            borderWidth: 2,
-           spanGaps: true
+           spanGaps: true,
+           tension: 0,
+           pointStyle: 'circle',
         }, {
            label: "HR Max (bpm)",
            data: hr_Max,
            backgroundColor: ['rgba(0,0,0, 0)'],
            borderColor: ['rgba(252,78,42, 1)'],
            borderWidth: 2,
-           spanGaps: true
+           spanGaps: true,
+           tension: 0,
+           pointStyle: 'circle',
         }]
      },
-     options: { scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
+     options: { legend: {labels: {usePointStyle: true}},
+                scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
   });
 }
 
@@ -52,7 +57,7 @@ function submitHR(){
 </script>
 
 
-<div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
+<div style="width:550px;min-height:200px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
   <div style="margin-top: 10px; margin-right: 20px; width: 150px; float:right">
     <i class="fa fa-check" id="submitToGraph" onclick="submitHR()" style="float:right;" onclick="submitHR()"></i>
     <div style="float:left; width: 125px;">

@@ -39,16 +39,19 @@
             spanGaps: true,
             pointRadius: 2,
             hidden: true,
+            pointStyle: 'dash',
          },{
              label: "Working Hours (hr)",
              data: monthsWorkHoursTemp,
              backgroundColor: WH_BG_Colors,
              borderColor: WH_B_Colors,
              borderWidth: 2,
+             pointStyle: 'rect',
           }
         ]
        },
-       options: { scales: { yAxes: [{ticks:{suggestedMax: 8, beginAtZero: true }}]},
+       options: { legend: {labels: {usePointStyle: true}},
+                  scales: { yAxes: [{ticks:{suggestedMax: 8, beginAtZero: true }}]},
                   onClick: function(event, array){
                     if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
                        (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
@@ -91,7 +94,7 @@
 
 </script>
 
-<div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
+<div class="graphCard">
   <i class="fa fa-wrench" style="float:left; margin-left:10px; margin-top:10px;"></i>
   <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Work Hours Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">

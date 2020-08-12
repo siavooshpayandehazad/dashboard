@@ -196,7 +196,7 @@ def generateWorkTrakcerChartData(pageMonth: int, pageYear: int, numberOfDays: in
     workTrackerData=[]
 
     for i in range(1, numberOfDays+1):
-        work_hour = "0"     # set to zero in order to avoid failing when adding value 
+        work_hour = "0"     # set to zero in order to avoid failing when adding value
         for item in monthsWorkHours:
             if int(item[1].split("-")[2]) == i:
                 work_hour = float(item[0])
@@ -274,6 +274,24 @@ def generateRunningChartData(pageMonth: int, pageYear: int, numberOfDays: int, d
         runningTrackerData.append(run_value)
     return runningTrackerData
 
+def generatePaceChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+    monthsPaces = []
+    dbCursur.execute("""SELECT * FROM paceTracker WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
+    monthsPaces += dbCursur.fetchall()
+    paceTrackerData=[]
+
+    for i in range(1, numberOfDays+1):
+        pace_value = "nan"
+        for item in monthsPaces:
+            if int(item[1].split("-")[2]) == i:
+                try:
+                    pace_value = float(item[0])
+                except:
+                    pace_value = "nan"
+        paceTrackerData.append(pace_value)
+    return paceTrackerData
+
 def createDB(DBName):
     DBConnection  =  sqlite3.connect(DBName,  check_same_thread=False)
     DBCursor = DBConnection.cursor()
@@ -295,6 +313,8 @@ def generateDBTables(DBCursor):
              steps text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists runningTracker (
              run text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists paceTracker (
+             pace text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists activityTracker (
              activity_name text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists activityPlanner (

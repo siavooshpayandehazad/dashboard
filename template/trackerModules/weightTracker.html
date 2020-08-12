@@ -15,22 +15,25 @@ function renderWeightTrackerChart(){
           data: avgWeights,
           backgroundColor: ['rgba(239,59,44, 0)'],
           borderColor: ['rgba(239,59,44, 1)'],
-          borderDash: [5,5],
+          borderDash: [3,5],
           borderWidth: 3,
           spanGaps: true,
           pointRadius: 2,
           hidden: true,
+          pointStyle: 'dash',
        },{
            label: "Weight (kg)",
            data: weights,
            backgroundColor: ['rgba(128,205,193, 0.3)'],
            borderColor: ['rgba(53,151,143, 1)'],
            borderWidth: 2,
-           spanGaps: true
+           spanGaps: true,
+           pointStyle: 'cicle',
         }
       ]
      },
-     options: { scales: { yAxes: [{ ticks:{ suggestedMin: 60, beginAtZero: false }}]},
+     options: { legend: {labels: {usePointStyle: true}},
+                scales: { yAxes: [{ ticks:{ suggestedMin: 60, beginAtZero: false }}]},
                 onClick: function(event, array){
                     if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
                        (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
@@ -61,7 +64,7 @@ function renderWeightTrackerChart(){
 
 </script>
 
-<div style="width:45%;min-height:220px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
+<div class="graphCard">
   <h2  class="title lightbg"  style="float:left; margin-left: 20px;">Weight Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">
     <canvas  height="100px" id="weigthTracker"></canvas>
