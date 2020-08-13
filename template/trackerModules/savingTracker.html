@@ -39,8 +39,13 @@ function renderSavingTrackerChart(){
                      url: "http://localhost:5000/home",
                      data: {"tracker_type":"saving", "value": newVal, "date": date},
                  });
-                 ////update the step value
-                 myAnnualSavings[selectedMonth-1] = parseInt(myAnnualSavings[selectedMonth-1]) + parseInt(newVal);
+                 // update the step value
+                 if (isNaN(myAnnualSavings[selectedMonth-1])){
+                   // here we need to find the last valid value and add the current thing to that!
+                   myAnnualSavings[selectedMonth-1] = parseInt(myAnnualSavings[selectedMonth-1]) + parseInt(newVal);
+                 }else{
+                   myAnnualSavings[selectedMonth-1] = parseInt(myAnnualSavings[selectedMonth-1]) + parseInt(newVal);
+                 }
                  this.update();
                }
             }

@@ -18,9 +18,10 @@
     }
   </style>
   <script>
+    var tempNotebooks = {{Notebooks | safe}}
+
     function selectChapter(chapter){
       document.getElementsByClassName("editIcon")[0].style.display="block";
-      var tempNotebooks = {{Notebooks | safe}}
       notebookName = document.getElementById("notebookName");
       chapterContent = document.getElementById("chapterContent");
       chapterName = document.getElementById("chapterName");
@@ -54,21 +55,20 @@
 
     function selectNoteBook(notebook){
       document.getElementsByClassName("editIcon")[0].style.display="block";
-      allLabels = document.getElementsByClassName("notebookLabel")
+      var allLabels = document.getElementsByClassName("notebookLabel")
       Array.from(allLabels).forEach((label) => {
         label.classList.remove("selected")
       })
-      var tempNotebooks = {{Notebooks | safe}}
       if(notebook.classList.contains("selected")){
         notebook.classList.remove("selected");
       }else{
         notebook.classList.add("selected");
       }
-      tocContent = document.getElementById("tocContent");
-      tocList = document.createElement("ol")
+      var tocContent = document.getElementById("tocContent");
+      var tocList = document.createElement("ol")
       tocList.className = "ToC";
       Array.from(Object.keys(tempNotebooks[notebook.innerHTML]).sort()).forEach(tocItem =>{
-        tocListItem = document.createElement("li")
+        var tocListItem = document.createElement("li")
         tocListItem.className="ToCLabel";
         tocListItem.onclick = function () {selectChapter(this)}
         tocListItem.innerHTML = tocItem
@@ -77,17 +77,17 @@
       tocContent.innerHTML = "";
       tocContent.appendChild(tocList)
       // add new chapter
-      AddChapter = document.createElement("ol")
-      AddChapterItem = document.createElement("li")
+      var AddChapter = document.createElement("ol")
+      var AddChapterItem = document.createElement("li")
       AddChapter.className = "addToC"
       AddChapterItem.className = "ToCLabel"
       AddChapterItem.innerHTML = "+ add new chapter"
       AddChapterItem.onclick = function(){addChapter(this)}
       //add textarea and hide it
-      AddChapterTextAreaItem = document.createElement("li")
+      var AddChapterTextAreaItem = document.createElement("li")
       AddChapterTextAreaItem.className = "ToCLabel"
       AddChapterTextAreaItem.style.display = "none"
-      AddChapterTextArea = document.createElement("textarea")
+      var AddChapterTextArea = document.createElement("textarea")
       AddChapterTextArea.className = "addChapterTextArea"
       AddChapterTextArea.cols = "15"
       AddChapterTextArea.rows = "1"
@@ -101,11 +101,11 @@
       AddChapter.appendChild(AddChapterTextAreaItem)
       tocContent.appendChild(AddChapter)
 
-      chapterName = document.getElementById("chapterName");
+      var chapterName = document.getElementById("chapterName");
       chapterName.innerHTML = Object.keys(tempNotebooks[notebook.innerHTML]).sort()[0];
-      chapterContent = document.getElementById("chapterContent");
+      var chapterContent = document.getElementById("chapterContent");
       chapterContent.innerHTML = tempNotebooks[notebook.innerHTML][Object.keys(tempNotebooks[notebook.innerHTML]).sort()[0]];
-      notebookName = document.getElementById("notebookName");
+      var notebookName = document.getElementById("notebookName");
       notebookName.innerHTML = notebook.innerHTML;
     }
     function addNotebook(item){
@@ -119,8 +119,8 @@
                  "notebook": item.value,
                  "chapter" : "Chapter 1",},
       });
-      notebookLabels = document.getElementsByClassName("notebookLabels")[0]
-      Label = document.createElement("div")
+      var notebookLabels = document.getElementsByClassName("notebookLabels")[0]
+      var Label = document.createElement("div")
       Label.className = "notebookLabel"
       Label.onclick = function(){selectNoteBook(this)}
       Label.innerHTML = item.value
@@ -132,13 +132,12 @@
     }
     function editMode(item){
       item.style.display = "none";
-      var tempNotebooks = {{Notebooks | safe}}
-      notebook = document.getElementById("notebookName");
-      chapterContent = document.getElementById("chapterContent");
-      form = document.createElement("form")
+      var notebook = document.getElementById("notebookName");
+      var chapterContent = document.getElementById("chapterContent");
+      var form = document.createElement("form")
       form.action = "javascript:;";
 
-      textArea = document.createElement("textarea");
+      var textArea = document.createElement("textarea");
       textArea.className = "notebookEntry"
       textArea.style.width = "98%";
       textArea.type = "text";
@@ -147,19 +146,21 @@
       form.appendChild(textArea)
 
       form.onsubmit = function() {
-        var notebookEntry = document.getElementsByClassName("notebookEntry")[0].value;
+        var notebookEntry = document.getElementsByClassName("notebookEntry")[0].value
+        var chapterName = document.getElementById("chapterName").innerHTML
+        var notebookName = document.getElementById("notebookName").innerHTML
         $.ajax({ type: "POST",
             url: "http://localhost:5000/notes",
             data: {"entry":notebookEntry,
-                   "notebook": document.getElementById("notebookName").innerHTML,
-                   "chapter" : document.getElementById("chapterName").innerHTML,},
+                   "notebook": notebookName,
+                   "chapter" : chapterName,},
         });
         document.getElementById("chapterContent").innerHTML = notebookEntry;
-        console.log(document.getElementsByClassName("editIcon"))
+        tempNotebooks[notebookName][chapterName]=notebookEntry;
         document.getElementsByClassName("editIcon")[0].style.display = "block";
       }
 
-      submitButton = document.createElement("input");
+      var submitButton = document.createElement("input");
       submitButton.type = "submit"
       submitButton.style = "float:right; margin-right: 2%;"
       form.appendChild(submitButton)

@@ -213,6 +213,7 @@ div.settingpage{
 }
 td.tracker:hover {
  background-color:  var(--tracker-hvr-clr);
+ cursor: pointer;
 }
 td.found {
  background-color:  var(--tracker-fnd-hvr-clr);
