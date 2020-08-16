@@ -6,6 +6,7 @@
 # get monthy activity list: curl http://localhost:5000/activityTracker -d "display=month"
 #------------------------------------
 from functionPackage import *
+from functionPackageCharts import *
 
 import sqlite3
 import datetime
@@ -48,39 +49,43 @@ class dash(Resource):
             pageMonth = str(datetime.date.today().month).zfill(2)
             pageYear = str(datetime.date.today().year)
 
-        headers = {'Content-Type': 'text/html'}
-        pageTitle = "DashBoard "
-        titleDate = monthsOfTheYear[int(pageMonth)-1]+"-"+pageYear
+        headers      = {'Content-Type': 'text/html'}
+        pageTitle    = "DashBoard "
+        titleDate    = monthsOfTheYear[int(pageMonth)-1]+"-"+pageYear
         numberOfDays = numberOfDaysInMonth(int(pageMonth), int(pageYear))
+        monthsBeginningWeekDay = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d').weekday()
         # moodTrackerDays is a list that contains a bunch of Nones for the days of the week that are in the
         # previous month. this is used for the moodtracker in order to add the empty spaces in the beginning of the month.
-        monthsBeginningWeekDay = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d').weekday()
         moodTrackerDays = [None for i in range(0, monthsBeginningWeekDay)] + list(range(1, numberOfDays+1))
         # list of current month's moods and activities.
         monthsActivities, monthsActivitiesPlanned, monthsMoods = collectMonthsData(int(pageMonth), int(pageYear), c)
         # highlights the current day in the activity tracker page!
-        highlight = shouldHighlight(pageYear, pageMonth)
+        highlight    = shouldHighlight(pageYear, pageMonth)
         counterValue = fetchSettingParamFromDB(c, "counter")
-        chartWeights = generateWeightChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        monthsWorkHours = generateWorkTrakcerChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        # gather chart information ----------------------
+        chartWeights     = generateWeightChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        monthsWorkHours  = generateWorkTrakcerChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         monthsSleepTimes = generateSleepChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        monthsSteps = generateStepChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        monthsRuns = generateRunningChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        ChartMonthDays = [str(i) for i in range(1, numberOfDays+1)]
-        HR_Min, HR_Max = generateHRChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        YearsSavings = generateSavingTrackerChartData(pageYear, c)
-        monthsPaces = generatePaceChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        monthsSteps      = generateStepChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        monthsRuns       = generateRunningChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        HR_Min, HR_Max   = generateHRChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        YearsSavings     = generateSavingTrackerChartData(pageYear, c)
+        monthsPaces      = generatePaceChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        ChartMonthDays   = [str(i) for i in range(1, numberOfDays+1)]
+        # ----------------------------------------------
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
-                                             PageYear = int(pageYear), PageMonth=int(pageMonth),
+                                             PageYear = int(pageYear), PageMonth = int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
-                                             monthsWeights = chartWeights, ChartMonthDays = ChartMonthDays,
-                                             monthsSleepTimes=monthsSleepTimes, monthsSteps=monthsSteps, monthsRuns=monthsRuns,
-                                             monthsPaces = monthsPaces,
-                                             HR_Min = HR_Min, HR_Max = HR_Max, monthsWorkHours = monthsWorkHours,
-                                             ChartYearMonths=monthsOfTheYear, YearsSavings=YearsSavings,
+                                             # charts info
+                                             ChartMonthDays = ChartMonthDays, ChartYearMonths = monthsOfTheYear,
+                                             monthsWeights = chartWeights, monthsSleepTimes = monthsSleepTimes,
+                                             monthsSteps = monthsSteps, HR_Min = HR_Min, HR_Max = HR_Max,
+                                             monthsRuns = monthsRuns, monthsPaces = monthsPaces,
+                                             monthsWorkHours = monthsWorkHours, YearsSavings = YearsSavings,
+                                             # ----------------------
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
-                                             activityList = activityList, days=moodTrackerDays, highlight=highlight, pageTheme=pageTheme,
-                                             counterValue=counterValue),200,headers)
+                                             activityList = activityList, days=moodTrackerDays, highlight = highlight,
+                                             pageTheme = pageTheme, counterValue = counterValue),200,headers)
 
     def post(self):
         args = parser.parse_args()

@@ -107,15 +107,15 @@
 
     <div style="margin-left: 5px;float:left; min-width:130px;">
       {%if pageTheme=="Dark"%}
-      <img src= "{{url_for('static', filename = 'page1_Large_dark.png')}}" float="right" width="130" alt="page1_Large_dark">
+      <img src= "{{url_for('static', filename = 'decorationImages/page1_Large_dark.png')}}" float="right" width="130" alt="page1_Large_dark">
       {% else %}
-      <img src= "{{url_for('static', filename = 'page1_Large.png')}}" float="right" width="130" alt="page1_Large">
+      <img src= "{{url_for('static', filename = 'decorationImages/page1_Large.png')}}" float="right" width="130" alt="page1_Large">
       {% endif %}
     </div>
 
     <div style="width:100%; margin-left:5px;  margin-bottom: 10px; float:left; min-width:200px;">
       <div class="divider" style="width:90%; height:4px; float:left; margin-left: 3.3%; margin-top: 18px;"></div>
-      <img src= "{{url_for('static', filename = 'page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
+      <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
     </div>
 
     {% with monthsWorkHours = monthsWorkHours, ChartMonthDays = ChartMonthDays %}
@@ -129,7 +129,7 @@
 
     <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
       <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
-      <img src= "{{url_for('static', filename = 'page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
+      <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
     </div>
 
     {% with monthsWeights = monthsWeights, ChartMonthDays = ChartMonthDays %}
@@ -155,7 +155,7 @@
 
     <div style="width:100%; margin-left:5px;  margin-bottom: 10px; float:left; min-width:200px;">
       <div class="divider" style="width:90%; height:4px; float:left; margin-left: 3.3%; margin-top: 18px;"></div>
-      <img src= "{{url_for('static', filename = 'page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
+      <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
     </div>
 
 </body>

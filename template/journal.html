@@ -81,9 +81,9 @@
 </head>
 
 {%if pageTheme=="Dark"%}
-  <body  class="journal featured" background="{{url_for('static', filename='journal_background.png') }}">
+  <body  class="journal featured">
 {% else %}
-  <body  class="journal" background="{{url_for('static', filename='journal_background.png') }}">
+  <body  class="journal" background="{{url_for('static', filename='decorationImages/journal_background.png') }}">
 {% endif %}
 
 {% with page="journal" %}
@@ -172,7 +172,6 @@
       {% endautoescape %}
     </div>
 
-
       <div style="margin-bottom:10px;">
         <hr>
         <h2 class="photos" style="float:left">   photos </h2>
@@ -195,14 +194,11 @@
         {%endif%}
         </div>
       </div>
-
   </div>
 
   <div style="margin-right: 20px;float:right;">
-    <img src= "{{url_for('static', filename = 'journal_overlay.png')}}" float="right" width = "120" alt="roy">
+    <img src= "{{url_for('static', filename = 'decorationImages/journal_overlay.png')}}" float="right" width = "120" alt="roy">
   </div>
-
-
 
   </body>
 </html>

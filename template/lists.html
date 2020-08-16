@@ -69,6 +69,14 @@
 
 <script type="text/javascript">
 
+function validateListInput(value){
+  if(value.length == 0){
+    window.alert("input field can not be empty!");
+    return false;
+  }
+  return true;
+}
+
 function deleteItem(item) {
       var listItem = event.srcElement.parentElement.parentElement;
       $.ajax({ type: "POST",
@@ -80,7 +88,6 @@ function deleteItem(item) {
 
 function boxchange(event) {
       var listItem = event.srcElement.parentElement;
-
       $.ajax({ type: "POST",
           url: "http://localhost:5000/lists",
           data: {"name": listItem.querySelector(".task").innerHTML, "type": listItem.querySelector(".task").getAttribute("type"), "done": listItem.querySelector("input").checked}
@@ -89,13 +96,17 @@ function boxchange(event) {
 
 function submitonEnter(event) {
   if (event.keyCode == 13) {
-          // console.log(event.srcElement.name)
-          $.ajax({ type: "POST",
-              url: "http://localhost:5000/lists",
-              data: {"name": event.srcElement.value,
-                     "type": event.srcElement.name,
-                     "done": 'false'}
-          });
+        var listItemValue = event.srcElement.value;
+        var listItemType = event.srcElement.name;
+        if (!validateListInput(listItemValue)){
+          return;
+        }
+        $.ajax({ type: "POST",
+            url: "http://localhost:5000/lists",
+            data: {"name": listItemValue,
+                   "type": listItemType,
+                   "done": 'false'}
+        });
 
           // add the new element to the list!
           var li = document.createElement("li");

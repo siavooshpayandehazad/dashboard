@@ -38,7 +38,8 @@
 
 {% with ChartMonthDays = ChartMonthDays,
         ChartDoneTasks = ChartDoneTasks,
-        ChartthisMonthTasks = ChartthisMonthTasks %}
+        ChartthisMonthTasks = ChartthisMonthTasks,
+        day = day%}
     {% include "org_modules/scrumBoard.html" %}
 {% endwith %}
 

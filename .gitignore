@@ -4,3 +4,6 @@ static/photos/
 journal.db
 backups/
 venv/
+tests/.coverage
+tests/test.db
+static/decorationImages/

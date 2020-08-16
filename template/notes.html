@@ -109,6 +109,7 @@
       notebookName.innerHTML = notebook.innerHTML;
     }
     function addNotebook(item){
+      // hide the text, and display the textArea box...
       item.children[0].style.display="none";
       item.children[1].style.display="block";
     }
@@ -168,13 +169,16 @@
       chapterContent.innerHTML = ""
       chapterContent.appendChild(form)
     }
+    function editNoteBook(item){
+      window.alert("add edit notebook name!");
+    }
   </script>
 </head>
 
 {%if pageTheme=="Dark"%}
-  <body  class="journal featured" background="{{url_for('static', filename='journal_background.png') }}">
+  <body  class="journal featured">
 {% else %}
-  <body  class="journal" background="{{url_for('static', filename='journal_background.png') }}">
+  <body  class="journal">
 {% endif %}
 
 {% with page="notes" %}
@@ -184,9 +188,9 @@
   <div class="notebookLabels">
     {% for notebook in Notebooks.keys()|sort() %}
       {%if notebook == Notebooks.keys()|sort()|first %}
-      <div class= "notebookLabel selected" onclick="selectNoteBook(this)">{{notebook}}</div>
+      <div class= "notebookLabel selected" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)">{{notebook}}</div>
       {%else%}
-      <div class= "notebookLabel" onclick="selectNoteBook(this)">{{notebook}}</div>
+      <div class= "notebookLabel" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)">{{notebook}}</div>
       {%endif%}
     {% endfor %}
       <div class= "notebookLabel" onclick="addNotebook(this)">

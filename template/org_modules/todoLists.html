@@ -1,7 +1,7 @@
 
 <div style="float:left;width:100%;margin-bottom:10px;margin-top:0px;">
 
-    <img src= "{{url_for('static', filename = 'page_todo.png')}}" style="float:right; vertical-align: top; margin-right: 3%;"  height="84px"  alt="page_todo">
+    <img src= "{{url_for('static', filename = 'decorationImages/page_todo.png')}}" style="float:right; vertical-align: top; margin-right: 3%;"  height="84px"  alt="page_todo">
 
     <h1 style="margin-top:15px;margin-right:1px;width:20%;float:left;"> <font style="text-decoration: underline;"> Todo List </font></h1>
 
@@ -123,7 +123,7 @@
       var listItem = event.target.parentElement.parentElement;
       console.log('deleting item', listItem.querySelector(".task").innerHTML, listItem.querySelector(".date").innerHTML)
       $.ajax({ type: "POST",
-          url: "http://localhost:5000/org",
+          url: "/org",
           data: {"entry": "todo",
                  "value": listItem.querySelector(".task").innerHTML,
                  "date": listItem.querySelector(".date").innerHTML,
@@ -135,7 +135,7 @@
    function boxchange(event) {
       var listItem = event.target.parentElement;
       $.ajax({ type: "POST",
-          url: "http://localhost:5000/org",
+          url: "/org",
           data: {"entry": "todo",
                  "value": listItem.querySelector(".task").innerHTML,
                  "date": listItem.querySelector(".date").innerHTML,
@@ -143,16 +143,26 @@
       });
     }
 
+    function validateToDoInput(value){
+      if(value.length == 0){
+        window.alert("input field can not be empty!");
+        return false;
+      }
+      return true;
+    }
 
     document.getElementById('task').addEventListener('keypress', function submitonEnter(event) {
       if (event.keyCode == 13) {
-              //console.log(document.getElementById("task").value)
+              //console.log(document.getElementById("task").value
+              var taskValue = document.getElementById("task").value;
+              var taskDate = document.getElementById("task").name;
+              if (!validateToDoInput(taskValue)){
+                return;
+              }
+              // Post to server
               $.ajax({ type: "POST",
-                  url: "http://localhost:5000/org",
-                  data: {"entry": "todo",
-                         "value": document.getElementById("task").value,
-                         "date": document.getElementById("task").name,
-                         "done": 'false'}
+                  url: "/org",
+                  data: {"entry": "todo", "value": taskValue, "date": taskDate, "done": 'false'}
               });
               // add the new element to the list!
               var li = document.createElement("li");

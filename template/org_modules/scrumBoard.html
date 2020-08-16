@@ -2,12 +2,12 @@
 <div style="width:100%; margin-bottom:20px; float:left;">
   <!-- new scrum card gen -->
   <div style="width:100%; margin-bottom:10px;float:left;">
-    <img src= "{{url_for('static', filename = 'todo_scrum.png')}}" style="float:right; vertical-align: top; height: 120px;margin-right:1.2%;" alt="page_todo">
+    <img src= "{{url_for('static', filename = 'decorationImages/todo_scrum.png')}}" style="float:right; vertical-align: top; height: 120px;margin-right:1.2%;" alt="page_todo">
     <h1 style="margin-top:15px;margin-right:1px;width:60%;float:left;"> <font style="text-decoration: underline;"> Projects Scrum Board </font></h1>
       <div class="NewScrumCardContainer">
         &nbsp;<b> define new task: </b>&nbsp;
-        &nbsp; Project name: <input id="projInput", type="text",  style="width:10%; outline:None;"  value=" ">
-        &nbsp; Task name: <input id="taskInput", type="text", style="width:25%; outline:None;"  value=" ">
+        &nbsp; Project name: <input id="projInput", type="text",  style="width:10%; outline:None;"  value="">
+        &nbsp; Task name: <input id="taskInput", type="text", style="width:25%; outline:None;"  value="">
         &nbsp; Proirity:
         <select id="priorityInput" >
           <option value="1">1 (high)</option>
@@ -111,25 +111,67 @@
 </div>
 
 <script type="text/javascript">
+    var ChartDoneTasks = {{ChartDoneTasks|safe}};
+    var ChartthisMonthTasks = {{ChartthisMonthTasks|safe}};
+    var day = {{day | safe}}
+    var ctx = document.getElementById("tasksDoneThisMonth").getContext('2d');
+    var myLineChart = new Chart(ctx, {
+       type: 'line',
+       data: {
+          labels: {{ChartMonthDays|safe}},
+          datasets: [{
+             label: '# of tasks done',
+             data: ChartDoneTasks,
+             backgroundColor: ['rgba(128,205,193, 0.3)'],
+             borderColor: ['rgba(53,151,143, 1)'],
+             tension: 0,
+             borderWidth: 2,
+             pointStyle: 'circle',
+          },
+          {  label: '# of tasks to be done',
+             data: ChartthisMonthTasks,
+             backgroundColor: ['rgba(256,256,256, 0.3)'],
+             borderColor: ['rgba(251,106,74, 1)'],
+             borderWidth: 2,
+             pointStyle: 'circle',
+          }]
+       },
+       options: {  legend: {labels: {usePointStyle: true}},
+                   scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
+    });
+
     function deleteCard(event){
       var cardProj = event.target.parentElement.parentElement.querySelector("#projectName").innerHTML;
       var cardTask =  event.target.parentElement.parentElement.querySelector("#taskName").innerHTML;
       var currentList = event.target.parentElement.parentElement.id.split("_")[0];
       $.ajax({ type: "POST",
-          url: "http://localhost:5000/org",
+          url: "/org",
           data: {"cardProj": cardProj, "cardTask": cardTask,
                  "delete": "1" , "currentList": currentList}
       });
       event.target.parentElement.parentElement.remove();
     }
 
+    function validateCardInput(value){
+      if(value.length == 0){
+        window.alert("input field can not be empty!");
+        return false;
+      }
+      return true;
+    }
+
     function makeNewCard(){
         var project = document.getElementById("projInput").value;
         var task = document.getElementById("taskInput").value;
         var priority = document.getElementById("priorityInput").value;
-        console.log(project, task);
+        if (!validateToDoInput(project)){
+          return;
+        }
+        if (!validateToDoInput(task)){
+          return;
+        }
         $.ajax({ type: "POST",
-            url: "http://localhost:5000/org",
+            url: "/org",
             data: {"cardProj": project, "cardTask": task, "priority": priority}
         });
 
@@ -203,7 +245,7 @@
           var currentList = event.target.parentElement.parentElement.id.split("_")[0];
           //console.log(cardProj,cardTask, currentList)
           $.ajax({ type: "POST",
-              url: "http://localhost:5000/org",
+              url: "/org",
               data: {"cardProj": cardProj, "cardTask": cardTask,
                      "currentList": currentList , "destList": "archive"}
           });
@@ -215,74 +257,80 @@
         }
 
         function drag(ev) {
-          ev.dataTransfer.setData("text", ev.target.id);
+          ev.dataTransfer.setData("id", ev.target.id);
+          var destList = ev.target.parentElement.parentElement.querySelector(".title").innerHTML.toLowerCase();
+          ev.dataTransfer.setData("list", destList);
+        }
+
+        function setCardBGColors(item, priority, P1BG, P1B, P2BG, P2B, P3BG, P3B){
+          if(priority == "1"){
+            item.style.backgroundColor = P1BG;
+            item.style.borderColor = P1B;
+          }else if (priority=="2") {
+            item.style.backgroundColor = P2BG;
+            item.style.borderColor = P2B;
+          }else if (priority=="3") {
+            item.style.backgroundColor = P3BG;
+            item.style.borderColor = P3B;
+          }
         }
 
         function drop(ev, target) {
           ev.preventDefault();
-          var data = ev.dataTransfer.getData("text");
-          var currentList = ev.dataTransfer.getData("text").split("_")[0];
-          var priority = ev.dataTransfer.getData("text").split("_")[2];
+          var data = ev.dataTransfer.getData("id");
+          var currentList = ev.dataTransfer.getData("list");
+          var priority = ev.dataTransfer.getData("id").split("_")[2];
           var destList = ev.target.parentElement.querySelector(".title").innerHTML.toLowerCase();
+          if (currentList == destList){
+            console.log("scrum card wasn't moved");
+            return;
+          }
           var cardProj = document.getElementById(data).querySelector("#projectName").innerHTML;
           var cardTask = document.getElementById(data).querySelector("#taskName").innerHTML;
 
           ev.target.appendChild(document.getElementById(data));
-
           $.ajax({ type: "POST",
-              url: "http://localhost:5000/org",
+              url: "/org",
               data: {"cardProj": cardProj, "cardTask": cardTask, "priority": priority,
                      "currentList": currentList , "destList": destList}
           });
           // here im fixing the color of the moved card!
+          var item = document.getElementById(data)
+          if (destList!="done" && currentList=="done"){
+            for(var i = parseInt(day)-1; i < ChartDoneTasks.length; i++ ){
+              ChartDoneTasks[i] = ChartDoneTasks[i] - 1;
+            }
+            myLineChart.update();
+          }
+          if (currentList=="backlog" && destList != "backlog"){
+            for(var i = 0; i < ChartthisMonthTasks.length; i++ ){
+              ChartthisMonthTasks[i] = ChartthisMonthTasks[i] + 1;
+            }
+            myLineChart.update();
+          }
+          if (currentList!="backlog" && destList == "backlog"){
+            for(var i = 0; i < ChartthisMonthTasks.length; i++ ){
+              ChartthisMonthTasks[i] = ChartthisMonthTasks[i] - 1;
+            }
+            myLineChart.update();
+          }
           if(destList == "backlog"){
-            document.getElementById(data).querySelector(".scrumCardDivider").style.backgroundColor = "#4292c6";
-            if(priority == "1"){
-              document.getElementById(data).style.backgroundColor = "#9ecae1";
-              document.getElementById(data).style.borderColor = "#08519c";
-            }else if (priority=="2") {
-              document.getElementById(data).style.backgroundColor = "#c6dbef";
-              document.getElementById(data).style.borderColor = "#4292c6";
-            }else if (priority=="3") {
-              document.getElementById(data).style.backgroundColor = "#deebf7";
-              document.getElementById(data).style.borderColor = "#9ecae1";
-            }
+            item.querySelector(".scrumCardDivider").style.backgroundColor = "#4292c6";
+            setCardBGColors(item, priority, "#9ecae1", "#08519c", "#c6dbef", "#4292c6", "#deebf7", "#9ecae1")
            }else if(destList == "todo"){
-              document.getElementById(data).querySelector(".scrumCardDivider").style.backgroundColor = "#6a51a3";
-              if(priority == "1"){
-                document.getElementById(data).style.backgroundColor = "#bcbddc";
-                document.getElementById(data).style.borderColor = "#6a51a3";
-              }else if (priority=="2") {
-                document.getElementById(data).style.backgroundColor = "#dadaeb";
-                document.getElementById(data).style.borderColor = "#9e9ac8";
-              }else if (priority=="3") {
-                document.getElementById(data).style.backgroundColor = "#efedf5";
-                document.getElementById(data).style.borderColor = "#bcbddc";
-              }
+             item.querySelector(".scrumCardDivider").style.backgroundColor = "#6a51a3";
+             setCardBGColors(item, priority, "#bcbddc", "#6a51a3", "#dadaeb", "#9e9ac8", "#efedf5", "#bcbddc")
           }else if (destList == "in progress") {
-            document.getElementById(data).querySelector(".scrumCardDivider").style.backgroundColor = "#fe9929";
-            if(priority == "1"){
-              document.getElementById(data).style.backgroundColor = "#fee391";
-              document.getElementById(data).style.borderColor = "#ec7014";
-            }else if (priority=="2") {
-              document.getElementById(data).style.backgroundColor = "#fff7bc";
-              document.getElementById(data).style.borderColor = "#fe9929";
-            }else if (priority=="3") {
-              document.getElementById(data).style.backgroundColor = "#ffffe5";
-              document.getElementById(data).style.borderColor = "#fee391";
-            }
+            var item = document.getElementById(data)
+            item.querySelector(".scrumCardDivider").style.backgroundColor = "#fe9929";
+            setCardBGColors(item, priority, "#fee391", "#ec7014", "#fff7bc", "#fe9929", "#ffffe5", "#fee391")
           }else if (destList == "done") {
-            document.getElementById(data).querySelector(".scrumCardDivider").style.backgroundColor = "#74c476";
-            if(priority == "1"){
-              document.getElementById(data).style.backgroundColor = "#c7e9c0";
-              document.getElementById(data).style.borderColor = "#238b45";
-            }else if (priority=="2") {
-              document.getElementById(data).style.backgroundColor = "#e5f5e0";
-              document.getElementById(data).style.borderColor = "#74c476";
-            }else if (priority=="3") {
-              document.getElementById(data).style.backgroundColor = "#f7fcf5";
-              document.getElementById(data).style.borderColor = "#c7e9c0";
+            for(var i = parseInt(day)-1; i < ChartDoneTasks.length; i++ ){
+              ChartDoneTasks[i] = ChartDoneTasks[i] + 1;
             }
+            myLineChart.update();
+            item.querySelector(".scrumCardDivider").style.backgroundColor = "#74c476";
+            setCardBGColors(item, priority, "#c7e9c0", "#238b45", "#e5f5e0", "#74c476", "#f7fcf5", "#c7e9c0")
           }
           event.target.parentElement.style.background = "";
           event.target.style.background = "";
@@ -305,34 +353,4 @@
         }, false);
 
 
-        var myLineChart, c = 0, label = 0, randomnum, interval;
-
-        function renderchart() {
-           var ctx = document.getElementById("tasksDoneThisMonth").getContext('2d');
-           myLineChart = new Chart(ctx, {
-              type: 'line',
-              data: {
-                 labels: {{ChartMonthDays|safe}},
-                 datasets: [{
-                    label: '# of tasks done',
-                    data: {{ChartDoneTasks|safe}},
-                    backgroundColor: ['rgba(128,205,193, 0.3)'],
-                    borderColor: ['rgba(53,151,143, 1)'],
-                    tension: 0,
-                    borderWidth: 2,
-                    pointStyle: 'circle',
-                 },
-                 {  label: '# of tasks to be done',
-                    data: {{ChartthisMonthTasks|safe}},
-                    backgroundColor: ['rgba(256,256,256, 0.3)'],
-                    borderColor: ['rgba(251,106,74, 1)'],
-                    borderWidth: 2,
-                    pointStyle: 'circle',
-                 }]
-              },
-              options: {  legend: {labels: {usePointStyle: true}},
-                          scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
-           });
-        }
-    window.onload = renderchart;
   </script>
