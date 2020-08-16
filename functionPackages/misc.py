@@ -2,7 +2,7 @@ import os, datetime
 import sqlite3
 import hashlib, binascii
 from typing import Any
-import re
+from functionPackages.dateTime import *
 
 def getTodaysLogs(dbCursur, todaysDate):
     dbCursur.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate,))
@@ -24,15 +24,6 @@ def allPotosInDir(photoDir, year, date):
                 todayPhotos.append(str(year)+"/"+date+"/"+file)
     todayPhotos.sort()
     return todayPhotos
-
-
-def parseDate(dateVal):
-    if dateVal is None:
-        return str(datetime.date.today())
-    else:
-        if not checkIfDateValid(dateVal):
-            raise ValueError("date format not valid, should be YYYY-MM-DD")
-        return dateVal
 
 
 def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
@@ -66,6 +57,7 @@ def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
         print(f"{tableName}:: removed {item} from date: {date}")
     dbConnection.commit()
     return "Done", 200
+
 
 def addsSavingItemToTable(item: str, date: str, dbCursur, dbConnection):
     month = "-".join(date.split("-")[0:2])
@@ -106,6 +98,7 @@ def addsSavingItemToTable(item: str, date: str, dbCursur, dbConnection):
     dbCursur.execute("INSERT INTO savingTracker VALUES(?, ?)", (item, month))
     dbConnection.commit()
     return "Done", 200
+
 
 def collectMonthsData(pageMonth: int, pageYear: int, dbCursur):
     activities = []
@@ -169,61 +162,11 @@ def generateDBTables(DBCursor):
              Notebook text, Chapter text, Content text)""")
 
 
-def sparateDayMonthYear(todaysDate:str) -> tuple:
-    if not checkIfDateValid(todaysDate):
-        raise ValueError("Wrong date format is passed!")
-    year, month, day = [int(m) for m in todaysDate.split("-")]
-    day = min(day, numberOfDaysInMonth(month, year))
-    return day, month, year
-
-
 def setupSettingTable(dbCursur, dbConnection):
     c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
     c.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
     c.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", "None"))
     dbConnection.commit()
-
-
-def getMonthsBeginning(month: int, year: int) -> datetime:
-    return  datetime.datetime.strptime(f"{year}-{month}-01", '%Y-%m-%d')
-
-
-def getMonthsEnd(month: int, year: int) -> datetime:
-    return  getNextMonthsBeginning(month, year)-datetime.timedelta(days=1)
-
-def getNextDay(currentDay: str) -> str:
-    return str((datetime.datetime.strptime(currentDay, '%Y-%m-%d')+datetime.timedelta(days=1)).date())
-
-def getNextMonthsBeginning(month: int, year: int) -> datetime:
-    if month < 12:
-        return datetime.datetime.strptime(f"{year}-{month+1}-01", '%Y-%m-%d')
-    else:
-        return datetime.datetime.strptime(f"{year+1}-01-01", '%Y-%m-%d')
-
-
-def getThirtyDaysFromNow(day: int, month: int, year: int) -> datetime:
-    """
-    returns a datetime object, thirty days in future of the input value
-    """
-    if month < 12:
-        return datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d')+datetime.timedelta(days=30)
-    else:
-        return datetime.datetime.strptime(f"{year+1}-{month}-{day}", '%Y-%m-%d')
-
-
-def numberOfDaysInMonth(month: int, year: int) -> int:
-    numberOfDays = int(getMonthsEnd(month, year).day)
-    return numberOfDays
-
-
-def checkIfDateValid(date: str) -> bool:
-    """
-    check format of the date
-    """
-    checkFormat = re.compile(r'\d\d\d\d-\d\d-\d\d')
-    if checkFormat.match(date) is None:
-        return False
-    return True
 
 
 def shouldHighlight(pageYear:str, pageMonth:str) -> bool:
@@ -273,6 +216,7 @@ def fetchNotebooks(dbCursur):
         chapters[item[1]] = item[2]
         noteBooks[item[0]] = chapters
     return noteBooks
+
 
 def updateSettingParam(DBCursor, DBConnection, param, value):
     DBCursor.execute("""DELETE from settings where parameter = ? """, (param, ))

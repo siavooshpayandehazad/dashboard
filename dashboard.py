@@ -5,8 +5,9 @@
 # get daily activity list: curl http://localhost:5000/activityTracker -d "display=day"
 # get monthy activity list: curl http://localhost:5000/activityTracker -d "display=month"
 #------------------------------------
-from functionPackage import *
-from functionPackageCharts import *
+from functionPackages.misc import *
+from functionPackages.charts import *
+from functionPackages.dateTime import *
 
 import sqlite3
 import datetime

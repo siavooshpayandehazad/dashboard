@@ -1,6 +1,6 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-from functionPackage import getMonthsBeginning, getMonthsEnd
+from functionPackages.misc import getMonthsBeginning, getMonthsEnd
 
 def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     lastMonthsBeginning = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-relativedelta(months=+1)
