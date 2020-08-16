@@ -19,6 +19,7 @@ from flask_restful import reqparse, abort, Api, Resource
 from flask import render_template, make_response
 from werkzeug import secure_filename
 import requests
+import json
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
@@ -27,7 +28,7 @@ parser = reqparse.RequestParser()
 for item in ['tracker_type', 'value', 'display', 'date', 'done',
              'type', 'name', 'delete', 'cardProj', 'cardTask', 'currentList',
              'destList', 'priority', 'Theme', 'counter', 'password', 'planner',
-             'entry', 'notebook', 'chapter']:
+             'entry', 'notebook', 'chapter', 'rename']:
     parser.add_argument(item)
 
 conn, c = createDB("journal.db")
@@ -333,9 +334,29 @@ class notes(Resource):
         if  args['delete'] == "true":
             print("deleting the notebook: ", args['notebook'])
             c.execute("""DELETE from Notes where Notebook = ? """, (args["notebook"],))
+        elif args['rename'] is not None:
+            parsjson = json.loads(args['rename'])
+            if (parsjson["type"] == "noteBookName") and(parsjson["oldName"] != parsjson["newName"]):
+                c.execute("""SELECT * FROM Notes WHERE Notebook = ?""", (parsjson["oldName"],))
+                allNotes = c.fetchall()
+                for x in allNotes:
+                    c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (parsjson["newName"], x[1], x[2]))
+                conn.commit()
+                for x in allNotes:
+                    c.execute("""DELETE from Notes where Notebook = ? and Chapter = ? and content = ? """, (parsjson["oldName"], x[1], x[2]))
+                conn.commit()
+                return "nothing here!", 200
+            if (parsjson["type"] == "chapterName") and(parsjson["oldName"] != parsjson["newName"]):
+                c.execute("""SELECT * FROM Notes WHERE Notebook = ? and Chapter = ? """, (parsjson["noteBookName"], parsjson["oldName"],))
+                allNotes = c.fetchall()
+                for x in allNotes:
+                    c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (x[0], parsjson["newName"], x[2]))
+                    c.execute("""DELETE from Notes where Notebook = ? and Chapter = ? and content = ? """, (x[0], parsjson["oldName"], x[2]))
+                conn.commit()
+                return "nothing here!", 200
         else:
             c.execute("""DELETE from Notes where Notebook = ? and Chapter = ?  """, (args["notebook"], args["chapter"]))
-            c.execute("""INSERT into Notes  VALUES(?, ?, ?)  """, (args["notebook"], args["chapter"], args['entry']))
+            c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (args["notebook"], args["chapter"], args['entry']))
         conn.commit()
         return "nothing here!", 200
 

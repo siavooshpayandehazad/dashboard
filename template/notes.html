@@ -19,13 +19,53 @@
   </style>
   <script>
     var tempNotebooks = {{Notebooks | safe}}
+    function editChapterName(item){
+      // dont click when edit is going on!
+      var textAreas = document.getElementsByClassName("EditChapterTextArea")
+      if (textAreas.length>0){
+        return;
+      }
+      var EditCTextArea = document.createElement("textarea")
+      var oldChapterName = item.textContent
+      notebookName = document.getElementById("notebookName").textContent;
+      console.log(notebookName)
+      EditCTextArea.className = "EditChapterTextArea"
+      EditCTextArea.cols = "14"
+      EditCTextArea.rows = "1"
+      EditCTextArea.value = oldChapterName;
+      item.textContent = null;
+      EditCTextArea.onkeypress=function(){
+        var key = window.event.keyCode;
+        if (key === 13) {
+          this.parentElement.textContent = this.value;
+          tempNotebooks[notebookName][this.value] = tempNotebooks[notebookName][oldChapterName]
+          delete tempNotebooks[notebookName][oldChapterName]
+          if(this.value != oldChapterName){
+             $.ajax({ type: "POST",
+                      url: "http://localhost:5000/notes",
+                      data: {"rename":JSON.stringify({"type": "chapterName",
+                                                      "noteBookName": notebookName,
+                                                      "oldName": oldChapterName,
+                                                      "newName": this.value,}),
+                            },
+                     });
+          }
+          this.remove()
+        }
+     }
+     item.appendChild(EditCTextArea)
+    }
     function selectChapter(chapter){
+      var textAreas = document.getElementsByClassName("EditChapterTextArea")
+      if (textAreas.length>0){
+        return;
+      }
       document.getElementsByClassName("editIcon")[0].style.display="block";
-      notebookName = document.getElementById("notebookName");
+      notebookName = document.getElementById("notebookName").textContent;
       chapterContent = document.getElementById("chapterContent");
       chapterName = document.getElementById("chapterName");
       chapterName.innerHTML = chapter.innerHTML;
-      chapterContent.innerHTML = tempNotebooks[notebookName.innerHTML][chapter.innerHTML];
+      chapterContent.innerHTML = tempNotebooks[notebookName][chapter.innerHTML];
     }
     function addChapter(item){
       item.style.display = "none";
@@ -36,7 +76,7 @@
       $.ajax({ type: "POST",
           url: "http://localhost:5000/notes",
           data: {"entry":"",
-                 "notebook": document.getElementById("notebookName").innerHTML,
+                 "notebook": document.getElementById("notebookName").textContent,
                  "chapter" : item.value,},
       });
       document.getElementById("chapterName").innerHTML = item.value;
@@ -53,6 +93,12 @@
     }
 
     function selectNoteBook(notebook, event){
+      // dont click when edit is going on!
+      var textAreas = document.getElementsByClassName("EditNotebookTextArea")
+      if (textAreas.length>0){
+        return;
+      }
+
       selectedNoteBookName = notebook.childNodes[0].textContent
       document.getElementsByClassName("editIcon")[0].style.display="block";
       var allLabels = document.getElementsByClassName("notebookLabel")
@@ -71,6 +117,7 @@
         var tocListItem = document.createElement("li")
         tocListItem.className="ToCLabel";
         tocListItem.onclick = function () {selectChapter(this)}
+        tocListItem.ondblclick = function () {editChapterName(this)}
         tocListItem.innerHTML = tocItem
         tocList.appendChild(tocListItem)
       })
@@ -174,9 +221,37 @@
       chapterContent.appendChild(form)
     }
     function editNoteBook(item){
-      window.alert("add edit notebook name!");
-    }
+      var textAreas = document.getElementsByClassName("EditNotebookTextArea")
+      if (textAreas.length>0){
+        return;
+      }
+      var oldNoteBookName = item.childNodes[0].textContent;
+      item.childNodes[0].textContent = "";
+      var EditNBTextArea = document.createElement("textarea")
+      EditNBTextArea.className = "EditNotebookTextArea"
+      EditNBTextArea.cols = "14"
+      EditNBTextArea.rows = "1"
+      EditNBTextArea.value = oldNoteBookName;
+      EditNBTextArea.onkeypress=function(){
+        var key = window.event.keyCode;
+        if (key === 13) {
+          this.parentElement.childNodes[0].textContent = this.value;
+          tempNotebooks[this.value] = tempNotebooks[oldNoteBookName];
 
+          if(this.value != oldNoteBookName){
+            $.ajax({ type: "POST",
+                     url: "http://localhost:5000/notes",
+                     data: {"rename":JSON.stringify({"type": "noteBookName",
+                                                     "oldName": oldNoteBookName,
+                                                     "newName": this.value,}),
+                           },
+                    });
+          }
+          this.remove()
+        }
+      }
+      item.appendChild(EditNBTextArea)
+    }
     function noteBookMouseIn(item){
       var rect = item.getBoundingClientRect();
       var div = document.createElement("div");
@@ -251,7 +326,7 @@
         <div id="tocContent" style="margin-left:5px; margin-top: 5px;">
           <ol class = "ToC">
           {% for chapter in Notebooks[Notebooks.keys()|sort()|first].keys()|sort()%}
-            <li class="ToCLabel" onclick="selectChapter(this)">{{chapter}}</li>
+            <li class="ToCLabel" onclick="selectChapter(this)" ondblclick="editChapterName(this)">{{chapter}}</li>
           {%endfor%}
         </ol>
           <ol class="addToC">
