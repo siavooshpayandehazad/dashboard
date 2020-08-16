@@ -330,8 +330,12 @@ class notes(Resource):
 
     def post(self):
         args = parser.parse_args()
-        c.execute("""DELETE from Notes where Notebook = ? and Chapter = ?  """, (args["notebook"], args["chapter"]))
-        c.execute("""INSERT into Notes  VALUES(?, ?, ?)  """, (args["notebook"], args["chapter"], args['entry']))
+        if  args['delete'] == "true":
+            print("deleting the notebook: ", args['notebook'])
+            c.execute("""DELETE from Notes where Notebook = ? """, (args["notebook"],))
+        else:
+            c.execute("""DELETE from Notes where Notebook = ? and Chapter = ?  """, (args["notebook"], args["chapter"]))
+            c.execute("""INSERT into Notes  VALUES(?, ?, ?)  """, (args["notebook"], args["chapter"], args['entry']))
         conn.commit()
         return "nothing here!", 200
 

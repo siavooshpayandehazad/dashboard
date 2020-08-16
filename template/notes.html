@@ -19,7 +19,6 @@
   </style>
   <script>
     var tempNotebooks = {{Notebooks | safe}}
-
     function selectChapter(chapter){
       document.getElementsByClassName("editIcon")[0].style.display="block";
       notebookName = document.getElementById("notebookName");
@@ -53,7 +52,8 @@
       item.value = ""
     }
 
-    function selectNoteBook(notebook){
+    function selectNoteBook(notebook, event){
+      selectedNoteBookName = notebook.childNodes[0].textContent
       document.getElementsByClassName("editIcon")[0].style.display="block";
       var allLabels = document.getElementsByClassName("notebookLabel")
       Array.from(allLabels).forEach((label) => {
@@ -67,7 +67,7 @@
       var tocContent = document.getElementById("tocContent");
       var tocList = document.createElement("ol")
       tocList.className = "ToC";
-      Array.from(Object.keys(tempNotebooks[notebook.innerHTML]).sort()).forEach(tocItem =>{
+      Array.from(Object.keys(tempNotebooks[selectedNoteBookName]).sort()).forEach(tocItem =>{
         var tocListItem = document.createElement("li")
         tocListItem.className="ToCLabel";
         tocListItem.onclick = function () {selectChapter(this)}
@@ -102,11 +102,11 @@
       tocContent.appendChild(AddChapter)
 
       var chapterName = document.getElementById("chapterName");
-      chapterName.innerHTML = Object.keys(tempNotebooks[notebook.innerHTML]).sort()[0];
+      chapterName.innerHTML = Object.keys(tempNotebooks[selectedNoteBookName]).sort()[0];
       var chapterContent = document.getElementById("chapterContent");
-      chapterContent.innerHTML = tempNotebooks[notebook.innerHTML][Object.keys(tempNotebooks[notebook.innerHTML]).sort()[0]];
+      chapterContent.innerHTML = tempNotebooks[selectedNoteBookName][Object.keys(tempNotebooks[selectedNoteBookName]).sort()[0]];
       var notebookName = document.getElementById("notebookName");
-      notebookName.innerHTML = notebook.innerHTML;
+      notebookName.innerHTML = selectedNoteBookName;
     }
     function addNotebook(item){
       // hide the text, and display the textArea box...
@@ -114,10 +114,15 @@
       item.children[1].style.display="block";
     }
     function createNewNotebook(item){
+      var noteBookName = item.value.trim();
+      if(noteBookName.length == 0){
+        window.alert("input field can not be empty!");
+        return false;
+      }
       $.ajax({ type: "POST",
           url: "http://localhost:5000/notes",
           data: {"entry":"",
-                 "notebook": item.value,
+                 "notebook": noteBookName,
                  "chapter" : "Chapter 1",},
       });
       var notebookLabels = document.getElementsByClassName("notebookLabels")[0]
@@ -129,9 +134,8 @@
       item.value = ""
       item.style.display="none";
       item.parentElement.children[0].style.display="block";
-
     }
-    function editMode(item){
+    function editEntry(item){
       item.style.display = "none";
       var notebook = document.getElementById("notebookName");
       var chapterContent = document.getElementById("chapterContent");
@@ -172,6 +176,45 @@
     function editNoteBook(item){
       window.alert("add edit notebook name!");
     }
+
+    function noteBookMouseIn(item){
+      var rect = item.getBoundingClientRect();
+      var div = document.createElement("div");
+      div.classList.add("NoteBookCloseButton");
+      div.style.position = "fixed";
+      div.style.left = rect.left-3+"px";
+      div.style.top = rect.top-5+"px";
+      div.onclick = function deleteNotebook(){
+        var decision = confirm("you are permenently deleting a notebook! are you sure?");
+        if(decision == true){
+          var noteBookName = this.parentElement.childNodes[0].textContent
+          // send an ajax to delete the the notebook
+          $.ajax({ type: "POST",
+              url: "http://localhost:5000/notes",
+              data: {"entry":"",
+                     "notebook": noteBookName,
+                     "delete" : "true",},
+          });
+          this.parentElement.remove();
+        }
+
+      }
+      var closeButton = document.createElement("i");
+      closeButton.classList.add("fa")
+      closeButton.classList.add("fa-times")
+      closeButton.style.color="black";
+      div.appendChild(closeButton);
+      //<i class="fa fa-window-close" aria-hidden="true"></i>
+
+      item.appendChild(div);
+    }
+
+    function noteBookMouseOut(item){
+      var closButtons = document.getElementsByClassName("NoteBookCloseButton")
+      for (var i=0; i<closButtons.length; i++){
+        closButtons[i].remove();
+      }
+    }
   </script>
 </head>
 
@@ -188,9 +231,9 @@
   <div class="notebookLabels">
     {% for notebook in Notebooks.keys()|sort() %}
       {%if notebook == Notebooks.keys()|sort()|first %}
-      <div class= "notebookLabel selected" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)">{{notebook}}</div>
+      <div class= "notebookLabel selected" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)" onmouseenter="noteBookMouseIn(this)" onmouseleave="noteBookMouseOut(this)" >{{notebook}}</div>
       {%else%}
-      <div class= "notebookLabel" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)">{{notebook}}</div>
+      <div class= "notebookLabel" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)" onmouseenter="noteBookMouseIn(this)" onmouseleave="noteBookMouseOut(this)">{{notebook}}</div>
       {%endif%}
     {% endfor %}
       <div class= "notebookLabel" onclick="addNotebook(this)">
@@ -222,7 +265,7 @@
 
     <div class="chapterContent">
       <h2 class="title"> <span id ="chapterName">{{Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first}}</span></h3>
-      <i class="fa fa-edit editIcon" style ="float:right; margin-right:10px;  margin-top: 10px;" onclick="editMode(this)"></i><br>
+      <i class="fa fa-edit editIcon" style ="float:right; margin-right:10px;  margin-top: 10px;" onclick="editEntry(this)"></i><br>
       <div id="chapterContent">
           {{Notebooks[Notebooks.keys()|sort()|first][Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first]|safe}}
       </div>
