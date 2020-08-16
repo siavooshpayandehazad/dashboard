@@ -25,3 +25,9 @@ The password is set to "None" by default, you can change it in the settings page
 Customize The Activity Tracker:
 ----------
 you can add new activities or remove the ones you dont like `activityList` inside `package.py`.
+----------
+To run tests run:
+```
+   cd tests
+   pytest
+``

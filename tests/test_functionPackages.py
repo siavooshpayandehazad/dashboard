@@ -2,8 +2,11 @@ import datetime
 import pytest
 import sys
 sys.path.insert(1, '../')
-
-from functionPackage import *
+sys.path.insert(1, '../functionPackages')
+print(sys.path)
+from functionPackages.misc import *
+from functionPackages.charts import *
+from functionPackages.dateTime import *
 from package import *
 
 db_connection, db_cursor = None, None
@@ -26,12 +29,12 @@ def test_generateDBTables():
         assert len(db_cursor.fetchall())>0
 
 
-@pytest.mark.parametrize('activity, colName, tableName, date, list', [
-                         ("running", "activity_name", "activityTracker", str(datetime.date.today()), activityList),
-                         ("bad", "mood_name", "moodTracker", str(datetime.date.today()), moodList)
+@pytest.mark.parametrize('activity, colName, tableName, date, list, delete, deleteDay', [
+                         ("reading", "activity_name", "activityTracker", str(datetime.date.today()), activityList, False, False),
+                         ("bad", "mood_name", "moodTracker", str(datetime.date.today()), moodList, False, False)
 ])
-def test_addTrackerItemToTable(activity, colName, tableName, date, list):
-    addTrackerItemToTable(activity, colName, list, tableName, date, db_cursor, db_connection)
+def test_addTrackerItemToTable(activity, colName, tableName, date, list, delete, deleteDay):
+    addTrackerItemToTable(activity, colName, list, tableName, date, delete, deleteDay, db_cursor, db_connection)
     db_cursor.execute("SELECT * FROM "+tableName+" WHERE date = ?", (date,))
     assert (activity, date) in db_cursor.fetchall()
 
