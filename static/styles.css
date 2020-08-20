@@ -63,8 +63,15 @@
   --todayMarker-bg-clr:#d9d9d9;
 }
 
+html{
+    min-height:100%;
+}
+
 body{
   background-color: var(--bckgrnd-clr);
+  width: 1250px;
+  min-height:100vh;
+  margin-left: calc((100% - 1250px)/2)
 }
 body.journal{
   background-repeat:no-repeat; background-position: 120% 380px;
@@ -223,7 +230,7 @@ td.planned {
 }
 td.moodselector{
   min-width:17px;
-  min-height:17px;
+  min-height:ListsNotes17px;
   border-radius:5px;
   border: 1px solid white;
 }
@@ -483,13 +490,14 @@ input:checked + .slider:before {
 .notebookLabels{
   width:12%;
   height:506px;
-  overflow-y: scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
   margin-right: 0px;
   float:left;
   margin-top: 30px;
 }
 #chapterContent{
-  overflow-y: scroll;
+  overflow-y: auto;
   height:390px;
   width:96%;
   margin-left:15px;
@@ -497,7 +505,7 @@ input:checked + .slider:before {
 }
 div.notebook_background{
   width:86%;
-  min-height:500px;
+  height:100%;
   background-color: var(--bckgrnd-clr);
   border: 3px solid var(--logText-clr);
   border-radius:20px;
@@ -598,4 +606,8 @@ div.NoteBookCloseButton{
 }
 div.NoteBookCloseButton:hover{
   background-color: #fee0d2;
+}
+
+.SelectedChapter{
+  color: #fd8d3c;
 }

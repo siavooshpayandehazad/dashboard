@@ -332,8 +332,12 @@ class notes(Resource):
     def post(self):
         args = parser.parse_args()
         if  args['delete'] == "true":
-            print("deleting the notebook: ", args['notebook'])
-            c.execute("""DELETE from Notes where Notebook = ? """, (args["notebook"],))
+            if (args['chapter']):
+                print(f"deleting the chapter {args['chapter']} from notebook: {args['notebook']}")
+                c.execute("""DELETE from Notes where Notebook = ? and  Chapter = ? """, (args["notebook"],args['chapter'],))
+            else:
+                print(f"deleting the notebook: {args['notebook']}")
+                c.execute("""DELETE from Notes where Notebook = ? """, (args["notebook"],))
         elif args['rename'] is not None:
             parsjson = json.loads(args['rename'])
             if (parsjson["type"] == "noteBookName") and(parsjson["oldName"] != parsjson["newName"]):
