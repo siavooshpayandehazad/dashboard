@@ -1,7 +1,23 @@
+<script type="text/javascript">
+function hoverText(event, item){
+  var div = document.createElement("div")
+  div.textContent = item.textContent;
+  div.style.top = parseInt(event.clientY)+"px";
+  div.style.left = parseInt(event.clientX)+5+"px";
+  div.classList.add("toDoHoverText");
+  document.body.appendChild(div);
+}
+function removeHover(){
+  var hoverDiv = document.getElementsByClassName("toDoHoverText");
+  for(var i=0; i<hoverDiv.length; i++){
+      hoverDiv[i].remove();
+  }
+}
+</script>
 
 <div style="float:left;width:100%;margin-bottom:10px;margin-top:0px;">
 
-    <img src= "{{url_for('static', filename = 'decorationImages/page_todo.png')}}" style="float:right; vertical-align: top; margin-right: 3%;"  height="84px"  alt="page_todo">
+    <img src= "{{url_for('static', filename = 'decorationImages/page_todo.png')}}" style="float:right; vertical-align: top; margin-right: 3%;"  height="80px"  alt="page_todo">
 
     <h1 style="margin-top:15px;margin-right:1px;width:20%;float:left;"> <font style="text-decoration: underline;"> Todo List </font></h1>
 
@@ -34,7 +50,7 @@
         <tr style="margin-bottom:0px;">
           {% for i in range(1, numberOfDays+1) %}
             {% if i == day  %}
-              <td  class="DS DStoday DSbottom"> <font class="DSfontToday"><b>{{i}}</b></a></font></td>
+              <td  class="DS DStoday DSbottom"> <font class="DSfontToday"><b>{{i}}</b></font></td>
             {%else%}
               <td class="DS DSbottom"><a class= "arrow" href="/org?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i)}}"><font class="DSfont"><b>{{i}}</b></font></a></td>
             {%endif%}
@@ -60,14 +76,14 @@
     {%if done == 'false'%}
       <li style ="word-wrap: break-word; width:95%; white-space: normal;">
         <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-        <span class="task">{{todo}}</span>
+        <span class="task" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
         <span style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o"></i> </span>
         <span class="date" style="display: none;">{{date}}</span> &nbsp;
       </li>
     {%else%}
       <li style ="word-wrap: break-word; width:95%; white-space: normal;">
         <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
-        <span class="task">{{todo}}</span>
+        <span class="task" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
         <span style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o"></i> </span>
         <span class="date" style="display: none;">{{date}}</span> &nbsp;
       </li>
@@ -85,7 +101,7 @@
     {%if done == 'false'%}
       <li style ="word-wrap: break-word; width:95%; white-space: normal;">
           <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-          <span class="task">{{todo}}</span>
+          <span class="task" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
           <span style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o"></i> </span>
           <span class="date">{{date}}</span> &nbsp;
       </li>
@@ -108,7 +124,7 @@
      {%for thisMonthTask in thisMonthsEvents%}
      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
        <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-       <span class="task">{{thisMonthTask[0]}}</span>
+       <span class="task" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{thisMonthTask[0]}}</span>
        <span style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o"></i> </span>
        <span class="date">{{thisMonthTask[1]}}</span> &nbsp;
      </li>

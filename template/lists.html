@@ -17,9 +17,9 @@
 </head>
 
 {%if pageTheme=="Dark"%}
-  <body  class="journal featured" background="{{url_for('static', filename='journal_background.png') }}">
+  <body  class="journal featured">
 {% else %}
-  <body  class="journal" background="{{url_for('static', filename='journal_background.png') }}">
+  <body  class="journal" background="{{url_for('static', filename='decorationImages/journal_background.png') }}">
 {% endif %}
 
 {% with page="lists" %}
@@ -31,39 +31,10 @@
                                         ("Movie/Series List", movieList, "movie"),
                                         ("Bucket List", bucketList, "bucketList"),
                                         ("To-Learn List", toLearnList, "toLearnList")]%}
-  <div>
-    <div style="margin-top: 40px; margin-left: 1%; width:32%; float:left;">
-      <div style = "width:100%;">
-        <b class="titleNewTask">Add new item:</b> <input id="input" name={{Type}} type="text" onkeypress="submitonEnter(event)"><br>
-      </div><br>
-      {% set ns = namespace(done_numbers = 0) %}
-      <div class = "todoTasks" style="width:95%;">
-        <h2 class="title lightbg">&nbsp;{{listName}}</h2>
-        <div class ="todoTasksScorlable">
-          <ul id = {{Type}} class="todoList">
-            {%for item, done in listContent%}
-              {%if done == 'false'%}
-                <li>
-                  <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-                  <span class="task" type={{Type}}>{{item}}</span>
-                  <span style="float:right; margin-right:10px;" onclick="deleteItem(event)"><i class="fa fa-trash-o"></i> </span>
-                </li>
-              {%else%}
-              {% set ns.done_numbers = ns.done_numbers + 1 %}
-                <li>
-                  <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
-                  <span class="task" type={{Type}}>{{item}}</span>
-                  <span style="float:right; margin-right:10px;" onclick="deleteItem(event)"><i class="fa fa-trash-o"></i> </span>
-                </li>
-              {%endif%}
-            {%endfor%}
-          </ul>
-        </div>
-      </div>
-      <font style="color:white">Finished {{listName}} items: {{ns.done_numbers}}</font>
-      </div>
-    </div>
-    {%endfor%}
+      {% with listName = listName, listContent = listContent, Type = Type %}
+          {% include "lists_modules/lists.html" %}
+      {% endwith %}
+  {%endfor%}
 
   </body>
 
@@ -88,9 +59,18 @@ function deleteItem(item) {
 
 function boxchange(event) {
       var listItem = event.srcElement.parentElement;
+      var type = listItem.querySelector(".task").getAttribute("type");
+      var name = listItem.querySelector(".task").innerHTML;
+      var checked =  listItem.querySelector("input").checked;
+      var value = parseInt(document.getElementById("count "+type).textContent)
+      if(checked){
+          document.getElementById("count "+type).textContent = value + 1;
+      }else{
+          document.getElementById("count "+type).textContent = value - 1;
+      }
       $.ajax({ type: "POST",
           url: "http://localhost:5000/lists",
-          data: {"name": listItem.querySelector(".task").innerHTML, "type": listItem.querySelector(".task").getAttribute("type"), "done": listItem.querySelector("input").checked}
+          data: {"name": name, "type": type, "done": checked}
       });
      }
 

@@ -180,7 +180,7 @@ function editEntry(item){
   textArea.className = "notebookEntry"
   textArea.style.width = "98%";
   textArea.type = "text";
-  textArea.rows = "20";
+  textArea.rows = "40";
   textArea.value = chapterContent.innerHTML;
   form.appendChild(textArea)
 

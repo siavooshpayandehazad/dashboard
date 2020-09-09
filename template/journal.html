@@ -201,4 +201,19 @@
   </div>
 
   </body>
+
+  <script type="text/javascript">
+  document.addEventListener('keydown', (e) => {
+    var overlay = document.getElementById("PhotoOverlay");
+    if(overlay.style.display === "block"){
+        if (e.code === "ArrowRight"){
+          nextPic();
+        }else if (e.code === "ArrowLeft") {
+          prevPic();
+        }else if (e.code === "Escape"){
+          closeOverlay();
+        }
+    }
+  });
+  </script>
 </html>
