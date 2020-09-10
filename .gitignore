@@ -3,7 +3,7 @@ __pycache__
 static/photos/
 journal.db
 backups/
-venv/
+venv*
 tests/.coverage
 tests/test.db
 static/decorationImages/

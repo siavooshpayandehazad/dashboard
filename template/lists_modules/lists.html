@@ -1,0 +1,32 @@
+<div>
+  <div style="margin-top: 40px; margin-left: 1%; width:32%; float:left;">
+    <div style = "width:100%;">
+      <b class="titleNewTask">Add new item:</b> <input id="input" name={{Type}} type="text" onkeypress="submitonEnter(event)"><br>
+    </div><br>
+    {% set ns = namespace(done_numbers = 0) %}
+    <div class = "todoTasks" style="width:95%;">
+      <h2 class="title lightbg">&nbsp;{{listName}}</h2>
+      <div class ="todoTasksScorlable">
+        <ul id = {{Type}} class="todoList">
+          {%for item, done in listContent%}
+            {%if done == 'false'%}
+              <li>
+                <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
+                <span class="task" type={{Type}}>{{item}}</span>
+                <span style="float:right; margin-right:10px;" onclick="deleteItem(event)"><i class="fa fa-trash-o"></i> </span>
+              </li>
+            {%else%}
+            {% set ns.done_numbers = ns.done_numbers + 1 %}
+              <li>
+                <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
+                <span class="task" type={{Type}}>{{item}}</span>
+                <span style="float:right; margin-right:10px;" onclick="deleteItem(event)"><i class="fa fa-trash-o"></i> </span>
+              </li>
+            {%endif%}
+          {%endfor%}
+        </ul>
+      </div>
+    </div>
+    <font style="color:white">Finished {{listName}} items: <b id="count {{Type|safe}}">{{ns.done_numbers}}</b></font>
+    </div>
+  </div>

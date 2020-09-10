@@ -38,36 +38,36 @@ function renderHeartRateChart(hrMin, hrMax){
         }]
      },
      options: { legend: {labels: {usePointStyle: true}},
-                scales: { yAxes: [{ ticks:{ beginAtZero: true }}]}}
+                scales: { yAxes: [{ ticks:{ beginAtZero: true }}]},
+                onClick: function(event, array){
+                  if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
+                     (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
+                    return;
+                  }
+                  var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
+                  var selectedVal =  hr_Min[selectedDay-1]+","+hr_Max[selectedDay-1]
+                  var newVal = window.prompt("Update HR (coma separated format:\"min,max\") for day" + selectedDay + "?", selectedVal);
+                  if ((newVal===null)){return;}
+                  var minHR = newVal.split(",")[0]
+                  var maxHR = newVal.split(",")[1]
+                  if (isNaN(minHR) || isNaN(maxHR)){return;}
+                  $.ajax({
+                      type: "POST",
+                      url: "http://localhost:5000/home",
+                      data: {"tracker_type":"HR", "value" : minHR + ',' + maxHR},
+                  });
+                  hr_Max[selectedDay-1] = maxHR;
+                  hr_Min[selectedDay-1] = minHR;
+                  this.update();
+                }
+            }
   });
-}
-
-function submitHR(){
-  var HRMin = document.getElementById("HRMin").value;
-  var HRMax = document.getElementById("HRMax").value;
-  $.ajax({
-      type: "POST",
-      url: "http://localhost:5000/home",
-      data: {"tracker_type":"HR", "value" : HRMin + ',' + HRMax},
-  });
-  document.getElementById("HRMin").value = "";
-  document.getElementById("HRMax").value = "";
-  renderHeartRateChart(HRMin, HRMax);
 }
 </script>
 
 
 <div style="width:550px;min-height:200px;background-color:white;margin-bottom: 20px; margin-left:3.3%;border-radius:10px;text-align:center;float:left;">
-  <div style="margin-top: 10px; margin-right: 20px; width: 150px; float:right">
-    <i class="fa fa-check" id="submitToGraph" onclick="submitHR()" style="float:right;" onclick="submitHR()"></i>
-    <div style="float:left; width: 125px;">
-      HR Min: <input type="text" id="HRMin" style="width: 50px; float:right;">
-    </div>
-    <div style="float:left; width: 125px;">
-      HR Max: <input type="text" id="HRMax" style="width: 50px; float:right">
-    </div>
 
-  </div>
   <i class="fa fa-heart" aria-hidden="true"  style="float:left; margin-left:10px; margin-top:10px;"></i>
   <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Heart Rate Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">

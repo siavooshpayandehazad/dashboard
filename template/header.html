@@ -5,6 +5,12 @@
     });
     logout();
   }
+    document.addEventListener('keydown', (e) => {
+      if((e.ctrlKey == true) && (e.code === "KeyL")){
+        console.log("locking screen!")
+        logout();
+      }
+    });
   </script>
 
   <div class = "tabBar">
