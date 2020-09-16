@@ -33,7 +33,7 @@
     {% include "header.html" %}
 {% endwith %}
 
-  <div class="notebookLabels">
+  <div id="notebookLabels">
     {% for notebook in Notebooks.keys()|sort() %}
       {%if notebook == Notebooks.keys()|sort()|first %}
       <div class= "notebookLabel selected" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)" onmouseenter="noteBookMouseIn(this)" onmouseleave="noteBookMouseOut(this)" >{{notebook}}</div>
@@ -49,10 +49,11 @@
       </div>
   </div>
 
-  <div class="notebook_background">
-    <h2 class="title"> <span id ="notebookName">{{Notebooks.keys()|sort()|first}}</span> Notebook </h3>
+  <div id="notebook_background">
+    <i class="fa fa-search searchIcon" onclick="setupSearchPage()"></i>
+    <h2 class="title"> <span id ="notebookName">{{Notebooks.keys()|sort()|first}}</span> Notebook </h2>
     <div class="ToCDiv" style= "">
-        <h2 class="title"> ToC </h3>
+        <h2 class="title"> ToC </h2>
         <div id="tocContent" style="margin-left:5px; margin-top: 5px;">
           <ol class = "ToC">
           {% for chapter in Notebooks[Notebooks.keys()|sort()|first].keys()|sort()%}
@@ -73,12 +74,19 @@
     </div>
 
     <div class="chapterContent">
-      <h2 class="title"> <span id ="chapterName">{{Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first}}</span></h3>
-      <i class="fa fa-edit editIcon" style ="float:right; margin-right:10px;  margin-top: 10px;" onclick="editEntry(this)"></i><br>
+      <h2 class="title"> <span id ="chapterName">{{Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first}}</span></h2>
+      <i class="fa fa-edit editIcon" onclick="editEntry(this)"></i><br>
       <div id="chapterContent">
           {{Notebooks[Notebooks.keys()|sort()|first][Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first]|safe}}
       </div>
     </div>
   </div>
   </body>
+
+  <script>
+  var backGround = document.getElementById("notebook_background");
+  var div = document.getElementById("notebookLabels");
+  console.log((0.9*backGround.clientHeight)/46)
+  div.style.height = (Math.floor((backGround.clientHeight)/46)-1)*46+"px";
+  </script>
 </html>

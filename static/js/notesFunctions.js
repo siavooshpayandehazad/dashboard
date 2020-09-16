@@ -180,7 +180,7 @@ function editEntry(item){
   textArea.className = "notebookEntry"
   textArea.style.width = "98%";
   textArea.type = "text";
-  textArea.rows = "40";
+  textArea.rows = Math.floor((((chapterContent.offsetHeight-20)*0.75)/13.3));
   textArea.value = chapterContent.innerHTML;
   form.appendChild(textArea)
 
@@ -307,4 +307,8 @@ function chapterMouseOut(item){
   for (var i=0; i<closButtons.length; i++){
     closButtons[i].remove();
   }
+}
+
+function setupSearchPage(){
+  window.alert("search is not implemented yet!")
 }

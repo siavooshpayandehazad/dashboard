@@ -136,7 +136,7 @@
         {% include "trackerModules/weightTracker.html" %}
     {% endwith %}
 
-    {% with HR_Max = HR_Max, HR_Min = HR_Min, ChartMonthDays = ChartMonthDays %}
+    {% with HR_Max = HR_Max, HR_Min = HR_Min, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth%}
         {% include "trackerModules/heartRateTracker.html" %}
     {% endwith %}
 

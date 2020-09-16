@@ -51,7 +51,6 @@
       c1.onclick=function selectMood(){
         var mood = this.nextSibling.innerHTML.toLowerCase();
         var date = '{{PageYear}}-{{'%02d' % (PageMonth)}}-'+zeroPad(item.innerHTML, 2);
-        console.log(mood, date)
         moodSelect(mood, date)
       };
       c2.innerHTML = moods[i];
