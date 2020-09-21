@@ -147,7 +147,7 @@
       $.ajax({ type: "POST",
           url: "/org",
           data: {"cardProj": cardProj, "cardTask": cardTask,
-                 "delete": "1" , "currentList": currentList}
+                 "action": "delete" , "currentList": currentList}
       });
       event.target.parentElement.parentElement.remove();
     }

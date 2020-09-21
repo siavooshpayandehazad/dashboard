@@ -32,8 +32,10 @@
     }
     var div = document.createElement("div");
     div.classList.add("moodSelectorPopUp");
-    div.style.left = event.clientX+2+"px";
-    div.style.top = event.clientY+2+"px";
+    scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+    scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    div.style.left = event.clientX+2+scrollLeft+"px";
+    div.style.top = event.clientY+2+scrollTop+"px";
     div.style.backgroundColor = "white";
     div.style.border = "solid black 2px";
     div.style.borderRadius = "5px";

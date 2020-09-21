@@ -254,7 +254,7 @@ function noteBookMouseIn(item){
       $.ajax({ type: "POST",
           url: "http://localhost:5000/notes",
           data: {"notebook": noteBookName,
-                 "delete" : "true",},
+                 "action" : "delete",},
       });
       this.parentElement.remove();
     }
@@ -291,7 +291,7 @@ function chapterMouseIn(item){
           url: "http://localhost:5000/notes",
           data: {"notebook": noteBookName,
                  "chapter": chapterName,
-                 "delete" : "true",},
+                 "action" : "delete",},
       });
       this.parentElement.remove();
       //reset the notebook to select the first present item!

@@ -52,7 +52,7 @@ function deleteItem(item) {
       var listItem = event.srcElement.parentElement.parentElement;
       $.ajax({ type: "POST",
           url: "http://localhost:5000/lists",
-          data: {"name": listItem.querySelector(".task").innerHTML, "type": listItem.querySelector(".task").getAttribute("type"), "delete": '1'}
+          data: {"name": listItem.querySelector(".task").innerHTML, "type": listItem.querySelector(".task").getAttribute("type"), "action": "delete"}
       });
       listItem.remove();
     }

@@ -4,6 +4,25 @@ import hashlib, binascii
 from typing import Any
 from functionPackages.dateTime import *
 
+from datetime import date
+
+
+def getCalEvents(todaysDate, dbCursur):
+    dt = datetime.datetime.strptime(todaysDate, '%Y-%m-%d')
+    weeksBeginning = dt - datetime.timedelta(days=dt.weekday())
+    weeksEnd = weeksBeginning + datetime.timedelta(days=6)
+    dbCursur.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
+              (str(weeksBeginning.date()),
+               str(weeksEnd.date()),))
+    weeklyCalEvents = dbCursur.fetchall()
+    calList = []
+    for item in weeklyCalEvents:
+        d1 =  datetime.datetime.strptime(item[0], '%Y-%m-%d')
+        delta = d1 - weeksBeginning
+        calList.append([delta.days, item[1], item[2], item[3], 1,1, item[4], item[5]])
+    return calList
+
+
 def getTodaysLogs(dbCursur, todaysDate):
     dbCursur.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate,))
     logValue = dbCursur.fetchall()
@@ -33,15 +52,16 @@ def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
         return item + " not found", 400
 
     dbCursur.execute("SELECT * FROM " + tableName + " WHERE date = ?", (date,))
+    fetchedData = dbCursur.fetchall()
 
     if tableName == "workHourTracker":
-        fetchedData = dbCursur.fetchall()
         print(f"@{datetime.datetime.now()} :: adding {item} time to todays work hours")
         if len(fetchedData)>0:
             item = float(fetchedData[0][0])+float(item)
     if tableName == "moodTracker":     # trying to remove old mood from the table
-        for oldItem, todaysDate in dbCursur.fetchall():
+        for oldItem, todaysDate in fetchedData:
             dbCursur.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, oldItem))
+            dbConnection.commit()
     else:
         if deleteDay:
             dbCursur.execute("DELETE from "+tableName+" where date = ?", (date,))
@@ -126,6 +146,8 @@ def createDB(DBName):
 
 
 def generateDBTables(DBCursor):
+    DBCursor.execute("""CREATE TABLE if not exists calendar (
+             date text, startTime text, endTime text, eventName text, color text, details text)""")
     DBCursor.execute("""CREATE TABLE if not exists HRTracker (
              HR_Min text, HR_Max text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists sleepTracker (

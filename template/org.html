@@ -35,6 +35,15 @@
 {% endwith %}
 
 <div class="divider"></div>
+<!--
+calender item: [day of week(starting from 0), start time, length, name, number of parallel tasks, item, order in parallel, backgroundColor]
+-->
+{% with  month = month, year = year, day = day,  daysBeginning = 6, daysEnd = 22,
+         headerDates = headerDates, monthsBeginning = monthsBeginning, calDate = calDate%}
+    {% include "org_modules/calendar.html" %}
+{% endwith %}
+
+<div class="divider"></div>
 
 {% with ChartMonthDays = ChartMonthDays,
         ChartDoneTasks = ChartDoneTasks,

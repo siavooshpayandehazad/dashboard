@@ -20,34 +20,37 @@
   function cmd(activity, date, Theme, element){
       planner = document.getElementById("planner");
       erase = document.getElementById("eraserCheckbox").checked;
-      if(erase){
+      if(erase){ // erase everything
         $.ajax({
             type: "POST",
             url: "http://localhost:5000/home",
-            data: {tracker_type: "activity", "value":activity, "date":date, "planner": "True", "delete": erase},
-        });
-        $.ajax({
-            type: "POST",
-            url: "http://localhost:5000/home",
-            data: {tracker_type: "activity", "value":activity, "date":date,"planner": "False", "delete": erase},
+            data: {tracker_type: "activity", "value":activity, "date":date, "planner": "True", "action": "delete"},
+        }).done(function() {
+            $.ajax({
+                type: "POST",
+                url: "http://localhost:5000/home",
+                data: {tracker_type: "activity", "value":activity, "date":date,"planner": "False", "action": "delete"},
+            });
         });
         element.style.backgroundColor = "#FFFFFF";
       }else{
         if(planner.checked){
+          // add planner
           $.ajax({
               type: "POST",
               url: "http://localhost:5000/home",
-              data: {tracker_type: "activity", "value":activity, "date":date, "planner": "True", "delete": erase},
+              data: {tracker_type: "activity", "value":activity, "date":date, "planner": "True"},
           });
           if ((element.style.backgroundColor != "rgb(82, 82, 82)")
              && (element.style.backgroundColor != "rgb(50, 136, 189)")){
            element.style.backgroundColor = "#FAD8AD";
           }
         }else{
+          // add activity
           $.ajax({
               type: "POST",
               url: "http://localhost:5000/home",
-              data: {tracker_type: "activity", "value":activity, "date":date,"planner": "False", "delete": erase},
+              data: {tracker_type: "activity", "value":activity, "date":date, "planner": "False"},
           });
           if(Theme == "Dark"){
             element.style.backgroundColor = "#525252";

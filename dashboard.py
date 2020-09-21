@@ -25,8 +25,8 @@ app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
 
 parser = reqparse.RequestParser()
-for item in ['tracker_type', 'value', 'display', 'date', 'done',
-             'type', 'name', 'delete', 'cardProj', 'cardTask', 'currentList',
+for item in ['tracker_type', 'value', 'oldValue', 'display', 'date', 'done', 'action',
+             'type', 'name', 'cardProj', 'cardTask', 'currentList',
              'destList', 'priority', 'Theme', 'counter', 'password', 'planner',
              'entry', 'notebook', 'chapter', 'rename']:
     parser.add_argument(item)
@@ -128,7 +128,7 @@ class dash(Resource):
         if args['tracker_type'] == 'mood':
             return addTrackerItemToTable(args['value'].lower(), "mood_name", moodList, "moodTracker", todaysDate, False, False, c, conn)
         if args['tracker_type'] == "activity":
-            delete = True if args['delete']=="true" else False;
+            delete = True if args['action']=="delete" else False;
             if args['planner'] == "True":
                 return addTrackerItemToTable(args['value'].lower(), "activity_name", activityList, "activityPlanner", todaysDate, delete, False, c, conn)
             else:
@@ -216,9 +216,19 @@ class org(Resource):
         else:
             thisMonthTasksNum = ChartDoneTasks[-1]
         ChartthisMonthTasks = [thisMonthTasksNum for i in range(numberOfDays)]
+
+        calDate = getCalEvents(todaysDate, c)
+        #---------------------------
+        headerDates = []
+        dayVal= datetime.datetime.strptime(todaysDate, '%Y-%m-%d')-datetime.timedelta(days=weekDay) # weekstart
+        for i in range(1, 8):
+            headerDates.append(str(dayVal.date()).split("-")[2])
+            dayVal = datetime.datetime.strptime(str(dayVal.date()), '%Y-%m-%d')+datetime.timedelta(days=1)
+
         return make_response(render_template('org.html', day = day, month = month, year=year, weekDay = daysOfTheWeek[weekDay],
                                              monthsBeginning=monthsBeginningWeekDay, todayTodos=todayTodos, overDue = all_due_events,
-                                             numberOfDays=numberOfDays, thisMonthsEvents = thisMonthsEvents,
+                                             numberOfDays=numberOfDays, thisMonthsEvents = thisMonthsEvents, calDate = calDate,
+                                             headerDates = headerDates,
                                              Backlog = scrumBoardLists["backlog"], ScrumTodo=scrumBoardLists["todo"],
                                              inProgress=scrumBoardLists["in progress"], done=scrumBoardLists["done"],
                                              ChartMonthDays = ChartMonthDays, ChartDoneTasks=ChartDoneTasks,
@@ -226,23 +236,43 @@ class org(Resource):
 
     def post(self):
         args = parser.parse_args()
-
         if args['entry'] == 'todo':
             todaysDate = parseDate(args['date'])
             todo = args['value'].lower()
             c.execute("""DELETE from todoList where date = ? and task = ?""", (todaysDate, todo))
-            if args['delete'] is None:
+            if args['action'] == "delete":
+                print(f"removed todo {todo} from todoList for date: {todaysDate} as {args['done']}")
+            else:
                 c.execute("""INSERT INTO todoList VALUES(?, ?, ?)""", (todo, todaysDate, args['done']))
                 print(f"added todo {todo} to todoList for date: {todaysDate} as {args['done']}")
-            else:
-                print(f"removed todo {todo} from todoList for date: {todaysDate} as {args['done']}")
             conn.commit()
+
+        elif args['entry'] == 'calendar':
+            if args["action"] == "create":
+                date = args['date']
+                values = json.loads(args['value'])
+                c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (date, values["startTime"], values["stopTime"], values["name"], values["color"], values["details"]))
+                conn.commit()
+            elif args["action"] == "delete":
+                date = args['date']
+                values = json.loads(args['value'])
+                c.execute("""DELETE from calendar where date = ? and startTime = ? and endTime = ?  and eventName = ? """, (date, values["startTime"], values["stopTime"], values["name"]))
+                conn.commit()
+            elif args["action"] == "edit":
+                print( args["action"] )
+                date = args['date']
+                values = json.loads(args['oldValue'])
+                c.execute("""DELETE from calendar where date = ? and startTime = ? and endTime = ?  and eventName = ? """, (values["date"], values["startTime"], values["stopTime"], values["name"]))
+                values = json.loads(args['value'])
+                c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (values["date"], values["startTime"], values["stopTime"], values["name"], values["color"], values["details"]))
+                conn.commit()
+
         elif args['cardProj'] is not None:
             proj = args['cardProj']
             task = args['cardTask']
             if args['currentList'] is not None:
                 currentList = args['currentList']
-                if args['delete'] is not None:
+                if args['action'] == "delete":
                     print("deleting card:", task)
                     c.execute("""DELETE from scrumBoard where project = ? and task = ? and stage = ?""", (proj, task, currentList))
                     conn.commit()
@@ -278,7 +308,8 @@ class settings(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
-        return make_response(render_template('settings.html', activityList=activityList, pageTheme=pageTheme),200,headers)
+        return make_response(render_template('settings.html', activityList=activityList,
+                                             pageTheme=pageTheme),200,headers)
 
     def post(self):
         args = parser.parse_args()
@@ -311,7 +342,7 @@ class lists(Resource):
 
     def post(self):
         args = parser.parse_args()
-        if args['delete'] == '1':
+        if args['action'] == "delete":
             print(f"deleted {args['name'].lower()} from {args['type']}")
             c.execute("""DELETE from lists where name = ? and type = ?  """, (args["name"].lower(), args["type"]))
         else:
@@ -331,7 +362,7 @@ class notes(Resource):
 
     def post(self):
         args = parser.parse_args()
-        if  args['delete'] == "true":
+        if  args['action'] == "delete":
             if (args['chapter']):
                 print(f"deleting the chapter {args['chapter']} from notebook: {args['notebook']}")
                 c.execute("""DELETE from Notes where Notebook = ? and  Chapter = ? """, (args["notebook"],args['chapter'],))

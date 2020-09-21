@@ -7,7 +7,7 @@ function deleteTodo(item) {
          data: {"entry": "todo",
                 "value": listItem.querySelector(".task").innerHTML,
                 "date": listItem.querySelector(".date").innerHTML,
-                "delete": '1'}
+                "action": 'delete'}
       });
       listItem.remove();
     }
@@ -170,7 +170,10 @@ function dropDownMenu(item, event){
           <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
           <span class="date">{{date}}</span> &nbsp;
       </li>
-    {%else%}
+    {%endif%}
+ {%endfor%}
+ {%for todo, date, done in overDue%}
+  {%if done == 'true'%}
       <li style ="word-wrap: break-word; width:95%; white-space: normal;">
           <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
           <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
@@ -194,7 +197,10 @@ function dropDownMenu(item, event){
         <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
         <span class="date" style="display: none;">{{date}}</span> &nbsp;
       </li>
-    {%else%}
+    {%endif%}
+  {%endfor%}
+  {%for todo, date, done in todayTodos%}
+    {%if done == 'true'%}
       <li style ="word-wrap: break-word; width:95%; white-space: normal;">
         <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
         <span class="task" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
@@ -215,7 +221,7 @@ function dropDownMenu(item, event){
      {%for thisMonthTask in thisMonthsEvents%}
      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
        <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-       <span class="task" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{thisMonthTask[0]}}</span>
+       <span class="task" onclick="dropDownMenu(this, event)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{thisMonthTask[0]}}</span>
        <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
        <span class="date">{{thisMonthTask[1]}}</span> &nbsp;
      </li>
