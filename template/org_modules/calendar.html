@@ -1,7 +1,18 @@
 <script type="text/javascript">
+var calOffsetRows = 2;
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 var calDates = {{calDate|safe}};
 
+function dropCal(event){
+  var calEvent = document.getElementById(event.dataTransfer.getData("text"));
+  var destCell = event.target;
+  var destRow = destCell.parentElement.rowIndex;
+  var destCol = destCell.cellIndex;
+  console.log("item moved:", calEvent, " to row:", destRow, "column:", destCol)
+}
+function allowDropCal(ev) {
+  ev.preventDefault();
+}
 function closeCalendarPopup(){
   var calendarPopUps = document.getElementsByClassName("calendarPopUp");
   for (i = 0; i < calendarPopUps.length; i++) {
@@ -25,12 +36,17 @@ function removeAllEvents(){
   }
 }
 
-function drawCell(calDate){
+function drawCell(calDate, idVal){
   var tableElement = document.getElementById("calTab")
   var col = calDate[0]+1;
-  var row = (parseInt(calDate[1].slice(0,2))-parseInt({{daysBeginning}}))+1;
+  var row = (parseInt(calDate[1].slice(0,2))-parseInt({{daysBeginning}}))+calOffsetRows;
   var cell = tableElement.rows[row].cells.item(col);
   var div = document.createElement("div");
+  div.draggable="true";
+  div.id = "calITEM"+idVal
+  div.ondragstart=function dragCal (event) {
+    event.dataTransfer.setData("text", event.target.id);
+  };
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
   scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   startPx = 42*parseInt(calDate[1].slice(3,5))/60
@@ -89,7 +105,7 @@ function drawEvents(){
   removeAllEvents();
   updateEventPlacement();
   for (var i =0; i<calDates.length; i++){
-    drawCell(calDates[i])
+    drawCell(calDates[i], i)
   }
   return;
 }
@@ -144,9 +160,15 @@ function calendarClick(event, item){
     todayColl = 7;
   }
   if (senderElement.tagName == "DIV"){
-    selectedDay = parseInt({{day}})-todayColl+parseInt(senderElement.getAttribute("weekDay"))+1
+    var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
+    var newDate = new Date(result.setDate(result.getDate() - todayColl+parseInt(senderElement.getAttribute("weekDay"))+1 ));
+    selectedDay = newDate.getDate();
+    selectedMonth = newDate.getMonth()+1;
   }else{
-    selectedDay = parseInt({{day}})+parseInt(cell.cellIndex-todayColl);
+    var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
+    var newDate = new Date(result.setDate(result.getDate() + parseInt(cell.cellIndex-todayColl)));
+    selectedDay = newDate.getDate();
+    selectedMonth = newDate.getMonth()+1;
   }
   // if selectedDay < 1 then its gonna be last month
   // if selectedDay > last day of month then its gonna be last month
@@ -159,23 +181,44 @@ function calendarClick(event, item){
   daySelector.style.resize="none";
   daySelector.rows = 1;
   daySelector.cols = 15;
-  daySelector.value="{{year|safe}}-{{'%02d' % (month)}}-"+zeroPad(selectedDay, 2);
+  daySelector.value="{{year|safe}}-"+zeroPad(selectedMonth, 2)+"-"+zeroPad(selectedDay, 2);
+
+  // all day event checkbox
+  var alldayContainer = document.createElement("div");
+  var allDayCheckBox = document.createElement("input");
+  allDayCheckBox.type = "checkbox";
+  allDayCheckBox.onchange = function AllDayChanged() {
+    var timeElements = this.parentElement.parentElement.getElementsByClassName("calEventTime");
+    for (i=0; i <timeElements.length; i++){
+      timeElements[i].disabled = this.checked;
+    }
+  };
+  var allDayText = document.createElement("span");
+  allDayText.textContent = "all day";
+  allDayText.style.width="200px";
+  alldayContainer.appendChild(allDayCheckBox);
+  alldayContainer.appendChild(allDayText);
+
   var startTime = document.createElement("textarea");
   var stopTime = document.createElement("textarea");
+  startTime.classList.add("calEventTime")
+  stopTime.classList.add("calEventTime")
   startTime.style.resize="none";
   stopTime.style.resize="none";
   startTime.rows = 1;
   stopTime.rows = 1;
   startTime.cols = 5;
   stopTime.cols = 5;
-  startTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("startTime") : "07:00";
-  stopTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("stopTime") : "08:00";
+
+  startTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("startTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows),2)+":00";
+  stopTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("stopTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows)+1, 2)+":00";
   var text2 = document.createElement("span");
   var text3 = document.createElement("span");
   text2.textContent= "from ";
   text3.textContent= "  to: ";
   timeContainer.appendChild(text1);
   timeContainer.appendChild(daySelector);
+  timeContainer.appendChild(alldayContainer);
   timeContainer.appendChild(text2);
   timeContainer.appendChild(startTime);
   timeContainer.appendChild(text3);
@@ -198,7 +241,7 @@ function calendarClick(event, item){
   color.appendChild(option1);
   color.appendChild(option2);
   color.appendChild(option3);
-  color.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("color") : "cadetblue";
+  color.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("color") : "powderblue";
   colorContainer.appendChild(text4);
   colorContainer.appendChild(color);
 
@@ -300,32 +343,48 @@ function calendarClick(event, item){
   return;
 }
 </script>
-
-<div class= "classContainer" style="border-radius:10px; float:left; background-color:white; padding:10px 10px 10px 10px; margin-top:20px; margin-bottom:20px; min-height:100px;  margin-left:7%;">
-  <table id="calTab" border="0" style="border-spacing: 0px;" onclick="calendarClick(event, this)">
-    <thead class="calendarth">
-      <tr>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid white; border-left: 1px solid white;">   </th>
-        <th style="border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;  border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-color: #c6dbef;"> {{headerDates [0]}} Monday </th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-color: #c6dbef; ">{{headerDates [1]}} Tuesday </th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-color: #c6dbef; ">{{headerDates [2]}} Wednesday </th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-color: #c6dbef; ">{{headerDates [3]}} Thursday </th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-color: #c6dbef; ">{{headerDates [4]}} Friday </th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-color: #c6dbef; ">{{headerDates [5]}} Saturday </th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-color: #c6dbef; ">{{headerDates [6]}} Sunday </th>
-      </tr>
-    </thead>
-    <tbody class="calendartb" style="max-height:350px;">
-    {%for i in range(daysBeginning, daysEnd)%}
-      <tr>
-        <td style="border-left: 1px solid #7bccc4; background-color:#f7fbff"> {{'%02d' %(i)}}:00 - {{'%02d' %(i+1)}}:00  </td>
-        {%for j in range(1, 8)%}
-              <td>  </td>
-        {%endfor%}
-      </tr>
-    {%endfor%}
-    </tbody>
-  </table>
+<div style="widht=100%">
+  <img src= "{{url_for('static', filename = 'decorationImages/calenderSide.png')}}" float="left" width="180px" style="margin-top:0px;"alt="page1_Large_dark">
+  <div class= "classContainer" style="border-radius:10px; float:right; background-color:white; padding:10px 10px 10px 10px; margin-top:20px; margin-bottom:20px; min-height:100px;">
+    <table id="calTab" border="0" style="border-spacing: 0px;" onclick="calendarClick(event, this)">
+      <thead class="calendarth">
+        <tr>
+          <th style="border-right: 1px solid white; border-left: 1px solid white;">   </th>
+          <th style="border-left: 1px solid #9ecae1;  border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white);"> {{headerDates [0]}} Monday </th>
+          <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [1]}} Tuesday </th>
+          <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [2]}} Wednesday </th>
+          <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [3]}} Thursday </th>
+          <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [4]}} Friday </th>
+          <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [5]}} Saturday </th>
+          <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [6]}} Sunday </th>
+        </tr>
+      </thead>
+      <tbody class="calendartb" style="max-height:350px;">
+        <tr>
+          <td style="height:70px; border-bottom: 1px solid #9ecae1; border-right: 0px solid #9ecae1;">  </td>
+          {%for j in range(1, 8)%}
+            {%if j == 1%}
+                <td style = "border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;"> </td>
+            {%else%}
+                <td style = "border-bottom: 1px solid #9ecae1;">  </td>
+            {%endif%}
+          {%endfor%}
+        </tr>
+      {%for i in range(daysBeginning, daysEnd)%}
+        <tr>
+          <td style="border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff; vertical-align:top"> {{'%02d' %(i)}}:00 </td>
+          {%for j in range(1, 8)%}
+            {%if j == 1%}
+                <td style = "border-left: 1px solid #9ecae1;" ondrop="dropCal(event)" ondragover="allowDropCal(event)">  </td>
+            {%else%}
+                <td ondrop="dropCal(event)" ondragover="allowDropCal(event)">  </td>
+            {%endif%}
+          {%endfor%}
+        </tr>
+      {%endfor%}
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <script type="text/javascript">
@@ -333,7 +392,7 @@ function markToday(){
   var todayColl = (parseInt({{day|safe}})+(parseInt({{ monthsBeginning |safe}})))%7;
   if (todayColl==0){ todayColl = 7; }
   var table = document.getElementById("calTab")
-  table.rows[0].cells.item(todayColl).style.backgroundColor="#9ecae1";
+  table.rows[0].cells.item(todayColl).style.backgroundImage="linear-gradient(to bottom, #4292c6, white)";
 }
 
 function drawCurrentTime(){
@@ -360,12 +419,15 @@ function drawCurrentTime(){
   div.style.backgroundColor="red";
   div.style.position="absolute";
   div.style.zIndex="10";
+  div.onmouseover =  function showtimePopup() {
+    window.alert("popup to be implemented! current time: "+zeroPad(hours, 2)+":"+zeroPad(mins,2));
+  }
 
   var todayColl = (parseInt({{day|safe}})+(parseInt({{ monthsBeginning |safe}})))%7;
   if (todayColl==0){
     todayColl = 7;
   }
-  var cell = table.rows[hours-parseInt({{daysBeginning}})+1].cells.item(todayColl);
+  var cell = table.rows[hours-parseInt({{daysBeginning}})+calOffsetRows].cells.item(todayColl);
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
   scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   div.style.top  = (cell.getBoundingClientRect().y+ scrollTop)+(mins/60*40)+"px";
@@ -376,6 +438,12 @@ function drawCurrentTime(){
 window.setInterval(function(){
   drawCurrentTime();
 }, 300000);
+
+window.addEventListener('resize', function resizeWindow() {
+  drawCurrentTime();
+  drawEvents();
+});
+
 
 drawCurrentTime();
 markToday();

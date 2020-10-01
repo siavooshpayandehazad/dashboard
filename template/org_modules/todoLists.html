@@ -97,12 +97,47 @@ function dropDownMenu(item, event){
     $.ajax({ type: "POST",
         url: "/org",
         data: {"entry": "todo", "value": item.textContent, "date": date, "done": 'false'}
+    }).success( function successAdded(){
+      AddItemToList(item.textContent, date, document.getElementById("todayList"));
+      deleteTodo(item.parentElement.getElementsByClassName("deleteSpan")[0]);
+      div.remove();
     });
-    AddItemToList(item.textContent, date, document.getElementById("todayList"));
-    this.remove();
-    deleteTodo(item.parentElement.getElementsByClassName("deleteSpan")[0]);
   }
   document.body.appendChild(div);
+}
+function editTodo(item){
+  var listElement = item.parentElement;
+  var textVlue = item.textContent;
+  var textarea = document.createElement("textarea");
+  textarea.value = textVlue;
+  textarea.rows = 1;
+  textarea.cols = 25;
+  textarea.style.resize="none";
+  item.parentElement.appendChild(textarea);
+  item.style.display = "none";
+  textarea.addEventListener("keydown", function(event) {
+  if (event.keyCode == 13) { //user pressed enter!
+    event.preventDefault();
+    if (textVlue!==textarea.value){
+      date = listElement.getElementsByClassName("date")[0].textContent;
+      $.ajax({ type: "POST",
+          url: "/org",
+          data: {"entry": "todo", "value": textVlue, "date": date, "action": 'delete'}
+        }).success(function() {
+            $.ajax({ type: "POST",
+                url: "/org",
+                data: {"entry": "todo", "value": textarea.value, "date": date, "done": 'false'}
+                });
+          });
+    }
+  }
+  if ((event.keyCode ==27) ||(event.keyCode ==13)) {
+    item.innerHTML = textarea.value;
+    item.style.display = "inline";
+    item.style.marginRight = "0px";
+    textarea.remove();
+  }
+});
 }
 </script>
 
@@ -165,22 +200,13 @@ function dropDownMenu(item, event){
   {%for todo, date, done in overDue%}
     {%if done == 'false'%}
       <li style ="word-wrap: break-word; width:95%; white-space: normal;">
-          <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-          <span class="task" onclick="dropDownMenu(this, event)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
+          <input type="checkbox"; class='todoCheckbox'; onchange="boxchange(event)"; style="margin-right:5px">
+          <span class="task" ondblclick="editTodo(this)" onclick="dropDownMenu(this, event)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
           <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
           <span class="date">{{date}}</span> &nbsp;
       </li>
     {%endif%}
  {%endfor%}
- {%for todo, date, done in overDue%}
-  {%if done == 'true'%}
-      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
-          <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
-          <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
-          <span class="task" onclick="dropDownMenu(this, event)">{{todo}}</span> <span class="date">{{date}}</span>  &nbsp;
-      </li>
-    {%endif%}
-  {%endfor%}
 </ul>
 </div>
 </div>
@@ -192,8 +218,8 @@ function dropDownMenu(item, event){
   {%for todo, date, done in todayTodos%}
     {%if done == 'false'%}
       <li style ="word-wrap: break-word; width:95%; white-space: normal;">
-        <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-        <span class="task" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
+        <input type="checkbox"; class='todoCheckbox'; onchange="boxchange(event)"; style="margin-right:5px">
+        <span class="task"  ondblclick="editTodo(this)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
         <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
         <span class="date" style="display: none;">{{date}}</span> &nbsp;
       </li>
@@ -202,8 +228,8 @@ function dropDownMenu(item, event){
   {%for todo, date, done in todayTodos%}
     {%if done == 'true'%}
       <li style ="word-wrap: break-word; width:95%; white-space: normal;">
-        <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
-        <span class="task" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
+        <input type="checkbox"; class='todoCheckbox'; onchange="boxchange(event)"; checked style="margin-right:5px">
+        <span class="task"  ondblclick="editTodo(this)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
         <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
         <span class="date" style="display: none;">{{date}}</span> &nbsp;
       </li>
@@ -220,8 +246,8 @@ function dropDownMenu(item, event){
    <ul class="todoList">
      {%for thisMonthTask in thisMonthsEvents%}
      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
-       <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-       <span class="task" onclick="dropDownMenu(this, event)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{thisMonthTask[0]}}</span>
+       <input type="checkbox"; class='todoCheckbox'; onchange="boxchange(event)"; style="margin-right:5px">
+       <span class="task" ondblclick="editTodo(this)" onclick="dropDownMenu(this, event)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{thisMonthTask[0]}}</span>
        <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
        <span class="date">{{thisMonthTask[1]}}</span> &nbsp;
      </li>

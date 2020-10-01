@@ -74,6 +74,7 @@ class dash(Resource):
         YearsSavings     = generateSavingTrackerChartData(pageYear, c)
         monthsPaces      = generatePaceChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         ChartMonthDays   = [str(i) for i in range(1, numberOfDays+1)]
+        travels          = getTravelDests(c)
         # ----------------------------------------------
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth = int(pageMonth),
@@ -87,7 +88,7 @@ class dash(Resource):
                                              # ----------------------
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
                                              activityList = activityList, days=moodTrackerDays, highlight = highlight,
-                                             pageTheme = pageTheme, counterValue = counterValue),200,headers)
+                                             pageTheme = pageTheme, counterValue = counterValue, travels = travels),200,headers)
 
     def post(self):
         args = parser.parse_args()
@@ -128,11 +129,14 @@ class dash(Resource):
         if args['tracker_type'] == 'mood':
             return addTrackerItemToTable(args['value'].lower(), "mood_name", moodList, "moodTracker", todaysDate, False, False, c, conn)
         if args['tracker_type'] == "activity":
-            delete = True if args['action']=="delete" else False;
+            delete = True if args['action']=="delete" else False
             if args['planner'] == "True":
                 return addTrackerItemToTable(args['value'].lower(), "activity_name", activityList, "activityPlanner", todaysDate, delete, False, c, conn)
             else:
                 return addTrackerItemToTable(args['value'].lower(), "activity_name", activityList, "activityTracker", todaysDate, delete, False, c, conn)
+        if args['tracker_type'] == "travel":
+            values = args['value'].split(",")
+            addTravelItem(values[0], values[1], values[2], c, conn)
         return "Done", 200
 
 

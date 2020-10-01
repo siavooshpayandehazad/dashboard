@@ -4,7 +4,10 @@
 <head>
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="/static/lib/WorldMap/dist/css/jsvectormap.css" />
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+  <script src="/static/lib/WorldMap/dist/js/jsvectormap.min.js"></script>
+  <script src="/static/lib/WorldMap/dist/maps/world.js"></script>
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
   <title>My Journal</title>
@@ -158,6 +161,14 @@
       <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
     </div>
 
+    {% with travels = travels%}
+      {% include "trackerModules/travelTracker.html" %}
+    {% endwith %}
+
+    <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
+      <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
+      <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
+    </div>
 </body>
 
 <script>

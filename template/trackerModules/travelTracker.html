@@ -1,0 +1,58 @@
+<script type="text/javascript">
+  markers = {{travels|safe}}
+</script>
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<div style="width:92%; margin-left:4%; margin-bottom: 10px; border-radius: 10px 10px 10px 10px; background-color: white; float:left;" >
+<h2  class="title lightbg"  style="float:left; margin-left: 10px;">Travel Tracker</h2>
+
+<div id="add-marker">
+  <p style="font-size:40px;line-height: 40px; color:white; margin-top:0px; margin-bottom:0px;">+</p>
+</div>
+<div id="map" style="height:400px; margin-bottom: 10px;"></div>
+
+</div>
+
+<script type="text/javascript">
+  var map = new JsVectorMap({
+    map: 'world',
+    selector: '#map',
+    labels: {
+      markers: {
+        render: function(index) {
+        //  return markers[index].name;
+        return ""
+        },
+      },
+    },
+    markers: markers,
+    markerStyle: {
+      initial: {
+        fill: '#3182bd'
+      }
+    },
+  });
+
+
+  document.getElementById('add-marker').addEventListener('click', function () {
+    response = window.prompt("enter the name and coordinates in decimal degrees (coma seperated):", "none, none, none")
+    if (response === null){
+      return;
+    }
+    splitResponse = response.split(",");
+
+    map.addMarker(splitResponse[0], {
+      name: splitResponse[0],
+      coords: [parseFloat(splitResponse[1]), parseFloat(splitResponse[2])],
+    })
+    // post to server!
+    $.ajax({
+        type: "POST",
+        url: "http://localhost:5000/home",
+        data: {"tracker_type":"travel", "value": splitResponse[0]+", "+splitResponse[1]+", "+splitResponse[2]},
+    });
+
+  })
+
+</script>

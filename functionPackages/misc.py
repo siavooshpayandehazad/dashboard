@@ -6,6 +6,17 @@ from functionPackages.dateTime import *
 
 from datetime import date
 
+def getTravelDests(dbCursur):
+    dbCursur.execute("""SELECT * FROM travelTracker""")
+    travels = dbCursur.fetchall()
+    allTravels = []
+    for item in travels:
+        allTravels.append({'name': item[0], 'coords': [item[1], item[2]],})
+    return allTravels
+
+def addTravelItem(name, latitude, longitude, dbCursur, dbConnection):
+    dbCursur.execute("""INSERT INTO travelTracker VALUES(?, ?, ?)""", (name, latitude, longitude))
+    dbConnection.commit()
 
 def getCalEvents(todaysDate, dbCursur):
     dt = datetime.datetime.strptime(todaysDate, '%Y-%m-%d')
@@ -17,9 +28,12 @@ def getCalEvents(todaysDate, dbCursur):
     weeklyCalEvents = dbCursur.fetchall()
     calList = []
     for item in weeklyCalEvents:
-        d1 =  datetime.datetime.strptime(item[0], '%Y-%m-%d')
-        delta = d1 - weeksBeginning
-        calList.append([delta.days, item[1], item[2], item[3], 1,1, item[4], item[5]])
+        try:
+            d1 =  datetime.datetime.strptime(item[0], '%Y-%m-%d')
+            delta = d1 - weeksBeginning
+            calList.append([delta.days, item[1], item[2], item[3], 1,1, item[4], item[5]])
+        except:
+            print("something went wrong here!")
     return calList
 
 
@@ -148,6 +162,8 @@ def createDB(DBName):
 def generateDBTables(DBCursor):
     DBCursor.execute("""CREATE TABLE if not exists calendar (
              date text, startTime text, endTime text, eventName text, color text, details text)""")
+    DBCursor.execute("""CREATE TABLE if not exists travelTracker (
+             Destination text, latitude text, longitude text)""")
     DBCursor.execute("""CREATE TABLE if not exists HRTracker (
              HR_Min text, HR_Max text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists sleepTracker (
@@ -185,9 +201,9 @@ def generateDBTables(DBCursor):
 
 
 def setupSettingTable(dbCursur, dbConnection):
-    c.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
-    c.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
-    c.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", "None"))
+    dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
+    dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
+    dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", "None"))
     dbConnection.commit()
 
 
