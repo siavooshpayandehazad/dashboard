@@ -1,0 +1,58 @@
+div.ScrumCard{
+  width:95%;
+  border: solid black 3px;
+  border-radius: 10px;
+  float: left;
+  margin-left:2.5%;
+  margin-bottom:5px;
+  margin-top:7px;
+}
+div.NewScrumCardContainer{
+  margin-left:10%;
+  background-color: white;
+  height:35px;
+  width:70%;
+  border-radius:10px;
+  float:left;
+  padding-top: 5px;
+  padding-bottom: 0px;
+}
+div.scrumAddButton{
+  float:right;
+  background-color: #41ae76;
+  width: 23px;
+  height: 23px;
+  margin-right:10px;
+  border-radius: 25px 25px 25px 25px;
+  text-align:center;
+}
+div.scrumAddButton:hover{
+  box-shadow: 2px 2px 5px blue;
+}
+div.ScrumContainerScrollable{
+  width:97%;
+  height: 350px;
+  overflow-y: scroll;
+  margin-bottom: 10px;
+  background-color:white;
+  border-radius: 20px;
+  float: left; margin-left:1%;
+}
+div.ScrumContainer{
+  width:23.75%;
+  min-height: 400px;
+  margin-bottom: 10px;
+  background-color:white;
+  border-radius: 5px;
+  float: left; margin-left:1%;
+}
+div.scrumCardDivider{
+  width:55%;
+  margin-left: 5px;
+  margin-top: 5px;
+  height:2px;
+}
+span.scrumSpan{
+  float:right;
+  margin-right:5px;
+}

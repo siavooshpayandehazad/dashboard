@@ -1,0 +1,38 @@
+tbody.calendartb td, thead.calendarth th{
+  width: 125px;
+}
+thead.calendarth th{
+  height:40px;
+}
+tbody.calendartb td{
+  text-align: center;
+  height:40px;
+  border-bottom: 1px solid #9ecae1;
+  border-right:  1px solid #9ecae1;
+  background-color:white
+}
+.calendarPopUp{
+  z-index: 10;
+  width: 200px;
+  position: absolute;
+  background-color: #c6dbef;
+}
+.calendarEvent{
+  z-index: 2;
+  position: absolute;
+  border-radius: 5px 5px 5px 5px;
+  opacity: 0.9;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.calendarEvent:hover{
+  opacity: 1;
+}
+.timeCurser{
+  width: 127px;
+  height: 3px;
+  background-color: red;
+  position: absolute;
+  z-index: 10;
+}

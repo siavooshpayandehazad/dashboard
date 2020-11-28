@@ -76,7 +76,10 @@ function createNewChapter(item){
   tocListItem.onmouseenter = function () {chapterMouseIn(this)}
   tocListItem.onmouseleave = function () {chapterMouseOut(this)}
   tocListItem.onclick = function () {selectChapter(this)}
-  tocListItem.innerHTML = item.value
+  tocListSpan = document.createElement("span")
+  tocListSpan.className = "ToCLabelText";
+  tocListSpan.innerHTML = item.value
+  tocListItem.appendChild(tocListSpan)
   ToC.appendChild(tocListItem)
   item.value = ""
 }
@@ -109,7 +112,10 @@ function selectNoteBook(notebook, event){
     tocListItem.onmouseleave = function () {chapterMouseOut(this)}
     tocListItem.onclick = function () {selectChapter(this)}
     tocListItem.ondblclick = function () {editChapterName(this)}
-    tocListItem.innerHTML = tocItem
+    tocListSpan = document.createElement("span")
+    tocListSpan.className = "ToCLabelText";
+    tocListSpan.innerHTML = tocItem
+    tocListItem.appendChild(tocListSpan)
     tocList.appendChild(tocListItem)
   })
   tocContent.innerHTML = "";

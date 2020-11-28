@@ -53,15 +53,15 @@
   <div id="notebook_background">
     <i class="fa fa-search searchIcon hover-red" onclick="setupSearchPage()"></i>
     <h2 class="title"> <span id ="notebookName">{{Notebooks.keys()|sort()|first}}</span> Notebook </h2>
-    <div class="ToCDiv" style= "">
+    <div class="ToCDiv">
         <h2 class="title"> ToC </h2>
         <div id="tocContent" style="margin-left:5px; margin-top: 5px;">
           <ol class = "ToC">
           {% for chapter in Notebooks[Notebooks.keys()|sort()|first].keys()|sort()%}
             {%if chapter == Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first %}
-              <li class="ToCLabel selected hover-red" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)">{{chapter}}</li>
+              <li class="ToCLabel selected hover-red" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)"><span class="ToCLabelText">{{chapter}}</span></li>
             {%else%}
-              <li class="ToCLabel hover-red" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)">{{chapter}}</li>
+              <li class="ToCLabel hover-red" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)"><span class="ToCLabelText">{{chapter}}</span></li>
             {%endif%}
           {%endfor%}
         </ol>

@@ -1,0 +1,111 @@
+div.NoteBookCloseButton{
+  min-width: 17px;
+  min-height: 17px;
+  background-color: white;
+  border: 0px solid white;
+  border-radius: 20px;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+}
+div.NoteBookCloseButton:hover{
+  background-color: #fee0d2;
+}
+.ToCLabel.selected{
+  color: #fd8d3c;
+}
+.notebookLabel {
+  width:100%;
+  height:30px;
+  background-color:#252525;
+  border: 3px solid white;
+  padding-top: 10px;
+  border-radius:15px 0px 0px 15px;
+  text-align:center;
+  color:white
+}
+.notebookLabel.selected {
+  background-color: #cc4c02;
+}
+.notebookLabel:hover{
+  cursor: pointer;
+  background-color:#525252;
+}
+.ToC{
+  list-style: none;
+}
+.ToCLabel{
+  width: 140px;
+  margin-left: -20px;
+}
+.ToCLabelText{
+  display: inline-block;
+  overflow: hidden;
+  width: 110px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.addToC{
+  margin-left: -15px;
+  margin-top:-15px;
+  list-style-type: none;
+}
+#notebookLabels{
+  width:12%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-right: 0px;
+  float:left;
+  margin-top: 30px;
+}
+#chapterContent{
+  overflow-y: auto;
+  height:75vh;
+  width:96%;
+  margin-left:15px;
+  margin-top: 15px;
+}
+#notebook_background{
+  width:86%;
+  height:100%;
+  background-color: var(--bckgrnd-clr);
+  border: 3px solid var(--logText-clr);
+  border-radius:20px;
+  margin-top: 10px;
+  float:left;
+}
+div.ToCDiv{
+  width:16%;
+  height:85vh;
+  overflow-y: auto;
+  background-color:var(--bckgrnd-clr);
+  border: 3px solid var(--logText-clr);
+  border-radius:20px;
+  margin-left: 1%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  float:left; color:var(--logText-clr);
+}
+div.chapterContent{
+  width:80%;
+  height:85vh;
+  background-color:var(--bckgrnd-clr);
+  border: 3px solid var(--logText-clr);
+  border-radius:20px;
+  margin-left: 1%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  float:left;
+  color:var(--logText-clr);
+}
+i.searchIcon{
+  float: right;
+  margin-top: 10px;
+  margin-right: 15px;
+  color:white;
+}
+i.editIcon{
+  float:right;
+  margin-right:10px;
+  margin-top: 10px;
+}
