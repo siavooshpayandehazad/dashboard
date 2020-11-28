@@ -1,7 +1,67 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/calendar.css') }}">
+
+<script>
+    Date.prototype.getWeek = function() {
+        var onejan = new Date(this.getFullYear(), 0, 1);
+        return Math.ceil((((this - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+    }
+</script>
+
+
 <script type="text/javascript">
 var calOffsetRows = 2;
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 var calDates = {{calDate|safe}};
+
+function isStringDate(dateString){
+  const userKeyRegExp = /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}?$/;
+  var valid = userKeyRegExp.test(dateString);
+  if(valid){
+    if (1 <= parseInt(dateString.split("-")[1]) && parseInt(dateString.split("-")[1]) < 12){
+      if (1 <= parseInt(dateString.split("-")[2]) && parseInt(dateString.split("-")[2]) < 30){
+        return true
+      }
+    }
+  }
+  return false
+}
+
+function isStringTime(timeString){
+  const userKeyRegExp = /^[0-9]{2}\:[0-9]{2}?$/;
+  var valid = userKeyRegExp.test(timeString);
+  if(valid){
+    if ((parseInt({{daysBeginning}}) <= parseInt(timeString.split(":")[0])) && (parseInt(timeString.split(":")[0]) <= parseInt({{daysEnd}}))){
+      if (0 <= parseInt(timeString.split(":")[1]) && parseInt(timeString.split(":")[1]) < 60){
+        return true
+      }
+    }
+  }
+  return false
+}
+
+function validateFields(eventName, startTime, endTime, date){
+  if (! (isStringTime(startTime)&&isStringTime(endTime))){
+    var timeElements = document.getElementsByClassName("calEventTime")
+    for (var i=0; i<timeElements.length; i++){
+      timeElements[i].style.border="2px solid red";
+    }
+    window.alert("Please check the event's start and end time again!")
+    return false;
+  }
+  if(isNaN(Date.parse(date))){
+    var daySelector = document.getElementById("daySelector")
+    daySelector.style.border="2px solid red";
+    window.alert("Please check the event's date again!")
+    return false;
+  }
+  if (eventName.trim()==""){
+    var eventName = document.getElementById("eventName")
+    eventName.style.border="2px solid red";
+    window.alert("event name can not be empty!")
+    return false;
+  }
+  return true;
+}
 
 function calculateDateofCol(colNum){
     var newWeekday = colNum-1;
@@ -134,6 +194,7 @@ function calendarClick(event, item){
   var eventNameContainer = document.createElement("div");
   eventNameContainer.style.marginLeft="10px";
   var eventName = document.createElement("textarea");
+  eventName.setAttribute('id', 'eventName');
   eventName.style.resize="none";
   eventName.rows = 1;
   eventName.cols = 20;
@@ -181,6 +242,7 @@ function calendarClick(event, item){
   daySelector.rows = 1;
   daySelector.cols = 15;
   daySelector.value="{{year|safe}}-"+zeroPad(selectedMonth, 2)+"-"+zeroPad(selectedDay, 2);
+  daySelector.setAttribute('id', 'daySelector');
 
   // all day event checkbox
   var alldayContainer = document.createElement("div");
@@ -253,6 +315,9 @@ function calendarClick(event, item){
   submitBtn.style.marginRight="5px";
   submitBtn.style.marginBottom="5px";
   submitBtn.onclick=function closPopUp(){
+    if (!validateFields(eventName.value, startTime.value, stopTime.value, daySelector.value)){
+      return;
+    }
     if (senderElement.tagName == "DIV"){ // edit or delete
       var oldDate = "{{year|safe}}-{{'%02d' % (month)}}-"+zeroPad(selectedDay, 2)
       $.ajax({ type: "POST",
@@ -348,7 +413,7 @@ function calendarClick(event, item){
     <table id="calTab" border="0" style="border-spacing: 0px;" onclick="calendarClick(event, this)">
       <thead class="calendarth">
         <tr>
-          <th style="border-right: 1px solid white; border-left: 1px solid white;">   </th>
+          <th style="border-right: 1px solid white; border-left: 1px solid white;"> WEEK  </th>
           <th style="border-left: 1px solid #9ecae1;  border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white);"> {{headerDates [0]}} Monday </th>
           <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [1]}} Tuesday </th>
           <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [2]}} Wednesday </th>
@@ -360,7 +425,8 @@ function calendarClick(event, item){
       </thead>
       <tbody class="calendartb" style="max-height:350px;">
         <tr>
-          <td style="height:70px; border-bottom: 1px solid #9ecae1; border-right: 0px solid #9ecae1;">  </td>
+          <td id= "weekNumber" style="height:70px; border-bottom: 1px solid #9ecae1; border-right: 0px solid #9ecae1; vertical-align:top; font-size:30px;">
+          </td>
           {%for j in range(1, 8)%}
             {%if j == 1%}
                 <td style = "border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;"> </td>
@@ -374,9 +440,9 @@ function calendarClick(event, item){
           <td style="border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff; vertical-align:top"> {{'%02d' %(i)}}:00 </td>
           {%for j in range(1, 8)%}
             {%if j == 1%}
-                <td style = "border-left: 1px solid #9ecae1;" ondrop="dropCal(event)" ondragover="allowDropCal(event)">  </td>
+                <td style = "border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
             {%else%}
-                <td ondrop="dropCal(event)" ondragover="allowDropCal(event)">  </td>
+                <td ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
             {%endif%}
           {%endfor%}
         </tr>
@@ -413,13 +479,20 @@ function drawCurrentTime(){
   var table = document.getElementById("calTab");
   var div = document.createElement("div");
   div.classList.add("timeCurser")
-  div.style.width="127px";
-  div.style.height="3px";
-  div.style.backgroundColor="red";
-  div.style.position="absolute";
-  div.style.zIndex="10";
-  div.onmouseover =  function showtimePopup() {
-    window.alert("popup to be implemented! current time: "+zeroPad(hours, 2)+":"+zeroPad(mins,2));
+  div.onmouseover =  function showtimePopup(event) {
+    if (event.target.className != "timeCurser") {return;}
+    event.preventDefault();
+    theDiv = document.createElement("div");
+    theDiv.innerHTML = zeroPad(hours, 2)+":"+zeroPad(mins,2);
+    theDiv.classList.add("timePopup");
+    this.appendChild(theDiv);
+    //window.alert("popup to be implemented! current time: "+zeroPad(hours, 2)+":"+zeroPad(mins,2));
+  }
+  div.onmouseleave =  function removeTimePopup(){
+    allTimePopUps = document.getElementsByClassName("timePopup");
+    for (var i=0; i<allTimePopUps.length; i++){
+      allTimePopUps[i].remove();
+    }
   }
 
   var todayColl = (parseInt({{day|safe}})+(parseInt({{ monthsBeginning |safe}})))%7;
@@ -443,7 +516,7 @@ window.addEventListener('resize', function resizeWindow() {
   drawEvents();
 });
 
-function dropCal(event){
+function dropCalEvent(event){
   var calEvent = document.getElementById(event.dataTransfer.getData("text"));
   var destCell = event.target;
   if (destCell.tagName == "DIV"){
@@ -459,6 +532,10 @@ function dropCal(event){
   var oldStartTime = calEvent.getAttribute("startTime");
   var oldEndTime = calEvent.getAttribute("stopTime");
 
+  var oldWeekday = calEvent.getAttribute("weekDay");
+  var color = calEvent.style.backgroundColor;
+  var oldDate = calculateDateofCol(parseInt(oldWeekday)+1);
+  var newDate = calculateDateofCol(destCol)
 
   var date = new Date;
   dt1 = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(oldStartTime.split(":")[0]), parseInt(oldStartTime.split(":")[1]), 0);
@@ -468,16 +545,13 @@ function dropCal(event){
   newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), newStartTime, 0, 0);
   var newDateObj = new Date(newDate.getTime() + minutes*60000);
   var newEndTime = zeroPad(newDateObj.getHours(), 2) +":"+ zeroPad(newDateObj.getMinutes(), 2)
-  if(newDateObj.getHours() >= 22){
+  if(newDateObj.getHours() >= parseInt({{daysEnd}})){
     newEndTime = "22:00"
   }
-  if(newDateObj.getHours() < 6){
+  if(newDateObj.getHours() < parseInt({{daysBeginning}})){
     newEndTime = "22:00"
   }
-  var oldWeekday = calEvent.getAttribute("weekDay");
-  var color = calEvent.style.backgroundColor;
-  var oldDate = calculateDateofCol(parseInt(oldWeekday)+1);
-  var newDate = calculateDateofCol(destCol)
+
   $.ajax({ type: "POST",
      url: "/org",
      data: {"entry": "calendar",
@@ -504,7 +578,7 @@ function dropCal(event){
   drawEvents();
 }
 
-function allowDropCal(ev) {
+function allowdropCalEvent(ev) {
   ev.preventDefault();
 }
 function closeCalendarPopup(){
@@ -514,6 +588,8 @@ function closeCalendarPopup(){
   }
 }
 
+var weekNumberCell = document.getElementById("weekNumber")
+weekNumberCell.textContent = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getWeek();
 
 drawCurrentTime();
 markToday();

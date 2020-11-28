@@ -3,8 +3,51 @@ import sqlite3
 import hashlib, binascii
 from typing import Any
 from functionPackages.dateTime import *
-
+from collections import Counter
 from datetime import date
+
+def getFlashCards(dbCursur):
+    dbCursur.execute("""SELECT * FROM flashcards""")
+    flashCards = dbCursur.fetchall()
+    toReview = []
+    setNames = set()
+    maxDaysNumbers = 0
+    cnts = Counter()
+    for item in flashCards:
+        date = (datetime.datetime.strptime(item[4], '%Y-%m-%d')+datetime.timedelta(days=int(item[3]))).date()
+        todaysDate = datetime.date.today()
+        delta = todaysDate - date
+        if delta.days >= 0:
+            toReview.append(item)
+        setNames.add(item[0])
+        maxDaysNumbers = max(maxDaysNumbers, int(item[3]))
+        cnts[int(item[3])] += 1
+    return setNames, maxDaysNumbers, cnts, toReview
+
+def addFlashCards(setName, side1, side2, lastTimeReviewed, dbCursur, dbConnection):
+    dbCursur.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""", (setName, side1, side2, 1, lastTimeReviewed))
+    dbConnection.commit()
+
+def deleteFlashCards(setName, side1, side2, dbCursur, dbConnection):
+    print(f"deleting card {side1} and {side2} from set {setName}")
+    dbCursur.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
+    dbConnection.commit()
+
+def changeFlashCards(setName, side1, side2, lastTimeReviewed, increament, dbCursur, dbConnection):
+    dbCursur.execute("""SELECT * FROM flashcards WHERE setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
+    val = dbCursur.fetchall()
+    value = int(val[0][3])
+    if increament:
+        value += 1
+        print("increase the reviewInDays to", value)
+    else:
+        if value == 1:
+            return
+        value -= 1
+        print("increase the reviewInDays to", value)
+    dbCursur.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
+    dbCursur.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""", (setName, side1, side2, value, lastTimeReviewed))
+    dbConnection.commit()
 
 def getTravelDests(dbCursur):
     dbCursur.execute("""SELECT * FROM travelTracker""")
@@ -162,6 +205,8 @@ def createDB(DBName):
 def generateDBTables(DBCursor):
     DBCursor.execute("""CREATE TABLE if not exists calendar (
              date text, startTime text, endTime text, eventName text, color text, details text)""")
+    DBCursor.execute("""CREATE TABLE if not exists flashcards (
+             setName text, side1 text, side2 text, reviewInDays text, lastTimeReviewed text)""")
     DBCursor.execute("""CREATE TABLE if not exists travelTracker (
              Destination text, latitude text, longitude text)""")
     DBCursor.execute("""CREATE TABLE if not exists HRTracker (
@@ -189,7 +234,7 @@ def generateDBTables(DBCursor):
     DBCursor.execute("""CREATE TABLE if not exists logTracker (
              log text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists todoList (
-             task text, date text, done text)""")
+             task text, date text, done text, color, text)""")
     DBCursor.execute("""CREATE TABLE if not exists scrumBoard (
              project text, task text, stage text, priority text, done_date text)""")
     DBCursor.execute("""CREATE TABLE if not exists settings (

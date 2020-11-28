@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/scrum.css') }}">
 
 <div style="width:100%; margin-bottom:20px; float:left;">
   <!-- new scrum card gen -->
@@ -14,7 +15,9 @@
           <option value="2">2 (med)</option>
           <option value="3">3 (low)</option>
         </select>
-        &nbsp;&nbsp;<buton onclick="makeNewCard()"><font size="5" style="color:green"><b>+</b></font> </buton>
+          <div class = "scrumAddButton" onclick="makeNewCard()">
+            <b style="font-size:20px; line-height: 23px; color:white; margin-top:0px; margin-bottom:0px;">+</b>
+          </div>
       </div>
   </div>
   <!--Backlog-->
@@ -32,8 +35,8 @@
              &nbsp;<b><font id="projectName" size="2">{{item[0]}}</font></b><br>
              <div style="width:90%; margin-left:5%;"><font id="taskName" size="3">{{item[1]}}</font></div>
              <div class= "scrumCardDivider" style="background-color: #4292c6;"></div>
-             <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive"></i></span>
-             <span class = "scrumSpan" onclick="deleteCard(event)"><i class="fa fa-trash-o"></i></span>
+             <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive hover-red"></i></span>
+             <span class = "scrumSpan" onclick="deleteCard(event)"><i class="fa fa-trash-o hover-red"></i></span>
         </div>
      {%endfor%}
    </div>
@@ -53,8 +56,8 @@
              &nbsp;<b><font id="projectName" size="2">{{item[0]}}</font></b><br>
              <div style="width:90%; margin-left:5%;"><font id="taskName" size="3">{{item[1]}}</font></div>
              <div class= "scrumCardDivider" style="background-color: #6a51a3;"></div>
-             <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive"></i></span>
-             <span class = "scrumSpan" onclick="deleteCard(event)"><i class="fa fa-trash-o"></i></span>
+             <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive hover-red"></i></span>
+             <span class = "scrumSpan" onclick="deleteCard(event)"><i class="fa fa-trash-o hover-red"></i></span>
         </div>
      {%endfor%}
    </div>
@@ -74,8 +77,8 @@
            &nbsp;<b><font id="projectName" size="2">{{item[0]}}</font></b><br>
            <div style="width:90%; margin-left:5%;"><font id="taskName" size="3">{{item[1]}}</font></div>
            <div class = "scrumCardDivider" style="background-color: #fe9929;"></div>
-           <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive"></i></span>
-           <span class = "scrumSpan" onclick="deleteCard(event)"><i class="fa fa-trash-o"></i></span>
+           <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive hover-red"></i></span>
+           <span class = "scrumSpan" onclick="deleteCard(event)"><i class="fa fa-trash-o hover-red"></i></span>
         </div>
      {%endfor%}
    </div>
@@ -95,8 +98,8 @@
               &nbsp;<b><font id="projectName" size="2">{{item[0]}}</font></b><br>
               <div style="width:90%; margin-left:5%;"><font id="taskName" size="3">{{item[1]}}</font></div>
               <div class= "scrumCardDivider" style="background-color: #74c476;"></div>
-              <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive"></i></span>
-              <span class = "scrumSpan"  onclick="deleteCard(event)"><i class="fa fa-trash-o"></i></span>
+              <span class = "scrumSpan" onclick="archivecard(event)"><i class="fa fa-archive hover-red"></i></span>
+              <span class = "scrumSpan"  onclick="deleteCard(event)"><i class="fa fa-trash-o hover-red"></i></span>
             </div>
           {%endfor%}
      </div>
@@ -216,14 +219,14 @@
         archiveSpan.setAttribute('class', 'scrumSpan');
         archiveSpan.setAttribute('onclick', 'archivecard(event)');
         var archivei = document.createElement("i");
-        archivei.setAttribute('class', 'fa fa-archive');
+        archivei.setAttribute('class', 'fa fa-archive hover-red');
         archiveSpan.appendChild(archivei);
 
         var delSpan = document.createElement("span");
         delSpan.setAttribute('class', 'scrumSpan');
         delSpan.setAttribute('onclick', 'archivecard(event)');
         var deli = document.createElement("i");
-        deli.setAttribute('class', 'fa fa-trash-o');
+        deli.setAttribute('class', 'fa fa-trash-o hover-red');
         delSpan.appendChild(deli);
 
         cardDiv.appendChild(textDiv);

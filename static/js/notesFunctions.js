@@ -42,11 +42,11 @@ function selectChapter(chapter){
   if (textAreas.length>0){
     return;
   }
-  var SelectedChapters = document.getElementsByClassName("SelectedChapter")
+  var SelectedChapters = document.getElementsByClassName("ToCLabel")
   for(var i=0; i<SelectedChapters.length; i++){
-      SelectedChapters[i].classList.remove("SelectedChapter");
+      SelectedChapters[i].classList.remove("selected");
   }
-  chapter.classList.add("SelectedChapter");
+  chapter.classList.add("selected");
   document.getElementsByClassName("editIcon")[0].style.display="block";
   notebookName = document.getElementById("notebookName").textContent;
   chapterContent = document.getElementById("chapterContent");
@@ -72,7 +72,7 @@ function createNewChapter(item){
   item.parentElement.parentElement.children[0].style.display="block";
   ToC = document.getElementsByClassName("ToC")[0]
   tocListItem = document.createElement("li")
-  tocListItem.className="ToCLabel";
+  tocListItem.className="ToCLabel hover-red";
   tocListItem.onmouseenter = function () {chapterMouseIn(this)}
   tocListItem.onmouseleave = function () {chapterMouseOut(this)}
   tocListItem.onclick = function () {selectChapter(this)}
@@ -104,7 +104,7 @@ function selectNoteBook(notebook, event){
   tocList.className = "ToC";
   Array.from(Object.keys(tempNotebooks[selectedNoteBookName]).sort()).forEach(tocItem =>{
     var tocListItem = document.createElement("li")
-    tocListItem.className="ToCLabel";
+    tocListItem.className="ToCLabel hover-red";
     tocListItem.onmouseenter = function () {chapterMouseIn(this)}
     tocListItem.onmouseleave = function () {chapterMouseOut(this)}
     tocListItem.onclick = function () {selectChapter(this)}
@@ -118,12 +118,12 @@ function selectNoteBook(notebook, event){
   var AddChapter = document.createElement("ol")
   var AddChapterItem = document.createElement("li")
   AddChapter.className = "addToC"
-  AddChapterItem.className = "ToCLabel"
+  AddChapterItem.className = "ToCLabel hover-red"
   AddChapterItem.innerHTML = "+ add new chapter"
   AddChapterItem.onclick = function(){addChapter(this)}
   //add textarea and hide it
   var AddChapterBullet = document.createElement("li")
-  AddChapterBullet.className = "ToCLabel"
+  AddChapterBullet.className = "ToCLabel hover-red"
   AddChapterBullet.style.display = "none"
   var AddChapterTextArea = document.createElement("textarea")
   AddChapterTextArea.className = "addChapterTextArea"

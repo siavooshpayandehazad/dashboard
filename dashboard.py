@@ -28,7 +28,7 @@ parser = reqparse.RequestParser()
 for item in ['tracker_type', 'value', 'oldValue', 'display', 'date', 'done', 'action',
              'type', 'name', 'cardProj', 'cardTask', 'currentList',
              'destList', 'priority', 'Theme', 'counter', 'password', 'planner',
-             'entry', 'notebook', 'chapter', 'rename']:
+             'entry', 'notebook', 'chapter', 'rename', 'color']:
     parser.add_argument(item)
 
 conn, c = createDB("journal.db")
@@ -247,7 +247,7 @@ class org(Resource):
             if args['action'] == "delete":
                 print(f"removed todo {todo} from todoList for date: {todaysDate} as {args['done']}")
             else:
-                c.execute("""INSERT INTO todoList VALUES(?, ?, ?)""", (todo, todaysDate, args['done']))
+                c.execute("""INSERT INTO todoList VALUES(?, ?, ?, ?)""", (todo, todaysDate, args['done'], args['color']))
                 print(f"added todo {todo} to todoList for date: {todaysDate} as {args['done']}")
             conn.commit()
 
@@ -400,6 +400,50 @@ class notes(Resource):
         return "nothing here!", 200
 
 
+class learning(Resource):
+    def get(self):
+        headers = {'Content-Type': 'text/html'}
+        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        setNames, maxDaysNumbers, cnts, flashCards = getFlashCards(c)
+        maxDaysNumbers = list(range(1,maxDaysNumbers+1))
+        countes = []
+        for i in maxDaysNumbers:
+            if i in cnts.keys():
+                countes.append(cnts[i])
+            else:
+                countes.append(0)
+        return make_response(render_template('learning.html', pageTheme=pageTheme,
+                             setNames=setNames, flashCards=flashCards, maxDaysNumbers = maxDaysNumbers, countes=countes),200,headers)
+
+    def post(self):
+        args = parser.parse_args()
+        if args["entry"] == "flashCards":
+            if args["action"] == "create":
+                values =  json.loads(args['value'])
+                setName = values["setName"]
+                side1 = values["side1"]
+                side2 = values["side2"]
+                lastTimeReviewed =  str(datetime.date.today())
+                addFlashCards(setName, side1, side2, lastTimeReviewed, c, conn)
+            elif args["action"] == "delete":
+                values =  json.loads(args['value'])
+                setName = values["setName"]
+                side1 = values["side1"]
+                side2 = values["side2"]
+                deleteFlashCards(setName, side1, side2, c, conn)
+            else:
+                values =  json.loads(args['value'])
+                setName = values["setName"]
+                side1 = values["side1"]
+                side2 = values["side2"]
+                lastTimeReviewed =  str(datetime.date.today())
+                if args["action"] == "true":
+                    changeFlashCards(setName, side1, side2, lastTimeReviewed, True, c, conn)
+                else:
+                    changeFlashCards(setName, side1, side2, lastTimeReviewed, False, c, conn)
+        return "Done", 200
+
+
 @app.route("/downloadDB/")
 def downloadDB():
     return send_from_directory(directory=".", filename="journal.db", as_attachment="True", attachment_filename="sqlite_database.db")
@@ -440,6 +484,7 @@ api.add_resource(org, '/org')
 api.add_resource(settings, '/settings')
 api.add_resource(lists, '/lists')
 api.add_resource(notes, '/notes')
+api.add_resource(learning, '/learning')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

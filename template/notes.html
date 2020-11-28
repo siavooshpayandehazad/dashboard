@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/notes.css') }}">
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
   <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 
@@ -50,7 +51,7 @@
   </div>
 
   <div id="notebook_background">
-    <i class="fa fa-search searchIcon" onclick="setupSearchPage()"></i>
+    <i class="fa fa-search searchIcon hover-red" onclick="setupSearchPage()"></i>
     <h2 class="title"> <span id ="notebookName">{{Notebooks.keys()|sort()|first}}</span> Notebook </h2>
     <div class="ToCDiv" style= "">
         <h2 class="title"> ToC </h2>
@@ -58,15 +59,15 @@
           <ol class = "ToC">
           {% for chapter in Notebooks[Notebooks.keys()|sort()|first].keys()|sort()%}
             {%if chapter == Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first %}
-              <li class="ToCLabel SelectedChapter" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)">{{chapter}}</li>
+              <li class="ToCLabel selected hover-red" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)">{{chapter}}</li>
             {%else%}
-              <li class="ToCLabel" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)">{{chapter}}</li>
+              <li class="ToCLabel hover-red" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)">{{chapter}}</li>
             {%endif%}
           {%endfor%}
         </ol>
           <ol class="addToC">
-            <li class="ToCLabel" onclick="addChapter(this)">+ add new chapter</li>
-            <li class="ToCLabel" style="display:none"><textarea class="addChapterTextArea" cols="15" rows="1" onkeypress="{
+            <li class="ToCLabel hover-red" onclick="addChapter(this)">+ add new chapter</li>
+            <li class="ToCLabel hover-red" style="display:none"><textarea class="addChapterTextArea" cols="15" rows="1" onkeypress="{
               var key = window.event.keyCode;
               if (key === 13) {createNewChapter(this)}}"> </textarea></li>
           <ol>
@@ -75,7 +76,7 @@
 
     <div class="chapterContent">
       <h2 class="title"> <span id ="chapterName">{{Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first}}</span></h2>
-      <i class="fa fa-edit editIcon" onclick="editEntry(this)"></i><br>
+      <i class="fa fa-edit editIcon hover-red" onclick="editEntry(this)"></i><br>
       <div id="chapterContent">
           {{Notebooks[Notebooks.keys()|sort()|first][Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first]|safe}}
       </div>

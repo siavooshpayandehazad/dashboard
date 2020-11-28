@@ -1,0 +1,288 @@
+
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/flashCards.css') }}">
+  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+  <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
+  <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+  <title>My Journal</title>
+
+  <script  type="text/javascript">
+  var cardNum = 0;
+  var flashcards = {{flashCards|tojson}};
+  var counters = {{countes}};
+
+  </script>
+
+</head>
+
+{%if pageTheme=="Dark"%}
+<body class="featured">
+{% else %}
+<body>
+{% endif %}
+
+{% with page="learning" %}
+    {% include "header.html" %}
+{% endwith %}
+
+<div style="width:100%; height:460px; background-color:white; border-radius:20px;" id="flashCardsMainDiv">
+  <h2 style="margin-left:20px;"> <font style="text-decoration: underline;"> FlashCards </font></h2>
+
+  <div style=" float:left; padding-left:20px;">
+    <div style="float:left;">Select Set:</div>
+    <div style="float:left; margin-left:20px;">
+      <select id="setName">
+        {% for item in setNames %}
+          <option value="{{item}}">{{item}}</option>
+        {%endfor%}
+      </select>
+    </div>
+    <div style=" float:left; margin-left: 20px; width:20px; height:20px; background-color: powderblue; text-align: center; border-radius:10px;"> + </div>
+  </div>
+
+  <div  class="flashCardsButton" style=" margin-right: 10px;  margin-top: 10px; float:right;  width:100px; background-color: powderblue;" onclick="flashPopUp(false)"> add new card </div>
+
+  <div style="margin-top:10px; float:left; padding-left:20px; width:100%">
+  </div>
+
+  <div style="float:left; width:50%">
+
+    <div class="flip-container" style="float:left; width:100%">
+
+      <div  class="flipper" onclick="this.classList.toggle('flipped')">
+        <div class="front">
+          {% if flashCards|length > 0 %}
+            {{flashCards[0][1]|safe}}
+          {% endif %}
+        </div>
+        <div class="back">
+          {% if flashCards|length > 0 %}
+            {{flashCards[0][2]|safe}}
+          {% endif %}
+        </div>
+      </div>
+      <div style="float:left; margin-top:50px; margin-left:20px; width:20px;">
+        <i class="fa fa-trash-o hover-red" onclick="deleteCard(true)"></i>
+        <i class="fa fa-edit hover-red" onclick="flashPopUp(true)"></i>
+      </div>
+    </div>
+    <div  class="flashCardsButton" style="margin-top: 250px; margin-left: 29%; background-color: salmon;" onclick="nextCard(false)"> Wrong </div>
+    <div  class="flashCardsButton" style="margin-top: 250px; margin-left: 1%; background-color: powderblue;" onclick="nextCard(true)"> Correct </div>
+  </div>
+
+    <div style="float:left; width:5px; margin-top: 50px; background-color:black; height:250px;"></div>
+
+  <div style="float:left; margin-top: 50px; margin-left: 3%; width:45%;">
+      <canvas  height="100px" id="flashCardTracker"></canvas>
+  </div>
+</div>
+
+</body>
+
+<script  type="text/javascript">
+function removeCardFromDeck(setName, side1, side2){
+  for(var i= 0; i<flashcards.length;i++){
+    if((flashcards[i][0]==setName) && (flashcards[i][1]==side1)&&(flashcards[i][2]==side2)){
+      flashcards.splice(i, 1);
+      break;
+    }
+  }
+}
+
+function deleteCard(promptUser){
+  promptVal = true;
+  if(promptUser){promptVal = window.confirm("do you want to delete the card?");}
+  if(promptVal){
+    var side1 = document.getElementsByClassName("front")[0].innerHTML.trim();
+    var side2 = document.getElementsByClassName("back")[0].innerHTML.trim();
+    var setName = document.getElementById("setName").value;
+    $.ajax({ type: "POST",
+       url: "/learning",
+       data: {"entry": "flashCards",
+              "value": "{" + "\"setName\": \""+setName+
+                             "\", \"side1\": \""+side1+
+                             "\", \"side2\": \""+side2+
+                             "\"}",
+              "action": "delete"}
+    });
+    removeCardFromDeck(setName, side1, side2);
+    if(promptUser){
+      nextCard(null);
+    }
+  }
+}
+function closePopUp(){
+  allPopUps = document.getElementsByClassName("addFlashCardPopup");
+  for(i=0; i<allPopUps.length;i++){
+    allPopUps[i].remove()
+  }
+}
+function flashPopUp(edit){
+  var sideA = "";
+  var sideB = "";
+  if (edit){
+    sideA = document.getElementsByClassName("front")[0].innerHTML.trim();
+    sideB = document.getElementsByClassName("back")[0].innerHTML.trim();
+  }
+  closePopUp()
+  mainDiv = document.createElement("div");
+  mainDiv.classList.add("addFlashCardPopup");
+
+  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+  scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  parentElementPos = document.getElementById("flashCardsMainDiv").getBoundingClientRect()
+  mainDiv.style.left = parentElementPos.left+scrollLeft+400+"px";
+  mainDiv.style.top  = parentElementPos.top+scrollTop+50+"px";
+
+  div1 = document.createElement("div");
+  div2 = document.createElement("div");
+  div3 = document.createElement("div");
+
+  div1.textContent="Add new card:";
+  div2.style="float:left; margin-left:20px;";
+  div3.style="float:left; margin-left:20px;";
+
+  p1 = document.createElement("p");
+  p2 = document.createElement("p");
+
+  p1.textContent = "side A:";
+  p2.textContent = "side B:";
+
+  textAreaSide1 = document.createElement("textarea");
+  textAreaSide2 = document.createElement("textarea");
+  textAreaSide1.id="side1"
+  textAreaSide1.cols="40"
+  textAreaSide1.rows="5"
+  textAreaSide1.value=sideA;
+
+  textAreaSide2.id="side2"
+  textAreaSide2.cols="40"
+  textAreaSide2.rows="5"
+  textAreaSide2.value=sideB;
+
+  div2.appendChild(p1);
+  div2.appendChild(textAreaSide1);
+
+  div3.appendChild(p2);
+  div3.appendChild(textAreaSide2);
+
+  mainDiv.appendChild(div1);
+  mainDiv.appendChild(div2);
+  mainDiv.appendChild(div3);
+
+  divSubmit = document.createElement("div");
+  divSubmit.classList.add("flashCardsButton");
+  divSubmit.style.marginTop = "10px";
+  divSubmit.style.marginLeft = "10px";
+  divSubmit.style.backgroundColor = "powderblue";
+  divSubmit.style.float = "right";
+  divSubmit.textContent = "Submit";
+  divSubmit.onclick=function submitFlashCard(){
+    var side1 = document.getElementById("side1").value.trim()
+    var side2 = document.getElementById("side2").value.trim()
+    if(createFlashCard()){
+      if(edit){
+        deleteCard(false);
+        document.getElementsByClassName("front")[0].innerHTML = side1;
+        document.getElementsByClassName("back")[0].innerHTML = side2;
+      }
+      closePopUp();
+    }
+  }
+  divClose = document.createElement("div");
+  divClose.classList.add("flashCardsButton");
+  divClose.style.marginTop = "10px";
+  divClose.style.backgroundColor = "#d9d9d9";
+  divClose.style.float = "right";
+  divClose.textContent = "Close";
+  divClose.onclick=function close(){
+      closePopUp();
+  }
+  mainDiv.appendChild(divSubmit);
+  mainDiv.appendChild(divClose);
+  document.getElementById("flashCardsMainDiv").appendChild(mainDiv);
+}
+
+function submitCardValue(setName, side1, side2, cardValue){
+  $.ajax({ type: "POST",
+     url: "/learning",
+     data: {"entry": "flashCards",
+            "value": "{" + "\"setName\": \""+setName+
+                           "\", \"side1\": \""+side1+
+                           "\", \"side2\": \""+side2+
+                           "\"}",
+            "action": cardValue}
+  });
+}
+
+function nextCard(cardValue){
+  cardNum = cardNum + 1;
+  if(cardNum<flashcards.length){
+    var setName = document.getElementById("setName").value
+    var side1 = document.getElementsByClassName("front")[0].innerHTML.trim()
+    var side2 = document.getElementsByClassName("back")[0].innerHTML.trim()
+    if (cardValue !== null) {
+      submitCardValue(setName, side1, side2, cardValue)
+    }
+    document.getElementsByClassName("flipper")[0].classList.remove("flipped");
+    document.getElementsByClassName("front")[0].innerHTML=flashcards[cardNum][1]
+    document.getElementsByClassName("back")[0].innerHTML=flashcards[cardNum][2]
+  }else{
+    document.getElementsByClassName("front")[0].innerHTML=""
+    document.getElementsByClassName("back")[0].innerHTML=""
+  }
+}
+
+var ctx = document.getElementById("flashCardTracker").getContext('2d');
+var SleepChart = new Chart(ctx, {
+   type: 'bar',
+   data: {
+      labels: {{maxDaysNumbers|safe}},
+      datasets: [{
+         label: "# flashcards",
+         data: counters,
+         backgroundColor: 'rgba(128,205,193, 0.3)',
+         borderColor: 'rgba(53,151,143, 1)',
+         borderWidth: 2,
+         spanGaps: true,
+         pointStyle: 'rect',
+      }
+    ]
+   },
+   options: { legend: {labels: {usePointStyle: true}},
+              scales: { yAxes: [{ ticks:{beginAtZero: true }}]},
+  }
+});
+
+function createFlashCard(){
+    var setName = document.getElementById("setName").value
+    var side1 = document.getElementById("side1").value.trim()
+    var side2 = document.getElementById("side2").value.trim()
+    if ((side2 === "") || (side1 === "")){
+      window.alert("both sides of the card must be filled!");
+      return false;
+    }
+    $.ajax({ type: "POST",
+       url: "/learning",
+       data: {"entry": "flashCards",
+              "value": "{" + "\"setName\": \""+setName+
+                             "\", \"side1\": \""+side1+
+                             "\", \"side2\": \""+side2+
+                             "\"}",
+              "action": 'create'}
+    });
+    counters[1] = counters[1] + 1;
+    SleepChart.update();
+    document.getElementById("side1").value = "";
+    document.getElementById("side2").value = "";
+    return true;
+  }
+
+</script>
+
+</html>

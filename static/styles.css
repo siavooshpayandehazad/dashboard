@@ -169,45 +169,29 @@ div.todoTasksScorlable{
   overflow-y: scroll;
   height: 300px;
 }
-div.ScrumContainerScrollable{
-  width:97%;
-  height: 350px;
-  overflow-y: scroll;
-  margin-bottom: 10px;
-  background-color:white;
-  border-radius: 20px;
-  float: left; margin-left:1%;
-}
-div.ScrumContainer{
-  width:23.75%;
-  min-height: 400px;
-  margin-bottom: 10px;
-  background-color:white;
-  border-radius: 5px;
-  float: left; margin-left:1%;
-}
-div.ScrumCard{
-  width:95%;
-  border: solid black 3px;
-  border-radius: 10px;
-  float: left;
-  margin-left:2.5%;
-  margin-bottom:5px;
-  margin-top:7px;
-}
-div.NewScrumCardContainer{
-  margin-left:10%;
-  background-color: white;
-  height:35px;
-  width:70%;
+
+div.taskColorLabel{
+  float:right;
+  margin-top:2px;
+  margin-right:10px;
+  width:12px;
+  height:12px;
   border-radius:10px;
-  float:left;
+  border: 1px solid white;
 }
-div.scrumCardDivider{
-  width:55%;
-  margin-left: 5px;
-  margin-top: 5px;
-  height:2px;
+div.taskColorLabel:hover{
+  border: 1px solid red;
+}
+div.todoColorPopup{
+  position:relative;
+  padding-left: 5px;
+  top: 4px;
+  left:4px;
+  width:25px;
+  height:75px;
+  background-color: white;
+  border:1px solid black;
+  border-radius: 10px;
 }
 div.divider{
   width:100%;
@@ -218,19 +202,10 @@ div.divider{
 div.settingpage{
   color: var(--settingpage-txt-color);
 }
-td.tracker:hover {
- background-color:  var(--tracker-hvr-clr);
- cursor: pointer;
-}
-td.found {
- background-color:  var(--tracker-fnd-hvr-clr);
-}
-td.planned {
- background-color:   var(--tracker-plnd-hvr-clr);
-}
+
 td.moodselector{
   min-width:17px;
-  min-height:ListsNotes17px;
+  min-height:17px;
   border-radius:5px;
   border: 1px solid white;
 }
@@ -238,6 +213,7 @@ td.moodselector:hover{
   border: 1px solid black;
   cursor: pointer;
 }
+/*Day Selector used in Journal and Org page*/
 td.DS{
   min-width: 20px;
   text-align: center;
@@ -254,20 +230,19 @@ td.DStoday{
 td.DSbottom{
   border-radius: 0px 0px 0px 0px;
 }
-td.trackerLabel{
-  border: 1px solid white;
-  border-radius: 3px;
+font.DSfont{
+  font-size: 80%;
+  color:var(--DSfont-clr);
 }
-td.trackerHeader{
-  border: 1px solid white;
-  border-radius: 3px;
-  text-align: center;
+font.DSfontFilled{
+  font-size: 80%;
+  color:var(--DSfontFilled-clr);
 }
-td.todayMarker{
-  background-color: var(--todayMarker-bg-clr);
-  border-radius:10px;
-  text-align: center;
+font.DSfontToday{
+  color:var(--DSfontToday-clr);
 }
+/*------------------------------------------------*/
+
 th.moodTracker{
   text-align: center;
 }
@@ -291,21 +266,12 @@ a.arrow{
   text-decoration: none;
   color : var(--arrow-clr);
 }
-a.arrow:hover{
-  color: #b2182b;
-}
 span.date{
   color: #4292c6;
   font-size: 10px;
   float:right;
   margin-right:10px;
-}
-span.scrumSpan{
-  float:right;
-  margin-right:5px;
-}
-span.scrumSpan:hover{
-  color: #fb6a4a;
+  margin-top:5px;
 }
 span.task{
       display: inline-block;
@@ -334,8 +300,9 @@ span.task{
 .toDoEditHover:hover{
     border: 2px solid red;
 }
-.fa.fa-trash-o:hover{
-  color:red;
+.hover-red:hover{
+  cursor: pointer;
+  color:#b2182b;
 }
 input[type=submit] {
     padding:5px 15px;
@@ -356,47 +323,19 @@ input.newTodo{
   outline:None;
   border-radius: 4px;
 }
-textarea.dailyEntry{
-  margin-left: 5%;
-  min-height:200px;
-  width:90%;
-  outline:None;
-  resize:None
-}
-font.DSfont{
-  font-size: 80%;
-  color:var(--DSfont-clr);
-}
-font.DSfontFilled{
-  font-size: 80%;
-  color:var(--DSfontFilled-clr);
-}
-font.DSfontToday{
-  color:var(--DSfontToday-clr);
-}
+
+
 i.myGear{
   font-size: 30px;
   color: var(--icon-clr);
-}
-i.myGear:hover{
-  color: #b2182b;
-  cursor: pointer;
 }
 i.fa-power-off{
   font-size: 30px;
   color: var(--icon-clr);
 }
-i.fa-power-off:hover{
-  color: #b2182b;
-  cursor: pointer;
-}
 i.fa-sign-out{
   font-size: 30px;
   color: var(--icon-clr);
-}
-i.fa-sign-out:hover{
-  color: #b2182b;
-  cursor: pointer;
 }
 b.titleNewTask{
   margin-left:20%;
@@ -414,58 +353,6 @@ b.titleNewTask{
   background-color: rgba(0,0,0,0.9);
   z-index: 2;
 }
-.switch {
-position: relative;
-display: inline-block;
-width: 40px;
-height: 24px;
-margin-top: 3px;
-margin-left: 3px;
-}
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #525252;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-input:checked + .slider {
-  background-color: #ec7014;
-}
-input:focus + .slider {
-  box-shadow: 0 0 1px #ec7014;
-}
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(16px);
-}
-.slider.round {
-  border-radius: 24px;
-}
-.slider.round:before {
-  border-radius: 10px;
-}
 #eraser {
   color:#525252;
 }
@@ -482,148 +369,18 @@ input:checked + .slider:before {
   border: 1px solid #ec7014;
   color: #ec7014;
 }
-.notebookLabel {
-  width:100%;
-  height:30px;
-  background-color:#252525;
-  border: 3px solid white;
-  padding-top: 10px;
-  border-radius:15px 0px 0px 15px;
-  text-align:center;
-  color:white
-}
-.selected {
-  background-color: #cc4c02;
-}
-.notebookLabel:hover{
-  cursor: pointer;
-  background-color:#525252;
-}
-.ToC{
-  list-style: none;
-}
-.ToCLabel{
-  margin-left: -20px;
-}
-.ToCLabel:hover{
-  cursor: pointer;
-  color:#cc4c02;
-}
-.addToC{
-  margin-left: -15px;
-  margin-top:-15px;
-  list-style-type: none;
-}
-#notebookLabels{
-  width:12%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  margin-right: 0px;
-  float:left;
-  margin-top: 30px;
-}
-#chapterContent{
-  overflow-y: auto;
-  height:70vh;
-  width:96%;
-  margin-left:15px;
-  margin-top: 15px;
-}
-#notebook_background{
-  width:86%;
-  height:100%;
-  background-color: var(--bckgrnd-clr);
-  border: 3px solid var(--logText-clr);
-  border-radius:20px;
-  margin-top: 10px;
-  float:left;
-}
-div.ToCDiv{
-  width:16%;
-  height:80vh;
-  overflow-y: scroll;
-  background-color:var(--bckgrnd-clr);
-  border: 3px solid var(--logText-clr);
-  border-radius:20px;
-  margin-left: 1%;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  float:left; color:var(--logText-clr);
-}
-div.chapterContent{
-  width:80%;
-  height:80vh;
-  background-color:var(--bckgrnd-clr);
-  border: 3px solid var(--logText-clr);
-  border-radius:20px;
-  margin-left: 1%;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  float:left;
-  color:var(--logText-clr);
-}
-i.searchIcon{
-  float: right;
-  margin-top: 10px;
-  margin-right: 15px;
-  color:white;
-}
-i.searchIcon:hover{
-  cursor: pointer;
-  color:#cc4c02;
-}
-i.editIcon{
-  float:right;
-  margin-right:10px;
-  margin-top: 10px;
-}
-i.editIcon:hover{
-  cursor: pointer;
-  color:#cc4c02;
-}
-.journalPhoto{
-  border: 1px solid transparent;
-  width: 120px;
-}
-.journalPhoto:hover{
-  border: 1px solid white;
-}
-#PhotoOverlay {
-  position: fixed;
-  display: none;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.9);
-  z-index: 2;
-  cursor: pointer;
-}
-#closeButton{
-  color:white;
-  font-size: 30px;
-  float:right
-}
-#closeButton:hover{
-  color: #b2182b;
-  cursor: pointer;
-}
+
 div.moodSelectorPopUp{
   position: absolute;
 }
-
 .moodSelectorCell{
   min-width:20px;
   border-radius:5px;
   text-align: center;
 }
-
 .moodSelectorCell:hover{
   cursor: pointer;
 }
-
 .graphCard{
   width:550px;
   min-height:200px;
@@ -634,61 +391,6 @@ div.moodSelectorPopUp{
   text-align:center;
   float:left;
 }
-
-div.NoteBookCloseButton{
-  min-width: 17px;
-  min-height: 17px;
-  background-color: white;
-  border: 0px solid white;
-  border-radius: 20px;
-  display: inline-block;
-  text-align: center;
-  vertical-align: middle;
-}
-div.NoteBookCloseButton:hover{
-  background-color: #fee0d2;
-}
-
-.SelectedChapter{
-  color: #fd8d3c;
-}
-
-tbody.calendartb td, thead.calendarth th{
-  width: 125px;
-}
-
-thead.calendarth th{
-  height:40px;
-}
-
-tbody.calendartb td{
-  text-align: center;
-  height:40px;
-  border-bottom: 1px solid #9ecae1;
-  border-right:  1px solid #9ecae1;
-  background-color:white
-}
-.calendarPopUp{
-  z-index: 10;
-  width: 200px;
-  position: absolute;
-  background-color: #c6dbef;
-}
-
-.calendarEvent{
-  z-index: 2;
-  position: absolute;
-  border-radius: 5px 5px 5px 5px;
-  opacity: 0.9;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.calendarEvent:hover{
-  opacity: 1;
-}
-
 #add-marker{
   background-color: #41ae76;
   float:right;

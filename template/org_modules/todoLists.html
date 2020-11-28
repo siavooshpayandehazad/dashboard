@@ -1,22 +1,76 @@
 <script type="text/javascript">
-function deleteTodo(item) {
-      var listItem = item.childNodes[0].parentElement.parentElement;
-      console.log('deleting item', listItem.querySelector(".task").innerHTML, listItem.querySelector(".date").innerHTML)
-      $.ajax({ type: "POST",
-         url: "/org",
-         data: {"entry": "todo",
-                "value": listItem.querySelector(".task").innerHTML,
-                "date": listItem.querySelector(".date").innerHTML,
-                "action": 'delete'}
-      });
-      listItem.remove();
-    }
+  var todoColorFilter = null;
 
-function AddItemToList(name, date, list){
+function deleteTodo(item) {
+    var listItem = item.childNodes[0].parentElement.parentElement;
+    console.log('deleting item', listItem.querySelector(".task").innerHTML, listItem.querySelector(".date").innerHTML)
+    $.ajax({ type: "POST",
+       url: "/org",
+       data: {"entry": "todo",
+              "value": listItem.querySelector(".task").innerHTML,
+              "date": listItem.querySelector(".date").innerHTML,
+              "action": 'delete'}
+    });
+    listItem.remove();
+}
+
+function editTaskColor(item, event){
+  if(item !== event.target){
+    return;
+  }
+  var colorSelectors = document.getElementsByClassName("todoColorPopup");
+  if(colorSelectors.length>0){
+    for (var i=0; i<colorSelectors.length; i++){
+      colorSelectors[i].remove()
+      return
+    }
+  }
+  var colorSelector = document.createElement("div");
+  colorSelector.setAttribute("class", "todoColorPopup");
+
+  var bgcolors = ["tomato", "darkcyan", "darkorchid", "darkorange"]
+  for (i = 0; i < 5; i++) {
+    var color = document.createElement("div");
+    color.setAttribute("class", "taskColorLabel");
+    color.style.backgroundColor = bgcolors[i];
+    color.onclick = function () {
+      var date = item.parentElement.getElementsByClassName("date")[0].textContent;
+      var textVlue = item.parentElement.getElementsByClassName("task")[0].textContent;
+      var taskStatus = item.parentElement.getElementsByClassName("todoCheckbox")[0].checked;
+      var chosenColor = this.style.backgroundColor;
+
+      $.ajax({ type: "POST",
+          url: "/org",
+          data: {"entry": "todo", "value": textVlue, "date": date, "action": 'delete'}
+        }).success(function() {
+            $.ajax({ type: "POST",
+                url: "/org",
+                data: {"entry": "todo", "value": textVlue, "date": date, "done": taskStatus, "color": chosenColor}
+                });
+          });
+
+      item.parentElement.getElementsByClassName("taskColorLabel")[0].style.backgroundColor=chosenColor;
+      var colorSelectors = document.getElementsByClassName("todoColorPopup");
+      if(colorSelectors.length>0){
+        for (var i=0; i<colorSelectors.length; i++){
+          colorSelectors[i].remove()
+          return
+        }
+      }
+    };
+
+    colorSelector.appendChild(color);
+  }
+
+  item.appendChild(colorSelector)
+}
+
+function AddItemToList(name, date, list, color){
   var li = document.createElement("li");
-  li.setAttribute("style", "word-wrap: break-word; width:95%; white-space: normal;");
+  li.setAttribute("style", "word-wrap: break-word; width:98%; white-space: normal;");
   var input = document.createElement("input");
   input.setAttribute('type', 'checkbox');
+  input.setAttribute('class', 'todoCheckbox');
   input.setAttribute('onchange', 'boxchange(event)');
   input.setAttribute('style', 'margin-right:10px');
   var span1 = document.createElement("span");
@@ -28,9 +82,17 @@ function AddItemToList(name, date, list){
   span3.style.display = "none"
   span3.innerHTML = date;
 
+  var colorDiv = document.createElement("div");
+  colorDiv.setAttribute("class", "taskColorLabel");
+  colorDiv.style.backgroundColor = color;
+  colorDiv.onclick = function (event){
+    editTaskColor(this, event);
+  }
+
   li.appendChild(input);
   li.appendChild(span1);
   li.appendChild(span3);
+
 
   var span2 = document.createElement("span");
   span2.onclick = function () {deleteTodo(this);}
@@ -38,10 +100,10 @@ function AddItemToList(name, date, list){
   span2.style.marginRight = "10px";
 
   var i = document.createElement("i");
-  i.setAttribute('class',"fa fa-trash-o");
+  i.setAttribute('class',"fa fa-trash-o hover-red");
   span2.appendChild(i);
-  li.innerHTML += "&nbsp";
   li.appendChild(span2);
+  li.appendChild(colorDiv);
   var ul = list;
   ul.appendChild(li)
 }
@@ -91,14 +153,15 @@ function dropDownMenu(item, event){
   div.style.top = parseInt(event.clientY)+"px";
   div.style.left = parseInt(event.clientX)+5+"px";
   div.classList.add("toDoEditHover");
-  div.onclick = function moveTaskToToday(event){
+  div.onclick = function (event){
     var date = "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}"
+    var color = item.parentElement.getElementsByClassName("taskColorLabel")[0].style.backgroundColor;
     // Post to server
     $.ajax({ type: "POST",
         url: "/org",
-        data: {"entry": "todo", "value": item.textContent, "date": date, "done": 'false'}
-    }).success( function successAdded(){
-      AddItemToList(item.textContent, date, document.getElementById("todayList"));
+        data: {"entry": "todo", "value": item.textContent, "date": date, "done": 'false', "color": color}
+    }).success( function (){
+      AddItemToList(item.textContent, date, document.getElementById("todayList"), color);
       deleteTodo(item.parentElement.getElementsByClassName("deleteSpan")[0]);
       div.remove();
     });
@@ -120,13 +183,14 @@ function editTodo(item){
     event.preventDefault();
     if (textVlue!==textarea.value){
       date = listElement.getElementsByClassName("date")[0].textContent;
+      color = listElement.getElementsByClassName("taskColorLabel")[0].style.backgroundColor;
       $.ajax({ type: "POST",
           url: "/org",
           data: {"entry": "todo", "value": textVlue, "date": date, "action": 'delete'}
         }).success(function() {
             $.ajax({ type: "POST",
                 url: "/org",
-                data: {"entry": "todo", "value": textarea.value, "date": date, "done": 'false'}
+                data: {"entry": "todo", "value": textarea.value, "date": date, "done": 'false', "color": color}
                 });
           });
     }
@@ -142,22 +206,19 @@ function editTodo(item){
 </script>
 
 <div style="float:left;width:100%;margin-bottom:10px;margin-top:0px;">
-
     <img src= "{{url_for('static', filename = 'decorationImages/page_todo.png')}}" style="float:right; vertical-align: top; margin-right: 3%;"  height="80px"  alt="page_todo">
-
     <h1 style="margin-top:15px;margin-right:1px;width:20%;float:left;"> <font style="text-decoration: underline;"> Todo List </font></h1>
-
     <h2 class="title" style="text-decoration: none; margin-right: 22%; margin-left: 22%; margin-top:5px; margin-bottom: 0px; float:left;">
       {% if month > 1  %}
-        <a class= "arrow"  href="/org?date={{year}}-{{'%02d' % (month-1)}}-{{'%02d' % (day)}}">&#9668;</a>
+        <a class= "arrow hover-red"  href="/org?date={{year}}-{{'%02d' % (month-1)}}-01">&#9668;</a>
       {% else %}
-        <a class= "arrow"  href="/org?date={{year-1}}-{{'%02d' % (12)}}-{{'%02d' % (day)}}">&#9668;</a>
+        <a class= "arrow hover-red"  href="/org?date={{year-1}}-{{'%02d' % (12)}}-01">&#9668;</a>
       {% endif %}
       {{year}}-{{'%02d' % (month)}}
       {% if month < 12  %}
-        <a class= "arrow" href="/org?date={{year}}-{{'%02d' % (month+1)}}-{{'%02d' % (day)}}">&#9658;</a>
+        <a class= "arrow hover-red" href="/org?date={{year}}-{{'%02d' % (month+1)}}-01">&#9658;</a>
       {% else %}
-        <a class= "arrow" href="/org?date={{year+1}}-{{'%02d' % (1)}}-{{'%02d' % (day)}}">&#9658;</a>
+        <a class= "arrow hover-red" href="/org?date={{year+1}}-{{'%02d' % (1)}}-01">&#9658;</a>
       {% endif %}
     </h2>
     <div style="float:left; margin-top:10px;">
@@ -166,11 +227,11 @@ function editTodo(item){
           {% set ns1 = namespace (daysOfTheWeek = "MTWTFSS")%}
           {% set ns2 = namespace (daysOfTheWeekCap = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])%}
           {% for i in range(0, numberOfDays) %}
-          {%if i+1 == day %}
-            <td class="DS DStoday"><font class="DSfontToday"><b>{{ns2.daysOfTheWeekCap[(i+monthsBeginning)%7]}}</b></font></td>
-          {%else%}
-            <td style=" min-width: 15px; text-align: center;"><a class="arrow" href="/org?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i+1)}}"><font class="DSfont">{{ns1.daysOfTheWeek[(i+monthsBeginning)%7]}}</font></a></td>
-          {%endif%}
+            {%if i+1 == day %}
+              <td class="DS DStoday"><font class="DSfontToday"><b>{{ns2.daysOfTheWeekCap[(i+monthsBeginning)%7]}}</b></font></td>
+            {%else%}
+              <td style=" min-width: 15px; text-align: center;"><a class="arrow" href="/org?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i+1)}}"><font class="DSfont">{{ns1.daysOfTheWeek[(i+monthsBeginning)%7]}}</font></a></td>
+            {%endif%}
           {%endfor%}
         </tr>
         <tr style="margin-bottom:0px;">
@@ -189,97 +250,146 @@ function editTodo(item){
 
 <br>
 
-<div style = "width:100%;">
-<b class="titleNewTask">Add new task:</b> <input id="task", name ="{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}",  type="text" class="newTodo"><br>
-</div><br>
+<div style = "width:75%; float:left; margin-bottom:10px;">
+  <b class="titleNewTask">Add new task:</b> <input id="task", name ="{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}",  type="text" class="newTodo">
+</div>
+
+<div style="float:left; width:20%; margin-bottom:10px;">
+ <b class="titleNewTask"> filter by color: </b>
+ <select onchange="colorFilterChange(this)">
+    <option>None</option>
+    <option style="background-color:tomato">red</option>
+    <option style="background-color:darkcyan">green</option>
+    <option style="background-color:darkorchid">purple</option>
+    <option style="background-color:darkorange">orange</option>
+  </select>
+</div>
+
 <!--Over due tasks-->
 <div class = "todoTasks">
-<h2 class="title" style="color:#bd0026">&nbsp;Over Due: </h2>
-<div class ="todoTasksScorlable">
-<ul class="todoList">
-  {%for todo, date, done in overDue%}
-    {%if done == 'false'%}
-      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
-          <input type="checkbox"; class='todoCheckbox'; onchange="boxchange(event)"; style="margin-right:5px">
-          <span class="task" ondblclick="editTodo(this)" onclick="dropDownMenu(this, event)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
-          <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
-          <span class="date">{{date}}</span> &nbsp;
-      </li>
-    {%endif%}
- {%endfor%}
-</ul>
+<h2 class="title" style="color:#bd0026">Over Due</h2>
+<div class ="todoTasksScorlable" id= "overDueTasks">
 </div>
 </div>
 <!--Today's tasks-->
 <div class = "todoTasks">
-<h2 class="title lightbg" style="color:#2171b5">&nbsp;Todays tasks: </h2>
-<div class ="todoTasksScorlable">
-<ul id = "todayList" class="todoList">
-  {%for todo, date, done in todayTodos%}
-    {%if done == 'false'%}
-      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
-        <input type="checkbox"; class='todoCheckbox'; onchange="boxchange(event)"; style="margin-right:5px">
-        <span class="task"  ondblclick="editTodo(this)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
-        <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
-        <span class="date" style="display: none;">{{date}}</span> &nbsp;
-      </li>
-    {%endif%}
-  {%endfor%}
-  {%for todo, date, done in todayTodos%}
-    {%if done == 'true'%}
-      <li style ="word-wrap: break-word; width:95%; white-space: normal;">
-        <input type="checkbox"; class='todoCheckbox'; onchange="boxchange(event)"; checked style="margin-right:5px">
-        <span class="task"  ondblclick="editTodo(this)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{todo}}</span>
-        <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
-        <span class="date" style="display: none;">{{date}}</span> &nbsp;
-      </li>
-    {%endif%}
-  {%endfor%}
-</ul>
+<h2 class="title lightbg" style="color:#2171b5">Todays tasks</h2>
+<div class ="todoTasksScorlable" id= "todaysTasks">
 </div>
 </div>
-
 <!--next Month's tasks-->
 <div class = "todoTasks">
    <h2  class="title lightbg">Next month at a glance</h2>
-   <div class ="todoTasksScorlable">
-   <ul class="todoList">
-     {%for thisMonthTask in thisMonthsEvents%}
-     <li style ="word-wrap: break-word; width:95%; white-space: normal;">
-       <input type="checkbox"; class='todoCheckbox'; onchange="boxchange(event)"; style="margin-right:5px">
-       <span class="task" ondblclick="editTodo(this)" onclick="dropDownMenu(this, event)" onmouseover="hoverText(event, this)" onmouseleave="removeHover()">{{thisMonthTask[0]}}</span>
-       <span class="deleteSpan" style="float:right;margin-right:10px;" onclick="deleteTodo(this)"><i class="fa fa-trash-o" onmouseover="highlightToDoText(this)" onmouseleave=removeToDoHighlight(this)></i> </span>
-       <span class="date">{{thisMonthTask[1]}}</span> &nbsp;
-     </li>
-     {%endfor%}
-  </ul>
+   <div class ="todoTasksScorlable" id= "nextMonthsTasks">
   </div>
  </div>
 
 <script type="text/javascript">
 
+  var todayTasks = {{todayTodos|tojson}};
+  var monthsTasks = {{thisMonthsEvents|tojson}};
+  var overDueTasks = {{overDue|tojson}};
 
+  function cleanTodos(DivID){
+    taskCountainer = document.getElementById(DivID)
+    while (taskCountainer.firstChild) {
+      taskCountainer.removeChild(taskCountainer.firstChild);
+    }
+  }
 
-   function boxchange(event) {
+  function renderTodos(DivID, ULID, tasks, addDropDown, showDone, showDate){
+    cleanTodos(DivID);
+    // ShowDone: shows the tasks that are marked done
+    // showDate: shows the date of the taskondblclicks
+   var div = document.getElementById(DivID);
+   var list = document.createElement("ul");
+   list.classList.add("todoList");
+   list.id=ULID;
+   var a = ["false", "true"];
+   if (showDone==false){
+     a = ["false"];
+   }
+
+   for (var j in a ) {
+     for(var i=0; i<tasks.length;i++){
+       if(tasks[i][2] == a[j]){
+         var listItem = document.createElement("li");
+         listItem.style = "word-wrap: break-word; width:98%; white-space: normal;";
+         var input = document.createElement("input");
+         input.type = "checkbox";
+         input.classList.add("todoCheckbox");
+         input.setAttribute('onchange', 'boxchange(event)');
+         input.type="checkbox";
+         input.checked = (a[j]=='true');
+
+         var span1 = document.createElement("span");
+         var span2 = document.createElement("span");
+         var span3 = document.createElement("span");
+         var deleteIcon = document.createElement("i");
+         var colorLabel = document.createElement("div");
+         span1.classList="task";
+         span1.style="margin-left:10px";
+         span1.innerHTML=tasks[i][0];
+         span1.setAttribute('ondblclick', 'editTodo(this)');
+         span1.ondblclick = function (){editTodo(this)}
+         if(addDropDown){
+           span1.onclick = function (){dropDownMenu(this, event)}
+         }
+         span1.onmouseover = function (){hoverText(event, this)}
+         span1.onmouseleave = function (){removeHover()}
+
+         deleteIcon.setAttribute("class", "fa fa-trash-o hover-red");
+         span2.classList.add("deleteSpan");
+         span2.style="float:right;margin-right:10px;";
+         deleteIcon.onmouseover = function (){highlightToDoText(this)}
+         deleteIcon.onmouseleave = function (){removeToDoHighlight(this)}
+         deleteIcon.onclick = function (){deleteTodo(this.parentElement)}
+         span2.appendChild(deleteIcon);
+         span3.classList.add("date");
+         span3.innerHTML=tasks[i][1];
+         if(showDate==false){
+           span3.style.display="none";
+         }
+         colorLabel.classList.add("taskColorLabel");
+         colorLabel.style.backgroundColor=tasks[i][3];
+         colorLabel.onclick = function (){editTaskColor(this, event)}
+         listItem.appendChild(input);
+         listItem.appendChild(span1);
+         listItem.appendChild(span2);
+         listItem.appendChild(span3);
+
+         listItem.appendChild(colorLabel);
+         if ((todoColorFilter == null) || (tasks[i][3].toLowerCase() == todoColorFilter)){
+           list.appendChild(listItem);
+         }
+       }
+     }
+   }
+   div.appendChild(list);
+  }
+
+  function boxchange(event) {
       var listItem = event.target.parentElement;
       $.ajax({ type: "POST",
           url: "/org",
           data: {"entry": "todo",
                  "value": listItem.querySelector(".task").innerHTML,
                  "date": listItem.querySelector(".date").innerHTML,
-                 "done": listItem.querySelector("input").checked}
+                 "done": listItem.querySelector("input").checked,
+                 "color": listItem.getElementsByClassName("taskColorLabel")[0].style.backgroundColor,
+                 }
       });
-    }
+  }
 
-    function validateToDoInput(value){
-      if(value.length == 0){
-        window.alert("input field can not be empty!");
-        return false;
-      }
-      return true;
+  function validateToDoInput(value){
+    if(value.length == 0){
+      window.alert("input field can not be empty!");
+      return false;
     }
+    return true;
+  }
 
-    document.getElementById('task').addEventListener('keypress', function submitonEnter(event) {
+  document.getElementById('task').addEventListener('keypress', function submitonEnter(event) {
       if (event.keyCode == 13) {
               //console.log(document.getElementById("task").value
               var taskValue = document.getElementById("task").value;
@@ -290,12 +400,27 @@ function editTodo(item){
               // Post to server
               $.ajax({ type: "POST",
                   url: "/org",
-                  data: {"entry": "todo", "value": taskValue, "date": taskDate, "done": 'false'}
+                  data: {"entry": "todo", "value": taskValue, "date": taskDate, "done": 'false', 'color': 'tomato'}
               });
               // add the new element to the list!
-              AddItemToList(taskValue, taskDate, document.getElementById("todayList"))
+              AddItemToList(taskValue, taskDate, document.getElementById("todayList"), "tomato")
               // clear the text in the input line!
               document.getElementById("task").value = "";
           }
       });
+
+
+  function colorFilterChange(item){
+    todoColorFilter = item [item.selectedIndex].style.backgroundColor;
+    if(item [item.selectedIndex].value =="None"){
+      todoColorFilter = null;
+    }
+    renderTodos("overDueTasks", "", overDueTasks, true, false, true);
+    renderTodos("todaysTasks", "todayList", todayTasks, false, true, false);
+    renderTodos("nextMonthsTasks", "", monthsTasks, true, false, true);
+  }
+
+  renderTodos("overDueTasks", "", overDueTasks, true, false, true);
+  renderTodos("todaysTasks", "todayList", todayTasks, false,  true, false);
+  renderTodos("nextMonthsTasks", "", monthsTasks, true, false, true);
 </script>
