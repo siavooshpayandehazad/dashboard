@@ -50,9 +50,14 @@ function validateListInput(value){
 
 function deleteItem(item) {
       var listItem = event.srcElement.parentElement.parentElement;
+      var type = listItem.querySelector(".task").getAttribute("type");
+      // reduce the all counter!
+      var value = parseInt(document.getElementById("countAll "+type).textContent)
+      document.getElementById("countAll "+type).textContent = value - 1;
+
       $.ajax({ type: "POST",
           url: "http://localhost:5000/lists",
-          data: {"name": listItem.querySelector(".task").innerHTML, "type": listItem.querySelector(".task").getAttribute("type"), "action": "delete"}
+          data: {"name": listItem.querySelector(".task").innerHTML, "type": type, "action": "delete"}
       });
       listItem.remove();
     }
@@ -62,11 +67,11 @@ function boxchange(event) {
       var type = listItem.querySelector(".task").getAttribute("type");
       var name = listItem.querySelector(".task").innerHTML;
       var checked =  listItem.querySelector("input").checked;
-      var value = parseInt(document.getElementById("count "+type).textContent)
+      var value = parseInt(document.getElementById("countDone "+type).textContent)
       if(checked){
-          document.getElementById("count "+type).textContent = value + 1;
+          document.getElementById("countDone "+type).textContent = value + 1;
       }else{
-          document.getElementById("count "+type).textContent = value - 1;
+          document.getElementById("countDone "+type).textContent = value - 1;
       }
       $.ajax({ type: "POST",
           url: "http://localhost:5000/lists",
@@ -87,6 +92,10 @@ function submitonEnter(event) {
                    "type": listItemType,
                    "done": 'false'}
         });
+
+        // increase the all counter!
+        var value = parseInt(document.getElementById("countAll "+listItemType).textContent)
+        document.getElementById("countAll "+listItemType).textContent = value + 1;
 
           // add the new element to the list!
           var li = document.createElement("li");
