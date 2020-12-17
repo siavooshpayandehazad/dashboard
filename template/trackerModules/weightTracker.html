@@ -19,7 +19,6 @@ function renderWeightTrackerChart(){
           borderWidth: 3,
           spanGaps: true,
           pointRadius: 2,
-          hidden: true,
           pointStyle: 'dash',
        },{
            label: "Weight (kg)",
@@ -58,7 +57,9 @@ function renderWeightTrackerChart(){
                     }
                     this.update();
                   }
-              }
+              },
+      lineAtIndex: todayLineInChart(),
+      lineAtIndexColor: ['rgba(53,151,143, 1)'],
   });
 }
 

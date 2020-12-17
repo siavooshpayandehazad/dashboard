@@ -2,6 +2,7 @@
 var monthsSleepHoursTemp = {{monthsSleepTimes | safe}};
 var avgSleep = calculateAvg(monthsSleepHoursTemp);
 
+
 function renderSleepTrackerChart(){
 
   var Sleep_BG_Colors = []
@@ -33,7 +34,6 @@ function renderSleepTrackerChart(){
           borderWidth: 3,
           spanGaps: true,
           pointRadius: 2,
-          hidden: true,
           pointStyle: 'dash',
        }, {
            label: "Sleep time (hr)",
@@ -72,19 +72,41 @@ function renderSleepTrackerChart(){
                   for(var i = 0; i < newAvg.length; i++ ){
                     avgSleep[i] = newAvg[i];
                   }
+                  countTotalSleep();
                   this.update();
                 }
 
-              }
+              },
+    lineAtIndex: todayLineInChart(),
+    lineAtIndexColor: ['rgba(158,154,200, 1)'],
   });
+}
+
+function countTotalSleep(){
+  var span =  document.getElementById("totalSleep");
+  var sum = 0;
+  for(var i = 0; i < monthsSleepHoursTemp.length; i++ ){
+    if (!isNaN(monthsSleepHoursTemp[i]) ){
+      sum = sum + monthsSleepHoursTemp[i];
+    }
+  }
+  span.innerHTML = sum.toFixed(2);
 }
 
 </script>
 
 <div class="graphCard">
   <i class="fa fa-moon-o" style="float:left; margin-left:10px; margin-top:10px;"></i>
+  <span style="float: right; margin-right: 10px; margin-top: 5px; font-family:verdana; font-size:11px"> monthly sleep: <b><span id="totalSleep"></span></b> hrs</span>
   <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Sleep Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">
     <canvas  height="100px" id="sleepTracker"></canvas>
   </div>
 </div>
+
+
+<script type="text/javascript">
+
+  countTotalSleep();
+
+</script>

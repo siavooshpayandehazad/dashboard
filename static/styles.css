@@ -176,7 +176,7 @@ div.taskColorLabel{
   margin-right:10px;
   width:12px;
   height:12px;
-  border-radius:10px;
+  border-radius:30px;
   border: 1px solid white;
 }
 div.taskColorLabel:hover{

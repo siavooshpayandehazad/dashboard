@@ -1,6 +1,7 @@
 <script type="text/javascript">
   var monthsWorkHoursTemp = {{monthsWorkHours | safe}}
   var avgWork = calculateAvg(monthsWorkHoursTemp);
+  var todayDay;
 
   function renderWorkHourChart(){
     var WH_BG_Colors = []
@@ -38,7 +39,6 @@
             borderWidth: 3,
             spanGaps: true,
             pointRadius: 2,
-            hidden: true,
             pointStyle: 'dash',
          },{
              label: "Working Hours (hr)",
@@ -75,9 +75,12 @@
                     for(var i = 0; i < newAvg.length; i++ ){
                       avgWork[i] = newAvg[i];
                     }
+                    countTotalWH();
                     this.update();
                   }
-                }
+                },
+      lineAtIndex: todayLineInChart(),
+      lineAtIndexColor: ['rgba(203,24,29, 1)'],
     });
   }
 
@@ -92,12 +95,30 @@
     renderWorkHourChart(worHours)
   }
 
+  function countTotalWH(){
+    var span =  document.getElementById("totalWH");
+    var sum = 0;
+    for(var i = 0; i < monthsWorkHoursTemp.length; i++ ){
+      if (!isNaN(monthsWorkHoursTemp[i]) ){
+        sum = sum + parseFloat(monthsWorkHoursTemp[i]);
+      }
+    }
+    span.innerHTML = sum.toFixed(2);
+  }
+
 </script>
 
 <div class="graphCard">
   <i class="fa fa-wrench" style="float:left; margin-left:10px; margin-top:10px;"></i>
+  <span style="float: right; margin-right: 10px; margin-top: 5px; font-family:verdana; font-size:11px"> monthly work: <b><span id="totalWH"></span></b> hrs</span>
   <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Work Hours Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">
     <canvas  height="100px" id="WHTracker"></canvas>
   </div>
 </div>
+
+<script type="text/javascript">
+
+  countTotalWH();
+
+</script>

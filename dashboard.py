@@ -255,6 +255,7 @@ class org(Resource):
             if args["action"] == "create":
                 date = args['date']
                 values = json.loads(args['value'])
+
                 c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (date, values["startTime"], values["stopTime"], values["name"], values["color"], values["details"]))
                 conn.commit()
             elif args["action"] == "delete":
