@@ -14,6 +14,17 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
   <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+
+  <script type="text/javascript">
+  function highlightItem(item){
+    item.parentElement.querySelector('.task').style.color="red";
+  }
+
+  function removeItemHighlight(item){
+    item.parentElement.querySelector('.task').style.color="black";
+  }
+  </script>
+
 </head>
 
 {%if pageTheme=="Dark"%}
@@ -115,6 +126,8 @@ function submitonEnter(event) {
           span2.onclick = function () {deleteItem(this);}
           span2.style.float = "right";
           span2.style.marginRight = "10px";
+          span2.onmouseover = function(){highlightItem(this)}
+          span2.onmouseout = function(){removeItemHighlight(this)}
 
           var i = document.createElement("i");
           i.setAttribute('class',"fa fa-trash-o hover-red");

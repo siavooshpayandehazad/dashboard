@@ -27,6 +27,7 @@
 </div>
 
 <script type="text/javascript">
+  const zeroPad = (num, places) => String(num).padStart(places, '0')
   function login(){
     var password = document.getElementById("password").value;
      document.getElementById("password").value = "";
@@ -121,8 +122,12 @@
       <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
     </div>
 
-    {% with monthsWorkHours = monthsWorkHours, ChartMonthDays = ChartMonthDays %}
-        {% include "trackerModules/workHourTracker.html" %}
+    {% with dataset = monthsWorkHours, ChartMonthDays = ChartMonthDays, chartType = "bar",
+            thresholds = [4, 6, 8], trackerName = "work hours", unit="(hrs)", addAvg="true", tcf="true",
+            pointStyle = 'rect', showTotalVal = True, suggestedMin = 0,
+            bgColors = ['rgba(252,146,114, 1)', 'rgba(254,196,79, 1)', 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)'],
+            bColors = ['rgba(203,24,29, 1)', 'rgba(236,112,20, 1)', 'rgba(33,113,181, 1)', 'rgba(53,151,143, 1)']%}
+        {% include "trackerModules/singleChart.html" %}
     {% endwith %}
 
     {% with YearsSavings = YearsSavings, ChartYearMonths = ChartYearMonths,
@@ -135,20 +140,32 @@
       <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
     </div>
 
-    {% with monthsWeights = monthsWeights, ChartMonthDays = ChartMonthDays %}
-        {% include "trackerModules/weightTracker.html" %}
+    {% with dataset = monthsWeights, ChartMonthDays = ChartMonthDays, chartType = "line",
+            thresholds = [], trackerName = "weight", unit="(kg)", addAvg="true", tcf="true",
+            pointStyle = 'cicle', showTotalVal = False, suggestedMin = 60,
+            bgColors = ['rgba(128,205,193, 0.3)'],
+            bColors = ['rgba(53,151,143, 1)']%}
+        {% include "trackerModules/singleChart.html" %}
     {% endwith %}
 
     {% with HR_Max = HR_Max, HR_Min = HR_Min, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth%}
         {% include "trackerModules/heartRateTracker.html" %}
     {% endwith %}
 
-    {% with monthsSleepTimes = monthsSleepTimes, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth %}
-        {% include "trackerModules/sleepTracker.html" %}
+    {% with dataset = monthsSleepTimes, ChartMonthDays = ChartMonthDays, chartType = "bar",
+            thresholds = [8], trackerName = "sleep", unit="(hrs)", addAvg="true", tcf="true",
+            pointStyle = 'rect', showTotalVal = True, suggestedMin = 0,
+            bgColors = ['rgba(188,189,220, 1)', 'rgba(106,81,163, 1)'],
+            bColors = ['rgba(158,154,200, 1)', 'rgba(106,81,163, 1)']%}
+        {% include "trackerModules/singleChart.html" %}
     {% endwith %}
 
-    {% with monthsSteps = monthsSteps, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth%}
-        {% include "trackerModules/stepTracker.html" %}
+    {% with dataset = monthsSteps, ChartMonthDays = ChartMonthDays, chartType = "bar",
+            thresholds = [8000], trackerName = "step", unit="", addAvg="true", tcf="false",
+            pointStyle = 'rect', showTotalVal = True, suggestedMin = 0,
+            bgColors = ['rgba(173,221,142, 1)', 'rgba(0,109,44, 1)'],
+            bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
+        {% include "trackerModules/singleChart.html" %}
     {% endwith %}
 
     {% with monthsRuns = monthsRuns, monthsPaces = monthsPaces, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth %}
@@ -174,12 +191,8 @@
 <script>
 
 function renderchart() {
-   renderWorkHourChart();
    renderHeartRateChart();
-   renderWeightTrackerChart();
-   renderSleepTrackerChart();
    renderSavingTrackerChart();
-   renderStepTrackerChart();
    renderRunningTrackerChart();
 }
 

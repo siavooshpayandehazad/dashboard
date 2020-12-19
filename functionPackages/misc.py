@@ -101,6 +101,11 @@ def allPotosInDir(photoDir, year, date):
     todayPhotos.sort()
     return todayPhotos
 
+def allDaysWithPotos(photoDir, year, month):
+    daysWithPhotos = []
+    if os.path.isdir(photoDir):
+        daysWithPhotos = [int(x.split("-")[2]) for x in os.listdir(photoDir) if str(year)+"-"+'%02d' % (month) in x ]
+    return sorted(daysWithPhotos)
 
 def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
                           date: str, delete: bool, deleteDay: bool, dbCursur,

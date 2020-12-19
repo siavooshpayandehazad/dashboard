@@ -230,6 +230,18 @@ td.DStoday{
 td.DSbottom{
   border-radius: 0px 0px 0px 0px;
 }
+td.DSgHighlightToday{
+  height: 5px;
+  background-image: linear-gradient(to right, var(--DStoday-bg-clr) 0%, #b2182b 35%, #b2182b 65%, var(--DStoday-bg-clr) 100%)
+}
+td.DSgHighlightFilled{
+  height: 5px;
+  background-image: linear-gradient(to right, var(--DSFilled-bg-clr) 0%, #b2182b 35%, #b2182b 65%, var(--DSFilled-bg-clr) 100%);
+}
+td.DSgHighlight{
+  height: 5px;
+  background-image: linear-gradient(to right, var(--bckgrnd-clr) 0%, #b2182b 35%, #b2182b 65%, var(--bckgrnd-clr) 100%);
+}
 font.DSfont{
   font-size: 80%;
   color:var(--DSfont-clr);

@@ -120,9 +120,9 @@ class dash(Resource):
             return addTrackerItemToTable(args['value'].lower(), "", [], "runningTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'pace':
             return addTrackerItemToTable(args['value'].lower(), "", [], "paceTracker", todaysDate, False, True, c, conn)
-        if args['tracker_type'] == 'steps':
+        if args['tracker_type'] == 'step':
             return addTrackerItemToTable(args['value'].lower(), "", [], "stepTracker", todaysDate, False, True, c, conn)
-        if args['tracker_type'] == 'WorkHours':
+        if args['tracker_type'] == 'work hours':
             return addTrackerItemToTable(args['value'].lower(), "work_hour", [], "workHourTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'saving':
             return addsSavingItemToTable(args['value'].lower(), todaysDate, c, conn)
@@ -148,18 +148,20 @@ class journal(Resource):
         todaysDate = parseDate(args['date'])
         day, month, year = sparateDayMonthYear(todaysDate)
         photoDir=os.getcwd()+"/static/photos/"+str(year)+"/"+todaysDate
+        photoDir2=os.getcwd()+"/static/photos/"+str(year)
+        daysWithPhotos = allDaysWithPotos(photoDir2, year, month)
         todayPhotos =  allPotosInDir(photoDir, year, todaysDate)
         todaysLog, todaysLogText = getTodaysLogs(c, todaysDate)
         numberOfDays = numberOfDaysInMonth(int(month), int(year))
         monthsBeginning = getMonthsBeginning(month, year).weekday()
-
+        print(daysWithPhotos)
         c.execute("""SELECT * FROM logTracker WHERE date >= ? and date <= ? """, (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(), ))
         logged_days = [int(x[1].split("-")[2]) for x in c.fetchall()]
 
         return make_response(render_template('journal.html', numberOfDays = numberOfDays,
                              day = day, month = month, year=year, monthsBeginning=monthsBeginning,
                              log = todaysLog, todaysLogText = todaysLogText, todayPhotos= todayPhotos,
-                             logged_days = logged_days, pageTheme=pageTheme),
+                             logged_days = logged_days, daysWithPhotos = daysWithPhotos, pageTheme=pageTheme),
                              200,headers)
 
     def post(self):
