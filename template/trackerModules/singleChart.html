@@ -1,5 +1,7 @@
 <script type="text/javascript">
+window['accumulate_{{trackerName}}'] = {{accumulate | safe}};
 window['dataset_{{trackerName}}'] = {{dataset | safe}};
+window['xaxis_{{trackerName}}'] = {{ChartMonthDays | safe}};
 window['thresholds_{{trackerName}}'] = {{thresholds | safe}};
 window['bgColors_{{trackerName}}'] = {{bgColors | safe}};
 window['bColors_{{trackerName}}'] = {{bColors | safe}};
@@ -61,42 +63,53 @@ function renderTrackerChart(){
   new Chart(ctx, {
      type: "bar",
      data: {
-        labels: {{ChartMonthDays|safe}},
+        labels: window['xaxis_{{trackerName}}'],
         datasets: generateDataSets(),
      },
      options: { legend: {labels: {usePointStyle: true}},
                 scales: {
                 yAxes: [{ ticks:{suggestedMin: '{{suggestedMin}}', }}]},
                 onClick: function(event, array){
-                  if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
-                     (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
-                    return;
-                  }
-                  var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
-                  var selectedVal =  window['dataset_{{trackerName}}'][selectedDay-1]
-                  var newVal = window.prompt("Update {{trackerName}} for day " + selectedDay + "?", selectedVal);
-                  if (isNaN(newVal) || (newVal===null)){return;}
-                  var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
-                  // submit new value
-                  $.ajax({
-                      type: "POST",
-                      url: "http://localhost:5000/home",
-                      data: {"tracker_type":"{{trackerName}}", "value": newVal, "date": date},
-                  });
-                  //update the step value
-                  window['dataset_{{trackerName}}'][selectedDay-1] = parseFloat(newVal);
-                  if ({{addAvg}}){
-                    newAvg = calculateAvg(window['dataset_{{trackerName}}']);
-                    for(var i = 0; i < newAvg.length; i++ ){
-                      window['avg_{{trackerName}}'][i] = newAvg[i];
+                    if ("{{clickable}}" == "true"){
+                      if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
+                         (this.scales['y-axis-0'].getValueForPixel(event.layerY) > this.scales['y-axis-0'].end)){
+                           console.log("here!")
+                        return;
+                      }
+                      var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
+                      var selectedVal =  window['dataset_{{trackerName}}'][selectedDay-1]
+                      var newVal;
+                      if(window['accumulate_{{trackerName}}'] == true){
+                        newVal = window.prompt("Add {{trackerName}} for day " + selectedDay + "?", "");
+                      }else{
+                        newVal = window.prompt("Update {{trackerName}} for day " + selectedDay + "?", selectedVal);
+                      }
+                      if (isNaN(newVal) || (newVal===null)){return;}
+                      var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
+                      // submit new value
+                      $.ajax({
+                          type: "POST",
+                          url: "http://localhost:5000/home",
+                          data: {"tracker_type":"{{trackerName}}", "value": newVal, "date": date},
+                      });
+                      if(window['accumulate_{{trackerName}}'] == true){
+                        newVal = parseFloat(selectedVal) + parseFloat(newVal);
+                      }
+                      //update the step value
+                      window['dataset_{{trackerName}}'][selectedDay-1] = parseFloat(newVal);
+                      if ({{addAvg}}){
+                        newAvg = calculateAvg(window['dataset_{{trackerName}}']);
+                        for(var i = 0; i < newAvg.length; i++ ){
+                          window['avg_{{trackerName}}'][i] = newAvg[i];
+                        }
+                      }
+                      countTotalVal(window['dataset_{{trackerName}}'], ('{{tcf}}'=='true'));
+                      this.update();
                     }
-                  }
-                  countTotalVal(window['dataset_{{trackerName}}'], ('{{tcf}}'=='true'));
-                  this.update();
                 }
 
               },
-    lineAtIndex: todayLineInChart(),
+    lineAtIndex: todayLineInChart("{{yearMonth}}"),
     lineAtIndexColor: ['{{B_High}}'],
   });
 }

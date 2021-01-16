@@ -62,10 +62,14 @@
 
     Chart.plugins.register(verticalLinePlugin);
 
-    function todayLineInChart(){
+    function todayLineInChart(YearMonth){
       date =  new Date();
       if (({{PageYear}} == date.getFullYear()) && ({{PageMonth}}-1 == date.getMonth())){
-        return [{{today}}-1]
+        if (YearMonth == "year"){
+          return [{{PageMonth}}-1]
+        }else{
+          return [{{today}}-1]
+        }
       }
       else{
         return

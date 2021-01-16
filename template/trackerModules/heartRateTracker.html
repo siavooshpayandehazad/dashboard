@@ -38,10 +38,11 @@ function renderHeartRateChart(hrMin, hrMax){
         }]
      },
      options: { legend: {labels: {usePointStyle: true}},
-                scales: { yAxes: [{ ticks:{ beginAtZero: true }}]},
+                scales: { yAxes: [{ ticks:{ suggestedMin: 50, suggestedMax: 200 }}]},
                 onClick: function(event, array){
                   if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
                      (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
+                       console.log(this.scales['y-axis-0'].getValueForPixel(event.layerY))
                     return;
                   }
                   var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
@@ -62,7 +63,7 @@ function renderHeartRateChart(hrMin, hrMax){
                   this.update();
                 }
             },
-      lineAtIndex: todayLineInChart(),
+      lineAtIndex: todayLineInChart("{{yearMonth}}"),
       lineAtIndexColor: ['rgba(252,78,42, 1)'],
   });
 }

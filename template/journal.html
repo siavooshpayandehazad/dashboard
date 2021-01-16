@@ -12,7 +12,6 @@
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
   <script src="{{ url_for('static', filename='js/login.js') }}"></script>
   <script type="text/javascript">
-  console.log("{{daysWithPhotos}}")
     function submitEntry(){
       var newText = document.getElementById("dailyEntry").value;
       $.ajax({ type: "POST",
@@ -121,15 +120,15 @@
     <div style="float:left; width:690px;">
     <h2 class="title journal">
       {% if month > 1  %}
-        <a class= "arrow hover-red"  href="/journal?date={{year}}-{{'%02d' % (month-1)}}-{{'%02d' % (day)}}">&#9668;</a>
+        <a class= "arrow hover-red"  href="/journal?date={{year}}-{{'%02d' % (month-1)}}-01">&#9668;</a>
       {% else %}
-        <a class= "arrow hover-red"  href="/journal?date={{year-1}}-{{'%02d' % (12)}}-{{'%02d' % (day)}}">&#9668;</a>
+        <a class= "arrow hover-red"  href="/journal?date={{year-1}}-{{'%02d' % (12)}}-01">&#9668;</a>
       {% endif %}
       {{year}}-{{'%02d' % (month)}}
       {% if month < 12  %}
-        <a class= "arrow hover-red" href="/journal?date={{year}}-{{'%02d' % (month+1)}}-{{'%02d' % (day)}}">&#9658;</a>
+        <a class= "arrow hover-red" href="/journal?date={{year}}-{{'%02d' % (month+1)}}-01">&#9658;</a>
       {% else %}
-        <a class= "arrow hover-red" href="/journal?date={{year+1}}-{{'%02d' % (1)}}-{{'%02d' % (day)}}">&#9658;</a>
+        <a class= "arrow hover-red" href="/journal?date={{year+1}}-{{'%02d' % (1)}}-01">&#9658;</a>
       {% endif %}
     </h2>
 

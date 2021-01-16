@@ -27,6 +27,7 @@
 </div>
 
 <script type="text/javascript">
+
   const zeroPad = (num, places) => String(num).padStart(places, '0')
   function login(){
     var password = document.getElementById("password").value;
@@ -58,140 +59,115 @@
     document.getElementById("overlay").style.display = "block";
     localStorage.setItem('token',"false");
   }
+  function toggleMonthYear(){
+    if (document.getElementById("monthlyToggle").checked){
+      document.getElementById("MonthlyDisplay").style.display = "none";
+      document.getElementById("YearlyDisplay").style.display = "";
+      document.getElementById("titleLabelMonthly").style.display = "none";
+      document.getElementById("titleLabelYearly").style.display = "";
+    }else{
+      document.getElementById("MonthlyDisplay").style.display = "";
+      document.getElementById("YearlyDisplay").style.display = "none";
+      document.getElementById("titleLabelMonthly").style.display = "";
+      document.getElementById("titleLabelYearly").style.display = "none";
+    }
+  }
 
   checkLoggedIn();
 </script>
 
   {% include "trackerModules/graphFuncs.html" %}
-
   {% with page="index" %}
     {% include "header.html" %}
   {% endwith %}
 
   <div>
-    <!-- Header! -->
-    <h1 style= "font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    {% if PageMonth > 1  %}
-      <a class= "arrow hover-red" href="/home?date={{PageYear}}-{{'%02d' % (PageMonth-1)}}">&#9668;</a>
-    {% else %}
-      <a class= "arrow hover-red" href="/home?date={{PageYear-1}}-{{'%02d' % (12)}}">&#9668;</a>
-    {% endif %}
-    {{titleDate}}
-    {% if PageMonth < 12  %}
-      <a class= "arrow hover-red" href="/home?date={{PageYear}}-{{'%02d' % (PageMonth+1)}}">&#9658;</a>
-    {% else %}
-      <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-{{'%02d' % (1)}}">&#9658;</a>
-    {% endif %}
-    </h1>
-
-    <div style="width:120px;float:left; margin-right:10px;margin-top:5px;">
-
-      <div style="float:right;">
-      <!-- weather widget start -->
-      {%if pageTheme=="Dark"%}
-        <script type='text/javascript' src='https://darksky.net/widget/default-small/55.7081,13.1973/uk12/en.js?width=100%&height=60&title=Full Forecast&textColor=d9d9d9&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=&units=uk'></script>
+    <label class="switch" style="float:right">
+      {% if request.args.get('yearlyView') == "True" %}
+        <input type="checkbox" id= "monthlyToggle" onclick="toggleMonthYear()" checked>
       {%else%}
-        <script type='text/javascript' src='https://darksky.net/widget/default-small/55.7081,13.1973/uk12/en.js?width=100%&height=60&title=Full Forecast&textColor=1b46ae&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=&units=uk'></script>
+        <input type="checkbox" id= "monthlyToggle" onclick="toggleMonthYear()" unchecked>
       {%endif%}
-      <!-- weather widget end -->
-      </div>
-
-    {% with counterValue = counterValue %}
-        {% include "trackerModules/counter.html" %}
-    {% endwith %}
-
-    {% with days = days, highlight=highlight,today=today, activityList=activityList, monthsActivitiesPlanned=monthsActivitiesPlanned%}
-        {% include "trackerModules/activityTracker.html" %}
-    {% endwith %}
-
-    {% with days = days, moods = moods, PageYear=PageYear, PageMonth=PageMonth, today=today %}
-        {% include "trackerModules/moodTracker.html" %}
-    {% endwith %}
-
-
-    <div style="margin-left: 5px;float:left; min-width:130px;">
-      {%if pageTheme=="Dark"%}
-      <img src= "{{url_for('static', filename = 'decorationImages/page1_Large_dark.png')}}" float="right" width="130" alt="page1_Large_dark">
+      <span class="slider round"></span>
+    </label>
+    <!-- Header! -->
+    {% if request.args.get('yearlyView') == "True" %}
+      <h1 id="titleLabelMonthly" style= "display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      {% if PageMonth > 1  %}
+        <a class= "arrow hover-red"  href="/home?date={{PageYear}}-{{'%02d' % (PageMonth-1)}}&yearlyView=False">&#9668;</a>
       {% else %}
-      <img src= "{{url_for('static', filename = 'decorationImages/page1_Large.png')}}" float="right" width="130" alt="page1_Large">
+        <a class= "arrow hover-red" href="/home?date={{PageYear-1}}-{{'%02d' % (12)}}&yearlyView=False">&#9668;</a>
       {% endif %}
-    </div>
+      {{titleDate}}
+      {% if PageMonth < 12  %}
+        <a class= "arrow hover-red" href="/home?date={{PageYear}}-{{'%02d' % (PageMonth+1)}}&yearlyView=False">&#9658;</a>
+      {% else %}
+        <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-{{'%02d' % (1)}}&yearlyView=False">&#9658;</a>
+      {% endif %}
+      </h1>
+    {%else%}
+        <h1 id="titleLabelMonthly" style= "font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        {% if PageMonth > 1  %}
+          <a class= "arrow hover-red"  href="/home?date={{PageYear}}-{{'%02d' % (PageMonth-1)}}&yearlyView=False">&#9668;</a>
+        {% else %}
+          <a class= "arrow hover-red" href="/home?date={{PageYear-1}}-{{'%02d' % (12)}}&yearlyView=False">&#9668;</a>
+        {% endif %}
+        {{titleDate}}
+        {% if PageMonth < 12  %}
+          <a class= "arrow hover-red" href="/home?date={{PageYear}}-{{'%02d' % (PageMonth+1)}}&yearlyView=False">&#9658;</a>
+        {% else %}
+          <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-{{'%02d' % (1)}}&yearlyView=False">&#9658;</a>
+        {% endif %}
+        </h1>
+    {%endif%}
 
-    <div style="width:100%; margin-left:5px;  margin-bottom: 10px; float:left; min-width:200px;">
-      <div class="divider" style="width:90%; height:4px; float:left; margin-left: 3.3%; margin-top: 18px;"></div>
-      <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
-    </div>
+    {% if request.args.get('yearlyView') == "True" %}
+      <h1 id="titleLabelYearly"  style= "font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a class= "arrow hover-red"  href="/home?date={{PageYear-1}}-01&yearlyView=True">&#9668;</a>
+        {{PageYear}}
+        <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-01&yearlyView=True">&#9658;</a>
+      </h1>
+    {%else%}
+      <h1 id="titleLabelYearly"  style= "display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a class= "arrow hover-red"  href="/home?date={{PageYear-1}}-01&yearlyView=True">&#9668;</a>
+        {{PageYear}}
+        <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-01&yearlyView=True">&#9658;</a>
+      </h1>
+    {%endif%}
 
-    {% with dataset = monthsWorkHours, ChartMonthDays = ChartMonthDays, chartType = "bar",
-            thresholds = [4, 6, 8], trackerName = "work hours", unit="(hrs)", addAvg="true", tcf="true",
-            pointStyle = 'rect', showTotalVal = True, suggestedMin = 0,
-            bgColors = ['rgba(252,146,114, 1)', 'rgba(254,196,79, 1)', 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)'],
-            bColors = ['rgba(203,24,29, 1)', 'rgba(236,112,20, 1)', 'rgba(33,113,181, 1)', 'rgba(53,151,143, 1)']%}
-        {% include "trackerModules/singleChart.html" %}
+  </div>
+
+<!--- %%%%%%%%%%%%%%    Monthly View    %%%%%%%%%%%%%% ---->
+  {% if request.args.get('yearlyView') == "True" %}
+    <div id="MonthlyDisplay" style="display:none;">
+  {%else%}
+    <div id="MonthlyDisplay">
+  {%endif%}
+
+    {% with page="index" %}
+      {% include "monthlyView.html" %}
     {% endwith %}
+  </div>
 
-    {% with YearsSavings = YearsSavings, ChartYearMonths = ChartYearMonths,
-            PageYear = PageYear, PageMonth = PageMonth%}
-        {% include "trackerModules/savingTracker.html" %}
+<!--- %%%%%%%%%%%%%%    YEARLY View    %%%%%%%%%%%%%% ---->
+  {% if request.args.get('yearlyView') == "True" %}
+    <div id="YearlyDisplay">
+  {%else%}
+    <div id="YearlyDisplay" style="display:none;">
+  {%endif%}
+
+    {% with page="index" %}
+      {% include "yearlyView.html" %}
     {% endwith %}
-
-    <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
-      <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
-      <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
-    </div>
-
-    {% with dataset = monthsWeights, ChartMonthDays = ChartMonthDays, chartType = "line",
-            thresholds = [], trackerName = "weight", unit="(kg)", addAvg="true", tcf="true",
-            pointStyle = 'cicle', showTotalVal = False, suggestedMin = 60,
-            bgColors = ['rgba(128,205,193, 0.3)'],
-            bColors = ['rgba(53,151,143, 1)']%}
-        {% include "trackerModules/singleChart.html" %}
-    {% endwith %}
-
-    {% with HR_Max = HR_Max, HR_Min = HR_Min, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth%}
-        {% include "trackerModules/heartRateTracker.html" %}
-    {% endwith %}
-
-    {% with dataset = monthsSleepTimes, ChartMonthDays = ChartMonthDays, chartType = "bar",
-            thresholds = [8], trackerName = "sleep", unit="(hrs)", addAvg="true", tcf="true",
-            pointStyle = 'rect', showTotalVal = True, suggestedMin = 0,
-            bgColors = ['rgba(188,189,220, 1)', 'rgba(106,81,163, 1)'],
-            bColors = ['rgba(158,154,200, 1)', 'rgba(106,81,163, 1)']%}
-        {% include "trackerModules/singleChart.html" %}
-    {% endwith %}
-
-    {% with dataset = monthsSteps, ChartMonthDays = ChartMonthDays, chartType = "bar",
-            thresholds = [8000], trackerName = "step", unit="", addAvg="true", tcf="false",
-            pointStyle = 'rect', showTotalVal = True, suggestedMin = 0,
-            bgColors = ['rgba(173,221,142, 1)', 'rgba(0,109,44, 1)'],
-            bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
-        {% include "trackerModules/singleChart.html" %}
-    {% endwith %}
-
-    {% with monthsRuns = monthsRuns, monthsPaces = monthsPaces, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth %}
-        {% include "trackerModules/runningTracker.html" %}
-    {% endwith %}
-
-
-    <div style="width:100%; margin-left:5px;  margin-bottom: 10px; float:left; min-width:200px;">
-      <div class="divider" style="width:90%; height:4px; float:left; margin-left: 3.3%; margin-top: 18px;"></div>
-      <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
-    </div>
-
-    {% with travels = travels%}
-      {% include "trackerModules/travelTracker.html" %}
-    {% endwith %}
-
-    <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
-      <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
-      <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
-    </div>
+  </div>
+  
 </body>
 
 <script>
 
 function renderchart() {
    renderHeartRateChart();
+   renderHeartRateChartYear();
    renderSavingTrackerChart();
    renderRunningTrackerChart();
 }

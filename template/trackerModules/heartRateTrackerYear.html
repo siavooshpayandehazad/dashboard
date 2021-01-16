@@ -1,0 +1,56 @@
+<script type="text/javascript">
+var hr_MinY = {{HR_Min|safe}};
+var hr_MaxY = {{HR_Max|safe}};
+
+function renderHeartRateChartYear(hrMin, hrMax){
+  var ctx = document.getElementById("HRTrackerYear").getContext('2d');
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  if (hrMin){
+    hr_MinY[dd-1] = hrMin;
+  }
+  if (hrMin){
+    hr_MaxY[dd-1] = hrMax;
+  }
+
+  var HRLineChart = new Chart(ctx, {
+     type: 'line',
+     data: {
+        labels: {{ChartMonthDays|safe}},
+        datasets: [{
+           label: "HR Min (bpm)",
+           data: hr_MinY,
+           backgroundColor: ['rgba(0,0,0, 0)'],
+           borderColor: ['rgba(33,113,181, 1)'],
+           borderWidth: 2,
+           spanGaps: true,
+           tension: 0,
+           pointStyle: 'circle',
+        }, {
+           label: "HR Max (bpm)",
+           data: hr_MaxY,
+           backgroundColor: ['rgba(0,0,0, 0)'],
+           borderColor: ['rgba(252,78,42, 1)'],
+           borderWidth: 2,
+           spanGaps: true,
+           tension: 0,
+           pointStyle: 'circle',
+        }]
+     },
+     options: { legend: {labels: {usePointStyle: true}},
+                scales: { yAxes: [{ ticks:{ suggestedMin: 50 }}]},
+            },
+      lineAtIndex: todayLineInChart("{{yearMonth}}"),
+      lineAtIndexColor: ['rgba(252,78,42, 1)'],
+  });
+}
+</script>
+
+
+<div class="graphCard">
+  <i class="fa fa-heart" aria-hidden="true"  style="float:left; margin-left:10px; margin-top:10px;"></i>
+  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Heart Rate Tracker</h2>
+  <div style="float:left; width:90%; margin-left:5%">
+    <canvas  height="100px" id="HRTrackerYear"></canvas>
+  </div>
+</div>

@@ -12,14 +12,14 @@
             {%if done == 'false'%}
               <li>
                 <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-                <span class="task" type={{Type}}>{{item}}</span>
+                <span class="task" type={{Type}} ondblclick="itemdblclick(this)">{{item}}</span>
                 <span style="float:right; margin-right:10px;" onclick="deleteItem(event)" onmouseover = "highlightItem(this)" onmouseout="removeItemHighlight(this)"><i class="fa fa-trash-o hover-red"></i> </span>
               </li>
             {%else%}
             {% set ns.done_numbers = ns.done_numbers + 1 %}
               <li>
                 <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
-                <span class="task" type={{Type}}>{{item}}</span>
+                <span class="task" type={{Type}} ondblclick="itemdblclick(this)">{{item}}</span>
                 <span style="float:right; margin-right:10px;" onclick="deleteItem(event)" onclick="deleteItem(event)" onmouseover = "highlightItem(this)" onmouseout="removeItemHighlight(this)"><i class="fa fa-trash-o hover-red"></i> </span>
               </li>
             {%endif%}

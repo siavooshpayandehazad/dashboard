@@ -2,6 +2,13 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from functionPackages.misc import getMonthsBeginning, getMonthsEnd
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
 def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     lastMonthsBeginning = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-relativedelta(months=+1)
     lastMonthsEnd = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-datetime.timedelta(days=1)
@@ -62,6 +69,25 @@ def generateHRChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCurs
         chartHR_Max.append(hr_max)
     return chartHR_Min, chartHR_Max
 
+def generateYearHRChartData(pageYear: int, numberOfDays: int, dbCursur):
+    HR_Min_Avg = []
+    HR_Max_Avg = []
+    for i in range(1, 13):
+        dbCursur.execute("""SELECT * FROM HRTracker WHERE date >= ? and date <= ?  """,
+                (getMonthsBeginning(i, pageYear).date(), getMonthsEnd(i, pageYear).date(),))
+        res = dbCursur.fetchall()
+        HR_Min = [float(x[0]) for x in res if is_number(x[0])]
+        HR_Max = [float(x[1]) for x in res if is_number(x[1])]
+        if len(HR_Min)>0:
+            HR_Min_Avg.append(float(sum(HR_Min))/len(HR_Min))
+        else:
+            HR_Min_Avg.append(0)
+        if len(HR_Max)>0:
+            HR_Max_Avg.append(float(sum(HR_Max))/len(HR_Max))
+        else:
+            HR_Max_Avg.append(0)
+    return HR_Min_Avg, HR_Max_Avg
+
 
 def generateWorkTrakcerChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsWorkHours = []
@@ -78,6 +104,14 @@ def generateWorkTrakcerChartData(pageMonth: int, pageYear: int, numberOfDays: in
                 work_hour = float(item[0])
         workTrackerData.append(work_hour)
     return workTrackerData
+
+def generateYearWHChartData(pageYear: int, numberOfDays: int, dbCursur):
+    yearSleep = []
+    for i in range(1, 13):
+        dbCursur.execute("""SELECT * FROM workHourTracker WHERE date >= ? and date <= ?  """,
+                (getMonthsBeginning(i, pageYear).date(), getMonthsEnd(i, pageYear).date(),))
+        yearSleep.append(sum([float(x[0]) for x in dbCursur.fetchall() if is_number(x[0])]))
+    return yearSleep
 
 def generateSavingTrackerChartData(pageYear: int, dbCursur):
     yearsSavings = []
@@ -113,6 +147,14 @@ def generateSleepChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbC
         sleepTrackerData.append(sleep_hour)
     return sleepTrackerData
 
+def generateYearSleepChartData(pageYear: int, numberOfDays: int, dbCursur):
+    yearSleep = []
+    for i in range(1, 13):
+        dbCursur.execute("""SELECT * FROM sleepTracker WHERE date >= ? and date <= ?  """,
+                (getMonthsBeginning(i, pageYear).date(), getMonthsEnd(i, pageYear).date(),))
+        yearSleep.append(sum([float(x[0]) for x in dbCursur.fetchall() if is_number(x[0])]))
+    return yearSleep
+
 def generateStepChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsSteps = []
     dbCursur.execute("""SELECT * FROM stepTracker WHERE date >= ? and date <= ?  """,
@@ -131,6 +173,14 @@ def generateStepChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCu
                     step_value = "nan"
         stepsTrackerData.append(step_value)
     return stepsTrackerData
+
+def generateYearStepChartData(pageYear: int, numberOfDays: int, dbCursur):
+    yearSteps = []
+    for i in range(1, 13):
+        dbCursur.execute("""SELECT * FROM stepTracker WHERE date >= ? and date <= ?  """,
+                (getMonthsBeginning(i, pageYear).date(), getMonthsEnd(i, pageYear).date(),))
+        yearSteps.append(sum([int(x[0]) for x in dbCursur.fetchall() if is_number(x[0])]))
+    return yearSteps
 
 def generateRunningChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsRuns = []
@@ -167,3 +217,18 @@ def generatePaceChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCu
                     pace_value = "nan"
         paceTrackerData.append(pace_value)
     return paceTrackerData
+
+def generateYearMoodChartData(pageYear: int, numberOfDays: int, dbCursur):
+    yearMoods = []
+    for i in range(1, 13):
+        dbCursur.execute("""SELECT * FROM moodTracker WHERE date >= ? and date <= ?  """,
+                (getMonthsBeginning(i, pageYear).date(), getMonthsEnd(i, pageYear).date(),))
+        res = [x[0] for x in dbCursur.fetchall()]
+        MonthVal = res.count("great")*4.5 + res.count("ok")*3.5 + res.count("good")*2.5 + res.count("bad")*1.5 + res.count("awful")*0.5
+
+        if len(res) > 0:
+            moodVal = MonthVal/float(len(res))
+            yearMoods.append(moodVal)
+        else:
+            yearMoods.append("nan")
+    return yearMoods

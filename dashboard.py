@@ -26,7 +26,7 @@ api = Api(app)
 
 parser = reqparse.RequestParser()
 for item in ['tracker_type', 'value', 'oldValue', 'display', 'date', 'done', 'action',
-             'type', 'name', 'cardProj', 'cardTask', 'currentList',
+             'type', 'name', 'cardProj', 'cardTask', 'currentList', 'notes',
              'destList', 'priority', 'Theme', 'counter', 'password', 'planner',
              'entry', 'notebook', 'chapter', 'rename', 'color']:
     parser.add_argument(item)
@@ -76,6 +76,11 @@ class dash(Resource):
         ChartMonthDays   = [str(i) for i in range(1, numberOfDays+1)]
         travels          = getTravelDests(c)
         # ----------------------------------------------
+        yearSteps = generateYearStepChartData(int(pageYear), numberOfDays, c)
+        yearSleep = generateYearSleepChartData(int(pageYear), numberOfDays, c)
+        yearWH = generateYearWHChartData(int(pageYear), numberOfDays, c)
+        yearHR_Min, yearHR_Max = generateYearHRChartData(int(pageYear), numberOfDays, c)
+        yearMood = generateYearMoodChartData(int(pageYear), numberOfDays, c)
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth = int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
@@ -85,6 +90,8 @@ class dash(Resource):
                                              monthsSteps = monthsSteps, HR_Min = HR_Min, HR_Max = HR_Max,
                                              monthsRuns = monthsRuns, monthsPaces = monthsPaces,
                                              monthsWorkHours = monthsWorkHours, YearsSavings = YearsSavings,
+                                             yearSteps = yearSteps, yearSleep = yearSleep, yearWH = yearWH,
+                                             yearHR_Min = yearHR_Min, yearHR_Max = yearHR_Max, yearMood = yearMood,
                                              # ----------------------
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
                                              activityList = activityList, days=moodTrackerDays, highlight = highlight,
@@ -154,7 +161,6 @@ class journal(Resource):
         todaysLog, todaysLogText = getTodaysLogs(c, todaysDate)
         numberOfDays = numberOfDaysInMonth(int(month), int(year))
         monthsBeginning = getMonthsBeginning(month, year).weekday()
-        print(daysWithPhotos)
         c.execute("""SELECT * FROM logTracker WHERE date >= ? and date <= ? """, (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(), ))
         logged_days = [int(x[1].split("-")[2]) for x in c.fetchall()]
 
@@ -266,7 +272,6 @@ class org(Resource):
                 c.execute("""DELETE from calendar where date = ? and startTime = ? and endTime = ?  and eventName = ? """, (date, values["startTime"], values["stopTime"], values["name"]))
                 conn.commit()
             elif args["action"] == "edit":
-                print( args["action"] )
                 date = args['date']
                 values = json.loads(args['oldValue'])
                 c.execute("""DELETE from calendar where date = ? and startTime = ? and endTime = ?  and eventName = ? """, (values["date"], values["startTime"], values["stopTime"], values["name"]))
@@ -340,7 +345,7 @@ class lists(Resource):
         lists = {}
         for listName in ["book", "movie", "anime", "bucketList", "toLearnList"]:
             c.execute("""SELECT * FROM lists WHERE type = ? """, (listName, ))
-            lists[listName] = sorted(sorted([(name, done) for name, done, type in c.fetchall()]), key=lambda x: x[1])
+            lists[listName] = sorted(sorted([(name, done) for name, done, type, note in c.fetchall()]), key=lambda x: x[1])
         return make_response(render_template('lists.html', readList = lists["book"],
                                              animeList=lists["anime"], movieList = lists["movie"],
                                              bucketList=lists["bucketList"],
@@ -355,7 +360,7 @@ class lists(Resource):
         else:
             print(f"added {args['name'].lower()} to {args['type']} as {args['done']} ")
             c.execute("""DELETE from lists where name = ? and type = ? """, (args["name"].lower(), args["type"]))
-            c.execute("""INSERT INTO lists VALUES(?, ?, ?)""", (args["name"].lower(), args["done"], args["type"]))
+            c.execute("""INSERT INTO lists VALUES(?, ?, ?, ?)""", (args["name"].lower(), args["done"], args["type"], args["notes"]))
         conn.commit()
         return "Done", 200
 

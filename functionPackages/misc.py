@@ -245,7 +245,7 @@ def generateDBTables(DBCursor):
     DBCursor.execute("""CREATE TABLE if not exists settings (
              parameter text, value text)""")
     DBCursor.execute("""CREATE TABLE if not exists lists (
-             name text, done text, type text)""")
+             name text, done text, type text, note text)""")
     DBCursor.execute("""CREATE TABLE if not exists Notes (
              Notebook text, Chapter text, Content text)""")
 

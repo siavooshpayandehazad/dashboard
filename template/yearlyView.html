@@ -1,0 +1,59 @@
+{% with dataset = yearMood, ChartMonthDays = ChartYearMonths, chartType = "bar",
+        thresholds = [1,2,3,4], trackerName = "Yearly Moods", unit="", addAvg="true", tcf="true",
+        pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
+        accumulate = "false",
+        bgColors = ['rgba(244, 165, 130, 1)', 'rgb(253, 219, 199, 1)', 'rgb(222, 235, 247, 1)', 'rgb(159, 222, 208, 1)', 'rgb(29, 145, 192, 1)'],
+        bColors =  ['rgba(227,26,28, 1)', 'rgb(253,141,60, 1)', 'rgb(107,174,214, 1)', 'rgb(66,146,198, 1)', 'rgb(8,48,107, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+{% endwith %}
+
+<div style="width:100%; margin-left:5px;  margin-bottom: 10px; float:left; min-width:200px;">
+  <div class="divider" style="width:90%; height:4px; float:left; margin-left: 3.3%; margin-top: 18px;"></div>
+  <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
+</div>
+
+{% with dataset = yearWH, ChartMonthDays = ChartYearMonths, chartType = "bar",
+        thresholds = [70, 100, 120, 150], trackerName = "Yearly Work Hour", unit="(hr)", addAvg="true", tcf="true",
+        pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
+        accumulate = "false",
+        bgColors = ['rgba(252,146,114, 1)', 'rgba(254,196,79, 1)', 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)'],
+        bColors = ['rgba(203,24,29, 1)', 'rgba(236,112,20, 1)', 'rgba(33,113,181, 1)', 'rgba(53,151,143, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+{% endwith %}
+
+{% with YearsSavings = YearsSavings, ChartYearMonths = ChartYearMonths,
+        PageYear = PageYear, PageMonth = PageMonth%}
+    {% include "trackerModules/savingTracker.html" %}
+{% endwith %}
+
+<div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
+  <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
+  <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
+</div>
+
+{% with HR_Max = yearHR_Max, HR_Min = yearHR_Min, ChartMonthDays = ChartYearMonths, PageYear = PageYear, PageMonth = PageMonth, yearMonth = "year"%}
+    {% include "trackerModules/heartRateTrackerYear.html" %}
+{% endwith %}
+
+{% with dataset = yearSleep, ChartMonthDays = ChartYearMonths, chartType = "bar",
+        thresholds = [225], trackerName = "Yearly Sleep", unit="(hr)", addAvg="true", tcf="true",
+        pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
+        accumulate = "false",
+        bgColors = ['rgba(188,189,220, 1)', 'rgba(106,81,163, 1)'],
+        bColors = ['rgba(158,154,200, 1)', 'rgba(106,81,163, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+{% endwith %}
+
+{% with dataset = yearSteps, ChartMonthDays = ChartYearMonths, chartType = "bar",
+        thresholds = [300000], trackerName = "Yearly Steps", unit="", addAvg="true", tcf="true",
+        pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
+        accumulate = "false",
+        bgColors = ['rgba(173,221,142, 1)', 'rgba(0,109,44, 1)'],
+        bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+{% endwith %}
+
+<div style="width:100%; margin-left:5px;  margin-bottom: 10px; float:left; min-width:200px;">
+  <div class="divider" style="width:90%; height:4px; float:left; margin-left: 3.3%; margin-top: 18px;"></div>
+  <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
+</div>

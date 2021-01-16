@@ -1,0 +1,96 @@
+
+<div style="width:120px;float:left; margin-right:10px;margin-top:5px;">
+  <div style="float:right;">
+    <!-- weather widget start -->
+    {%if pageTheme=="Dark"%}
+      <script type='text/javascript' src='https://darksky.net/widget/default-small/55.7081,13.1973/uk12/en.js?width=100%&height=60&title=Full Forecast&textColor=d9d9d9&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=&units=uk'></script>
+    {%else%}
+      <script type='text/javascript' src='https://darksky.net/widget/default-small/55.7081,13.1973/uk12/en.js?width=100%&height=60&title=Full Forecast&textColor=1b46ae&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=&units=uk'></script>
+    {%endif%}
+    <!-- weather widget end -->
+  </div>
+
+  {% with counterValue = counterValue %}
+    {% include "trackerModules/counter.html" %}
+  {% endwith %}
+</div>
+
+  {% with days = days, highlight=highlight,today=today, activityList=activityList, monthsActivitiesPlanned=monthsActivitiesPlanned%}
+    {% include "trackerModules/activityTracker.html" %}
+  {% endwith %}
+
+  {% with days = days, moods = moods, PageYear=PageYear, PageMonth=PageMonth, today=today %}
+    {% include "trackerModules/moodTracker.html" %}
+  {% endwith %}
+
+  <div style="margin-left: 5px;float:left; min-width:130px;">
+    {%if pageTheme=="Dark"%}
+    <img src= "{{url_for('static', filename = 'decorationImages/page1_Large_dark.png')}}" float="right" width="130" alt="page1_Large_dark">
+    {% else %}
+    <img src= "{{url_for('static', filename = 'decorationImages/page1_Large.png')}}" float="right" width="130" alt="page1_Large">
+    {% endif %}
+  </div>
+
+  <div style="width:100%; margin-left:5px;  margin-bottom: 10px; float:left; min-width:200px;">
+    <div class="divider" style="width:90%; height:4px; float:left; margin-left: 3.3%; margin-top: 18px;"></div>
+    <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
+  </div>
+
+  {% with dataset = monthsWorkHours, ChartMonthDays = ChartMonthDays, chartType = "bar",
+        thresholds = [4, 6, 8], trackerName = "work hours", unit="(hrs)", addAvg="true", tcf="true",
+        pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
+        accumulate = "true", 
+        bgColors = ['rgba(252,146,114, 1)', 'rgba(254,196,79, 1)', 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)'],
+        bColors = ['rgba(203,24,29, 1)', 'rgba(236,112,20, 1)', 'rgba(33,113,181, 1)', 'rgba(53,151,143, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+  {% endwith %}
+
+  {% with monthsRuns = monthsRuns, monthsPaces = monthsPaces, ChartMonthDays = ChartMonthDays,
+    PageYear = PageYear, PageMonth = PageMonth%}
+    {% include "trackerModules/runningTracker.html" %}
+  {% endwith %}
+
+  {% with dataset = monthsWeights, ChartMonthDays = ChartMonthDays, chartType = "line",
+        thresholds = [], trackerName = "weight", unit="(kg)", addAvg="true", tcf="true",
+        pointStyle = 'cicle', showTotalVal = False, suggestedMin = 60, yearMonth = "month", clickable="true",
+        accumulate = "false",
+        bgColors = ['rgba(128,205,193, 0.3)'],
+        bColors = ['rgba(53,151,143, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+  {% endwith %}
+
+  {% with HR_Max = HR_Max, HR_Min = HR_Min, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth, yearMonth = "month"%}
+    {% include "trackerModules/heartRateTracker.html" %}
+  {% endwith %}
+
+  {% with dataset = monthsSleepTimes, ChartMonthDays = ChartMonthDays, chartType = "bar",
+        thresholds = [8], trackerName = "sleep", unit="(hrs)", addAvg="true", tcf="true",
+        pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
+        accumulate = "false",
+        bgColors = ['rgba(188,189,220, 1)', 'rgba(106,81,163, 1)'],
+        bColors = ['rgba(158,154,200, 1)', 'rgba(106,81,163, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+  {% endwith %}
+
+  {% with dataset = monthsSteps, ChartMonthDays = ChartMonthDays, chartType = "bar",
+        thresholds = [8000], trackerName = "step", unit="", addAvg="true", tcf="false",
+        pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
+        accumulate = "false",
+        bgColors = ['rgba(173,221,142, 1)', 'rgba(0,109,44, 1)'],
+        bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+  {% endwith %}
+
+  <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
+    <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
+    <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
+  </div>
+
+  {% with travels = travels%}
+    {% include "trackerModules/travelTracker.html" %}
+  {% endwith %}
+
+  <div style="width:100%; margin-left:5px;  margin-bottom: 10px; float:left; min-width:200px;">
+    <div class="divider" style="width:90%; height:4px; float:left; margin-left: 3.3%; margin-top: 18px;"></div>
+    <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" float="left" width="50px" alt="page1_Small">
+  </div>
