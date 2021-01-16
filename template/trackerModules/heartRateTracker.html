@@ -55,7 +55,7 @@ function renderHeartRateChart(hrMin, hrMax){
                   var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
                   $.ajax({
                       type: "POST",
-                      url: "http://localhost:5000/home",
+                      url: "http://"+window.location.hostname+":5000/home",
                       data: {"tracker_type":"HR", "value" : minHR + ',' + maxHR, "date": date},
                   });
                   hr_Max[selectedDay-1] = maxHR;

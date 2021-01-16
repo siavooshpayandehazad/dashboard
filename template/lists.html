@@ -70,7 +70,7 @@ function deleteItem(item) {
       document.getElementById("countAll "+type).textContent = value - 1;
 
       $.ajax({ type: "POST",
-          url: "http://localhost:5000/lists",
+          url: "http://"+window.location.hostname+":5000/lists",
           data: {"name": listItem.querySelector(".task").innerHTML, "type": type, "action": "delete"}
       });
       listItem.remove();
@@ -88,7 +88,7 @@ function boxchange(event) {
           document.getElementById("countDone "+type).textContent = value - 1;
       }
       $.ajax({ type: "POST",
-          url: "http://localhost:5000/lists",
+          url: "http://"+window.location.hostname+":5000/lists",
           data: {"name": name, "type": type, "done": checked}
       });
      }
@@ -101,7 +101,7 @@ function submitonEnter(event) {
           return;
         }
         $.ajax({ type: "POST",
-            url: "http://localhost:5000/lists",
+            url: "http://"+window.location.hostname+":5000/lists",
             data: {"name": listItemValue,
                    "type": listItemType,
                    "done": 'false'}

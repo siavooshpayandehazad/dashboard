@@ -1,7 +1,7 @@
   <script type="text/javascript">
   function shutdown(){
     $.ajax({ type: "POST",
-        url: "http://localhost:5000/shutdown"
+        url: "http://"+window.location.hostname+":5000/shutdown"
     });
     logout();
   }

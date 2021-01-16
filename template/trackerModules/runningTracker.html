@@ -88,7 +88,7 @@ function renderRunningTrackerChart(){
                   // submit new value
                   $.ajax({
                       type: "POST",
-                      url: "http://localhost:5000/home",
+                      url: "http://"+window.location.hostname+":5000/home",
                       data: {"tracker_type":graph, "value": newVal, "date": date},
                   });
                   countTotalRun();

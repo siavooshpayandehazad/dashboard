@@ -50,7 +50,7 @@
     // post to server!
     $.ajax({
         type: "POST",
-        url: "http://localhost:5000/home",
+        url: "http://"+window.location.hostname+":5000/home",
         data: {"tracker_type":"travel", "value": splitResponse[0]+", "+splitResponse[1]+", "+splitResponse[2]},
     });
 

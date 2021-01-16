@@ -25,12 +25,12 @@
       if(erase){ // erase everything
         $.ajax({
             type: "POST",
-            url: "http://localhost:5000/home",
+            url: "http://"+window.location.hostname+":5000/home",
             data: {tracker_type: "activity", "value":activity, "date":date, "planner": "True", "action": "delete"},
         }).done(function() {
             $.ajax({
                 type: "POST",
-                url: "http://localhost:5000/home",
+                url: "http://"+window.location.hostname+":5000/home",
                 data: {tracker_type: "activity", "value":activity, "date":date,"planner": "False", "action": "delete"},
             });
         });
@@ -40,7 +40,7 @@
           // add planner
           $.ajax({
               type: "POST",
-              url: "http://localhost:5000/home",
+              url: "http://"+window.location.hostname+":5000/home",
               data: {tracker_type: "activity", "value":activity, "date":date, "planner": "True"},
           });
           if ((element.style.backgroundColor != "rgb(82, 82, 82)")
@@ -51,7 +51,7 @@
           // add activity
           $.ajax({
               type: "POST",
-              url: "http://localhost:5000/home",
+              url: "http://"+window.location.hostname+":5000/home",
               data: {tracker_type: "activity", "value":activity, "date":date, "planner": "False"},
           });
           if(Theme == "Dark"){

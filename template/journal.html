@@ -15,7 +15,7 @@
     function submitEntry(){
       var newText = document.getElementById("dailyEntry").value;
       $.ajax({ type: "POST",
-          url: "http://localhost:5000/journal",
+          url: "http://"+window.location.hostname+":5000/journal",
           data: {"entry": "log", "value":newText, "date": document.getElementById("dailyEntry").name},
       });
       document.getElementById("todayslog").innerHTML = newText.replace(/\n/g, "<br>");;
@@ -206,7 +206,7 @@
         <br><br>
         <div  id = "uploader" style="display:none; width:350px; background-color: white; margin-top: 20px; margin-bottom: 10px; padding: 10px 10px 10px 10px;border-radius:10px;">
           Upload a photo:
-          <form  name="photoUploader" action = "http://localhost:5000/uploader" method = "POST" enctype = "multipart/form-data" style="margin-top:5px;" onsubmit="return validateForm()">
+          <form  name="photoUploader" action = "/uploader" method = "POST" enctype = "multipart/form-data" style="margin-top:5px;" onsubmit="return validateForm()">
               <input type = "file" name = "file" />
               <input type="text" name="date" value = "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" style ="display:none;">
               <input type = "submit" style="float:right;" value="Upload" />

@@ -21,7 +21,7 @@ function editChapterName(item){
       delete tempNotebooks[notebookName][oldChapterName]
       if(this.value != oldChapterName){
          $.ajax({ type: "POST",
-                  url: "http://localhost:5000/notes",
+                  url: "http://"+window.location.hostname+":5000/notes",
                   data: {"rename":JSON.stringify({"type": "chapterName",
                                                   "noteBookName": notebookName,
                                                   "oldName": oldChapterName,
@@ -61,7 +61,7 @@ function addChapter(item){
 }
 function createNewChapter(item){
   $.ajax({ type: "POST",
-      url: "http://localhost:5000/notes",
+      url: "http://"+window.location.hostname+":5000/notes",
       data: {"entry":"",
              "notebook": document.getElementById("notebookName").textContent,
              "chapter" : item.value,},
@@ -160,7 +160,7 @@ function createNewNotebook(item){
     return false;
   }
   $.ajax({ type: "POST",
-      url: "http://localhost:5000/notes",
+      url: "http://"+window.location.hostname+":5000/notes",
       data: {"entry":"",
              "notebook": noteBookName,
              "chapter" : "Chapter 1",},
@@ -195,7 +195,7 @@ function editEntry(item){
     var chapterName = document.getElementById("chapterName").innerHTML
     var notebookName = document.getElementById("notebookName").innerHTML
     $.ajax({ type: "POST",
-        url: "http://localhost:5000/notes",
+        url: "http://"+window.location.hostname+":5000/notes",
         data: {"entry":notebookEntry,
                "notebook": notebookName,
                "chapter" : chapterName,},
@@ -233,7 +233,7 @@ function editNoteBook(item){
 
       if(this.value != oldNoteBookName){
         $.ajax({ type: "POST",
-                 url: "http://localhost:5000/notes",
+                 url: "http://"+window.location.hostname+":5000/notes",
                  data: {"rename":JSON.stringify({"type": "noteBookName",
                                                  "oldName": oldNoteBookName,
                                                  "newName": this.value,}),
@@ -258,7 +258,7 @@ function noteBookMouseIn(item){
       var noteBookName = this.parentElement.childNodes[0].textContent
       // send an ajax to delete the the notebook
       $.ajax({ type: "POST",
-          url: "http://localhost:5000/notes",
+          url: "http://"+window.location.hostname+":5000/notes",
           data: {"notebook": noteBookName,
                  "action" : "delete",},
       });
@@ -294,7 +294,7 @@ function chapterMouseIn(item){
     if(decision == true){
       console.log("deleting chapter:", chapterName, "from notebook:", noteBookName,)
       $.ajax({ type: "POST",
-          url: "http://localhost:5000/notes",
+          url: "http://"+window.location.hostname+":5000/notes",
           data: {"notebook": noteBookName,
                  "chapter": chapterName,
                  "action" : "delete",},

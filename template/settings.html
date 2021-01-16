@@ -14,7 +14,7 @@
       var themeColor = document.getElementById("ThemeSelector").value;
       $.ajax({
           type: "POST",
-          url: "http://localhost:5000/settings",
+          url: "http://"+window.location.hostname+":5000/settings",
           data: {"Theme": themeColor},
       });
       if(themeColor == "Dark"){
@@ -90,7 +90,7 @@ function resetPass(){
   const newpwd = document.getElementById("newpwd").value;
   $.ajax({
       type: "POST",
-      url: "http://localhost:5000/settings",
+      url: "http://"+window.location.hostname+":5000/settings",
       data: {"password": JSON.stringify({"currntpwd":currntpwd, "newpwd":newpwd})},
   }).success(function(result){
     if (result=="succeded"){
