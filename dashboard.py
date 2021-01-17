@@ -345,7 +345,7 @@ class lists(Resource):
         lists = {}
         for listName in ["book", "movie", "anime", "bucketList", "toLearnList"]:
             c.execute("""SELECT * FROM lists WHERE type = ? """, (listName, ))
-            lists[listName] = sorted(sorted([(name, done) for name, done, type, note in c.fetchall()]), key=lambda x: x[1])
+            lists[listName] = sorted(sorted([(name, done, note) for name, done, type, note in c.fetchall()]), key=lambda x: x[1])
         return make_response(render_template('lists.html', readList = lists["book"],
                                              animeList=lists["anime"], movieList = lists["movie"],
                                              bucketList=lists["bucketList"],

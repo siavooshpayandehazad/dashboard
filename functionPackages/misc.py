@@ -87,8 +87,8 @@ def getTodaysLogs(dbCursur, todaysDate):
         todaysLog = logValue[0][0].replace("\n","<br>")
         todaysLogText = logValue[0][0]
     else:
-        todaysLog = " "
-        todaysLogText = " "
+        todaysLog = ""
+        todaysLogText = ""
     return todaysLog, todaysLogText
 
 

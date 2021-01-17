@@ -1,3 +1,174 @@
+
+<script type="text/javascript">
+
+function itemdblclick(item){
+  parentDiv = item.parentElement.parentElement.parentElement
+  oldItemName = item.parentElement.getElementsByClassName("task")[0].innerHTML
+
+  popupDiv = document.createElement("div");
+  popupDiv.id = item.id + "popUp";
+  var popUpWidth = 300;
+  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+  scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  popupDiv.style.top = parentDiv.getBoundingClientRect().y+scrollTop+(parentDiv.clientHeight)/4+"px";
+  popupDiv.style.left = parentDiv.getBoundingClientRect().x+scrollLeft+(parentDiv.clientWidth-popUpWidth)/2+"px";
+  popupDiv.style.borderRadius= "10px";
+  popupDiv.style.border= "3px solid black";
+  popupDiv.style.position= "absolute";
+  popupDiv.style.width= popUpWidth+"px";
+  popupDiv.style.backgroundColor= "#f0f0f0";
+  popupDiv.style.zIndex = "10";
+
+  subPopupDiv = document.createElement("div");
+  subPopupDiv.style.width = popUpWidth;
+  subPopupDiv.style.float = "right";
+
+  var labelText = document.createElement("b");
+  labelText.textContent= "Edit item ";
+  labelText.style.marginLeft="40%";
+
+  var itemNameText = document.createElement("span");
+  itemNameText.textContent= "Item name: ";
+  itemNameText.style.float= "right";
+  itemNameText.style.marginBottom= "10px";
+  itemNameText.style.marginLeft= "10px";
+  itemNameText.style.marginRight= "10px";
+
+  var itemNameTextArea = document.createElement("textarea");
+  var itemNameTextArea = document.createElement("textarea");
+  itemNameTextArea.value = oldItemName;
+  itemNameTextArea.style.float= "right";
+  itemNameTextArea.style.marginRight= "10px";
+  itemNameTextArea.style.marginBottom= "10px";
+  itemNameTextArea.style.resize = "none";
+  itemNameTextArea.rows = 1;
+  itemNameTextArea.cols = 20;
+
+  var itemDetails = document.createElement("span");
+  itemDetails.textContent= "Notes: ";
+  itemDetails.style.float= "right";
+  itemDetails.style.marginLeft= "10px";
+  itemDetails.style.marginRight= "10px";
+
+  var itemDetailsArea = document.createElement("textarea");
+  var itemDetailsArea = document.createElement("textarea");
+  itemDetailsArea.textContent = item.parentElement.getElementsByClassName("note")[0].textContent;
+  itemDetailsArea.style.marginBottom= "10px";
+  itemDetailsArea.style.marginRight= "10px";
+  itemDetailsArea.style.float= "right";
+  itemDetailsArea.style.resize = "none";
+  itemDetailsArea.rows = 5;
+  itemDetailsArea.cols = 20;
+
+  submitBtn = document.createElement("button");
+  submitBtn.type = "button";
+  submitBtn.innerHTML = "submit";
+  submitBtn.style.float="right";
+  submitBtn.style.marginRight="10px";
+  submitBtn.style.marginBottom="5px";
+  submitBtn.onclick = function (){
+    var type = item.parentElement.getElementsByClassName("task")[0].getAttribute("type");
+    var newDetails = itemDetailsArea.value;
+    var newItemName = itemNameTextArea.value;
+    var doneState = item.parentElement.querySelector("input").checked;
+    var newName = itemNameTextArea.value;
+    item.parentElement.getElementsByClassName("task")[0].textContent = newName;
+    item.parentElement.getElementsByClassName("note")[0].textContent = newDetails;
+    $.ajax({ type: "POST",
+        url: "/lists",
+        data: {"name": oldItemName, "type": type, "action": "delete"}
+    }).success(function() {
+      $.ajax({ type: "POST",
+        url: "/lists",
+        data: {"name": newItemName, "type": type, "notes": newDetails, "done": doneState}
+      });
+    });
+    this.parentElement.remove()
+  }
+
+  closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.innerHTML = "close";
+  closeBtn.style.float="right";
+  closeBtn.style.marginRight="5px";
+  closeBtn.style.marginBottom="5px";
+  closeBtn.onclick = function (){
+    this.parentElement.remove()
+  }
+
+  subPopupDiv.appendChild(labelText)
+
+  subPopupDiv.appendChild(itemNameTextArea)
+  subPopupDiv.appendChild(itemNameText)
+
+  subPopupDiv.appendChild(itemDetailsArea)
+  subPopupDiv.appendChild(itemDetails)
+
+  popupDiv.appendChild(subPopupDiv)
+  popupDiv.appendChild(submitBtn)
+  popupDiv.appendChild(closeBtn)
+  item.parentElement.parentElement.parentElement.appendChild(popupDiv)
+}
+
+function listSettings(item){
+  parentDiv = item.parentElement
+
+  popupDiv = document.createElement("div");
+  popupDiv.id = item.id + "popUp";
+  var popUpWidth = 300;
+  var popUpHeight = 50;
+  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+  scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  popupDiv.style.top = parentDiv.getBoundingClientRect().y+scrollTop+(parentDiv.clientHeight-popUpHeight)/2+"px";
+  popupDiv.style.left = parentDiv.getBoundingClientRect().x+scrollLeft+(parentDiv.clientWidth-popUpWidth)/2+"px";
+  popupDiv.style.borderRadius= "10px";
+  popupDiv.style.border= "3px solid black";
+  popupDiv.style.position= "absolute";
+  popupDiv.style.height= popUpHeight+"px";
+  popupDiv.style.width= popUpWidth+"px";
+  popupDiv.style.backgroundColor= "#f0f0f0";
+  popupDiv.style.zIndex = "10";
+
+  var listNameText = document.createElement("span");
+  listNameText.textContent= "List name: ";
+  listNameText.style.marginLeft= "10px";
+  listNameText.style.marginRight= "10px";
+
+  var listName = document.createElement("textarea");
+  var listName = document.createElement("textarea");
+  listName.value = item.id;
+  listName.style.resize = "none";
+  listName.rows = 1;
+  listName.cols = 20;
+
+  submitBtn = document.createElement("button");
+  submitBtn.type = "button";
+  submitBtn.innerHTML = "submit";
+  submitBtn.style.float="right";
+  submitBtn.style.marginRight="5px";
+  submitBtn.style.marginBottom="5px";
+  submitBtn.onclick = function (){
+    this.parentElement.remove()
+  }
+
+  closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.innerHTML = "close";
+  closeBtn.style.float="right";
+  closeBtn.style.marginRight="5px";
+  closeBtn.style.marginBottom="5px";
+  closeBtn.onclick = function (){
+    this.parentElement.remove()
+  }
+
+  popupDiv.appendChild(listNameText)
+  popupDiv.appendChild(listName)
+  popupDiv.appendChild(submitBtn)
+  popupDiv.appendChild(closeBtn)
+  item.parentElement.appendChild(popupDiv)
+}
+</script>
+
 <div>
   <div style="margin-top: 40px; margin-left: 1%; width:32%; float:left;">
     <div style = "width:100%;">
@@ -5,14 +176,16 @@
     </div><br>
     {% set ns = namespace(done_numbers = 0) %}
     <div class = "todoTasks" style="width:95%;">
+      <i id = "{{listName}}", class="fa fa-cog hover-red" style="float:right; margin-top:5px; margin-right:5px;" onclick="listSettings(this)"></i>
       <h2 class="title lightbg">&nbsp;{{listName}}</h2>
       <div class ="todoTasksScorlable">
         <ul id = {{Type}} class="todoList">
-          {%for item, done in listContent%}
+          {%for item, done, note in listContent%}
             {%if done == 'false'%}
               <li>
                 <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-                <span class="task" type={{Type}} ondblclick="itemdblclick(this)">{{item}}</span>
+                <span class="task" type={{Type}} ondblclick="itemdblclick(this)", note={{note|safe}}>{{item}}</span>
+                <span class="note" style="display:none">{{note|safe}}</span>
                 <span style="float:right; margin-right:10px;" onclick="deleteItem(event)" onmouseover = "highlightItem(this)" onmouseout="removeItemHighlight(this)"><i class="fa fa-trash-o hover-red"></i> </span>
               </li>
             {%else%}
@@ -20,6 +193,7 @@
               <li>
                 <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
                 <span class="task" type={{Type}} ondblclick="itemdblclick(this)">{{item}}</span>
+                <span class="note" style="display:none">{{note|safe}}</span>
                 <span style="float:right; margin-right:10px;" onclick="deleteItem(event)" onclick="deleteItem(event)" onmouseover = "highlightItem(this)" onmouseout="removeItemHighlight(this)"><i class="fa fa-trash-o hover-red"></i> </span>
               </li>
             {%endif%}

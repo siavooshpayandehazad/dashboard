@@ -59,7 +59,7 @@
 
   function checkLoggedIn () {
     const token = localStorage.getItem('token');
-    if ((token === "false") || (token === null)){
+    if ((token !== "true")){
       document.getElementById("overlay").style.display = "block";
     }
   }

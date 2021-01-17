@@ -172,6 +172,7 @@ function editTodo(item){
   var listElement = item.parentElement;
   var textVlue = item.textContent;
   var textarea = document.createElement("textarea");
+  var taskStatus = item.parentElement.getElementsByClassName("todoCheckbox")[0].checked;
   textarea.value = textVlue;
   textarea.rows = 1;
   textarea.cols = 25;
@@ -190,7 +191,7 @@ function editTodo(item){
         }).success(function() {
             $.ajax({ type: "POST",
                 url: "/org",
-                data: {"entry": "todo", "value": textarea.value, "date": date, "done": 'false', "color": color}
+                data: {"entry": "todo", "value": textarea.value, "date": date, "done": taskStatus, "color": color}
                 });
           });
     }

@@ -9,6 +9,7 @@ function editChapterName(item){
   var oldChapterName = item.textContent
   notebookName = document.getElementById("notebookName").textContent;
   EditChapterTextArea.className = "EditChapterTextArea"
+  EditChapterTextArea.style.resize = "none"
   EditChapterTextArea.cols = "14"
   EditChapterTextArea.rows = "1"
   EditChapterTextArea.value = oldChapterName;
@@ -133,6 +134,7 @@ function selectNoteBook(notebook, event){
   AddChapterBullet.style.display = "none"
   var AddChapterTextArea = document.createElement("textarea")
   AddChapterTextArea.className = "addChapterTextArea"
+  AddChapterTextArea.style.resize = "none"
   AddChapterTextArea.cols = "15"
   AddChapterTextArea.rows = "1"
   AddChapterTextArea.onkeypress=function(){
@@ -184,6 +186,7 @@ function editEntry(item){
 
   var textArea = document.createElement("textarea");
   textArea.className = "notebookEntry"
+  textArea.style.resize = "none";
   textArea.style.width = "98%";
   textArea.type = "text";
   textArea.rows = Math.floor((((chapterContent.offsetHeight-20)*0.75)/13.3));
@@ -222,6 +225,7 @@ function editNoteBook(item){
   item.childNodes[0].textContent = "";
   var EditNBTextArea = document.createElement("textarea")
   EditNBTextArea.className = "EditNotebookTextArea"
+  EditNBTextArea.style.resize = "none";
   EditNBTextArea.cols = "14"
   EditNBTextArea.rows = "1"
   EditNBTextArea.value = oldNoteBookName;

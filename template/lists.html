@@ -50,9 +50,6 @@
   </body>
 
 <script type="text/javascript">
-function itemdblclick(){
-  window.alert("open a note dialog to write reviews and notes!")
-}
 
 function validateListInput(value){
   if(value.length == 0){
@@ -79,6 +76,7 @@ function deleteItem(item) {
 function boxchange(event) {
       var listItem = event.srcElement.parentElement;
       var type = listItem.querySelector(".task").getAttribute("type");
+      var notes = listItem.querySelector(".task").getAttribute("note");
       var name = listItem.querySelector(".task").innerHTML;
       var checked =  listItem.querySelector("input").checked;
       var value = parseInt(document.getElementById("countDone "+type).textContent)
@@ -89,7 +87,7 @@ function boxchange(event) {
       }
       $.ajax({ type: "POST",
           url: "http://"+window.location.hostname+":5000/lists",
-          data: {"name": name, "type": type, "done": checked}
+          data: {"name": name, "type": type, "notes": notes, "done": checked}
       });
      }
 
@@ -104,6 +102,7 @@ function submitonEnter(event) {
             url: "http://"+window.location.hostname+":5000/lists",
             data: {"name": listItemValue,
                    "type": listItemType,
+                   "notes": "None",
                    "done": 'false'}
         });
 

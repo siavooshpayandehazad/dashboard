@@ -44,7 +44,7 @@
     {% endfor %}
       <div class= "notebookLabel" onclick="addNotebook(this)">
         <span class="addNotebookText">+ Add new Notebook</span>
-        <textarea class="addNotebookTextArea" cols="15" rows="1" style="margin-left: 10px; display:none" onkeypress="{
+        <textarea class="addNotebookTextArea" cols="15" rows="1" style="margin-left: 10px; display:none; resize:none;" onkeypress="{
           var key = window.event.keyCode;
           if (key === 13) {createNewNotebook(this)}}"> </textarea>
       </div>
@@ -67,7 +67,7 @@
         </ol>
           <ol class="addToC">
             <li class="ToCLabel hover-red" onclick="addChapter(this)">+ add new chapter</li>
-            <li class="ToCLabel hover-red" style="display:none"><textarea class="addChapterTextArea" cols="15" rows="1" onkeypress="{
+            <li class="ToCLabel hover-red" style="display:none"><textarea class="addChapterTextArea" cols="15" rows="1" style="resize:none;" onkeypress="{
               var key = window.event.keyCode;
               if (key === 13) {createNewChapter(this)}}"> </textarea></li>
           <ol>
@@ -87,6 +87,6 @@
   <script>
   var backGround = document.getElementById("notebook_background");
   var div = document.getElementById("notebookLabels");
-  div.style.height = (Math.floor((backGround.clientHeight)/46)-1)*46+"px";
+  div.style.height = (Math.floor((backGround.clientHeight-40)/46)-1)*46+"px";
   </script>
 </html>

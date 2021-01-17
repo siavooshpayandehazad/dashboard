@@ -60,7 +60,7 @@ div.NoteBookCloseButton:hover{
 }
 #chapterContent{
   overflow-y: auto;
-  height:75vh;
+  height:calc(75vh - 40px);
   width:96%;
   margin-left:15px;
   margin-top: 15px;
@@ -76,7 +76,7 @@ div.NoteBookCloseButton:hover{
 }
 div.ToCDiv{
   width:16%;
-  height:85vh;
+  height:calc(85vh - 40px);
   overflow-y: auto;
   background-color:var(--bckgrnd-clr);
   border: 3px solid var(--logText-clr);
@@ -88,7 +88,7 @@ div.ToCDiv{
 }
 div.chapterContent{
   width:80%;
-  height:85vh;
+  height:calc(85vh - 40px);
   background-color:var(--bckgrnd-clr);
   border: 3px solid var(--logText-clr);
   border-radius:20px;
