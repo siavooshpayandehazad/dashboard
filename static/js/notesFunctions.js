@@ -17,6 +17,8 @@ function editChapterName(item){
   EditChapterTextArea.onkeypress=function(){
     var key = window.event.keyCode;
     if (key === 13) {
+      chapterLabel = document.getElementById("chapterName")
+      chapterLabel.textContent = this.value;
       this.parentElement.textContent = this.value;
       tempNotebooks[notebookName][this.value] = tempNotebooks[notebookName][oldChapterName]
       delete tempNotebooks[notebookName][oldChapterName]
@@ -49,6 +51,7 @@ function selectChapter(chapter){
   }
   chapter.classList.add("selected");
   document.getElementsByClassName("editIcon")[0].style.display="block";
+  document.getElementsByClassName("uploadIcon")[0].style.display="block";
   notebookName = document.getElementById("notebookName").textContent;
   chapterContent = document.getElementById("chapterContent");
   chapterName = document.getElementById("chapterName");
@@ -94,6 +97,7 @@ function selectNoteBook(notebook, event){
 
   selectedNoteBookName = notebook.childNodes[0].textContent
   document.getElementsByClassName("editIcon")[0].style.display="block";
+  document.getElementsByClassName("uploadIcon")[0].style.display="block";
   var allLabels = document.getElementsByClassName("notebookLabel")
   Array.from(allLabels).forEach((label) => {
     label.classList.remove("selected")
@@ -128,6 +132,16 @@ function selectNoteBook(notebook, event){
   AddChapterItem.className = "ToCLabel hover-red"
   AddChapterItem.innerHTML = "+ add new chapter"
   AddChapterItem.onclick = function(){addChapter(this)}
+
+  var showGalleryItem = document.createElement("li")
+  showGalleryItem.className = "ToCLabel hover-red";
+  showGalleryItem.onclick = function(){showGallery(this)}
+  var showGalleryText = document.createElement("span")
+  showGalleryText.textContent = " Notebook Gallery";
+  var showGalleryIcon = document.createElement("i");
+  showGalleryIcon.className = "fa fa-camera";
+  showGalleryItem.appendChild(showGalleryIcon);
+  showGalleryItem.appendChild(showGalleryText);
   //add textarea and hide it
   var AddChapterBullet = document.createElement("li")
   AddChapterBullet.className = "ToCLabel hover-red"
@@ -142,9 +156,9 @@ function selectNoteBook(notebook, event){
     if (key === 13) {createNewChapter(this)}
   }
   AddChapterBullet.appendChild(AddChapterTextArea)
-
   AddChapter.appendChild(AddChapterItem)
   AddChapter.appendChild(AddChapterBullet)
+  AddChapter.appendChild(showGalleryItem)
   tocContent.appendChild(AddChapter)
   var notebookName = document.getElementById("notebookName");
   notebookName.innerHTML = selectedNoteBookName;
@@ -152,9 +166,10 @@ function selectNoteBook(notebook, event){
 }
 function addNotebook(item){
   // hide the text, and display the textArea box...
-  item.children[0].style.display="none";
-  item.children[1].style.display="block";
+  document.getElementsByClassName("addNotebookText")[0].style.display="none";
+  document.getElementsByClassName("addNotebookTextArea")[0].style.display="block";
 }
+
 function createNewNotebook(item){
   var noteBookName = item.value.trim();
   if(noteBookName.length == 0){
@@ -167,18 +182,22 @@ function createNewNotebook(item){
              "notebook": noteBookName,
              "chapter" : "Chapter 1",},
   });
-  var notebookLabels = document.getElementsByClassName("notebookLabels")[0]
+  var notebookLabels = document.getElementById("notebookLabels")
   var Label = document.createElement("div")
   Label.className = "notebookLabel"
   Label.onclick = function(){selectNoteBook(this)}
-  Label.innerHTML = item.value
+  Label.onmouseenter = function(){noteBookMouseIn(this)}
+  Label.innerHTML = noteBookName;
+  tempNotebooks[noteBookName] = {"Chapter 1": ""}
   notebookLabels.insertBefore(Label, notebookLabels.childNodes[notebookLabels.childNodes.length - 2]);
   item.value = ""
-  item.style.display="none";
-  item.parentElement.children[0].style.display="block";
+  document.getElementsByClassName("addNotebookText")[0].style.display="block";
+  document.getElementsByClassName("addNotebookTextArea")[0].style.display="none";
 }
+
 function editEntry(item){
   item.style.display = "none";
+  document.getElementsByClassName("uploadIcon")[0].style.display = "none";
   var notebook = document.getElementById("notebookName");
   var chapterContent = document.getElementById("chapterContent");
   var form = document.createElement("form")
@@ -186,8 +205,6 @@ function editEntry(item){
 
   var textArea = document.createElement("textarea");
   textArea.className = "notebookEntry"
-  textArea.style.resize = "none";
-  textArea.style.width = "98%";
   textArea.type = "text";
   textArea.rows = Math.floor((((chapterContent.offsetHeight-20)*0.75)/13.3));
   textArea.value = chapterContent.innerHTML;
@@ -206,6 +223,7 @@ function editEntry(item){
     document.getElementById("chapterContent").innerHTML = notebookEntry;
     tempNotebooks[notebookName][chapterName]=notebookEntry;
     document.getElementsByClassName("editIcon")[0].style.display = "block";
+    document.getElementsByClassName("uploadIcon")[0].style.display = "block";
   }
 
   var submitButton = document.createElement("input");
@@ -249,6 +267,23 @@ function editNoteBook(item){
   }
   item.appendChild(EditNBTextArea)
 }
+
+function deleteNotebook(item){
+  var noteBookName = item.parentElement.childNodes[0].textContent
+  var decision = confirm("you are permenently deleting "+noteBookName+" notebook! are you sure?");
+  if(decision == true){
+
+    // send an ajax to delete the the notebook
+    $.ajax({ type: "POST",
+        url: "http://"+window.location.hostname+":5000/notes",
+        data: {"notebook": noteBookName,
+               "action" : "delete",},
+    });
+    item.parentElement.remove();
+  }
+
+}
+
 function noteBookMouseIn(item){
   var rect = item.getBoundingClientRect();
   var div = document.createElement("div");
@@ -256,20 +291,7 @@ function noteBookMouseIn(item){
   div.style.position = "fixed";
   div.style.left = rect.left-3+"px";
   div.style.top = rect.top-5+"px";
-  div.onclick = function deleteNotebook(){
-    var decision = confirm("you are permenently deleting a notebook! are you sure?");
-    if(decision == true){
-      var noteBookName = this.parentElement.childNodes[0].textContent
-      // send an ajax to delete the the notebook
-      $.ajax({ type: "POST",
-          url: "http://"+window.location.hostname+":5000/notes",
-          data: {"notebook": noteBookName,
-                 "action" : "delete",},
-      });
-      this.parentElement.remove();
-    }
-
-  }
+  div.onclick = function(){deleteNotebook(this)}
   var closeButton = document.createElement("i");
   closeButton.classList.add("fa")
   closeButton.classList.add("fa-times")

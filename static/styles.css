@@ -106,21 +106,6 @@ h2.photos {
   font-family:Impact;
   color: var(--title-clr);
 }
-div.moodTracker {
-  border-radius:12px;
-  background-color:var(--moodtracker-bg-clr);
-  float: left;
-  margin-bottom:10px;
-  margin-left:10px;
-}
-div.activityTracker {
-  border-radius:12px;
-  background-color:var(--activityracker-bg-clr);
-  min-width: 750px;
-  min-height: 300px;
-  float:left;
-  margin-left:10px;
-}
 div.dailyEntry{
  border-radius:12px;
  width:32%; height:280px;
@@ -162,14 +147,13 @@ div.todoTasks{
   height: 350px;
   border-box;
   border: 3px solid var(--todoTasks-brdr-clr);
-  background-color: white;
+  background-color: #d9d9d9;
   border-radius: 6px;
 }
 div.todoTasksScorlable{
   overflow-y: scroll;
   height: 300px;
 }
-
 div.taskColorLabel{
   float:right;
   margin-top:2px;
@@ -255,9 +239,7 @@ font.DSfontToday{
 }
 /*------------------------------------------------*/
 
-th.moodTracker{
-  text-align: center;
-}
+
 th.addButton{
   min-width:27px;
 }
@@ -335,8 +317,6 @@ input.newTodo{
   outline:None;
   border-radius: 4px;
 }
-
-
 i.myGear{
   font-size: 30px;
   color: var(--icon-clr);
@@ -365,13 +345,6 @@ b.titleNewTask{
   background-color: rgba(0,0,0,0.9);
   z-index: 10;
 }
-#eraser {
-  color:#525252;
-}
-#eraser:hover {
-  cursor: pointer;
-  color: #ec7014;
-}
 #submitToGraph{
   border: 1px solid black;
   border-radius: 10px;
@@ -380,18 +353,6 @@ b.titleNewTask{
   cursor: pointer;
   border: 1px solid #ec7014;
   color: #ec7014;
-}
-
-div.moodSelectorPopUp{
-  position: absolute;
-}
-.moodSelectorCell{
-  min-width:20px;
-  border-radius:5px;
-  text-align: center;
-}
-.moodSelectorCell:hover{
-  cursor: pointer;
 }
 .graphCard{
   width:550px;
@@ -472,11 +433,7 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 10px;
 }
-td.todayMarker{
-  background-color: var(--todayMarker-bg-clr);
-  border-radius:10px;
-  text-align: center;
-}.switch {
+.switch {
 position: relative;
 display: inline-block;
 width: 40px;
@@ -528,8 +485,11 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 10px;
 }
-td.todayMarker{
-  background-color: var(--todayMarker-bg-clr);
-  border-radius:10px;
-  text-align: center;
+div.genericPopup{
+  border-radius: 10px;
+  border: 3px solid black;
+  position: absolute;
+  z-index: 10;
+  color: black;
+  background-color: #f0f0f0;
 }

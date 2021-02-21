@@ -20,6 +20,81 @@
   </style>
   <script>
   var tempNotebooks = {{Notebooks | safe}}
+  var photos = {{photos | safe}}
+  function showGallery(item){
+     notebookName = document.getElementsByClassName("notebookLabel selected")[0].textContent
+     chapterContent = document.getElementById("chapterContent")
+     chapterContent.innerHTML = "";
+     document.getElementById("chapterName").textContent = "Notebook Gallery"
+     NB_photos = photos[notebookName];
+     for (var i=0; i<NB_photos.length; i++){
+       img = document.createElement("img");
+       img.src = "/static/photos/notebookPhotos/"+notebookName+"/"+NB_photos[i];
+       img.style = "width:200px; margin-right:10px; margin-bottom:10px;";
+       chapterContent.appendChild(img);
+     }
+
+  }
+
+  function validateForm() {
+    var fileName = document.forms["notesUploader"]["file"].value;
+    if (fileName == "") {
+      alert("Name must be filled out");
+      return false;
+    }
+  }
+  function closePopup(){
+     document.getElementById("popUp").remove()
+  }
+
+  function uploadNotePic(item){
+    parentDiv = item.parentElement;
+
+    popupDiv = document.createElement("div");
+    popupDiv.id = "popUp";
+    var popUpWidth = 350;
+    scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+    scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    popupDiv.style.top = parentDiv.getBoundingClientRect().y+scrollTop+(parentDiv.clientHeight)/4+"px";
+    popupDiv.style.left = parentDiv.getBoundingClientRect().x+scrollLeft+(parentDiv.clientWidth-popUpWidth)/2+"px";
+    popupDiv.className = "genericPopup";
+    popupDiv.style.width= popUpWidth+"px";
+    popupDiv.style.padding = "10px 10px 10px 10px";
+    popupDiv.innerHTML = "upload your file here:";
+
+    closeButton = document.createElement("i");
+    closeButton.className="fa fa-close hover-red"
+    closeButton.ariaHidden="true"
+    closeButton.style.float = "right"
+    closeButton.onclick = function(){closePopup()}
+
+    form = document.createElement("form");
+    form.name="notesUploader"
+    form.action = "/NotesUploader"
+    form.method = "POST"
+    form.enctype = "multipart/form-data";
+    form.onsubmit= function(){return validateForm()}
+    file = document.createElement("input");
+    file.type = "file"
+    file.name = "file"
+    file.style.float = "left";
+    text = document.createElement("input");
+    text.name = "notebookLabel";
+    text.value = document.getElementsByClassName("notebookLabel selected")[0].textContent;
+    text.style.display="none";
+    submit = document.createElement("input");
+    submit.value = "Upload";
+    submit.style.float = "right";
+    submit.type = "submit";
+
+    form.appendChild(file)
+    form.appendChild(text)
+    form.appendChild(submit)
+    popupDiv.appendChild(closeButton)
+    popupDiv.appendChild(form)
+    parentDiv.appendChild(popupDiv);
+  }
+
   </script>
   <script src="{{ url_for('static', filename='js/notesFunctions.js') }}"></script>
 </head>
@@ -70,13 +145,16 @@
             <li class="ToCLabel hover-red" style="display:none"><textarea class="addChapterTextArea" cols="15" rows="1" style="resize:none;" onkeypress="{
               var key = window.event.keyCode;
               if (key === 13) {createNewChapter(this)}}"> </textarea></li>
+            <li class="ToCLabel hover-red" onclick="showGallery(this)"><i class="fa fa-camera"></i> Notebook Gallery</li>
           <ol>
         </div>
     </div>
 
     <div class="chapterContent">
       <h2 class="title"> <span id ="chapterName">{{Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first}}</span></h2>
-      <i class="fa fa-edit editIcon hover-red" onclick="editEntry(this)"></i><br>
+      <i class="fa fa-edit editIcon hover-red" onclick="editEntry(this)"></i>
+      <i class="fa fa-upload uploadIcon hover-red" onclick="uploadNotePic(this)"></i>
+      <br>
       <div id="chapterContent">
           {{Notebooks[Notebooks.keys()|sort()|first][Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first]|safe}}
       </div>

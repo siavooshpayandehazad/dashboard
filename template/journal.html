@@ -26,7 +26,7 @@
         alert("Name must be filled out");
         return false;
       }
-      if(fileName.split(".")[1].toLowerCase()!="jpg"){
+      if((fileName.split(".")[1].toLowerCase()!="jpg") && (fileName.split(".")[1].toLowerCase()!="png")){
         alert("only jpg files are allowed");
         return false;
       }
@@ -93,13 +93,13 @@
 {% endwith %}
   <div id="PhotoOverlay" style="text-align:center">
     <div style="float:left; width:100%; ">
-      <i id="closeButton" class="fa fa-times hover-red" aria-hidden="true" onclick="closeOverlay()" ></i>
+      <i class="fa fa-times closeButton hover-red" aria-hidden="true" onclick="closeOverlay()"></i>
     </div>
     <div onclick="prevPic()"  style="float:left; width:10%; height:100%;">
-        <i class="fa fa-chevron-left" style="color:white; font-size: 40px; margin-top:200px;" aria-hidden="true"></i>
+        <i class="fa fa-chevron-left chevronIcon hover-red" aria-hidden="true"></i>
     </div>
     <div onclick="nextPic()" style="float:right; width:10%; height:100%;">
-        <i class="fa fa-chevron-right" style="color:white; font-size: 40px; margin-top:200px;" aria-hidden="true"></i>
+        <i class="fa fa-chevron-right chevronIcon hover-red" aria-hidden="true"></i>
     </div>
   </div>
 
@@ -202,9 +202,9 @@
       <div style="margin-bottom:10px;">
         <hr>
         <h2 class="photos" style="float:left">   photos </h2>
-        <i class="fa fa-upload" style="float:right; color:white;" aria-hidden="true" onclick="uploadPhoto()"></i>
+        <i class="fa fa-upload uploadIcon hover-red"  aria-hidden="true" onclick="uploadPhoto()"></i>
         <br><br>
-        <div  id = "uploader" style="display:none; width:350px; background-color: white; margin-top: 20px; margin-bottom: 10px; padding: 10px 10px 10px 10px;border-radius:10px;">
+        <div  id = "uploader">
           Upload a photo:
           <form  name="photoUploader" action = "/uploader" method = "POST" enctype = "multipart/form-data" style="margin-top:5px;" onsubmit="return validateForm()">
               <input type = "file" name = "file" />

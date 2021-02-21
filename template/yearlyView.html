@@ -31,6 +31,15 @@
   <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
 </div>
 
+{% with dataset = yearRuns, ChartMonthDays = ChartYearMonths, chartType = "bar",
+      thresholds = [40], trackerName = "Yearly running Tracker", unit="(km)", addAvg="true", tcf="true",
+      pointStyle = 'cicle', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
+      accumulate = "false",
+      bgColors = ['rgba(254,217,118, 0.8)', 'rgba(253,141,60, 0.8)'],
+      bColors = ['rgba(254,178,76, 1)', 'rgba(253,141,60, 1)']%}
+  {% include "trackerModules/singleChart.html" %}
+{% endwith %}
+
 {% with HR_Max = yearHR_Max, HR_Min = yearHR_Min, ChartMonthDays = ChartYearMonths, PageYear = PageYear, PageMonth = PageMonth, yearMonth = "year"%}
     {% include "trackerModules/heartRateTrackerYear.html" %}
 {% endwith %}
@@ -51,6 +60,15 @@
         bgColors = ['rgba(173,221,142, 1)', 'rgba(0,109,44, 1)'],
         bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
     {% include "trackerModules/singleChart.html" %}
+{% endwith %}
+
+{% with dataset = yearWeight, ChartMonthDays = ChartYearMonths, chartType = "line",
+      thresholds = [], trackerName = "Yearly Weight Tracker", unit="(kg)", addAvg="false", tcf="true",
+      pointStyle = 'cicle', showTotalVal = False, suggestedMin = 60, yearMonth = "year", clickable="false",
+      accumulate = "false",
+      bgColors = ['rgba(128,205,193, 0.3)'],
+      bColors = ['rgba(53,151,143, 1)']%}
+  {% include "trackerModules/singleChart.html" %}
 {% endwith %}
 
 <div style="width:100%; margin-left:5px;  margin-bottom: 10px; float:left; min-width:200px;">

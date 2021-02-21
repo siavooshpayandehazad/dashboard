@@ -29,7 +29,7 @@ function editTaskColor(item, event){
   colorSelector.setAttribute("class", "todoColorPopup");
 
   var bgcolors = ["tomato", "darkcyan", "darkorchid", "darkorange"]
-  for (i = 0; i < 5; i++) {
+  for (i = 0; i < 4; i++) {
     var color = document.createElement("div");
     color.setAttribute("class", "taskColorLabel");
     color.style.backgroundColor = bgcolors[i];
@@ -209,19 +209,34 @@ function editTodo(item){
 <div style="float:left;width:100%;margin-bottom:10px;margin-top:0px;">
     <img src= "{{url_for('static', filename = 'decorationImages/page_todo.png')}}" style="float:right; vertical-align: top; margin-right: 3%;"  height="80px"  alt="page_todo">
     <h1 style="margin-top:15px;margin-right:1px;width:20%;float:left;"> <font style="text-decoration: underline;"> Todo List </font></h1>
-    <h2 class="title" style="text-decoration: none; margin-right: 22%; margin-left: 22%; margin-top:5px; margin-bottom: 0px; float:left;">
-      {% if month > 1  %}
-        <a class= "arrow hover-red"  href="/org?date={{year}}-{{'%02d' % (month-1)}}-01">&#9668;</a>
-      {% else %}
-        <a class= "arrow hover-red"  href="/org?date={{year-1}}-{{'%02d' % (12)}}-01">&#9668;</a>
-      {% endif %}
-      {{year}}-{{'%02d' % (month)}}
-      {% if month < 12  %}
-        <a class= "arrow hover-red" href="/org?date={{year}}-{{'%02d' % (month+1)}}-01">&#9658;</a>
-      {% else %}
-        <a class= "arrow hover-red" href="/org?date={{year+1}}-{{'%02d' % (1)}}-01">&#9658;</a>
-      {% endif %}
-    </h2>
+        <h2 id="titleLabelMonthly" class="title" style="text-decoration: none; margin-right: 22%; margin-left: 22%; margin-top:5px; margin-bottom: 0px; float:left; display: none">
+        {% if month > 1  %}
+          <a class= "arrow hover-red"  href="/org?date={{year}}-{{'%02d' % (month-1)}}-01&CalType=Month">&#9668;</a>
+        {% else %}
+          <a class= "arrow hover-red"  href="/org?date={{year-1}}-{{'%02d' % (12)}}-01&CalType=Month">&#9668;</a>
+        {% endif %}
+        {{year}}-{{'%02d' % (month)}}
+        {% if month < 12  %}
+          <a class= "arrow hover-red" href="/org?date={{year}}-{{'%02d' % (month+1)}}-01&CalType=Month">&#9658;</a>
+        {% else %}
+          <a class= "arrow hover-red" href="/org?date={{year+1}}-{{'%02d' % (1)}}-01&CalType=Month">&#9658;</a>
+        {% endif %}
+        </h2>
+
+        <h2 id="titleLabelWeekly" class="title" style="text-decoration: none; margin-right: 22%; margin-left: 22%; margin-top:5px; margin-bottom: 0px; float:left;">
+        {% if month > 1  %}
+          <a class= "arrow hover-red"  href="/org?date={{year}}-{{'%02d' % (month-1)}}-01&CalType=Week">&#9668;</a>
+        {% else %}
+          <a class= "arrow hover-red"  href="/org?date={{year-1}}-{{'%02d' % (12)}}-01&CalType=Week">&#9668;</a>
+        {% endif %}
+        {{year}}-{{'%02d' % (month)}}
+        {% if month < 12  %}
+          <a class= "arrow hover-red" href="/org?date={{year}}-{{'%02d' % (month+1)}}-01&CalType=Week">&#9658;</a>
+        {% else %}
+          <a class= "arrow hover-red" href="/org?date={{year+1}}-{{'%02d' % (1)}}-01&CalType=Week">&#9658;</a>
+        {% endif %}
+        </h2>
+
     <div style="float:left; margin-top:10px;">
       <table border="0" style="border-spacing: 0px;">
         <tr>

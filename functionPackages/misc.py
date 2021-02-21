@@ -79,6 +79,18 @@ def getCalEvents(todaysDate, dbCursur):
             print("something went wrong here!")
     return calList
 
+def getCalEventsMonth(pageMonth, pageYear, dbCursur):
+    dbCursur.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(),
+               getMonthsEnd(pageMonth, pageYear).date(),))
+    weeklyCalEvents = dbCursur.fetchall()
+    calList = []
+    for item in weeklyCalEvents:
+        try:
+            calList.append([item[0], item[1], item[2], item[3], 1,1, item[4], item[5]])
+        except:
+            print("something went wrong here!")
+    return calList
 
 def getTodaysLogs(dbCursur, todaysDate):
     dbCursur.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate,))
@@ -96,7 +108,7 @@ def allPotosInDir(photoDir, year, date):
     todayPhotos = []
     if os.path.isdir(photoDir):
         for file in os.listdir(photoDir):
-            if file.endswith(".jpg") or file.endswith(".JPG"):
+            if file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".png"):
                 todayPhotos.append(str(year)+"/"+date+"/"+file)
     todayPhotos.sort()
     return todayPhotos

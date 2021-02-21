@@ -1,0 +1,659 @@
+
+<script type="text/javascript">
+var calOffsetRows = 2;
+const zeroPad = (num, places) => String(num).padStart(places, '0')
+var calDates = {{calDate|safe}};
+
+function isStringDate(dateString){
+  const userKeyRegExp = /^[0-9]{4}\-[0-9]{2}\-[0-9]{2}?$/;
+  var valid = userKeyRegExp.test(dateString);
+  if(valid){
+    if (1 <= parseInt(dateString.split("-")[1]) && parseInt(dateString.split("-")[1]) < 12){
+      if (1 <= parseInt(dateString.split("-")[2]) && parseInt(dateString.split("-")[2]) < 30){
+        return true
+      }
+    }
+  }
+  return false
+}
+
+function isStringTime(timeString){
+  if (timeString == "None"){
+      return true
+  }
+  const userKeyRegExp = /^[0-9]{2}\:[0-9]{2}?$/;
+  var valid = userKeyRegExp.test(timeString);
+  if(valid){
+    if ((parseInt({{daysBeginning}}) <= parseInt(timeString.split(":")[0])) && (parseInt(timeString.split(":")[0]) <= parseInt({{daysEnd}}))){
+      if (0 <= parseInt(timeString.split(":")[1]) && parseInt(timeString.split(":")[1]) < 60){
+        return true
+      }
+    }
+  }
+  return false
+}
+
+function validateFields(eventName, startTime, endTime, date, allday){
+  if (!allday){
+    if (!(isStringTime(startTime)&&isStringTime(endTime))){
+      var timeElements = document.getElementsByClassName("calEventTime")
+      for (var i=0; i<timeElements.length; i++){
+        timeElements[i].style.border="2px solid red";
+      }
+      window.alert("Please check the event's start and end time again!")
+      return false;
+    }
+  }
+
+  if(isNaN(Date.parse(date))){
+    var daySelector = document.getElementById("daySelector")
+    daySelector.style.border="2px solid red";
+    window.alert("Please check the event's date again!")
+    return false;
+  }
+  if (eventName.trim()==""){
+    var eventName = document.getElementById("eventName")
+    eventName.style.border="2px solid red";
+    window.alert("event name can not be empty!")
+    return false;
+  }
+  return true;
+}
+
+function calculateDateofCol(colNum){
+    var newWeekday = colNum-1;
+    var todayColl = (parseInt({{day|safe}})+(parseInt({{ monthsBeginning |safe}})))%7;
+    if (todayColl==0){
+      todayColl = 7;
+    }
+    var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
+    var newDate = new Date(result.setDate(result.getDate() - todayColl + newWeekday + 1 ));
+    selectedDay = newDate.getDate();
+    selectedMonth = newDate.getMonth()+1;
+    selectedYear = newDate.getFullYear();
+    var newDate = selectedYear+"-"+zeroPad(selectedMonth, 2)+"-"+zeroPad(selectedDay, 2)
+    return newDate
+}
+
+
+
+function removeEventFromCalDates(weekDay, eventName, eventStartTime, eventStopTime){
+  for (i = 0; i < calDates.length; i++) {
+    if ((calDates[i][0] == weekDay) && (calDates[i][1] == eventStartTime) && (calDates[i][2] == eventStopTime) && (calDates[i][3] == eventName)){
+      calDates.splice(i, 1);
+      return;
+    }
+  }
+}
+
+function removeAllEvents(){
+  allEvents = document.getElementsByClassName("calendarEvent")
+  while (allEvents.length>0) {
+    allEvents[0].remove();
+  }
+}
+
+function drawCell(calDate, idVal){
+  var tableElement = document.getElementById("calTab")
+  var col = calDate[0]+1;
+  if (calDate[1]=="None"){
+    var row = 1;
+  }else{
+    var row = (parseInt(calDate[1].slice(0,2))-parseInt({{daysBeginning}}))+calOffsetRows;
+  }
+  var cell = tableElement.rows[row].cells.item(col);
+  var div = document.createElement("div");
+  div.draggable="true";
+  div.id = "calITEM"+idVal
+  div.ondragstart=function dragCal (event) {
+    event.dataTransfer.setData("text", event.target.id);
+  };
+  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+  scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  startPx = 42*parseInt(calDate[1].slice(3,5))/60
+  div.classList.add("calendarEvent");
+  if (calDate[1]!=="None"){
+    div.style.top  = (cell.getBoundingClientRect().y+scrollTop+startPx+2)+"px";
+    div.style.left = (cell.getBoundingClientRect().x+scrollLeft+(127/calDate[4])*(calDate[5]-1))+"px";
+    hoursDiff = parseInt(calDate[2].slice(0,2))-parseInt(calDate[1].slice(0,2))
+    minsDiff = (parseInt(calDate[2].slice(3,5))-parseInt(calDate[1].slice(3,5)))*42/60
+    div.style.height = ((hoursDiff)*cell.offsetHeight+minsDiff-6)+"px";
+    div.style.position= "absolute";
+  }else{
+    div.style.marginBottom="2px";
+    div.style.height = "50px;"
+  }
+
+  div.style.width = (127/calDate[4]-10)+"px";
+  div.style.marginLeft = "5px";
+  div.textContent = calDate[3];
+  div.style.backgroundColor = calDate[6];
+
+  // set the attributes:
+  div.setAttribute("weekDay",   calDate[0]);
+  div.setAttribute("name",   calDate[3]);
+  div.setAttribute("details",   calDate[7]);
+  div.setAttribute("startTime", calDate[1]);
+  div.setAttribute("stopTime",   calDate[2]);
+  div.setAttribute("color",     calDate[6]);
+
+  div.onclick=function editEvent(event){
+    event.stopPropagation(); // dont propagate the click the cell bellow
+    calendarClick(event, tableElement)
+  }
+  cell.appendChild(div);
+}
+
+function updateEventPlacement(){
+  for (var i = 0; i<calDates.length; i++){
+    calDates[i][4] = 1;
+    calDates[i][5] = 1;
+  }
+  for (var i = 0; i<calDates.length; i++){ // event A
+    startA = parseInt(calDates[i][1].slice(0,2))+parseInt(calDates[i][1].slice(3,5))/60;
+    stopA  = parseInt(calDates[i][2].slice(0,2))+parseInt(calDates[i][2].slice(3,5))/60;
+    for (var j = i+1; j < calDates.length; j++){ // event B
+        startB = parseInt(calDates[j][1].slice(0,2))+parseInt(calDates[j][1].slice(3,5))/60;
+        stopB  = parseInt(calDates[j][2].slice(0,2))+parseInt(calDates[j][2].slice(3,5))/60;
+        if (calDates[i][0] == calDates[j][0]){ // same day
+          if( (startB < startA && startA < stopB) || (startB < stopA && stopA < stopB) ||
+              (startA < startB && startB < stopA) || (startA < stopB && stopB < stopA) ||
+              (startA == startB && stopB == stopA))
+            {
+                calDates[i][4] = parseInt(calDates[i][4]) + 1;
+                calDates[j][4] = parseInt(calDates[j][4]) + 1;
+                calDates[j][5] = parseInt(calDates[i][5]) + 1;
+            }
+        }
+    }
+  }
+}
+
+function drawEvents(){
+  removeAllEvents();
+  updateEventPlacement();
+  for (var i =0; i<calDates.length; i++){
+    drawCell(calDates[i], i)
+  }
+  return;
+}
+
+function calendarClick(event, item){
+  var calType = "week";
+  if(document.getElementById("MonthCal").style.display=="block"){
+    calType = "month";
+  }
+  var senderElement = event.target;
+  if((senderElement.tagName=="TD")||(senderElement.tagName=="DIV" && senderElement.className === "calendarEvent")){
+    closeCalendarPopup();
+  }else{
+    return;
+  }
+  var cell = event.path[0];
+  // return if clicked on table headers
+  if ((cell.tagName === "TH") || (cell.cellIndex === 0)){
+    return;
+
+  }
+  var div = document.createElement("div");
+  div.style.border="3px solid #9ecae1";
+  div.style.borderRadius="10px 10px 10px 10px";
+  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+  scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  div.style.left = event.clientX+scrollLeft+"px";
+  div.style.top  = event.clientY+scrollTop+"px";
+  div.classList.add("calendarPopUp");
+
+  var eventNameContainer = document.createElement("div");
+  eventNameContainer.style.marginLeft="10px";
+  var eventName = document.createElement("textarea");
+  eventName.setAttribute('id', 'eventName');
+  eventName.style.resize="none";
+  eventName.rows = 1;
+  eventName.cols = 20;
+  eventName.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("name") : "";
+  var text0 = document.createElement("span");
+  text0.textContent= "event:";
+
+  var eventDescription = document.createElement("textarea");
+  eventDescription.style.resize="none";
+  eventDescription.rows = 4;
+  eventDescription.cols = 20;
+  eventDescription.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("details") : "none";
+  var detailText = document.createElement("span");
+  detailText.textContent= "details:";
+
+  eventNameContainer.appendChild(text0);
+  eventNameContainer.appendChild(eventName);
+  eventNameContainer.appendChild(detailText);
+  eventNameContainer.appendChild(eventDescription);
+
+  var todayColl = (parseInt({{day|safe}})+(parseInt({{ monthsBeginning |safe}})))%7;
+  if (todayColl==0){
+    todayColl = 7;
+  }
+  if (calType == "month"){
+    var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
+     selectedDay = cell.name;
+     selectedMonth = result.getMonth()+1;
+  }else{
+    if (senderElement.tagName == "DIV"){
+      var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
+      var newDate = new Date(result.setDate(result.getDate() - todayColl+parseInt(senderElement.getAttribute("weekDay"))+1 ));
+      selectedDay = newDate.getDate();
+      selectedMonth = newDate.getMonth()+1;
+    }else{
+      var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
+      var newDate = new Date(result.setDate(result.getDate() + parseInt(cell.cellIndex-todayColl)));
+      selectedDay = newDate.getDate();
+      selectedMonth = newDate.getMonth()+1;
+    }
+  }
+
+  // if selectedDay < 1 then its gonna be last month
+  // if selectedDay > last day of month then its gonna be last month
+
+  var timeContainer = document.createElement("div");
+  timeContainer.style.marginLeft="5px";
+  var text1 = document.createElement("span");
+  text1.textContent= "date: ";
+  var daySelector = document.createElement("textarea");
+  daySelector.style.resize="none";
+  daySelector.rows = 1;
+  daySelector.cols = 15;
+  daySelector.value="{{year|safe}}-"+zeroPad(selectedMonth, 2)+"-"+zeroPad(selectedDay, 2);
+  daySelector.setAttribute('id', 'daySelector');
+
+  // all day event checkbox
+  var alldayContainer = document.createElement("div");
+  var allDayCheckBox = document.createElement("input");
+  allDayCheckBox.type = "checkbox";
+  allDayCheckBox.onchange = function AllDayChanged() {
+    var timeElements = this.parentElement.parentElement.getElementsByClassName("calEventTime");
+    for (i=0; i <timeElements.length; i++){
+      timeElements[i].disabled = this.checked;
+    }
+  };
+  var allDayText = document.createElement("span");
+  allDayText.textContent = "all day";
+  allDayText.style.width="200px";
+  alldayContainer.appendChild(allDayCheckBox);
+  alldayContainer.appendChild(allDayText);
+
+  var startTime = document.createElement("textarea");
+  var stopTime = document.createElement("textarea");
+  startTime.classList.add("calEventTime")
+  stopTime.classList.add("calEventTime")
+  startTime.style.resize="none";
+  stopTime.style.resize="none";
+  startTime.rows = 1;
+  stopTime.rows = 1;
+  startTime.cols = 5;
+  stopTime.cols = 5;
+
+  startTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("startTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows),2)+":00";
+  stopTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("stopTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows)+1, 2)+":00";
+  if (calType == "week"){
+    if((senderElement.tagName == "DIV")  && (startTime.value=="None")){
+      allDayCheckBox.checked = true;
+      startTime.disabled=true;
+      stopTime.disabled=true;
+    }
+  }
+
+  var text2 = document.createElement("span");
+  var text3 = document.createElement("span");
+  text2.textContent= "from ";
+  text3.textContent= "  to: ";
+  timeContainer.appendChild(text1);
+  timeContainer.appendChild(daySelector);
+  timeContainer.appendChild(alldayContainer);
+  timeContainer.appendChild(text2);
+  timeContainer.appendChild(startTime);
+  timeContainer.appendChild(text3);
+  timeContainer.appendChild(stopTime);
+
+  // set to all day if the event is on first row
+  if(cell.parentElement.rowIndex == 1){
+    allDayCheckBox.checked = true;
+    var timeElements = allDayCheckBox.parentElement.parentElement.getElementsByClassName("calEventTime");
+    for (i=0; i <timeElements.length; i++){
+      timeElements[i].disabled = true;
+    }
+  }
+
+  var colorContainer = document.createElement("div");
+  colorContainer.style.marginLeft="5px";
+  var color = document.createElement("select");
+  var option1 = document.createElement("option");
+  var option2 = document.createElement("option");
+  var option3 = document.createElement("option");
+  option1.text = "pink";
+  option1.style.backgroundColor = "pink";
+  option2.text = "gold";
+  option2.style.backgroundColor = "gold";
+  option3.text = "powderblue";
+  option3.style.backgroundColor = "powderblue";
+  var text4 = document.createElement("span");
+  text4.textContent= "color: ";
+  color.appendChild(option1);
+  color.appendChild(option2);
+  color.appendChild(option3);
+  color.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("color") : "powderblue";
+  colorContainer.appendChild(text4);
+  colorContainer.appendChild(color);
+
+  var btnContainer = document.createElement("div");
+  btnContainer.style.width="100%";
+  var submitBtn = document.createElement("button");
+  submitBtn.type = "button";
+  submitBtn.innerHTML = "submit";
+  submitBtn.style.float="right";
+  submitBtn.style.marginRight="5px";
+  submitBtn.style.marginBottom="5px";
+  submitBtn.onclick=function closPopUp(){
+    if (!validateFields(eventName.value, startTime.value, stopTime.value, daySelector.value, startTime.disabled)){
+      return;
+    }
+    if (senderElement.tagName == "DIV"){ // edit or delete
+      var oldDate = "{{year|safe}}-{{'%02d' % (month)}}-"+zeroPad(selectedDay, 2)
+      $.ajax({ type: "POST",
+         url: "/org",
+         data: {"entry": "calendar",
+                "value": "{" + "\"name\": \""+eventName.value+
+                               "\", \"details\": \""+eventDescription.value+
+                               "\", \"startTime\": \""+ ((startTime.disabled) ? "None" : (startTime.value)) +
+                               "\", \"stopTime\": \"" + ((stopTime.disabled) ? "None": (stopTime.value)) +
+                               "\", \"color\": \""+ color.value+
+                               "\", \"date\": \""+ daySelector.value+
+                               "\"}",
+                // item's old values, we need to be able to find it in the database
+                "oldValue": "{" + "\"name\": \""+senderElement.getAttribute("name")+
+                              "\", \"details\": \""+senderElement.getAttribute("details")+
+                              "\", \"startTime\": \""+senderElement.getAttribute("startTime")+
+                              "\", \"stopTime\": \"" + senderElement.getAttribute("stopTime")+
+                              "\", \"color\": \""+ senderElement.getAttribute("color")+
+                              "\", \"date\": \""+ oldDate +
+                              "\"}",
+                "date": daySelector.value,
+                "action": 'edit'}
+      });
+      if (calType == "week"){
+        removeEventFromCalDates(senderElement.getAttribute("weekDay"), senderElement.getAttribute("name"), senderElement.getAttribute("startTime"), senderElement.getAttribute("stopTime"))
+        calDates.push([Math.abs(daySelector.value.split("-")[2]-({{day}}-todayColl)-1), ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value])
+        drawEvents();
+      }else{
+        calMonths.push([daySelector.value, ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value])
+        drawMonthEvents()
+      }
+    }else{ // just create a new event
+      $.ajax({ type: "POST",
+         url: "/org",
+         data: {"entry": "calendar",
+                "value": "{" + "\"name\": \""+eventName.value+
+                               "\", \"details\": \""+eventDescription.value+
+                               "\", \"startTime\": \""+ ((startTime.disabled) ? "None" : (startTime.value)) +
+                               "\", \"stopTime\": \"" + ((stopTime.disabled) ? "None": (stopTime.value)) +
+                               "\", \"color\": \""+ color.value+
+                               "\"}",
+                "date": daySelector.value,
+                "action": 'create'}
+      });
+      if (calType == "week"){
+        calDates.push([Math.abs(daySelector.value.split("-")[2]-({{day}}-todayColl)-1),
+                      ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
+                      eventName.value, 1, 1, color.value, eventDescription.value])
+        drawEvents();
+      }else{
+        calMonths.push([daySelector.value,((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
+                      eventName.value, 1, 1, color.value, eventDescription.value])
+        drawMonthEvents()
+      }
+
+    }
+
+    closeCalendarPopup();
+  }
+  var closeBtn = document.createElement("button");
+  closeBtn.type = "input";
+  closeBtn.innerHTML = "close";
+  closeBtn.style.float="right";
+  closeBtn.onclick=function closPopUp(){
+    closeCalendarPopup();
+  }
+  if (senderElement.tagName=="DIV"){
+    var deleteBtn = document.createElement("button");
+    deleteBtn.type = "input";
+    deleteBtn.innerHTML = "delete";
+    deleteBtn.style.float="left";
+    deleteBtn.onclick=function deleteEvent(){
+      var decision = confirm("you are permenently deleting an event! are you sure?");
+      if(decision == true){
+        $.ajax({ type: "POST",
+           url: "/org",
+           data: {"entry": "calendar",
+                  "value": "{" + "\"name\": \""+eventName.value+
+                                 "\", \"details\": \""+eventDescription.value+
+                                 "\", \"startTime\": \""+startTime.value +
+                                 "\", \"stopTime\": \"" + stopTime.value+
+                                 "\", \"color\": \""+ color.value+
+                                 "\"}",
+                  "date": daySelector.value,
+                  "action": 'delete'}
+        });
+        removeEventFromCalDates(senderElement.getAttribute("weekDay"), eventName.value, startTime.value, stopTime.value);
+        drawEvents();
+      }
+      closeCalendarPopup();
+    }
+    btnContainer.appendChild(deleteBtn)
+  }
+  btnContainer.appendChild(submitBtn)
+  btnContainer.appendChild(closeBtn)
+
+  div.appendChild(eventNameContainer)
+  div.appendChild(timeContainer)
+  div.appendChild(colorContainer)
+  div.appendChild(btnContainer);
+  item.appendChild(div);
+  return;
+}
+</script>
+<div class= "classContainer" id="WeekCal" style="display: none;">
+  <table id="calTab" border="0" style="border-spacing: 0px;" onclick="calendarClick(event, this)">
+    <thead class="calendarth">
+      <tr>
+        <th class="calendarLabel" onclick="showWeekMonth('Month')">WEEK</th>
+        <th style="border-left: 1px solid #9ecae1;  border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white);"> {{headerDates [0]}} Monday </th>
+        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [1]}} Tuesday </th>
+        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [2]}} Wednesday </th>
+        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [3]}} Thursday </th>
+        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [4]}} Friday </th>
+        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [5]}} Saturday </th>
+        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [6]}} Sunday </th>
+      </tr>
+    </thead>
+    <tbody class="calendartb" style="max-height:350px;">
+      <tr>
+        <td id= "weekNumber" style="height:70px; border-bottom: 1px solid #9ecae1; border-right: 0px solid #9ecae1; vertical-align:top; font-size:30px;">
+        </td>
+        {%for j in range(1, 8)%}
+          {%if j == 1%}
+              <td style = "border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)"> </td>
+          {%else%}
+              <td style = "border-bottom: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+          {%endif%}
+        {%endfor%}
+      </tr>
+    {%for i in range(daysBeginning, daysEnd)%}
+      <tr>
+        <td style="border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff; vertical-align:top"> {{'%02d' %(i)}}:00 </td>
+        {%for j in range(1, 8)%}
+          {%if j == 1%}
+              <td style = "border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+          {%else%}
+              <td ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+          {%endif%}
+        {%endfor%}
+      </tr>
+    {%endfor%}
+    </tbody>
+  </table>
+</div>
+
+<script type="text/javascript">
+function markToday(){
+  var todayColl = (parseInt({{day|safe}})+(parseInt({{ monthsBeginning |safe}})))%7;
+  if (todayColl==0){ todayColl = 7; }
+  var table = document.getElementById("calTab")
+  table.rows[0].cells.item(todayColl).style.backgroundImage="linear-gradient(to bottom, #4292c6, white)";
+}
+
+function drawCurrentTime(){
+  var timeCursers = document.getElementsByClassName("timeCurser");
+  for (i = 0; i < timeCursers.length; i++) {
+    timeCursers[i].remove();
+  }
+  var today = new Date();
+  var hours = today.getHours();
+  var mins = today.getMinutes();
+  if(hours+mins/60 > parseInt({{daysEnd}})){
+    return;
+  }
+  if(hours+mins/60 < parseInt({{daysBeginning}})){
+    return;
+  }
+  if ((today.getDate() != {{day}})||((today.getMonth()+1) != {{month}})
+      ||((today.getFullYear()) != {{year}})){
+    return;
+  }
+
+  var table = document.getElementById("calTab");
+  var div = document.createElement("div");
+  div.classList.add("timeCurser")
+  div.onmouseover =  function showtimePopup(event) {
+    if (event.target.className != "timeCurser") {return;}
+    event.preventDefault();
+    theDiv = document.createElement("div");
+    theDiv.innerHTML = zeroPad(hours, 2)+":"+zeroPad(mins,2);
+    theDiv.classList.add("timePopup");
+    this.appendChild(theDiv);
+    //window.alert("popup to be implemented! current time: "+zeroPad(hours, 2)+":"+zeroPad(mins,2));
+  }
+  div.onmouseleave =  function removeTimePopup(){
+    allTimePopUps = document.getElementsByClassName("timePopup");
+    for (var i=0; i<allTimePopUps.length; i++){
+      allTimePopUps[i].remove();
+    }
+  }
+
+  var todayColl = (parseInt({{day|safe}})+(parseInt({{ monthsBeginning |safe}})))%7;
+  if (todayColl==0){
+    todayColl = 7;
+  }
+  var cell = table.rows[hours-parseInt({{daysBeginning}})+calOffsetRows].cells.item(todayColl);
+  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+  scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  div.style.top  = (cell.getBoundingClientRect().y+ scrollTop)+(mins/60*40)+"px";
+  div.style.left = (cell.getBoundingClientRect().x+scrollLeft)+"px";
+  cell.appendChild(div)
+}
+
+window.setInterval(function(){
+  drawCurrentTime();
+}, 300000);
+
+window.addEventListener('resize', function resizeWindow() {
+  drawCurrentTime();
+  drawEvents();
+});
+
+function dropCalEvent(event){
+  var calEvent = document.getElementById(event.dataTransfer.getData("text"));
+  var destCell = event.target;
+  if (destCell.tagName == "DIV"){
+    return;
+  }
+
+  var destRow = destCell.parentElement.rowIndex;
+  var destCol = destCell.cellIndex;
+  var newStartTime = parseInt({{daysBeginning}})+destRow-2
+
+  var eventName = calEvent.getAttribute("name");
+  var eventDescription = calEvent.getAttribute("details");
+  var oldStartTime = calEvent.getAttribute("startTime");
+  var oldEndTime = calEvent.getAttribute("stopTime");
+
+  var oldWeekday = calEvent.getAttribute("weekDay");
+  var color = calEvent.style.backgroundColor;
+  var oldDate = calculateDateofCol(parseInt(oldWeekday)+1);
+
+  var date = new Date;
+  var minutes ;
+  if (oldStartTime !== "None"){
+      dt1 = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(oldStartTime.split(":")[0]), parseInt(oldStartTime.split(":")[1]), 0);
+      dt2 = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(oldEndTime.split(":")[0]), parseInt(oldEndTime.split(":")[1]), 0);
+      minutes = (Math.abs(dt1 - dt2) / 36e5)*60;
+  }else{
+    minutes = 60;
+  }
+
+  currentDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+  if (destRow==1){
+    newStartTime = "None";
+    newEndTime = "None";
+  }else{
+    newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), newStartTime, 0, 0);
+    newStartTime = zeroPad(newStartTime, 2) +":00"
+    var newDateObj = new Date(newDate.getTime() + minutes*60000);
+    var newEndTime = zeroPad(newDateObj.getHours(), 2) +":"+ zeroPad(newDateObj.getMinutes(), 2)
+    if(newDateObj.getHours() >= parseInt({{daysEnd}})){
+      newEndTime = "22:00"
+    }
+    if(newDateObj.getHours() < parseInt({{daysBeginning}})){
+      newEndTime = "22:00"
+    }
+
+  }
+
+  $.ajax({ type: "POST",
+     url: "/org",
+     data: {"entry": "calendar",
+            "value": "{" + "\"name\": \""+eventName+
+                           "\", \"details\": \""+eventDescription+
+                           "\", \"startTime\": \""+ newStartTime +
+                           "\", \"stopTime\": \"" + newEndTime+
+                           "\", \"color\": \""+ color+
+                           "\", \"date\": \""+ calculateDateofCol(destCol)+
+                           "\"}",
+            // item's old values, we need to be able to find it in the database
+            "oldValue": "{" + "\"name\": \""+eventName+
+                          "\", \"details\": \""+eventDescription+
+                          "\", \"startTime\": \""+oldStartTime+
+                          "\", \"stopTime\": \"" + oldEndTime+
+                          "\", \"color\": \""+ color+
+                          "\", \"date\": \""+ oldDate +
+                          "\"}",
+            "date": currentDay,
+            "action": 'edit'}
+  });
+  removeEventFromCalDates(oldWeekday, eventName, oldStartTime, oldEndTime)
+  calDates.push([destCol-1, newStartTime, newEndTime, eventName, 1, 1, color, eventDescription])
+  drawEvents();
+}
+
+function allowdropCalEvent(ev) {
+  ev.preventDefault();
+}
+function closeCalendarPopup(){
+  var calendarPopUps = document.getElementsByClassName("calendarPopUp");
+  for (i = 0; i < calendarPopUps.length; i++) {
+    calendarPopUps[i].remove();
+  }
+}
+
+var weekNumberCell = document.getElementById("weekNumber")
+weekNumberCell.textContent = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getWeek();
+
+
+</script>

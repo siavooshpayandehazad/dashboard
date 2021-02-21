@@ -20,6 +20,9 @@ from flask import render_template, make_response
 from werkzeug import secure_filename
 import requests
 import json
+import os
+from random import randint
+
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
@@ -76,8 +79,10 @@ class dash(Resource):
         ChartMonthDays   = [str(i) for i in range(1, numberOfDays+1)]
         travels          = getTravelDests(c)
         # ----------------------------------------------
+        yearRuns = generateYearRunChartData(int(pageYear), numberOfDays, c)
         yearSteps = generateYearStepChartData(int(pageYear), numberOfDays, c)
         yearSleep = generateYearSleepChartData(int(pageYear), numberOfDays, c)
+        yearWeight = generateYearWeightChartData(int(pageYear), numberOfDays, c)
         yearWH = generateYearWHChartData(int(pageYear), numberOfDays, c)
         yearHR_Min, yearHR_Max = generateYearHRChartData(int(pageYear), numberOfDays, c)
         yearMood = generateYearMoodChartData(int(pageYear), numberOfDays, c)
@@ -92,6 +97,7 @@ class dash(Resource):
                                              monthsWorkHours = monthsWorkHours, YearsSavings = YearsSavings,
                                              yearSteps = yearSteps, yearSleep = yearSleep, yearWH = yearWH,
                                              yearHR_Min = yearHR_Min, yearHR_Max = yearHR_Max, yearMood = yearMood,
+                                             yearWeight = yearWeight, yearRuns = yearRuns,
                                              # ----------------------
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
                                              activityList = activityList, days=moodTrackerDays, highlight = highlight,
@@ -190,11 +196,10 @@ class org(Resource):
 
         headers = {'Content-Type': 'text/html'}
         args = parser.parse_args()
-        all_due_events=[]
         todaysDate = parseDate(args['date'])
-        if todaysDate == str(datetime.date.today()):
-            c.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (datetime.date.today(),))
-            all_due_events = sorted(c.fetchall(), key=lambda tup: tup[1])
+
+        c.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (todaysDate,))
+        all_due_events = sorted(c.fetchall(), key=lambda tup: tup[1])
 
         day, month, year = sparateDayMonthYear(todaysDate)
         weekDay = datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d').weekday()
@@ -230,6 +235,7 @@ class org(Resource):
         ChartthisMonthTasks = [thisMonthTasksNum for i in range(numberOfDays)]
 
         calDate = getCalEvents(todaysDate, c)
+        calMonth = getCalEventsMonth(month, year, c)
         #---------------------------
         headerDates = []
         dayVal= datetime.datetime.strptime(todaysDate, '%Y-%m-%d')-datetime.timedelta(days=weekDay) # weekstart
@@ -239,7 +245,7 @@ class org(Resource):
 
         return make_response(render_template('org.html', day = day, month = month, year=year, weekDay = daysOfTheWeek[weekDay],
                                              monthsBeginning=monthsBeginningWeekDay, todayTodos=todayTodos, overDue = all_due_events,
-                                             numberOfDays=numberOfDays, thisMonthsEvents = thisMonthsEvents, calDate = calDate,
+                                             numberOfDays=numberOfDays, thisMonthsEvents = thisMonthsEvents, calDate = calDate, calMonth = calMonth,
                                              headerDates = headerDates,
                                              Backlog = scrumBoardLists["backlog"], ScrumTodo=scrumBoardLists["todo"],
                                              inProgress=scrumBoardLists["in progress"], done=scrumBoardLists["done"],
@@ -370,7 +376,15 @@ class notes(Resource):
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
         Notebooks = fetchNotebooks(c)
-        return make_response(render_template('notes.html', pageTheme=pageTheme, Notebooks=Notebooks),200,headers)
+        photoDir=os.getcwd()+"/static/photos/notebookPhotos"
+        photos = {}
+        for root, dirs, files in os.walk(photoDir):
+            if len(root.split("notebookPhotos/"))>1:
+                for filename in files:
+                    notebookName = root.split("notebookPhotos/")[1]
+                    if (".jpg" in filename) or (".png" in filename):
+                        photos[notebookName] = photos.get(notebookName, [])+[filename]
+        return make_response(render_template('notes.html', pageTheme=pageTheme, Notebooks=Notebooks, photos=photos),200,headers)
 
     def post(self):
         args = parser.parse_args()
@@ -387,12 +401,19 @@ class notes(Resource):
                 c.execute("""SELECT * FROM Notes WHERE Notebook = ?""", (parsjson["oldName"],))
                 allNotes = c.fetchall()
                 for x in allNotes:
-                    c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (parsjson["newName"], x[1], x[2]))
+                    content = x[2]
+                    # rename the folder that holds the files inside the references of it...
+                    while ("static/photos/notebookPhotos/"+parsjson["oldName"]+"/" in content):
+                        content = content.replace("static/photos/notebookPhotos/"+parsjson["oldName"]+"/", "static/photos/notebookPhotos/"+parsjson["newName"]+"/")
+                    c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (parsjson["newName"], x[1], content))
                 conn.commit()
                 for x in allNotes:
                     c.execute("""DELETE from Notes where Notebook = ? and Chapter = ? and content = ? """, (parsjson["oldName"], x[1], x[2]))
                 conn.commit()
-                return "nothing here!", 200
+                # rename the folder that holds the files
+                if os.path.isdir("./static/photos/notebookPhotos/"+parsjson["oldName"]):
+                    os.rename("./static/photos/notebookPhotos/"+parsjson["oldName"], "./static/photos/notebookPhotos/"+parsjson["newName"])
+                return "all good!", 200
             if (parsjson["type"] == "chapterName") and(parsjson["oldName"] != parsjson["newName"]):
                 c.execute("""SELECT * FROM Notes WHERE Notebook = ? and Chapter = ? """, (parsjson["noteBookName"], parsjson["oldName"],))
                 allNotes = c.fetchall()
@@ -400,7 +421,7 @@ class notes(Resource):
                     c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (x[0], parsjson["newName"], x[2]))
                     c.execute("""DELETE from Notes where Notebook = ? and Chapter = ? and content = ? """, (x[0], parsjson["oldName"], x[2]))
                 conn.commit()
-                return "nothing here!", 200
+                return "all good!", 200
         else:
             c.execute("""DELETE from Notes where Notebook = ? and Chapter = ?  """, (args["notebook"], args["chapter"]))
             c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (args["notebook"], args["chapter"], args['entry']))
@@ -451,6 +472,36 @@ class learning(Resource):
                     changeFlashCards(setName, side1, side2, lastTimeReviewed, False, c, conn)
         return "Done", 200
 
+class server(Resource):
+    def get(self):
+        headers = {'Content-Type': 'text/html'}
+        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        temps = []
+        tempsTimes = []
+
+        cpuUsage = []
+        cpuUsageTimes = []
+        todaysDate = date.today().strftime('%d-%m-%y')
+        with open('serverScripts/reports/tempReports/tempData_'+str(todaysDate)+'.txt', 'r') as reader:
+            line = reader.readline()
+            while (line != ""):
+                lineSplit = line.split()
+                temps.append(float(lineSplit[0][5:-3]))
+                tempsTimes.append(lineSplit[2])
+                line = reader.readline()
+        with open('serverScripts/reports/cpuReports/cpuUsageData_'+str(todaysDate)+'.txt', 'r') as reader2:
+            line2 = reader2.readline()
+            while (line2 != ""):
+                lineSplit = line2.split(" ")
+                cpuUsage.append(float(lineSplit[2]))
+                cpuUsageTimes.append(lineSplit[0])
+                line2 = reader2.readline()
+
+        return make_response(render_template('server.html', pageTheme=pageTheme,
+                             temps=temps, tempsTimes=tempsTimes,
+                             cpuUsage=cpuUsage, cpuUsageTimes=cpuUsageTimes,
+                             PageYear = 1999, PageMonth = 10),200,headers)
+
 
 @app.route("/downloadDB/")
 def downloadDB():
@@ -468,8 +519,27 @@ def upload_file():
         if not os.path.isdir("./static/photos/"+year+"/"+folderName):
             os.mkdir("./static/photos/"+year+"/"+folderName)
         f = request.files['file']
-        f.save(os.path.join("./static/photos/"+year+"/"+folderName, secure_filename(f.filename)))
+        fileName = f.filename
+        while os.path.isfile("./static/photos/"+year+"/"+folderName+"/"+fileName):
+            fileName = str(randint(1, 100000)) + "_" + f.filename
+        f.save(os.path.join("./static/photos/"+year+"/"+folderName, secure_filename(fileName)))
         return redirect(url_for('journal'), 200)
+
+
+@app.route('/NotesUploader', methods = ['GET', 'POST'])
+def upload_file_notes():
+    if request.method == 'POST':
+        notebookLabel  = request.form['notebookLabel']
+        if not os.path.isdir("./static/photos/notebookPhotos/"):
+            os.mkdir("./static/photos/notebookPhotos/")
+        if not os.path.isdir("./static/photos/notebookPhotos/"+notebookLabel):
+            os.mkdir("./static/photos/notebookPhotos/"+notebookLabel)
+        f = request.files['file']
+        fileName = f.filename
+        while os.path.isfile("./static/photos/notebookPhotos/"+notebookLabel+"/"+fileName):
+            fileName = str(randint(1, 100)) + "_" + f.filename
+        f.save(os.path.join("./static/photos/notebookPhotos/"+notebookLabel, secure_filename(fileName)))
+        return redirect(url_for('notes'), 200)
 
 
 @app.route('/shutdown', methods = ['POST'])
@@ -493,6 +563,7 @@ api.add_resource(settings, '/settings')
 api.add_resource(lists, '/lists')
 api.add_resource(notes, '/notes')
 api.add_resource(learning, '/learning')
+api.add_resource(server, '/server')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

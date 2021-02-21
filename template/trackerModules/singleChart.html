@@ -61,7 +61,7 @@ return  datasets;
 function renderTrackerChart(){
   var ctx = document.getElementById("{{trackerName}}Tracker").getContext('2d');
   new Chart(ctx, {
-     type: "bar",
+     type: "{{chartType}}",
      data: {
         labels: window['xaxis_{{trackerName}}'],
         datasets: generateDataSets(),
@@ -73,7 +73,6 @@ function renderTrackerChart(){
                     if ("{{clickable}}" == "true"){
                       if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
                          (this.scales['y-axis-0'].getValueForPixel(event.layerY) > this.scales['y-axis-0'].end)){
-                           console.log("here!")
                         return;
                       }
                       var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
@@ -133,7 +132,7 @@ function countTotalVal(list, floatRes){
 
 </script>
 
-<div class="graphCard">
+<div class="graphCard" style = "width:{{width}};">
   {% if showTotalVal == True%}
     <span style="float: right; margin-right: 10px; margin-top: 5px; font-family:verdana; font-size:11px"> monthly {{trackerName}}: <b><span id="total{{trackerName}}"></span></b> {{unit}}</span>
   {% endif %}

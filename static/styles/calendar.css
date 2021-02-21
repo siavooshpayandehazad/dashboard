@@ -35,3 +35,28 @@ tbody.calendartb td{
   position: absolute;
   z-index: 10;
 }
+.calendarLabel{
+  border-right: 1px solid white;
+  border-left: 1px solid white;
+}
+.calendarLabel:hover{
+  color:rgb(236, 112, 20);
+}
+.classContainer{
+  border-radius:10px;
+  float:right;
+  background-color:white;
+  padding:10px 10px 10px 10px;
+  margin-top:20px;
+  margin-bottom:20px;
+  min-height:100px;
+}
+.calCellLabel{
+  background-color:#2b8cbe;
+  border-radius:10px;
+  width:15px;
+  height:15px;
+  color: white;
+  font-size:12px;
+  margin-bottom: 3px;
+}

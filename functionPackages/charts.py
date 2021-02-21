@@ -51,6 +51,20 @@ def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, db
     return chartWeights
 
 
+def generateYearWeightChartData(pageYear: int, numberOfDays: int, dbCursur):
+    weight = []
+    for i in range(1, 13):
+        dbCursur.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
+                (getMonthsBeginning(i, pageYear).date(), getMonthsEnd(i, pageYear).date(),))
+        res = dbCursur.fetchall()
+        weightList = [float(x[0]) for x in res if is_number(x[0])]
+        if len(weightList)>0:
+            weight.append(float(sum(weightList))/len(weightList))
+        else:
+            weight.append("nan")
+    return weight
+
+
 def generateHRChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsHR = []
     dbCursur.execute("""SELECT * FROM HRTracker WHERE date >= ? and date <= ?  """,
@@ -81,11 +95,11 @@ def generateYearHRChartData(pageYear: int, numberOfDays: int, dbCursur):
         if len(HR_Min)>0:
             HR_Min_Avg.append(float(sum(HR_Min))/len(HR_Min))
         else:
-            HR_Min_Avg.append(0)
+            HR_Min_Avg.append("nan")
         if len(HR_Max)>0:
             HR_Max_Avg.append(float(sum(HR_Max))/len(HR_Max))
         else:
-            HR_Max_Avg.append(0)
+            HR_Max_Avg.append("nan")
     return HR_Min_Avg, HR_Max_Avg
 
 
@@ -181,6 +195,14 @@ def generateYearStepChartData(pageYear: int, numberOfDays: int, dbCursur):
                 (getMonthsBeginning(i, pageYear).date(), getMonthsEnd(i, pageYear).date(),))
         yearSteps.append(sum([int(x[0]) for x in dbCursur.fetchall() if is_number(x[0])]))
     return yearSteps
+
+def generateYearRunChartData(pageYear: int, numberOfDays: int, dbCursur):
+    yearRuns = []
+    for i in range(1, 13):
+        dbCursur.execute("""SELECT * FROM runningTracker WHERE date >= ? and date <= ?  """,
+                (getMonthsBeginning(i, pageYear).date(), getMonthsEnd(i, pageYear).date(),))
+        yearRuns.append(sum([float(x[0]) for x in dbCursur.fetchall() if is_number(x[0])]))
+    return yearRuns
 
 def generateRunningChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsRuns = []

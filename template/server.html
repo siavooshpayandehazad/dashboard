@@ -1,0 +1,52 @@
+
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+  <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
+  <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+  <title>My Journal</title>
+
+</head>
+
+<script type="text/javascript">
+</script>
+
+{%if pageTheme=="Dark"%}
+<body class="featured">
+{% else %}
+<body>
+{% endif %}
+
+{% include "trackerModules/graphFuncs.html" %}
+{% with page="server" %}
+    {% include "header.html" %}
+{% endwith %}
+
+<div style="margin-top:20px;">
+  {% with dataset = temps, ChartMonthDays = tempsTimes, chartType = "bar",
+        thresholds = [40, 50, 60], trackerName = "Temperature", unit="(°C)", addAvg="true", tcf="true",
+        pointStyle = 'rect', showTotalVal = false, suggestedMin = 35, yearMonth = "", clickable="false",
+        accumulate = "false", width = "85%",
+        bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)', 'rgba(244,165,130, 0.5)', 'rgba(178,24,43, 0.5)'],
+        bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)', 'rgba(244,165,130, 1)', 'rgba(178,24,43, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+  {% endwith %}
+<div>
+
+<div style="margin-top:20px;">
+  {% with dataset = cpuUsage, ChartMonthDays = cpuUsageTimes, chartType = "bar",
+        thresholds = [30, 50, 80], trackerName = "CPU Utilization", unit="(%)", addAvg="true", tcf="true",
+        pointStyle = 'rect', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
+        accumulate = "false", width = "85%",
+        bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)', 'rgba(244,165,130, 0.5)', 'rgba(178,24,43, 0.5)'],
+        bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)', 'rgba(244,165,130, 1)', 'rgba(178,24,43, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+  {% endwith %}
+<div>
+</body>
+
+</html>

@@ -18,7 +18,7 @@
   z-index: 2;
   cursor: pointer;
 }
-#closeButton{
+.closeButton{
   color:white;
   font-size: 30px;
   float:right
@@ -29,4 +29,22 @@ textarea.dailyEntry{
   width:90%;
   outline:None;
   resize:None
+}
+i.uploadIcon{
+  float: right;
+  color: white;
+}
+i.chevronIcon{
+  color:white;
+  font-size: 40px;
+  margin-top:200px;
+}
+#uploader{
+  display:none;
+  width:350px;
+  background-color: white;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  padding: 10px 10px 10px 10px;
+  border-radius:10px;
 }

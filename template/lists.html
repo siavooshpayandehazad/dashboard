@@ -15,16 +15,6 @@
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
   <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 
-  <script type="text/javascript">
-  function highlightItem(item){
-    item.parentElement.querySelector('.task').style.color="red";
-  }
-
-  function removeItemHighlight(item){
-    item.parentElement.querySelector('.task').style.color="black";
-  }
-  </script>
-
 </head>
 
 {%if pageTheme=="Dark"%}
@@ -49,98 +39,5 @@
 
   </body>
 
-<script type="text/javascript">
 
-function validateListInput(value){
-  if(value.length == 0){
-    window.alert("input field can not be empty!");
-    return false;
-  }
-  return true;
-}
-
-function deleteItem(item) {
-      var listItem = event.srcElement.parentElement.parentElement;
-      var type = listItem.querySelector(".task").getAttribute("type");
-      // reduce the all counter!
-      var value = parseInt(document.getElementById("countAll "+type).textContent)
-      document.getElementById("countAll "+type).textContent = value - 1;
-
-      $.ajax({ type: "POST",
-          url: "http://"+window.location.hostname+":5000/lists",
-          data: {"name": listItem.querySelector(".task").innerHTML, "type": type, "action": "delete"}
-      });
-      listItem.remove();
-    }
-
-function boxchange(event) {
-      var listItem = event.srcElement.parentElement;
-      var type = listItem.querySelector(".task").getAttribute("type");
-      var notes = listItem.querySelector(".task").getAttribute("note");
-      var name = listItem.querySelector(".task").innerHTML;
-      var checked =  listItem.querySelector("input").checked;
-      var value = parseInt(document.getElementById("countDone "+type).textContent)
-      if(checked){
-          document.getElementById("countDone "+type).textContent = value + 1;
-      }else{
-          document.getElementById("countDone "+type).textContent = value - 1;
-      }
-      $.ajax({ type: "POST",
-          url: "http://"+window.location.hostname+":5000/lists",
-          data: {"name": name, "type": type, "notes": notes, "done": checked}
-      });
-     }
-
-function submitonEnter(event) {
-  if (event.keyCode == 13) {
-        var listItemValue = event.srcElement.value;
-        var listItemType = event.srcElement.name;
-        if (!validateListInput(listItemValue)){
-          return;
-        }
-        $.ajax({ type: "POST",
-            url: "http://"+window.location.hostname+":5000/lists",
-            data: {"name": listItemValue,
-                   "type": listItemType,
-                   "notes": "None",
-                   "done": 'false'}
-        });
-
-        // increase the all counter!
-        var value = parseInt(document.getElementById("countAll "+listItemType).textContent)
-        document.getElementById("countAll "+listItemType).textContent = value + 1;
-
-          // add the new element to the list!
-          var li = document.createElement("li");
-          var input = document.createElement("input");
-          input.setAttribute('type', 'checkbox');
-          input.setAttribute('onchange', 'boxchange(event)');
-          input.setAttribute('style', 'margin-right:10px');
-          var span1 = document.createElement("span");
-          span1.setAttribute("class", "task");
-          span1.setAttribute("type", event.srcElement.name);
-          span1.innerHTML= event.srcElement.value;
-
-          li.appendChild(input);
-          li.appendChild(span1);
-
-          var span2 = document.createElement("span");
-          span2.onclick = function () {deleteItem(this);}
-          span2.style.float = "right";
-          span2.style.marginRight = "10px";
-          span2.onmouseover = function(){highlightItem(this)}
-          span2.onmouseout = function(){removeItemHighlight(this)}
-
-          var i = document.createElement("i");
-          i.setAttribute('class',"fa fa-trash-o hover-red");
-          span2.appendChild(i);
-          li.innerHTML += "&nbsp";
-          li.appendChild(span2);
-          var ul = document.getElementById(event.srcElement.name);
-          ul.appendChild(li);
-          // clear the text in the input line!
-          event.srcElement.value = "";
-      }
-  };
-</script>
 </html>

@@ -39,7 +39,7 @@
   {% with dataset = monthsWorkHours, ChartMonthDays = ChartMonthDays, chartType = "bar",
         thresholds = [4, 6, 8], trackerName = "work hours", unit="(hrs)", addAvg="true", tcf="true",
         pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
-        accumulate = "true", 
+        accumulate = "true",
         bgColors = ['rgba(252,146,114, 1)', 'rgba(254,196,79, 1)', 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)'],
         bColors = ['rgba(203,24,29, 1)', 'rgba(236,112,20, 1)', 'rgba(33,113,181, 1)', 'rgba(53,151,143, 1)']%}
     {% include "trackerModules/singleChart.html" %}
@@ -52,7 +52,7 @@
 
   {% with dataset = monthsWeights, ChartMonthDays = ChartMonthDays, chartType = "line",
         thresholds = [], trackerName = "weight", unit="(kg)", addAvg="true", tcf="true",
-        pointStyle = 'cicle', showTotalVal = False, suggestedMin = 60, yearMonth = "month", clickable="true",
+        pointStyle = 'cicle', showTotalVal = False, suggestedMin = 65, yearMonth = "month", clickable="true",
         accumulate = "false",
         bgColors = ['rgba(128,205,193, 0.3)'],
         bColors = ['rgba(53,151,143, 1)']%}

@@ -1,0 +1,32 @@
+.moodTrackerTable{
+  margin-left: 6%;
+  margin-right: 6%;
+  margin-bottom: 6%;
+  float:left;
+}
+.moodSelectorCell{
+  min-width:6%;
+  border-radius:5px;
+  text-align: center;
+}
+.moodSelectorCell:hover{
+  cursor: pointer;
+}
+th.moodTracker{
+  text-align: center;
+}
+div.moodTracker {
+  width: 13%;
+  border-radius:12px;
+  background-color:var(--moodtracker-bg-clr);
+  float: left;
+  margin-bottom:10px;
+  margin-left:10px;
+}
+div.moodSelectorPopUp{
+  position: absolute;
+  background-color: white;
+  border: solid black 2px;
+  border-radius: 5px;
+  width: 100px;
+}

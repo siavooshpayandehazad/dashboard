@@ -17,3 +17,23 @@ td.trackerHeader{
   border-radius: 3px;
   text-align: center;
 }
+td.todayMarker{
+  background-color: var(--todayMarker-bg-clr);
+  border-radius:10px;
+  text-align: center;
+}
+div.activityTracker {
+  border-radius:12px;
+  background-color:var(--activityracker-bg-clr);
+  min-width: 750px;
+  min-height: 300px;
+  float:left;
+  margin-left:10px;
+}
+#eraser {
+  color:#525252;
+}
+#eraser:hover {
+  cursor: pointer;
+  color: #ec7014;
+}

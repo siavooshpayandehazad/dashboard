@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/moodTracker.css') }}">
 
 <script type="text/javascript">
   function moodSelect(mood, date){
@@ -7,7 +8,7 @@
     }
     $.ajax({
        type: "POST",
-       url: "http://"+window.location.hostname+":5000/home",
+       url: "/home",
        data: {tracker_type: "mood", "value":mood,"date":date},
      });
      if (mood=="great") {
@@ -36,10 +37,6 @@
     scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     div.style.left = event.clientX+2+scrollLeft+"px";
     div.style.top = event.clientY+2+scrollTop+"px";
-    div.style.backgroundColor = "white";
-    div.style.border = "solid black 2px";
-    div.style.borderRadius = "5px";
-    div.style.width = "100px";
 
     var table = document.createElement("table");
     var moods = ["Great", "Good", "OK", "Bad", "Awful"]
@@ -69,7 +66,7 @@
 <!-- Mood Tracker-->
 <div class="moodTracker">
   <h2  class="title lightbg">Mood Tracker</h2>
-  <table style="width:50%; margin-left: 10px; margin-right: 10px; float:left;  margin-bottom: 10px;">
+  <table class="moodTrackerTable">
     <tr> <th class="moodTracker"> M </th> <th class="moodTracker"> T </th>
          <th class="moodTracker"> W </th> <th class="moodTracker"> T </th>
          <th class="moodTracker"> F </th> <th class="moodTracker"> S </th>
@@ -78,7 +75,7 @@
     {% for day in days %}
       {% if day != None  %}
         {% if days.index(day)%7 == 0  %}
-          </tr> <tr>
+        <tr>
         {% endif %}
         {% set ns1 = namespace (found = 0)%}
         {% for item in moods%}
