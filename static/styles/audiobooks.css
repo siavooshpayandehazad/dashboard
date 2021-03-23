@@ -1,0 +1,32 @@
+.audiobook{
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 30px;
+  margin-right:10px;
+  width:200px;
+  float:left;
+}
+
+.audiobook:hover{
+  box-shadow: 0 0 10px white;
+}
+
+.audiobookImg{
+  margin-top: 2px;
+  margin-left: 1px;
+  width:195px;
+  height:300px;
+  border-radius:10px;
+}
+.progressLine{
+  margin-top:3px;
+  border-radius: 10px;
+  width:195px;
+  height:7px;
+  margin-left:10px;
+  background-color:green
+}
+.fa-arrow-circle-left{
+  float: right;
+  color: white;
+}
