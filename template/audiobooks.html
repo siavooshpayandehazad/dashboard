@@ -21,12 +21,12 @@ var pageBook = null;
 var pageChapter = null;
 
 function updateTheTime() {
-  currentTime = player.currentTime;
 
   player   = document.getElementById("audio");
   author   = player.getAttribute("author")
   book     = player.getAttribute("book")
   chapter  = document.getElementById("chapter").textContent;
+  currentTime = player.currentTime;
   progress = parseFloat(currentTime)/player.duration;
 
   player.pause();
