@@ -34,13 +34,13 @@ function setupMonthCal(){
     td1.style="border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff;";
     td2 = document.createElement("td")
     td2.style = "border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;vertical-align:top;"
-    td2.onclick = function(){calendarClick(event, this);};
+    td2.onclick = function(){calendarClick(event, this, 'month');};
     tr.appendChild(td1)
     tr.appendChild(td2)
     for (var i=1; i<7; i++){
       td = document.createElement("td")
       td.style = "border-bottom: 1px solid #9ecae1;vertical-align:top;"
-      td.onclick = function(){calendarClick(event, this);};
+      td.onclick = function(){calendarClick(event, this, 'month');};
       tr.appendChild(td)
     }
     document.getElementById("calendartbMonth").appendChild(tr)
@@ -87,10 +87,11 @@ function drawMonthEvents(){
     monthEvents[0].remove();
   }
   var table = document.getElementById("calTabMonth");
-  for (var i=startdayNum; i<=lastDate; i++){
+  startdayNum = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getDay();
+  for (var i=startdayNum; i<=lastDate+startdayNum-1; i++){
     cell = table.rows[parseInt(i/7)+1].cells.item(i%7+1);
     for (var j=0; j<calMonths.length; j++){
-      date = parseInt("{{year}}")+"-"+zeroPad({{'%02d'%month}}, 2)+"-"+zeroPad(i, 2);
+      date = parseInt("{{year}}")+"-"+zeroPad({{'%02d'%month}}, 2)+"-"+zeroPad(i-startdayNum+1, 2);
       if(calMonths[j][0] == date){
         div = document.createElement("div")
         div.classList.add("monthEvent")

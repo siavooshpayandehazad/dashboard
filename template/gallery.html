@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <style>
+  input[type='checkbox']:checked + span{
+    text-decoration:line-through;
+  }
+  </style>
+  <meta charset="utf-8"/>
+  <title>My Journal</title>
+  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/gallery.css') }}">
+  <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/commonFunctions.js') }}"></script>
+</head>
+
+<script type="text/javascript">
+function photoClicked(item){
+  var overlay = document.getElementById("PhotoOverlay")
+  overlay.style.display = "block";
+  var img = document.createElement('img');
+  img.src = item.src;
+  img.id = "PhotoOverlayPicture"
+  img.style.maxWidth = "70%";
+  img.style.maxHeight = "80%";
+  img.style.float = "center";
+  img.style.marginTop = "5%";
+  img.onclick= function() {closeOverlay()}
+  overlay.appendChild(img);
+}
+function closeOverlay(){
+  var img = document.getElementById("PhotoOverlayPicture")
+  img.remove();
+  var overlay = document.getElementById("PhotoOverlay")
+  overlay.style.display = "none";
+}
+</script>
+
+{%if pageTheme=="Dark"%}
+  <body  class="journal featured">
+{% else %}
+  <body  class="journal" background="{{url_for('static', filename='decorationImages/journal_background.png') }}">
+{% endif %}
+
+{% with page="gallery" %}
+    {% include "header.html" %}
+{% endwith %}
+
+<div id="PhotoOverlay" style="text-align:center">
+  <div style="float:left; width:100%; ">
+    <i class="fa fa-times closeButton hover-red" aria-hidden="true" onclick="closeOverlay()"></i>
+  </div>
+</div>
+
+<div style="margin-left:15%; width:100%; float:left;">
+  <h2 class="title journal">
+      <a class= "arrow hover-red"  href="/gallery?date={{year-1}}-01-01">&#9668;</a>
+      {{year}}
+      <a class= "arrow hover-red" href="/gallery?date={{year+1}}-01-01">&#9658;</a>
+  </h2>
+</div>
+
+
+  {% with PageYear=year, PageMonth=month%}
+    {% include "monthSelector.html" %}
+  {% endwith %}
+
+
+<div style="margin-left: 1%; width:80%; height: 600px; float:left;overflow-y: scroll;">
+
+  {% for i in range(numberOfDays) %}
+      {%if monthsPhotos[i]|length >0%}
+        <div style="width:100%; float:left; margin-top:10px;">
+          <div style="width:100%; float:left; margin-bottom:10px;">
+            <div style="width:49%; height:5px; float:left; margin-top: 7.5px; background-color:gray"></div>
+            <div style="width: 2%; height:20px; float:left; border-radius: 10px; background-color: gray; text-align:center">
+              <span style="color:white;">{{i+1}}</style>
+            </div>
+            <div style="width:49%; height:5px; float:left; margin-top: 7.5px; background-color:gray"></div>
+          </div>
+          <div style="width:100%;float:left;">
+            {% for photo in monthsPhotos[i]%}
+              <img src= "static/photos/{{ photo }}" alt="image alt text" onclick="photoClicked(this)" class="galleryPhoto"/>
+            {% endfor %}
+          </div>
+        </div>
+      {%endif%}
+  {%endfor%}
+</div>
+
+</body>
+
+
+</html>

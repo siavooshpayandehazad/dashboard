@@ -1,0 +1,17 @@
+<div style="width:7%; padding-top: 20px; float: left;">
+{% for listMonth in ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]%}
+  {% if loop.index0+1==PageMonth  %}
+    <div class="monthTab selected" onclick="goToMonth({{PageYear}}, {{loop.index0}})">
+  {%else%}
+    <div class="monthTab" onclick="goToMonth({{PageYear}}, {{loop.index0}})">
+  {%endif%}
+       <span style="margin-top:12px; margin-left:10px;"> <b> {{listMonth}} </b> </span>
+    </div>
+{%endfor%}
+</div>
+
+<div style="float:left; width:5px;">
+  <div id="gradUp"></div>
+  <div class="dividerVert"></div>
+  <div id="gradDown"></div>
+</div>

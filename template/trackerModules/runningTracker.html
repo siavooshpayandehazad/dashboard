@@ -61,36 +61,33 @@ function renderRunningTrackerChart(){
                       }]
                 },
                 onClick: function(event, array){
-                  console.log(this.scales['x-axis-0'].ticks.fontColor)
-                  if (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end){
+                  if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
+                     (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
+                       console.log(this.scales['y-axis-0'].getValueForPixel(event.layerY))
                     return;
                   }
-                  var graph;
                   var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
-                  var selectedVal;
-                  var newVal;
-                  if((this.getDatasetMeta(0).hidden == null) && (this.getDatasetMeta(1).hidden == null)){
-                    window.alert("you should turn one of the graphs off in order to enter data...")
-                    return;
-                  }else if (this.getDatasetMeta(0).hidden == true && this.getDatasetMeta(1).hidden == null){
-                    graph = "running"
-                    selectedVal =  monthsRunning[selectedDay-1];
-                    newVal = window.prompt("Update running for day " + selectedDay + "?", selectedVal);
-                    monthsRunning[selectedDay-1] = newVal;
-                  }else{
-                    graph = "pace"
-                    selectedVal = monthsPace[selectedDay-1];
-                    newVal = window.prompt("Update pace for day " + selectedDay + "?", selectedVal);
-                    monthsPace[selectedDay-1] = newVal;
-                  }
-                  if (isNaN(newVal) || (newVal===null)){return;}
+                  var selectedVal =  monthsRunning[selectedDay-1]+", "+monthsPace[selectedDay-1]
+                  var newVal = window.prompt("Update running (coma separated format:\"distance, pace\") for day " + selectedDay + "?", selectedVal);
+                  if ((newVal===null)){return;}
+                  var distance = newVal.split(",")[0]
+                  var pace = newVal.split(",")[1]
+                  if (isNaN(distance) || isNaN(pace)){return;}
                   var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
-                  // submit new value
                   $.ajax({
                       type: "POST",
                       url: "http://"+window.location.hostname+":5000/home",
-                      data: {"tracker_type":graph, "value": newVal, "date": date},
-                  });
+                      data: {"tracker_type":"running", "value": distance, "date": date},
+                  }).success(function(){
+                            $.ajax({
+                                type: "POST",
+                                url: "http://"+window.location.hostname+":5000/home",
+                                data: {"tracker_type":"pace", "value": pace, "date": date},
+                            });
+                    }
+                  );
+                  monthsRunning[selectedDay-1]=distance;
+                  monthsPace[selectedDay-1]=pace;
                   countTotalRun();
                   this.update();
                 }

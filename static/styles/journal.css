@@ -1,6 +1,6 @@
 .journalPhoto{
   border: 1px solid transparent;
-  width: 120px;
+  height: 120px;
 }
 .journalPhoto:hover{
   border: 1px solid white;
@@ -23,7 +23,7 @@
   font-size: 30px;
   float:right
 }
-textarea.dailyEntry{
+#dailyEntry{
   margin-left: 5%;
   min-height:200px;
   width:90%;
@@ -47,4 +47,14 @@ i.chevronIcon{
   margin-bottom: 10px;
   padding: 10px 10px 10px 10px;
   border-radius:10px;
+}
+
+div.dailyEntry{
+ border-radius:12px;
+ width:31%;
+ height:280px;
+ float:right;
+ margin-right:20px;
+ margin-top: 30px;
+ background-color: var(--dailyentry-clr);
 }

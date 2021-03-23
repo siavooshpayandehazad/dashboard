@@ -106,14 +106,6 @@ h2.photos {
   font-family:Impact;
   color: var(--title-clr);
 }
-div.dailyEntry{
- border-radius:12px;
- width:32%; height:280px;
- float:right;
- margin-right:20px;
- margin-top: 30px;
- background-color: var(--dailyentry-clr);
-}
 div.logText{
   color: var(--logText-clr);
 }
@@ -123,8 +115,7 @@ div.tabBar{
 }
 div.tabButton{
    width: 70px; height: 25px;
-   margin-left: 2px;
-   margin-right: 2px;
+   margin-right: 4px;
    padding-top:5px;
    border-radius:5px 5px 0px 0px;
    color:var(--tabbtn-font-clr);
@@ -176,6 +167,7 @@ div.todoColorPopup{
   background-color: white;
   border:1px solid black;
   border-radius: 10px;
+  z-index:10;
 }
 div.divider{
   width:100%;
@@ -492,4 +484,84 @@ div.genericPopup{
   z-index: 10;
   color: black;
   background-color: #f0f0f0;
+}
+div.monthTab{
+  width:95%;
+  min-height: 22px;
+  line-height: 22px;
+  float:right;
+  border-radius: 10px 0px 0px 10px;
+  background-color:gray;
+  margin-top:3px;
+}
+div.selected{
+  background-color:white;
+  min-height: 35px;
+  line-height: 35px;
+}
+
+div.monthTab:hover{
+  background-color:var(--divider-clr);
+  cursor: pointer;
+}
+div.dividerVert{
+  width:100%;
+  height: 315px;
+  float:left;
+  background-color:var(--divider-clr);
+}
+#gradUp{
+  width:100%;
+  min-height:30px;
+  float:left;
+  background-color:var(--divider-clr);
+  background-image: linear-gradient(to bottom, var(--bckgrnd-clr), var(--divider-clr))
+}
+#gradDown{
+  width:100%;
+  min-height:30px;
+  float:left;
+  background-color:var(--divider-clr);
+  background-image: linear-gradient(to bottom, var(--divider-clr), var(--bckgrnd-clr))
+}
+
+.galleryPhoto{
+  border: 1px solid transparent;
+  height: 120px;
+}
+.galleryPhoto:hover{
+  border: 1px solid white;
+}
+
+.audiobook{
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 30px;
+  margin-right:10px;
+  width:200px;
+  float:left;
+}
+
+.audiobook:hover{
+  box-shadow: 0 0 10px white;
+}
+
+.audiobookImg{
+  margin-top: 2px;
+  margin-left: 1px;
+  width:195px;
+  height:300px;
+  border-radius:10px;
+}
+.progressLine{
+  margin-top:3px;
+  border-radius: 10px;
+  width:195px;
+  height:7px;
+  margin-left:10px;
+  background-color:green
+}
+.fa-arrow-circle-left{
+  float: right;
+  color: white;
 }

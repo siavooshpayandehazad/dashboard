@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/journal.css') }}">
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
   <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/commonFunctions.js') }}"></script>
   <script type="text/javascript">
     function submitEntry(){
       var newText = document.getElementById("dailyEntry").value;
@@ -19,25 +20,6 @@
           data: {"entry": "log", "value":newText, "date": document.getElementById("dailyEntry").name},
       });
       document.getElementById("todayslog").innerHTML = newText.replace(/\n/g, "<br>");;
-    }
-    function validateForm() {
-      var fileName = document.forms["photoUploader"]["file"].value;
-      if (fileName == "") {
-        alert("Name must be filled out");
-        return false;
-      }
-      if((fileName.split(".")[1].toLowerCase()!="jpg") && (fileName.split(".")[1].toLowerCase()!="png")){
-        alert("only jpg files are allowed");
-        return false;
-      }
-    }
-    function uploadPhoto(){
-      var uploader = document.getElementById("uploader")
-      if(uploader.style.display === "none"){
-        uploader.style.display = 'block';
-      }else{
-        uploader.style.display = 'none';
-      }
     }
     function photoClicked(item){
       var overlay = document.getElementById("PhotoOverlay")
@@ -50,7 +32,6 @@
       img.style.float = "center";
       img.style.marginTop = "5%";
       img.onclick= function() {closeOverlay()}
-
       overlay.appendChild(img);
     }
     function closeOverlay(){
@@ -91,17 +72,18 @@
 {% with page="journal" %}
     {% include "header.html" %}
 {% endwith %}
-  <div id="PhotoOverlay" style="text-align:center">
-    <div style="float:left; width:100%; ">
-      <i class="fa fa-times closeButton hover-red" aria-hidden="true" onclick="closeOverlay()"></i>
-    </div>
-    <div onclick="prevPic()"  style="float:left; width:10%; height:100%;">
-        <i class="fa fa-chevron-left chevronIcon hover-red" aria-hidden="true"></i>
-    </div>
-    <div onclick="nextPic()" style="float:right; width:10%; height:100%;">
-        <i class="fa fa-chevron-right chevronIcon hover-red" aria-hidden="true"></i>
-    </div>
+
+<div id="PhotoOverlay" style="text-align:center">
+  <div style="float:left; width:100%; ">
+    <i class="fa fa-times closeButton hover-red" aria-hidden="true" onclick="closeOverlay()"></i>
   </div>
+  <div onclick="prevPic()"  style="float:left; width:10%; height:100%;">
+      <i class="fa fa-chevron-left chevronIcon hover-red" aria-hidden="true"></i>
+  </div>
+  <div onclick="nextPic()" style="float:right; width:10%; height:100%;">
+      <i class="fa fa-chevron-right chevronIcon hover-red" aria-hidden="true"></i>
+  </div>
+</div>
 
   <!-- daily entry -->
   <div class="dailyEntry">
@@ -112,115 +94,47 @@
      </form>
   </div>
 
+  <!-- selector header -->
   <div style="margin-bottom:90px;width:67%;">
-    <div style="float:left; height:50px;margin-right:10px;">
+    <div style="float:left; height:50px;margin-right:10px; margin-top:10px;">
       <h1> <font style="text-decoration: underline;"> Journal </font></h1>
     </div>
 
-    <div style="float:left; width:690px;">
-    <h2 class="title journal">
-      {% if month > 1  %}
-        <a class= "arrow hover-red"  href="/journal?date={{year}}-{{'%02d' % (month-1)}}-01">&#9668;</a>
-      {% else %}
-        <a class= "arrow hover-red"  href="/journal?date={{year-1}}-{{'%02d' % (12)}}-01">&#9668;</a>
-      {% endif %}
-      {{year}}-{{'%02d' % (month)}}
-      {% if month < 12  %}
-        <a class= "arrow hover-red" href="/journal?date={{year}}-{{'%02d' % (month+1)}}-01">&#9658;</a>
-      {% else %}
-        <a class= "arrow hover-red" href="/journal?date={{year+1}}-{{'%02d' % (1)}}-01">&#9658;</a>
-      {% endif %}
-    </h2>
-
-    <!-- Day selector header!-->
-    <table border="0" style="border-spacing: 0px; margin-left:10px;float:left;">
-      <tr>
-        {% set ns1 = namespace (daysOfTheWeek = "MTWTFSS")%}
-        {% set ns2 = namespace (daysOfTheWeekCap = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])%}
-        {% for i in range(0, numberOfDays) %}
-          {%if i+1 == day %}
-            <td class="DS DStoday"><font class="DSfontToday"><b>{{ns2.daysOfTheWeekCap[(i+monthsBeginning)%7]}}</b></font></td>
-          {%else%}
-              {% if i+1 in logged_days  %}
-                <td class="DS DSFilled"><a class="arrow" href="/journal?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i+1)}}"><font class="DSfontFilled" >{{ns1.daysOfTheWeek[(i+monthsBeginning)%7]}}</font></a></td>
-              {%else%}
-                <td class="DS"><a class="arrow" href="/journal?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i+1)}}"><font class="DSfont">{{ns1.daysOfTheWeek[(i+monthsBeginning)%7]}}</font></a></td>
-              {%endif%}
-          {%endif%}
-        {%endfor%}
-      </tr>
-      <tr>
-        {% for i in range(1, numberOfDays+1) %}
-            {% if i == day  %}
-              <td  class="DS DStoday DSbottom"> <font class="DSfontToday"><b>{{i}}</b></a></font></td>
-            {%else%}
-              {% if i in logged_days  %}
-                <td class="DS DSFilled DSbottom"><a class= "arrow" href="/journal?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i)}}"><font class="DSfontFilled"><b>{{i}}</b></font></a></td>
-              {%else%}
-                <td class="DS DSbottom"><a class= "arrow" href="/journal?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i)}}"><font class="DSfont"><b>{{i}}</b></font></a></td>
-              {%endif%}
-            {%endif%}
-        {%endfor%}
-      </tr>
-      <tr>
-        {% for i in range(1, numberOfDays+1) %}
-          {% if i == day  %}
-            {% if i in daysWithPhotos  %}
-              <td class="DS DSbottom DSgHighlightToday"> </td>
-            {%else%}
-              <td class="DS DStoday DSbottom" style="height:5px;"></td>
-            {%endif%}
-          {%else%}
-           {% if i in daysWithPhotos  %}
-              {% if i in logged_days  %}
-                <td class="DS DSbottom DSFilled DSgHighlightFilled"> </td>
-              {%else%}
-              <td class="DS DSbottom DSFilled DSgHighlight"> </td>
-              {%endif%}
-            {%else%}
-             {% if i in logged_days  %}
-                  <td class="DS DSbottom DSFilled" style="height:5px;"></td>
-             {%else%}
-               <td class="DS DSbottom" style="height:5px;"></td>
-             {%endif%}
-           {%endif%}
-          {%endif%}
-        {%endfor%}
-      </tr>
-    </table>
+    <div style="float:left; width:722px;">
+      <h2 class="title journal">
+          <a class= "arrow hover-red"  href="/journal?date={{year-1}}-01-01">&#9668;</a>
+          {{year}}
+          <a class= "arrow hover-red" href="/journal?date={{year+1}}-01-01">&#9658;</a>
+      </h2>
+      {% include "journal_modules/daySelector.html" %}
     </div>
-    <div class="divider" style="width:99%; height:5px; float:left; margin-bottom:10px;"></div>
   </div>
 
-  <div  style="width:65%; min-height: 400px; float:left;">
+  <!-- left-side monthly selector -->
+  {% with PageYear=year, PageMonth=month%}
+    {% include "monthSelector.html" %}
+  {% endwith %}
+
+  <div  style="width:58%; min-height: 400px; float:left; margin-left:10px; margin-top:10px;">
     <div id= "todayslog" class="logText">
       {% autoescape false %}
       {{log}}
       {% endautoescape %}
     </div>
 
-      <div style="margin-bottom:10px;">
-        <hr>
-        <h2 class="photos" style="float:left">   photos </h2>
-        <i class="fa fa-upload uploadIcon hover-red"  aria-hidden="true" onclick="uploadPhoto()"></i>
-        <br><br>
-        <div  id = "uploader">
-          Upload a photo:
-          <form  name="photoUploader" action = "/uploader" method = "POST" enctype = "multipart/form-data" style="margin-top:5px;" onsubmit="return validateForm()">
-              <input type = "file" name = "file" />
-              <input type="text" name="date" value = "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" style ="display:none;">
-              <input type = "submit" style="float:right;" value="Upload" />
-          </form>
-        </div>
-        <br>
-        <div style="float:left">
+    <div style="margin-bottom:10px;">
+      <hr>
+      <h2 class="photos" style="float:left"> photos </h2>
+      {% include "journal_modules/uploader.html" %}
+      <br>
+      <div style="float:left">
         {%if todayPhotos|length >0%}
           {% for photo in todayPhotos%}
             <img src= "static/photos/{{ photo }}" alt="image alt text" onclick="photoClicked(this)" class="journalPhoto"/>
           {% endfor %}
         {%endif%}
-        </div>
       </div>
+    </div>
   </div>
 
   <div style="margin-right: 20px;float:right;">

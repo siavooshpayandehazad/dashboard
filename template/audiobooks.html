@@ -1,0 +1,273 @@
+
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+  <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
+  <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+  <title>My Journal</title>
+</head>
+
+<script type="text/javascript">
+var audiobooks = {{audiobooks|safe}};
+var metadata = {{metadata|safe}}
+
+var pageAuthor = null;
+var pageBook = null;
+var pageChapter = null;
+
+function updateTheTime() {
+  player.pause();
+
+  player   = document.getElementById("audio");
+  author   = player.getAttribute("author")
+  book     = player.getAttribute("book")
+  chapter  = document.getElementById("chapter").textContent;
+  progress = parseFloat(player.currentTime)/player.duration;
+
+  metadata[author][book]["chapter "+chapter]["timestamp"] = player.currentTime;
+  metadata[author][book]["chapter "+chapter]["progress"]  = progress;
+
+  $.ajax({ type: "POST",
+           url: "/audiobooks",
+           data: {"value":JSON.stringify({"author": author,
+                                           "book": book,
+                                           "chapter": chapter,
+                                           "timestamp": player.currentTime,
+                                           "progress": progress}),
+                 },
+          });
+}
+
+function removeDivChildDivs(divObj){
+  while(divObj.getElementsByTagName('div').length>0){
+    divObj.getElementsByTagName('div')[0].remove()
+  }
+}
+
+function showPage(pageName){
+  document.getElementById("books").style.display="none";
+  document.getElementById("authors").style.display="none";
+  document.getElementById("chapters").style.display="none";
+  document.getElementById("player").style.display="none";
+  document.getElementById(pageName).style.display="inline";
+}
+
+function goToAuthors(){
+  showPage("authors")
+  updateAuthors();
+}
+
+function goToBooks(){
+  showPage("books")
+  loadBooks(pageAuthor)
+}
+
+function goToChapters(){
+  updateTheTime()
+  showPage("chapters")
+  player = document.getElementById("audio");
+  author = player.getAttribute("author")
+  book   = player.getAttribute("book")
+  loadChapters(pageBook, pageAuthor)
+}
+
+function loadPlayer(item, author, bookName){
+  chapterName = item.getAttribute("name")
+
+  pageAuthor = author;
+  pageBook = bookName;
+  pageChapter = chapterName;
+
+  showPage("player")
+
+  var audio = document.getElementById('audio');
+  var source = document.getElementById('mp3Source');
+  audio.setAttribute("author", author)
+  audio.setAttribute("book", bookName)
+  source.src = "/static/audiobooks/"+author+"/"+bookName+"/"+chapterName;
+  audio.load();
+
+  document.getElementById("playerCover").src = "static/audiobooks/"+author+"/"+bookName+"/title.jpg"
+
+  chapterNumber = audiobooks[author][bookName].indexOf(chapterName)+1
+  document.getElementById('title').textContent = bookName;
+  document.getElementById('chapter').textContent = chapterNumber;
+
+  ChapterMetadata = metadata[audio.getAttribute("author")][audio.getAttribute("book")]["chapter "+chapterNumber];
+  audio.currentTime = ChapterMetadata["timestamp"];
+}
+
+function loadChapters(bookName, author){
+
+  pageAuthor = author;
+  pageBook = bookName;
+  pageChapter = null;
+
+  showPage("chapters")
+  chaptersDiv=document.getElementById("chapters")
+  removeDivChildDivs(chaptersDiv);
+
+  for(var j=0; j<audiobooks[author][bookName].length; j++){
+    ChapterMetadata = metadata[author][bookName]["chapter "+(j+1)];
+    chapterName=audiobooks[author][bookName][j];
+
+    borderDiv = document.createElement("div");
+    borderDiv.setAttribute("name", chapterName);
+    borderDiv.classList.add("audiobook")
+    borderDiv.onclick=function(){
+      loadPlayer(this, author, bookName)
+    }
+
+    img = document.createElement("img");
+    img.src="static/audiobooks/"+author+"/"+bookName+"/title.jpg";
+    img.classList.add("audiobookImg");
+
+    progressLine = document.createElement("div");
+    progressLine.classList.add("progressLine")
+    progressLine.style.width = 180*parseFloat(ChapterMetadata["progress"])
+
+    span = document.createElement("span");
+    span.style = "color:white";
+    span.textContent = "Chapter: "+(j+1);
+
+    borderDiv.appendChild(img)
+    borderDiv.appendChild(progressLine)
+    borderDiv.appendChild(span)
+    chaptersDiv.appendChild(borderDiv);
+
+  }
+}
+
+function loadBooks(author){
+
+    pageAuthor = author;
+    pageBook = null;
+    pageChapter = null;
+
+    showPage("books")
+    booksDiv=document.getElementById("books")
+    removeDivChildDivs(booksDiv);
+
+    for(var j=0; j<Object.keys(audiobooks[author]).length; j++){
+      bookName=Object.keys(audiobooks[author])[j]
+      borderDiv = document.createElement("div");
+      borderDiv.setAttribute("name", bookName);
+      borderDiv.classList.add("audiobook")
+      borderDiv.onclick=function(){
+            loadChapters(this.getAttribute("name"), author)
+      }
+
+      img = document.createElement("img")
+      img.src="static/audiobooks/"+author+"/"+bookName+"/title.jpg"
+      img.classList.add("audiobookImg")
+
+      progressLine = document.createElement("div");
+      progressLine.classList.add("progressLine")
+      progress = 0
+      for(var k=0; k<Object.keys(metadata[author][bookName]).length; k++){
+        ChapterMetadata = metadata[author][bookName]["chapter "+(k+1)];
+        progress = progress + ChapterMetadata["progress"]/Object.keys(metadata[author][bookName]).length
+      }
+      progressLine.style.width = 180*parseFloat(Math.min(progress, 1))
+
+      span = document.createElement("span");
+      span.style = "color:white";
+      span.textContent = bookName;
+
+      borderDiv.appendChild(img)
+      borderDiv.appendChild(progressLine)
+      borderDiv.appendChild(span)
+      booksDiv.appendChild(borderDiv);
+    }
+    booksDiv.style.display="inline";
+}
+
+function updateAuthors(){
+    showPage("authors")
+    authorsDiv=document.getElementById("authors")
+    removeDivChildDivs(authorsDiv);
+
+    for(var j=0; j<Object.keys(audiobooks).length; j++){
+      author = Object.keys(audiobooks).sort()[j]
+      borderDiv = document.createElement("div");
+      borderDiv.setAttribute("name", author);
+      borderDiv.classList.add("audiobook")
+      borderDiv.onclick=function(){
+        loadBooks(this.getAttribute("name"));
+      }
+
+      img = document.createElement("img")
+      img.src="static/audiobooks/"+author+"/title.jpg"
+      img.classList.add("audiobookImg")
+
+      progressLine = document.createElement("div");
+      progressLine.classList.add("progressLine")
+      progress = 0
+      numberOfBooks=Object.keys(metadata[author]).length
+      for(var k=0; k< numberOfBooks; k++){
+        bookName = Object.keys(metadata[author])[k]
+        numberOfChapters = Object.keys(metadata[author][bookName]).length
+        for(var l=0; l<numberOfChapters; l++){
+          ChapterMetadata = metadata[author][bookName]["chapter "+(l+1)];
+          progress = progress + ChapterMetadata["progress"]/(numberOfChapters*numberOfBooks)
+        }
+      }
+      progressLine.style.width = 180*parseFloat(Math.min(progress, 1))
+
+      span = document.createElement("span");
+      span.style = "color:white";
+      span.textContent = author;
+
+      borderDiv.appendChild(img);
+      borderDiv.appendChild(progressLine);
+      borderDiv.appendChild(span);
+      authorsDiv.appendChild(borderDiv);
+    }
+}
+</script>
+
+{%if pageTheme=="Dark"%}
+  <body class="featured">
+{% else %}
+  <body>
+{% endif %}
+
+{% with page="audiobooks" %}
+    {% include "header.html" %}
+{% endwith %}
+
+<div id="authors" style="width:100%; margin-top:40px; float: left; display:inline">
+</div>
+
+<div id="books" style="width:100%; margin-top:20px; float: left; display:none;">
+  <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToAuthors()"></i>
+</div>
+
+<div id="chapters" style="width:100%; margin-top:20px; float: left; display:none;">
+  <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToBooks()"></i>
+</div>
+
+<div id="player" style="width:100%; margin-top:20px; float: left; display:none;">
+  <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToChapters()"></i>
+  <div  style="margin-left:30%; width:40%; float: left;">
+    <img id = "playerCover" style="margin-left: 10%; width:80%;" >
+    <div style="margin-left: 10%; width: 90%; margin-bottom:10px;">
+      <span style="color:white"><b>Title:  </b> <b id="title">   </b> </span><br>
+      <span style="color:white"><b>Chapter:</b> <b id="chapter"> </b> </span><br>
+    </div>
+    <audio id="audio" controls style="width:100%;" onpause="updateTheTime()" >
+       <source id="mp3Source" type="audio/mpeg"></source>
+    </audio>
+  </div>
+</div>
+
+</body>
+
+<script type="text/javascript">
+  updateAuthors()
+</script>
+</html>

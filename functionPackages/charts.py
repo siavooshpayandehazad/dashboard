@@ -233,8 +233,10 @@ def generatePaceChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCu
         pace_value = "nan"
         for item in monthsPaces:
             if int(item[1].split("-")[2]) == i:
+                pace_value = "nan"
                 try:
-                    pace_value = float(item[0])
+                    if float(item[0])>0:
+                       pace_value = float(item[0])
                 except:
                     pace_value = "nan"
         paceTrackerData.append(pace_value)
@@ -246,7 +248,7 @@ def generateYearMoodChartData(pageYear: int, numberOfDays: int, dbCursur):
         dbCursur.execute("""SELECT * FROM moodTracker WHERE date >= ? and date <= ?  """,
                 (getMonthsBeginning(i, pageYear).date(), getMonthsEnd(i, pageYear).date(),))
         res = [x[0] for x in dbCursur.fetchall()]
-        MonthVal = res.count("great")*4.5 + res.count("ok")*3.5 + res.count("good")*2.5 + res.count("bad")*1.5 + res.count("awful")*0.5
+        MonthVal = res.count("great")*4.5 + res.count("good")*3.5 + res.count("ok")*2.5 + res.count("bad")*1.5 + res.count("awful")*0.5
 
         if len(res) > 0:
             moodVal = MonthVal/float(len(res))

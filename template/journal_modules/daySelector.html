@@ -1,0 +1,57 @@
+<!-- Day selector header!-->
+<table border="0" style="border-spacing: 0px; margin-left:10px;float:left;">
+  <tr>
+    {% set ns1 = namespace (daysOfTheWeek = "MTWTFSS")%}
+    {% set ns2 = namespace (daysOfTheWeekCap = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])%}
+    {% for i in range(0, numberOfDays) %}
+      {%if i+1 == day %}
+        <td class="DS DStoday"><font class="DSfontToday"><b>{{ns2.daysOfTheWeekCap[(i+monthsBeginning)%7]}}</b></font></td>
+      {%else%}
+          {% if i+1 in logged_days  %}
+            <td class="DS DSFilled"><a class="arrow" href="/journal?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i+1)}}"><font class="DSfontFilled" >{{ns1.daysOfTheWeek[(i+monthsBeginning)%7]}}</font></a></td>
+          {%else%}
+            <td class="DS"><a class="arrow" href="/journal?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i+1)}}"><font class="DSfont">{{ns1.daysOfTheWeek[(i+monthsBeginning)%7]}}</font></a></td>
+          {%endif%}
+      {%endif%}
+    {%endfor%}
+  </tr>
+  <tr>
+    {% for i in range(1, numberOfDays+1) %}
+        {% if i == day  %}
+          <td  class="DS DStoday DSbottom"> <font class="DSfontToday"><b>{{i}}</b></font></td>
+        {%else%}
+          {% if i in logged_days  %}
+            <td class="DS DSFilled DSbottom"><a class= "arrow" href="/journal?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i)}}"><font class="DSfontFilled"><b>{{i}}</b></font></a></td>
+          {%else%}
+            <td class="DS DSbottom"><a class= "arrow" href="/journal?date={{year}}-{{'%02d' % (month)}}-{{'%02d' % (i)}}"><font class="DSfont"><b>{{i}}</b></font></a></td>
+          {%endif%}
+        {%endif%}
+    {%endfor%}
+  </tr>
+  <tr>
+    {% for i in range(1, numberOfDays+1) %}
+      {% if i == day  %}
+        {% if i in daysWithPhotos  %}
+          <td class="DS DSbottom DSgHighlightToday"> </td>
+        {%else%}
+          <td class="DS DStoday DSbottom" style="height:5px;"></td>
+        {%endif%}
+      {%else%}
+       {% if i in daysWithPhotos  %}
+          {% if i in logged_days  %}
+            <td class="DS DSbottom DSFilled DSgHighlightFilled"> </td>
+          {%else%}
+            <td class="DS DSbottom DSFilled DSgHighlight"> </td>
+          {%endif%}
+        {%else%}
+         {% if i in logged_days  %}
+            <td class="DS DSbottom DSFilled" style="height:5px;"></td>
+         {%else%}
+            <td class="DS DSbottom" style="height:5px;"></td>
+         {%endif%}
+       {%endif%}
+      {%endif%}
+    {%endfor%}
+  </tr>
+</table>
+<div class="divider" style="width:712px; height:5px; float:right;"></div>

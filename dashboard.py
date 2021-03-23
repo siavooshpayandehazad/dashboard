@@ -49,7 +49,7 @@ class dash(Resource):
             setupSettingTable(c, conn)
             print("could not fetch page theme! replacing with default values")
         if args['date'] is not None:
-            pageYear, pageMonth = args['date'].split("-")
+            pageYear, pageMonth, pageDay = args['date'].split("-")
         else:
             pageMonth = str(datetime.date.today().month).zfill(2)
             pageYear = str(datetime.date.today().year)
@@ -344,6 +344,30 @@ class settings(Resource):
         return "Done", 200
 
 
+class gallery(Resource):
+    def get(self):
+        args = parser.parse_args()
+        headers = {'Content-Type': 'text/html'}
+        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        todaysDate = parseDate(args['date'])
+        day, month, year = sparateDayMonthYear(todaysDate)
+        numberOfDays = numberOfDaysInMonth(int(month), int(year))
+        monthsBeginning = getMonthsBeginning(month, year).weekday()
+        monthsPhotos=[]
+        for dayNumber in range(1, numberOfDays+1):
+            date= str(year)+"-"+str(month).zfill(2)+"-"+str(dayNumber).zfill(2)
+            photoDir=os.getcwd()+"/static/photos/"+str(year)+"/"+date
+            todaysPhotos=allPotosInDir(photoDir, year, date)
+            monthsPhotos.append(todaysPhotos)
+            print(date, monthsPhotos)
+        return make_response(render_template('gallery.html', day=day, month=month, year=year,
+                                             numberOfDays=numberOfDays, monthsBeginning=monthsBeginning,
+                                             monthsPhotos=monthsPhotos,
+                                             pageTheme=pageTheme),200,headers)
+
+    def post(self):
+        return "Done", 200
+
 class lists(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
@@ -474,34 +498,113 @@ class learning(Resource):
 
 class server(Resource):
     def get(self):
+        args = parser.parse_args()
+        if args['date'] is not None:
+            year, month, day = args['date'].split("-")
+            todaysDate = "-".join([day,month,year[-2:]])
+        else:
+            today = datetime.date.today()
+            day, month, year = today.day, today.month, today.year
+            todaysDate = today.strftime('%d-%m-%y')
+
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
-        temps = []
-        tempsTimes = []
+        gpuTemps = []
+        gpuTempsTimes = []
+
+        cpuTemps = []
+        cpuTempsTimes = []
 
         cpuUsage = []
         cpuUsageTimes = []
-        todaysDate = date.today().strftime('%d-%m-%y')
-        with open('serverScripts/reports/tempReports/tempData_'+str(todaysDate)+'.txt', 'r') as reader:
-            line = reader.readline()
-            while (line != ""):
-                lineSplit = line.split()
-                temps.append(float(lineSplit[0][5:-3]))
-                tempsTimes.append(lineSplit[2])
+        try:
+            with open('serverScripts/reports/gpuReports/gpuTempData_'+str(todaysDate)+'.txt', 'r') as reader:
                 line = reader.readline()
-        with open('serverScripts/reports/cpuReports/cpuUsageData_'+str(todaysDate)+'.txt', 'r') as reader2:
-            line2 = reader2.readline()
-            while (line2 != ""):
-                lineSplit = line2.split(" ")
-                cpuUsage.append(float(lineSplit[2]))
-                cpuUsageTimes.append(lineSplit[0])
+                while (line != ""):
+                    lineSplit = line.split()
+                    gpuTemps.append(float(lineSplit[0][5:-2]))
+                    gpuTempsTimes.append(lineSplit[2])
+                    line = reader.readline()
+        except:
+            print("something went wrong!")
+
+        try:
+            with open('serverScripts/reports/cpuReports/cpuUsageData_'+str(todaysDate)+'.txt', 'r') as reader2:
                 line2 = reader2.readline()
+                while (line2 != ""):
+                    lineSplit = line2.split(" ")
+                    cpuUsage.append(float(lineSplit[2]))
+                    cpuUsageTimes.append(lineSplit[0])
+                    line2 = reader2.readline()
+        except:
+            print("something went wrong!")
+        try:
+            with open('serverScripts/reports/cpuReports/cpuTempData_'+str(todaysDate)+'.txt', 'r') as reader2:
+                line2 = reader2.readline()
+                while (line2 != ""):
+                    lineSplit = line2.split(" ")
+                    cpuTemps.append(float(lineSplit[0])/1000)
+                    cpuTempsTimes.append(lineSplit[2])
+                    line2 = reader2.readline()
+        except:
+            print("something went wrong!")
+
+        discSpace1 = int(os.popen('df -h | grep "/dev/root"').read().split()[4][:-1])
+        discSpace2 = int(os.popen('df -h | grep "/dev/sda1"').read().split()[4][:-1])
+        discSpace3Temp = os.popen('free -m | grep "Mem"').read().split()
+        discSpace3 = (float(discSpace3Temp[2])/float(discSpace3Temp[1]))*100
+        discSpace4Temp = os.popen('free -m | grep "Swap"').read().split()
+        discSpace4 = (float(discSpace4Temp[2])/float(discSpace4Temp[1]))*100
+        discSpace = {"/dev/root" : [discSpace1, 100-discSpace1],
+                     "/dev/sda1": [discSpace2, 100-discSpace2],
+                     "Mem": [discSpace3, 100-discSpace3],
+                     "Swap": [discSpace4, 100-discSpace4]}
+
+        upTimeString = " ".join(os.popen('uptime -s').read().split())
+        bootTime = datetime.datetime.strptime(upTimeString, '%Y-%m-%d %H:%M:%S')
+        upTime = datetime.datetime.now() - bootTime
+        upTime = int(upTime.total_seconds()/3600)
 
         return make_response(render_template('server.html', pageTheme=pageTheme,
-                             temps=temps, tempsTimes=tempsTimes,
+                             gpuTemps=gpuTemps, gpuTempsTimes=gpuTempsTimes,
+                             cpuTemps=cpuTemps, cpuTempsTimes=cpuTempsTimes,
                              cpuUsage=cpuUsage, cpuUsageTimes=cpuUsageTimes,
+                             upTime=upTime,
+                             discSpace=discSpace, year=int(year), month=int(month), day=int(day),
                              PageYear = 1999, PageMonth = 10),200,headers)
 
+
+class audiobooks(Resource):
+    def get(self):
+        args = parser.parse_args()
+        if args['date'] is not None:
+            year, month, day = args['date'].split("-")
+            todaysDate = "-".join([day,month,year[-2:]])
+        else:
+            today = datetime.date.today()
+            day, month, year = today.day, today.month, today.year
+            todaysDate = today.strftime('%d-%m-%y')
+
+        headers = {'Content-Type': 'text/html'}
+        pageTheme = fetchSettingParamFromDB(c, "Theme")
+
+        path = "static/audiobooks/"
+        audiobooks, metadata = getAudiobooks(path)
+        return make_response(render_template('audiobooks.html', audiobooks=audiobooks, metadata=metadata, pageTheme=pageTheme ),200,headers)
+
+    def post(self):
+        args = parser.parse_args()
+        value = json.loads(args['value'])
+        metadataFilePath = "static/audiobooks/"+value["author"]+"/"+value["book"]+"/metadata.json"
+        with open(metadataFilePath, "r") as metadataFile:
+            data = json.load(metadataFile)
+            data["chapter "+value["chapter"]]["timestamp"] = value["timestamp"]
+            data["chapter "+value["chapter"]]["progress"] = value["progress"]
+        metadataFile.close()
+        with open(metadataFilePath, "w") as metadataFile:
+            json.dump(data, metadataFile)
+        metadataFile.close()
+        return "Done", 200
 
 @app.route("/downloadDB/")
 def downloadDB():
@@ -526,7 +629,7 @@ def upload_file():
         return redirect(url_for('journal'), 200)
 
 
-@app.route('/NotesUploader', methods = ['GET', 'POST'])
+@app.route('/notesUploader', methods = ['GET', 'POST'])
 def upload_file_notes():
     if request.method == 'POST':
         notebookLabel  = request.form['notebookLabel']
@@ -562,8 +665,10 @@ api.add_resource(org, '/org')
 api.add_resource(settings, '/settings')
 api.add_resource(lists, '/lists')
 api.add_resource(notes, '/notes')
+api.add_resource(gallery, '/gallery')
 api.add_resource(learning, '/learning')
 api.add_resource(server, '/server')
+api.add_resource(audiobooks, '/audiobooks')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

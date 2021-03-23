@@ -84,7 +84,7 @@ function renderTrackerChart(){
                         newVal = window.prompt("Update {{trackerName}} for day " + selectedDay + "?", selectedVal);
                       }
                       if (isNaN(newVal) || (newVal===null)){return;}
-                      var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
+                      var date = {{PageYear}}+"-"+zeroPad({{PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
                       // submit new value
                       $.ajax({
                           type: "POST",
@@ -136,7 +136,7 @@ function countTotalVal(list, floatRes){
   {% if showTotalVal == True%}
     <span style="float: right; margin-right: 10px; margin-top: 5px; font-family:verdana; font-size:11px"> monthly {{trackerName}}: <b><span id="total{{trackerName}}"></span></b> {{unit}}</span>
   {% endif %}
-  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">{{trackerName}} tracker</h2>
+  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">{{trackerName}} Tracker</h2>
   <div style="float:left; width:90%; margin-left:5%; background-color: white">
     <canvas  height="100px" id="{{trackerName}}Tracker"></canvas>
   </div>

@@ -9,10 +9,18 @@
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
   <script src="{{ url_for('static', filename='js/login.js') }}"></script>
   <title>My Journal</title>
-
 </head>
 
 <script type="text/javascript">
+  const zeroPad = (num, places) => String(num).padStart(places, '0')
+  function moveDay(delta){
+    date = new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0);
+    date.setDate(date.getDate() + delta);
+    var dd = date.getDate();
+    var mm = date.getMonth()+1;//January is 0!`
+    var yyyy = date.getFullYear();
+    window.location.href = "/server?date="+zeroPad(yyyy, 2)+"-"+zeroPad(mm, 2)+"-"+zeroPad(dd, 2);
+  }
 </script>
 
 {%if pageTheme=="Dark"%}
@@ -26,27 +34,88 @@
     {% include "header.html" %}
 {% endwith %}
 
-<div style="margin-top:20px;">
-  {% with dataset = temps, ChartMonthDays = tempsTimes, chartType = "bar",
-        thresholds = [40, 50, 60], trackerName = "Temperature", unit="(°C)", addAvg="true", tcf="true",
-        pointStyle = 'rect', showTotalVal = false, suggestedMin = 35, yearMonth = "", clickable="false",
-        accumulate = "false", width = "85%",
-        bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)', 'rgba(244,165,130, 0.5)', 'rgba(178,24,43, 0.5)'],
-        bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)', 'rgba(244,165,130, 1)', 'rgba(178,24,43, 1)']%}
-    {% include "trackerModules/singleChart.html" %}
-  {% endwith %}
-<div>
+<div style="float:left; width:100%;">
+  <h2 class="title journal" style="margin-left:40%">
+    <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
+    {{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}
+    <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
+  </h2>
+</div>
 
-<div style="margin-top:20px;">
-  {% with dataset = cpuUsage, ChartMonthDays = cpuUsageTimes, chartType = "bar",
-        thresholds = [30, 50, 80], trackerName = "CPU Utilization", unit="(%)", addAvg="true", tcf="true",
-        pointStyle = 'rect', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
-        accumulate = "false", width = "85%",
-        bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)', 'rgba(244,165,130, 0.5)', 'rgba(178,24,43, 0.5)'],
-        bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)', 'rgba(244,165,130, 1)', 'rgba(178,24,43, 1)']%}
-    {% include "trackerModules/singleChart.html" %}
-  {% endwith %}
-<div>
+<div style="float:left; width:100%;">
+
+  <div style="float:left; width:35%;">
+    <div style="background-color: white; width:49%; float:left; border-radius:10px 10px 10px 10px; margin-top: 20px;">
+      <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Disk Space</h2><br>
+      <div style="width:100%; margin-top:10px;"> <canvas id="diskSpace1" ></canvas> </div>
+      <div style="width:100%; margin-top:10px; margin-bottom:10px;"> <canvas id="diskSpace2" ></canvas> </div>
+    </div>
+
+    <div style="background-color: white; width:49%; float:left; border-radius:10px 10px 10px 10px; margin-top: 20px; margin-left:2%;">
+      <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Memory</h2><br>
+      <div style="width:100%; margin-top:10px;"> <canvas id="diskSpace3" ></canvas> </div>
+      <div style="width:100%; margin-top:10px; margin-bottom:10px;"> <canvas id="diskSpace4" ></canvas> </div>
+    </div>
+
+    <div style="background-color: white; height:40px; width:100%; float:left; border-radius:10px 10px 10px 10px; margin-top: 1%;">
+      <span style="margin: 10px 10px 10px 10px;"><b>Server up time: <span style="color:red">{{upTime}}</span> hr(s) </b></span>
+    </div>
+  </div>
+
+  <div style="float:right; margin-top:20px;width:65%;">
+    {% with dataset = cpuTemps, ChartMonthDays = cpuTempsTimes, chartType = "bar",
+          thresholds = [40, 60, 80], trackerName = "CPU Temperature", unit="(°C)", addAvg="true", tcf="true",
+          pointStyle = 'rect', showTotalVal = false, suggestedMin = 20, yearMonth = "", clickable="false",
+          accumulate = "false", width = "95%",
+          bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)', 'rgba(244,165,130, 0.5)', 'rgba(178,24,43, 0.5)'],
+          bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)', 'rgba(244,165,130, 1)', 'rgba(178,24,43, 1)']%}
+      {% include "trackerModules/singleChart.html" %}
+    {% endwith %}
+  </div>
+
+  <div style="float:right; margin-top:20px;width:65%;">
+    {% with dataset = cpuUsage, ChartMonthDays = cpuUsageTimes, chartType = "bar",
+          thresholds = [30, 50, 80], trackerName = "CPU Utilization", unit="(%)", addAvg="true", tcf="true",
+          pointStyle = 'rect', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
+          accumulate = "false", width = "95%",
+          bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)', 'rgba(244,165,130, 0.5)', 'rgba(178,24,43, 0.5)'],
+          bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)', 'rgba(244,165,130, 1)', 'rgba(178,24,43, 1)']%}
+      {% include "trackerModules/singleChart.html" %}
+    {% endwith %}
+  </div>
+
+  <div style="float:right; margin-top:20px;width:65%;">
+    {% with dataset = gpuTemps, ChartMonthDays = gpuTempsTimes, chartType = "bar",
+          thresholds = [40, 60, 80], trackerName = "GPU Temperature", unit="(°C)", addAvg="true", tcf="true",
+          pointStyle = 'rect', showTotalVal = false, suggestedMin = 20, yearMonth = "", clickable="false",
+          accumulate = "false", width = "95%",
+          bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)', 'rgba(244,165,130, 0.5)', 'rgba(178,24,43, 0.5)'],
+          bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)', 'rgba(244,165,130, 1)', 'rgba(178,24,43, 1)']%}
+      {% include "trackerModules/singleChart.html" %}
+    {% endwith %}
+  </div>
+
+</div>
 </body>
 
+<script type="text/javascript">
+  var discSpace = {{discSpace|tojson}}
+  function renderPieChart(id, label){
+    new Chart(document.getElementById(id), {
+        type: 'pie',
+        data: {labels: ["used", "free"],
+               datasets: [{
+                           label: label,
+                           backgroundColor: ["#c45850", "#3e95cd"],
+                           data: discSpace[label]}]
+              },
+        options: {title: {display: true, text: label,}}
+    });
+  }
+
+  renderPieChart("diskSpace1", "/dev/root");
+  renderPieChart("diskSpace2", "/dev/sda1");
+  renderPieChart("diskSpace3", "Mem");
+  renderPieChart("diskSpace4", "Swap");
+</script>
 </html>

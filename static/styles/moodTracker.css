@@ -22,6 +22,7 @@ div.moodTracker {
   float: left;
   margin-bottom:10px;
   margin-left:10px;
+  margin-top:20px;
 }
 div.moodSelectorPopUp{
   position: absolute;
@@ -29,4 +30,5 @@ div.moodSelectorPopUp{
   border: solid black 2px;
   border-radius: 5px;
   width: 100px;
+  z-index: 10; 
 }

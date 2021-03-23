@@ -5,6 +5,53 @@ from typing import Any
 from functionPackages.dateTime import *
 from collections import Counter
 from datetime import date
+import json
+
+def getAudiobooks(path):
+    audiobooks = {}
+    for a in os.scandir(path):
+        if a.is_dir():
+            author = a.name
+            books = {}
+            for b in os.scandir(a):
+                if b.is_dir():
+                    chapters= []
+                    for chapter in os.scandir(b):
+                        if ".mp3" in chapter.name:
+                            chapters.append(chapter.name)
+                    books[b.name]=sorted(chapters)
+            audiobooks[author]=books
+    metadata = {}
+    for a in os.scandir(path):
+        if a.is_dir():
+            author = a.name
+            books = {}
+            for b in os.scandir(a):
+                if b.is_dir():
+                    for f in os.scandir(b):
+                        if ".json" in f.name:
+                            try:
+                                f = open(f,'r')
+                                data = json.load(f)
+                                books[b.name]=data
+                            except:
+                                print("something is wrong with", f.name)
+                            break
+                    # if book metadate doesnt exist add it
+                    if b.name not in books.keys():
+                        books[b.name] = {}
+                        for i in range(len(audiobooks[author][b.name])):
+                           books[b.name]["chapter "+str(i+1)] = {
+                                  "timestamp": 0,
+                                  "progress": "0.0"
+                                  }
+                        path = os.path.realpath(b)+"/metadata.json"
+                        print(path)
+                        f = open(path, 'w+')
+                        json.dump(books[b.name], f)
+                        f.close()
+            metadata[author]=books
+    return audiobooks, metadata
 
 def getFlashCards(dbCursur):
     dbCursur.execute("""SELECT * FROM flashcards""")

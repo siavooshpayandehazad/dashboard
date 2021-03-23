@@ -139,7 +139,7 @@ function drawCell(calDate, idVal){
 
   div.onclick=function editEvent(event){
     event.stopPropagation(); // dont propagate the click the cell bellow
-    calendarClick(event, tableElement)
+    calendarClick(event, tableElement, 'week')
   }
   cell.appendChild(div);
 }
@@ -178,11 +178,7 @@ function drawEvents(){
   return;
 }
 
-function calendarClick(event, item){
-  var calType = "week";
-  if(document.getElementById("MonthCal").style.display=="block"){
-    calType = "month";
-  }
+function calendarClick(event, item, calType){
   var senderElement = event.target;
   if((senderElement.tagName=="TD")||(senderElement.tagName=="DIV" && senderElement.className === "calendarEvent")){
     closeCalendarPopup();
@@ -460,7 +456,7 @@ function calendarClick(event, item){
 }
 </script>
 <div class= "classContainer" id="WeekCal" style="display: none;">
-  <table id="calTab" border="0" style="border-spacing: 0px;" onclick="calendarClick(event, this)">
+  <table id="calTab" border="0" style="border-spacing: 0px;" onclick="calendarClick(event, this, 'week')">
     <thead class="calendarth">
       <tr>
         <th class="calendarLabel" onclick="showWeekMonth('Month')">WEEK</th>
@@ -653,7 +649,7 @@ function closeCalendarPopup(){
 }
 
 var weekNumberCell = document.getElementById("weekNumber")
-weekNumberCell.textContent = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getWeek();
-
+date = new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)
+weekNumberCell.textContent = date.getWeek();
 
 </script>
