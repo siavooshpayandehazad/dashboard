@@ -1,9 +1,12 @@
 .DS_Store
 __pycache__
 static/photos/
+static/books/
+static/docs/
+static/decorationImages/
+serverScripts/reports/
 journal.db
 backups/
 venv*
 tests/.coverage
 tests/test.db
-static/decorationImages/

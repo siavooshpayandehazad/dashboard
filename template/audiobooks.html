@@ -4,6 +4,7 @@
   <meta charset="utf-8"/>
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/audiobooks.css') }}">
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
@@ -20,15 +21,17 @@ var pageBook = null;
 var pageChapter = null;
 
 function updateTheTime() {
-  player.pause();
+  currentTime = player.currentTime;
 
   player   = document.getElementById("audio");
   author   = player.getAttribute("author")
   book     = player.getAttribute("book")
   chapter  = document.getElementById("chapter").textContent;
-  progress = parseFloat(player.currentTime)/player.duration;
+  progress = parseFloat(currentTime)/player.duration;
 
-  metadata[author][book]["chapter "+chapter]["timestamp"] = player.currentTime;
+  player.pause();
+
+  metadata[author][book]["chapter "+chapter]["timestamp"] = currentTime;
   metadata[author][book]["chapter "+chapter]["progress"]  = progress;
 
   $.ajax({ type: "POST",
@@ -36,7 +39,7 @@ function updateTheTime() {
            data: {"value":JSON.stringify({"author": author,
                                            "book": book,
                                            "chapter": chapter,
-                                           "timestamp": player.currentTime,
+                                           "timestamp": currentTime,
                                            "progress": progress}),
                  },
           });
@@ -75,9 +78,7 @@ function goToChapters(){
   loadChapters(pageBook, pageAuthor)
 }
 
-function loadPlayer(item, author, bookName){
-  chapterName = item.getAttribute("name")
-
+function loadPlayer(author, bookName, chapterName){
   pageAuthor = author;
   pageBook = bookName;
   pageChapter = chapterName;
@@ -102,7 +103,6 @@ function loadPlayer(item, author, bookName){
 }
 
 function loadChapters(bookName, author){
-
   pageAuthor = author;
   pageBook = bookName;
   pageChapter = null;
@@ -119,7 +119,7 @@ function loadChapters(bookName, author){
     borderDiv.setAttribute("name", chapterName);
     borderDiv.classList.add("audiobook")
     borderDiv.onclick=function(){
-      loadPlayer(this, author, bookName)
+      loadPlayer(author, bookName, this.getAttribute("name"))
     }
 
     img = document.createElement("img");
@@ -143,7 +143,6 @@ function loadChapters(bookName, author){
 }
 
 function loadBooks(author){
-
     pageAuthor = author;
     pageBook = null;
     pageChapter = null;

@@ -11,8 +11,18 @@
   z-index: 2;
   cursor: pointer;
 }
+
 .closeButton{
   color:white;
   font-size: 30px;
   float:right
+}
+
+.galleryPhoto{
+  border: 1px solid transparent;
+  height: 120px;
+}
+
+.galleryPhoto:hover{
+  border: 1px solid white;
 }
