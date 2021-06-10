@@ -194,6 +194,9 @@ td.DS{
   min-width: 20px;
   text-align: center;
 }
+td.DS:hover{
+  cursor: pointer;
+}
 td.DSFilled{
   background-color:  var(--DSFilled-bg-clr);
   border-radius: 7px 7px 0px 0px;

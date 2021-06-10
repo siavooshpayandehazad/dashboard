@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
-  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
   <title>My Journal</title>
 </head>
 
@@ -236,7 +235,7 @@ function updateAuthors(){
 {% endif %}
 
 {% with page="audiobooks" %}
-    {% include "header.html" %}
+    {% include "generic_modules/header.html" %}
 {% endwith %}
 
 <div id="authors" style="width:100%; margin-top:40px; float: left; display:inline">

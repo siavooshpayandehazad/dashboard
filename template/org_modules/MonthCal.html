@@ -81,11 +81,16 @@ function setupMonthCal(){
     table.rows[parseInt((i+startdayNum)/7)+1].cells.item((i+startdayNum)%7+1).appendChild(span)
   }
 }
-function drawMonthEvents(){
+
+function removeAllMonthEvents(){
   monthEvents = document.getElementsByClassName("monthEvent")
   while (monthEvents.length>0){
     monthEvents[0].remove();
   }
+}
+
+function drawMonthEvents(){
+  removeAllMonthEvents();
   var table = document.getElementById("calTabMonth");
   startdayNum = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getDay();
   for (var i=startdayNum; i<=lastDate+startdayNum-1; i++){
@@ -102,6 +107,19 @@ function drawMonthEvents(){
         scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         div.style.top  = (cell.getBoundingClientRect().y+scrollTop)+"px";
         div.style.left = (cell.getBoundingClientRect().x+scrollLeft)+"px";
+
+        // set the attributes:
+        div.setAttribute("weekDay",   calMonths[j][0]);
+        div.setAttribute("name",      calMonths[j][3]);
+        div.setAttribute("details",   calMonths[j][7]);
+        div.setAttribute("startTime", calMonths[j][1]);
+        div.setAttribute("stopTime",  calMonths[j][2]);
+        div.setAttribute("color",     calMonths[j][6]);
+
+        div.onclick=function editEvent(event){
+          event.stopPropagation(); // dont propagate the click the cell bellow
+          calendarClick(event, table, 'month')
+        }
         cell.appendChild(div)
       }
     }

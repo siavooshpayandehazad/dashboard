@@ -1,3 +1,5 @@
+<script src="{{ url_for('static', filename='js/commonFunctions.js') }}"></script>
+
 <div style="width:7%; padding-top: 20px; float: left;">
 {% for listMonth in ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]%}
   {% if loop.index0+1==PageMonth  %}

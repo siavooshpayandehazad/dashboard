@@ -1,0 +1,16 @@
+<script type="text/javascript">
+  function setupSearchPage(item){
+    searchTextArea = document.getElementById("searchTextArea")
+    if(searchTextArea.style.display == "block"){
+      searchTextArea.style.display = "none";
+    }else{
+      searchTextArea.style.display = "block";
+    }
+    window.alert("search is not implemented yet!")
+  }
+</script>
+
+<div style="width: 200px; float:right">
+  <i class="fa fa-search searchIcon hover-red" onclick="setupSearchPage(this)"></i>
+  <textarea id="searchTextArea" style="display: none;" rows="1" cols="15"></textarea>
+</div>

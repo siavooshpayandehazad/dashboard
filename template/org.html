@@ -11,7 +11,13 @@
  <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
  <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
- <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+ <script type="text/javascript">
+ var vars = {};
+ var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+           vars[key] = value;
+ });
+ </script>
+
  <title>My Journal</title>
 </head>
 
@@ -22,7 +28,12 @@
 {% endif %}
 
 {% with page="org" %}
-    {% include "header.html" %}
+    {% include "generic_modules/header.html" %}
+{% endwith %}
+
+{% with month = month, year = year, day = day,
+        numberOfDays = numberOfDays, monthsBeginning = monthsBeginning %}
+    {% include "org_modules/org_header.html" %}
 {% endwith %}
 
 {% with month = month, year = year, day = day,

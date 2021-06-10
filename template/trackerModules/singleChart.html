@@ -102,7 +102,7 @@ function renderTrackerChart(){
                           window['avg_{{trackerName}}'][i] = newAvg[i];
                         }
                       }
-                      countTotalVal(window['dataset_{{trackerName}}'], ('{{tcf}}'=='true'));
+                      countTotalVal(window['dataset_{{trackerName}}'], ('{{tcf}}'=='true'), "{{trackerName}}");
                       this.update();
                     }
                 }
@@ -113,8 +113,8 @@ function renderTrackerChart(){
   });
 }
 
-function countTotalVal(list, floatRes){
-  var span =  document.getElementById("total{{trackerName}}");
+function countTotalVal(list, floatRes, trackerName){
+  var span =  document.getElementById("total"+trackerName);
   if (span!= null){
     var sum = 0;
     for(var i = 0; i < list.length; i++ ){
@@ -145,7 +145,7 @@ function countTotalVal(list, floatRes){
 
 <script type="text/javascript">
   if ({{addAvg}}){
-    countTotalVal(window['dataset_{{trackerName}}'], ('{{tcf}}'=='true'));
+    countTotalVal(window['dataset_{{trackerName}}'], ('{{tcf}}'=='true'), "{{trackerName}}");
   }
   renderTrackerChart();
 </script>

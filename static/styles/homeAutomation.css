@@ -1,0 +1,17 @@
+.handle{
+  width           : 95px;
+  height          : 2px;
+  left            : 120px;
+  bottom          : 10px;
+  position        : absolute;
+  transform-origin: bottom left;
+}
+
+.handleBase{
+  width           : 10px ;
+  height          : 10px ;
+  left            : 115px;
+  bottom          : 5px  ;
+  position        : absolute;
+  border-radius   : 20px;
+}

@@ -195,45 +195,7 @@ function createNewNotebook(item){
   document.getElementsByClassName("addNotebookTextArea")[0].style.display="none";
 }
 
-function editEntry(item){
-  item.style.display = "none";
-  document.getElementsByClassName("uploadIcon")[0].style.display = "none";
-  var notebook = document.getElementById("notebookName");
-  var chapterContent = document.getElementById("chapterContent");
-  var form = document.createElement("form")
-  form.action = "javascript:;";
 
-  var textArea = document.createElement("textarea");
-  textArea.className = "notebookEntry"
-  textArea.type = "text";
-  textArea.rows = Math.floor((((chapterContent.offsetHeight-20)*0.75)/13.3));
-  textArea.value = chapterContent.innerHTML;
-  form.appendChild(textArea)
-
-  form.onsubmit = function() {
-    var notebookEntry = document.getElementsByClassName("notebookEntry")[0].value
-    var chapterName = document.getElementById("chapterName").innerHTML
-    var notebookName = document.getElementById("notebookName").innerHTML
-    $.ajax({ type: "POST",
-        url: "http://"+window.location.hostname+":5000/notes",
-        data: {"entry":notebookEntry,
-               "notebook": notebookName,
-               "chapter" : chapterName,},
-    });
-    document.getElementById("chapterContent").innerHTML = notebookEntry;
-    tempNotebooks[notebookName][chapterName]=notebookEntry;
-    document.getElementsByClassName("editIcon")[0].style.display = "block";
-    document.getElementsByClassName("uploadIcon")[0].style.display = "block";
-  }
-
-  var submitButton = document.createElement("input");
-  submitButton.type = "submit"
-  submitButton.style = "float:right; margin-right: 2%;"
-  form.appendChild(submitButton)
-
-  chapterContent.innerHTML = ""
-  chapterContent.appendChild(form)
-}
 function editNoteBook(item){
   var textAreas = document.getElementsByClassName("EditNotebookTextArea")
   if (textAreas.length>0){
@@ -334,13 +296,25 @@ function chapterMouseIn(item){
   }
   item.appendChild(cross)
 }
+
+function showGallery(item){
+   notebookName = document.getElementsByClassName("notebookLabel selected")[0].textContent
+   chapterContent = document.getElementById("chapterContent")
+   chapterContent.innerHTML = "";
+   document.getElementById("chapterName").textContent = "Notebook Gallery"
+   NB_photos = photos[notebookName];
+   for (var i=0; i<NB_photos.length; i++){
+     img = document.createElement("img");
+     img.src = "/static/photos/notebookPhotos/"+notebookName+"/"+NB_photos[i];
+     img.style = "width:200px; margin-right:10px; margin-bottom:10px;";
+     chapterContent.appendChild(img);
+   }
+}
+
+
 function chapterMouseOut(item){
   var closButtons = document.getElementsByClassName("chapterCloseButton")
   for (var i=0; i<closButtons.length; i++){
     closButtons[i].remove();
   }
-}
-
-function setupSearchPage(){
-  window.alert("search is not implemented yet!")
 }

@@ -9,15 +9,13 @@
     function showWeekMonth(calType){
       if(calType=="Month"){
         document.getElementById("WeekCal").style.display="none";
-        document.getElementById("titleLabelWeekly").style.display="none";
         document.getElementById("MonthCal").style.display="";
-        document.getElementById("titleLabelMonthly").style.display="";
+        window['CalType'] = "Month";
         drawMonthEvents();
       }else{
         document.getElementById("WeekCal").style.display="";
         document.getElementById("MonthCal").style.display="none";
-        document.getElementById("titleLabelWeekly").style.display="";
-        document.getElementById("titleLabelMonthly").style.display="none";
+        window['CalType'] = "Week";
         drawCurrentTime();
         markToday();
         drawEvents();
@@ -38,13 +36,5 @@
 </div>
 
 <script type="text/javascript">
-function ShowCorrectCalType (){
-  var vars = {};
-  var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-            vars[key] = value;
-  });
-  showWeekMonth(vars["CalType"])
-}
-
-ShowCorrectCalType();
+showWeekMonth(vars["CalType"])
 </script>

@@ -1,0 +1,62 @@
+<script type="text/javascript">
+function validateForm() {
+    var fileName = document.forms["notesUploader"]["file"].value;
+    if (fileName == "") {
+      alert("Name must be filled out");
+      return false;
+    }
+}
+
+function uploadNotePic(item){
+    parentDiv = item.parentElement;
+
+    popupDiv = document.createElement("div");
+    popupDiv.id = "popUp";
+    var popUpWidth = 350;
+    scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+    scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    popupDiv.style.top = parentDiv.getBoundingClientRect().y+scrollTop+(parentDiv.clientHeight)/4+"px";
+    popupDiv.style.left = parentDiv.getBoundingClientRect().x+scrollLeft+(parentDiv.clientWidth-popUpWidth)/2+"px";
+    popupDiv.className = "genericPopup";
+    popupDiv.style.width= popUpWidth+"px";
+    popupDiv.style.padding = "10px 10px 10px 10px";
+    popupDiv.innerHTML = "upload your file here:";
+
+    closeButton = document.createElement("i");
+    closeButton.className="fa fa-close hover-red"
+    closeButton.ariaHidden="true"
+    closeButton.style.float = "right"
+    closeButton.onclick = function(){
+        document.getElementById("popUp").remove()
+    }
+
+    form = document.createElement("form");
+    form.name="notesUploader"
+    form.action = "/notesUploader"
+    form.method = "POST"
+    form.enctype = "multipart/form-data";
+    form.onsubmit= function(){return validateForm()}
+    file = document.createElement("input");
+    file.type = "file";
+    file.name = "file";
+    file.style.float = "left";
+    text = document.createElement("input");
+    text.name = "notebookLabel";
+    text.value = document.getElementsByClassName("notebookLabel selected")[0].textContent;
+    text.style.display="none";
+    submit = document.createElement("input");
+    submit.value = "Upload";
+    submit.style.float = "right";
+    submit.type = "submit";
+
+    form.appendChild(file)
+    form.appendChild(text)
+    form.appendChild(submit)
+    popupDiv.appendChild(closeButton)
+    popupDiv.appendChild(form)
+    parentDiv.appendChild(popupDiv);
+}
+</script>
+
+
+<i class="fa fa-upload uploadIcon hover-red" onclick="uploadNotePic(this)"></i>

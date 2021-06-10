@@ -1,0 +1,76 @@
+<script type="text/javascript">
+  function photoClicked(item){
+    var overlay = document.getElementById("PhotoOverlay")
+    overlay.style.display = "block";
+    var img = document.createElement('img');
+    img.src = item.src;
+    img.id = "PhotoOverlayPicture"
+    img.style.maxWidth = "70%";
+    img.style.maxHeight = "80%";
+    img.style.float = "center";
+    img.style.marginTop = "5%";
+    img.onclick= function() {closeOverlay()}
+    overlay.appendChild(img);
+  }
+  function closeOverlay(){
+    var img = document.getElementById("PhotoOverlayPicture")
+    img.remove();
+    var overlay = document.getElementById("PhotoOverlay")
+    overlay.style.display = "none";
+  }
+  function nextPic(){
+    var img = document.getElementById("PhotoOverlayPicture");
+    var allIMGs = document.getElementsByClassName("journalPhoto");
+    for (i = 0; i < allIMGs.length; i++) {
+      if (allIMGs[i].src == img.src){
+        img.src = allIMGs[(i+1)%allIMGs.length].src;
+        return;
+      }
+    }
+  }
+  function prevPic(){
+    var img = document.getElementById("PhotoOverlayPicture");
+    var allIMGs = document.getElementsByClassName("journalPhoto");
+    for (i = 0; i < allIMGs.length; i++) {
+      if (allIMGs[i].src == img.src){
+        img.src = allIMGs[(i-1+allIMGs.length)%allIMGs.length].src;
+        return;
+      }
+    }
+  }
+</script>
+
+<div id="PhotoOverlay" style="text-align:center">
+  <div style="float:left; width:100%; ">
+    <i class="fa fa-times closeButton hover-red" aria-hidden="true" onclick="closeOverlay()"></i>
+  </div>
+  <div onclick="prevPic()"  style="float:left; width:10%; height:100%;">
+      <i class="fa fa-chevron-left chevronIcon hover-red" aria-hidden="true"></i>
+  </div>
+  <div onclick="nextPic()" style="float:right; width:10%; height:100%;">
+      <i class="fa fa-chevron-right chevronIcon hover-red" aria-hidden="true"></i>
+  </div>
+</div>
+
+<div style="float:left">
+  {%if todayPhotos|length >0%}
+    {% for photo in todayPhotos%}
+      <img src= "static/photos/{{ photo }}" onclick="photoClicked(this)" class="journalPhoto"/>
+    {% endfor %}
+  {%endif%}
+</div>
+
+<script type="text/javascript">
+  document.addEventListener('keydown', (e) => {
+    var overlay = document.getElementById("PhotoOverlay");
+    if(overlay.style.display === "block"){
+        if (e.code === "ArrowRight"){
+          nextPic();
+        }else if (e.code === "ArrowLeft") {
+          prevPic();
+        }else if (e.code === "Escape"){
+          closeOverlay();
+        }
+    }
+  });
+</script>

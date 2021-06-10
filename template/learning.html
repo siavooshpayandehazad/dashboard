@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
-  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
   <title>My Journal</title>
 
   <script  type="text/javascript">
@@ -27,7 +26,7 @@
 {% endif %}
 
 {% with page="learning" %}
-    {% include "header.html" %}
+    {% include "generic_modules/header.html" %}
 {% endwith %}
 
 <div style="width:100%; height:460px; background-color:white; border-radius:20px;" id="flashCardsMainDiv">

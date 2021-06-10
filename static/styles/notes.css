@@ -1,6 +1,7 @@
 div.NoteBookCloseButton{
-  min-width: 17px;
-  min-height: 17px;
+  width: 17px;
+  height: 17px;
+  line-height: 17px;
   background-color: white;
   border: 0px solid white;
   border-radius: 20px;
@@ -10,9 +11,6 @@ div.NoteBookCloseButton{
 }
 div.NoteBookCloseButton:hover{
   background-color: #fee0d2;
-}
-.ToCLabel.selected{
-  color: #fd8d3c;
 }
 .notebookLabel {
   width:100%;
@@ -26,6 +24,7 @@ div.NoteBookCloseButton:hover{
 }
 .notebookLabel.selected {
   background-color: #cc4c02;
+  line-height: 30px;
 }
 .notebookLabel:hover{
   cursor: pointer;
@@ -37,6 +36,9 @@ div.NoteBookCloseButton:hover{
 .ToCLabel{
   width: 140px;
   margin-left: -20px;
+}
+.ToCLabel.selected{
+  color: #fd8d3c;
 }
 .ToCLabelText{
   display: inline-block;
@@ -117,4 +119,23 @@ i.uploadIcon{
 .notebookEntry{
   resize : none;
   width: 98%;
+}
+
+#searchTextArea{
+  border-radius: 10px;
+  animation: mymove 0.7s ease;
+  float:right;
+  margin-top: 10px;
+  margin-right: 5px;
+  background-color: gray;
+  resize: none;
+}
+
+@keyframes mymove {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
 }

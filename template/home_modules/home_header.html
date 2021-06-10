@@ -1,0 +1,47 @@
+<script type="text/javascript">
+  function toggleMonthYear(){
+    if (document.getElementById("monthlyToggle").checked){
+      document.getElementById("MonthlyDisplay").style.display = "none";
+      document.getElementById("YearlyDisplay").style.display = "";
+      document.getElementById("titleLabelMonthly").style.display = "none";
+      document.getElementById("titleLabelYearly").style.display = "";
+    }else{
+      document.getElementById("MonthlyDisplay").style.display = "";
+      document.getElementById("YearlyDisplay").style.display = "none";
+      document.getElementById("titleLabelMonthly").style.display = "";
+      document.getElementById("titleLabelYearly").style.display = "none";
+    }
+  }
+</script>
+
+
+<div style="margin-bottom:20px;">
+  <label class="switch" style="float:right">
+    {% if request.args.get('yearlyView') == "True" %}
+      <input type="checkbox" id= "monthlyToggle" onclick="toggleMonthYear()" checked>
+    {%else%}
+      <input type="checkbox" id= "monthlyToggle" onclick="toggleMonthYear()" unchecked>
+    {%endif%}
+    <span class="slider round"></span>
+  </label>
+  <!-- Header! -->
+  {% if request.args.get('yearlyView') == "True" %}
+    <h1 id="titleLabelMonthly" style= "margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
+  {%else%}
+    <h1 id="titleLabelMonthly" style= "margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
+  {%endif%}
+        <a style="margin-left:30%;" class= "arrow hover-red"  href="/home?date={{PageYear-1}}-01-01&yearlyView=False">&#9668;</a>
+        {{PageYear}}
+        <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-01-01&yearlyView=False">&#9658;</a>
+    </h1>
+
+  {% if request.args.get('yearlyView') == "True" %}
+    <h1 id="titleLabelYearly"  style= "margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
+  {%else%}
+    <h1 id="titleLabelYearly"  style= "margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
+  {%endif%}
+      <a style="margin-left:30%;" class= "arrow hover-red"  href="/home?date={{PageYear-1}}-01-01&yearlyView=True">&#9668;</a>
+      {{PageYear}}
+      <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-01-01&yearlyView=True">&#9658;</a>
+    </h1>
+</div>

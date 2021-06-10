@@ -197,20 +197,24 @@ class org(Resource):
         headers = {'Content-Type': 'text/html'}
         args = parser.parse_args()
         todaysDate = parseDate(args['date'])
+        day, month, year = sparateDayMonthYear(todaysDate)
+        monthsBeginning = getMonthsBeginning(month, year)
 
         c.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (todaysDate,))
         all_due_events = sorted(c.fetchall(), key=lambda tup: tup[1])
 
-        day, month, year = sparateDayMonthYear(todaysDate)
+        c.execute("""SELECT * FROM todoList WHERE date < ? and date >= ? and done = 'true'""", (todaysDate, monthsBeginning))
+        all_due_events += sorted(c.fetchall(), key=lambda tup: tup[1])
+
         weekDay = datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d').weekday()
         numberOfDays = numberOfDaysInMonth(int(month), int(year))
-        c.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? and done = 'false' """, (getNextDay(todaysDate), getThirtyDaysFromNow(day, month, year)))
+        c.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? """, (getNextDay(todaysDate), getThirtyDaysFromNow(day, month, year)))
         thisMonthsEvents = sorted(c.fetchall(), key=lambda tup: tup[1])
 
         c.execute("""SELECT * FROM todoList WHERE date = ? """, (todaysDate,))
         todayTodos = c.fetchall()
 
-        monthsBeginning = getMonthsBeginning(month, year)
+
         monthsBeginningWeekDay = monthsBeginning.weekday()
         scrumBoardLists = {}
         for stage in ["backlog", "todo", "in progress", "done"]:
@@ -509,24 +513,12 @@ class server(Resource):
 
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
-        gpuTemps = []
-        gpuTempsTimes = []
 
         cpuTemps = []
         cpuTempsTimes = []
 
         cpuUsage = []
         cpuUsageTimes = []
-        try:
-            with open('serverScripts/reports/gpuReports/gpuTempData_'+str(todaysDate)+'.txt', 'r') as reader:
-                line = reader.readline()
-                while (line != ""):
-                    lineSplit = line.split()
-                    gpuTemps.append(float(lineSplit[0][5:-2]))
-                    gpuTempsTimes.append(lineSplit[2])
-                    line = reader.readline()
-        except:
-            print("something went wrong!")
 
         try:
             with open('serverScripts/reports/cpuReports/cpuUsageData_'+str(todaysDate)+'.txt', 'r') as reader2:
@@ -566,7 +558,6 @@ class server(Resource):
         upTime = int(upTime.total_seconds()/3600)
 
         return make_response(render_template('server.html', pageTheme=pageTheme,
-                             gpuTemps=gpuTemps, gpuTempsTimes=gpuTempsTimes,
                              cpuTemps=cpuTemps, cpuTempsTimes=cpuTempsTimes,
                              cpuUsage=cpuUsage, cpuUsageTimes=cpuUsageTimes,
                              upTime=upTime,
@@ -604,6 +595,39 @@ class audiobooks(Resource):
         with open(metadataFilePath, "w") as metadataFile:
             json.dump(data, metadataFile)
         metadataFile.close()
+        return "Done", 200
+
+class homeAutomation(Resource):
+    def get(self):
+        headers = {'Content-Type': 'text/html'}
+        pageTheme = fetchSettingParamFromDB(c, "Theme")
+
+        tempData = {}
+        tempData["room_1"] = {}
+        with open('homeAutomation/room_1/temp/2021-03-24.txt', 'r') as reader2:
+            tempData["room_1"]["time"] = []
+            tempData["room_1"]["temp"] = []
+            line2 = reader2.readline()
+            while (line2 != ""):
+                lineSplit = line2.split(" -> ")
+                tempData["room_1"]["time"].append(str(lineSplit[0]).strip())
+                tempData["room_1"]["temp"].append(float(lineSplit[1]))
+                line2 = reader2.readline()
+        reader2.close()
+
+        return make_response(render_template('homeAutomation.html', tempData=tempData,
+                             PageYear = 1999, PageMonth = 10, pageTheme=pageTheme ),200,headers)
+
+    def post(self):
+        args = parser.parse_args()
+        value = json.loads(args['value'])
+        print(value['date'], value['hour'], value['temp'])
+        directory="homeAutomation/room_"+value['room']+"/temp"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        f = open("homeAutomation/room_"+value['room']+"/temp/"+value['date']+".txt", "a")
+        f.write(value['hour']+" -> "+value['temp']+"\n")
+        f.close()
         return "Done", 200
 
 @app.route("/downloadDB/")
@@ -669,6 +693,7 @@ api.add_resource(gallery, '/gallery')
 api.add_resource(learning, '/learning')
 api.add_resource(server, '/server')
 api.add_resource(audiobooks, '/audiobooks')
+api.add_resource(homeAutomation, '/homeAutomation')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -1,0 +1,72 @@
+
+<script type="text/javascript">
+function prevMonth(){
+    year = parseInt("{{year}}")
+    month = parseInt("{{month}}")
+    if (month > 1){
+      month = month-1
+    }else{
+      year = year-1;
+      month = 12;
+    }
+    showDone = document.getElementById("hideDone").checked
+    url = "/org?"+"date="+year+"-"+zeroPad(month, 2)+"-01"+"&CalType="+ window['CalType']+"&Filter="+todoColorFilter+"&Done="+showDone
+    window.location.href = url;
+  }
+
+function nextMonth(){
+    year = parseInt("{{year}}")
+    month = parseInt("{{month}}")
+    if (month < 12){
+      month = month+1
+    }else{
+      year = year+1;
+      month = 1;
+    }
+    showDone = document.getElementById("hideDone").checked
+    url = "/org?"+"date="+year+"-"+zeroPad(month, 2)+"-01"+"&CalType="+ window['CalType']+"&Filter="+todoColorFilter+"&Done="+showDone
+    window.location.href = url;
+  }
+
+function goToDate(year, month, day){
+    showDone = document.getElementById("hideDone").checked
+    url = "/org?"+"date="+year+"-"+zeroPad(month, 2)+"-"+zeroPad(day, 2)+"&CalType="+ window['CalType']+"&Filter="+todoColorFilter+"&Done="+showDone
+    window.location.href = url;
+  }
+</script>
+
+<div style="float:left;width:100%;margin-bottom:10px;margin-top:0px;">
+    <img src= "{{url_for('static', filename = 'decorationImages/page_todo.png')}}" style="float:right; vertical-align: top; margin-right: 3%;"  height="80px"  alt="page_todo">
+    <h1 style="margin-top:15px;margin-right:1px;width:20%;float:left;"> <font style="text-decoration: underline;"> Organization </font></h1>
+    <h2 class="title" style="text-decoration: none; margin-right: 22%; margin-left: 22%; margin-top:5px; margin-bottom: 0px; float:left;">
+      <a class= "arrow hover-red"  onclick = "prevMonth()">&#9668;</a>
+      {{year}}-{{'%02d' % (month)}}
+      <a class= "arrow hover-red"  onclick = "nextMonth()">&#9658;</a>
+    </h2>
+
+    <div style="float:left; margin-top:10px;">
+      <table border="0" style="border-spacing: 0px;">
+        <tr>
+          {% set ns1 = namespace (daysOfTheWeek = "MTWTFSS")%}
+          {% set ns2 = namespace (daysOfTheWeekCap = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])%}
+          {% for i in range(0, numberOfDays) %}
+            {%if i+1 == day %}
+              <td class="DS DStoday"><font class="DSfontToday"><b>{{ns2.daysOfTheWeekCap[(i+monthsBeginning)%7]}}</b></font></td>
+            {%else%}
+              <td class="DS"><a class="arrow" onclick = "goToDate({{year}}, {{month}}, {{i+1}})"><font class="DSfont">{{ns1.daysOfTheWeek[(i+monthsBeginning)%7]}}</font></a></td>
+            {%endif%}
+          {%endfor%}
+        </tr>
+        <tr style="margin-bottom:0px;">
+          {% for i in range(1, numberOfDays+1) %}
+            {% if i == day  %}
+              <td  class="DS DStoday DSbottom"> <font class="DSfontToday"><b>{{i}}</b></font></td>
+            {%else%}
+              <td class="DS DSbottom"><a class= "arrow" onclick = "goToDate({{year}}, {{month}}, {{i}})"><font class="DSfont"><b>{{i}}</b></font></a></td>
+            {%endif%}
+          {%endfor%}
+        </tr>
+      </table>
+  </div>
+  <div class="divider" style="width:94%; height:5px; margin-left: 3%; float:left;"></div>
+</div>

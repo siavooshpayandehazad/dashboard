@@ -14,11 +14,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/gallery.css') }}">
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
-  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/commonFunctions.js') }}"></script>
 </head>
 
 <script type="text/javascript">
+
 function photoClicked(item){
   var overlay = document.getElementById("PhotoOverlay")
   overlay.style.display = "block";
@@ -32,12 +31,14 @@ function photoClicked(item){
   img.onclick= function() {closeOverlay()}
   overlay.appendChild(img);
 }
+
 function closeOverlay(){
   var img = document.getElementById("PhotoOverlayPicture")
   img.remove();
   var overlay = document.getElementById("PhotoOverlay")
   overlay.style.display = "none";
 }
+
 </script>
 
 {%if pageTheme=="Dark"%}
@@ -47,7 +48,7 @@ function closeOverlay(){
 {% endif %}
 
 {% with page="gallery" %}
-    {% include "header.html" %}
+  {% include "generic_modules/header.html" %}
 {% endwith %}
 
 <div id="PhotoOverlay" style="text-align:center">
@@ -64,14 +65,11 @@ function closeOverlay(){
   </h2>
 </div>
 
-
-  {% with PageYear=year, PageMonth=month%}
-    {% include "monthSelector.html" %}
-  {% endwith %}
-
+{% with PageYear=year, PageMonth=month%}
+  {% include "generic_modules/monthSelector.html" %}
+{% endwith %}
 
 <div style="margin-left: 1%; width:80%; height: 600px; float:left;overflow-y: scroll;">
-
   {% for i in range(numberOfDays) %}
       {%if monthsPhotos[i]|length >0%}
         <div style="width:100%; float:left; margin-top:10px;">

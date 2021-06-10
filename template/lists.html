@@ -13,7 +13,6 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
-  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 
 </head>
 
@@ -24,7 +23,7 @@
 {% endif %}
 
 {% with page="lists" %}
-    {% include "header.html" %}
+    {% include "generic_modules/header.html" %}
 {% endwith %}
 
   {%for listName, listContent, Type in [("Book List", readList, "book"),

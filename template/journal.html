@@ -10,57 +10,6 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/journal.css') }}">
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
-  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/commonFunctions.js') }}"></script>
-  <script type="text/javascript">
-    function submitEntry(){
-      var newText = document.getElementById("dailyEntry").value;
-      $.ajax({ type: "POST",
-          url: "http://"+window.location.hostname+":5000/journal",
-          data: {"entry": "log", "value":newText, "date": document.getElementById("dailyEntry").name},
-      });
-      document.getElementById("todayslog").innerHTML = newText.replace(/\n/g, "<br>");;
-    }
-    function photoClicked(item){
-      var overlay = document.getElementById("PhotoOverlay")
-      overlay.style.display = "block";
-      var img = document.createElement('img');
-      img.src = item.src;
-      img.id = "PhotoOverlayPicture"
-      img.style.maxWidth = "70%";
-      img.style.maxHeight = "80%";
-      img.style.float = "center";
-      img.style.marginTop = "5%";
-      img.onclick= function() {closeOverlay()}
-      overlay.appendChild(img);
-    }
-    function closeOverlay(){
-      var img = document.getElementById("PhotoOverlayPicture")
-      img.remove();
-      var overlay = document.getElementById("PhotoOverlay")
-      overlay.style.display = "none";
-    }
-    function nextPic(){
-      var img = document.getElementById("PhotoOverlayPicture");
-      var allIMGs = document.getElementsByClassName("journalPhoto");
-      for (i = 0; i < allIMGs.length; i++) {
-        if (allIMGs[i].src == img.src){
-          img.src = allIMGs[(i+1)%allIMGs.length].src;
-          return;
-        }
-      }
-    }
-    function prevPic(){
-      var img = document.getElementById("PhotoOverlayPicture");
-      var allIMGs = document.getElementsByClassName("journalPhoto");
-      for (i = 0; i < allIMGs.length; i++) {
-        if (allIMGs[i].src == img.src){
-          img.src = allIMGs[(i-1+allIMGs.length)%allIMGs.length].src;
-          return;
-        }
-      }
-    }
-  </script>
 </head>
 
 {%if pageTheme=="Dark"%}
@@ -70,91 +19,42 @@
 {% endif %}
 
 {% with page="journal" %}
-    {% include "header.html" %}
+    {% include "generic_modules/header.html" %}
 {% endwith %}
 
-<div id="PhotoOverlay" style="text-align:center">
-  <div style="float:left; width:100%; ">
-    <i class="fa fa-times closeButton hover-red" aria-hidden="true" onclick="closeOverlay()"></i>
+<!-- daily entry -->
+{% include "journal_modules/daily_entry.html" %}
+
+<!-- selector header -->
+{% include "journal_modules/journal_header.html" %}
+
+<!-- left-side monthly selector -->
+{% with PageYear=year, PageMonth=month%}
+  {% include "generic_modules/monthSelector.html" %}
+{% endwith %}
+
+
+<div  style="width:58%; min-height: 400px; float:left; margin-left:10px; margin-top:10px;">
+  <!-- log! -->
+  <div id= "todayslog" class="logText">
+    {% autoescape false %}
+    {{log}}
+    {% endautoescape %}
   </div>
-  <div onclick="prevPic()"  style="float:left; width:10%; height:100%;">
-      <i class="fa fa-chevron-left chevronIcon hover-red" aria-hidden="true"></i>
-  </div>
-  <div onclick="nextPic()" style="float:right; width:10%; height:100%;">
-      <i class="fa fa-chevron-right chevronIcon hover-red" aria-hidden="true"></i>
+  <!-- Photos! -->
+  <div style="margin-bottom:10px;">
+    <hr>
+    <h2 class="photos" style="float:left"> photos </h2>
+    {% include "journal_modules/uploader.html" %}
+    <br>
+    {% include "journal_modules/journal_photo.html" %}
   </div>
 </div>
 
-  <!-- daily entry -->
-  <div class="dailyEntry">
-     <h2  class="title lightbg">Edit Today's Entry</h2>
-     <form action="javascript:;" onsubmit="return submitEntry();">
-        <textarea id="dailyEntry" name= "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" type="text" cols="40" rows="5" class="dailyEntry">{{todaysLogText|string()}}</textarea><br>
-        <input type="submit" style="margin-left: 80%;">
-     </form>
-  </div>
+<div style="margin-right: 20px;float:right;">
+  <img src= "{{url_for('static', filename = 'decorationImages/journal_overlay.png')}}" float="right" width = "120" alt="roy">
+</div>
 
-  <!-- selector header -->
-  <div style="margin-bottom:90px;width:67%;">
-    <div style="float:left; height:50px;margin-right:10px; margin-top:10px;">
-      <h1> <font style="text-decoration: underline;"> Journal </font></h1>
-    </div>
+</body>
 
-    <div style="float:left; width:722px;">
-      <h2 class="title journal">
-          <a class= "arrow hover-red"  href="/journal?date={{year-1}}-01-01">&#9668;</a>
-          {{year}}
-          <a class= "arrow hover-red" href="/journal?date={{year+1}}-01-01">&#9658;</a>
-      </h2>
-      {% include "journal_modules/daySelector.html" %}
-    </div>
-  </div>
-
-  <!-- left-side monthly selector -->
-  {% with PageYear=year, PageMonth=month%}
-    {% include "monthSelector.html" %}
-  {% endwith %}
-
-  <div  style="width:58%; min-height: 400px; float:left; margin-left:10px; margin-top:10px;">
-    <div id= "todayslog" class="logText">
-      {% autoescape false %}
-      {{log}}
-      {% endautoescape %}
-    </div>
-
-    <div style="margin-bottom:10px;">
-      <hr>
-      <h2 class="photos" style="float:left"> photos </h2>
-      {% include "journal_modules/uploader.html" %}
-      <br>
-      <div style="float:left">
-        {%if todayPhotos|length >0%}
-          {% for photo in todayPhotos%}
-            <img src= "static/photos/{{ photo }}" alt="image alt text" onclick="photoClicked(this)" class="journalPhoto"/>
-          {% endfor %}
-        {%endif%}
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-right: 20px;float:right;">
-    <img src= "{{url_for('static', filename = 'decorationImages/journal_overlay.png')}}" float="right" width = "120" alt="roy">
-  </div>
-
-  </body>
-
-  <script type="text/javascript">
-  document.addEventListener('keydown', (e) => {
-    var overlay = document.getElementById("PhotoOverlay");
-    if(overlay.style.display === "block"){
-        if (e.code === "ArrowRight"){
-          nextPic();
-        }else if (e.code === "ArrowLeft") {
-          prevPic();
-        }else if (e.code === "Escape"){
-          closeOverlay();
-        }
-    }
-  });
-  </script>
 </html>

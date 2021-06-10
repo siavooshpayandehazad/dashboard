@@ -1,0 +1,18 @@
+<script type="text/javascript">
+  function submitEntry(){
+    var newText = document.getElementById("dailyEntry").value;
+    $.ajax({ type: "POST",
+        url: "http://"+window.location.hostname+":5000/journal",
+        data: {"entry": "log", "value":newText, "date": document.getElementById("dailyEntry").name},
+    });
+    document.getElementById("todayslog").innerHTML = newText.replace(/\n/g, "<br>");;
+  }
+</script>
+
+<div class="dailyEntry">
+   <h2  class="title lightbg">Edit Today's Entry</h2>
+   <form action="javascript:;" onsubmit="return submitEntry();">
+      <textarea id="dailyEntry" name= "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" type="text" cols="40" rows="5" class="dailyEntry">{{todaysLogText|string()}}</textarea><br>
+      <input type="submit" style="margin-left: 80%;">
+   </form>
+</div>

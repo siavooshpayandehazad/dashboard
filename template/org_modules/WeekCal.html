@@ -77,17 +77,18 @@ function calculateDateofCol(colNum){
 
 
 
-function removeEventFromCalDates(weekDay, eventName, eventStartTime, eventStopTime){
-  for (i = 0; i < calDates.length; i++) {
-    if ((calDates[i][0] == weekDay) && (calDates[i][1] == eventStartTime) && (calDates[i][2] == eventStopTime) && (calDates[i][3] == eventName)){
-      calDates.splice(i, 1);
+function removeEventFromCalDates(calEvents, weekDay, eventName, eventStartTime, eventStopTime){
+  for (i = 0; i < calEvents.length; i++) {
+    if ((calEvents[i][0] == weekDay) && (calEvents[i][1] == eventStartTime) &&
+        (calEvents[i][2] == eventStopTime) && (calEvents[i][3] == eventName)){
+      calEvents.splice(i, 1);
       return;
     }
   }
 }
 
 function removeAllEvents(){
-  allEvents = document.getElementsByClassName("calendarEvent")
+  allEvents = document.getElementsByClassName("weekEvent")
   while (allEvents.length>0) {
     allEvents[0].remove();
   }
@@ -111,7 +112,7 @@ function drawCell(calDate, idVal){
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
   scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   startPx = 42*parseInt(calDate[1].slice(3,5))/60
-  div.classList.add("calendarEvent");
+  div.classList.add("weekEvent");
   if (calDate[1]!=="None"){
     div.style.top  = (cell.getBoundingClientRect().y+scrollTop+startPx+2)+"px";
     div.style.left = (cell.getBoundingClientRect().x+scrollLeft+(127/calDate[4])*(calDate[5]-1))+"px";
@@ -131,10 +132,10 @@ function drawCell(calDate, idVal){
 
   // set the attributes:
   div.setAttribute("weekDay",   calDate[0]);
-  div.setAttribute("name",   calDate[3]);
+  div.setAttribute("name",      calDate[3]);
   div.setAttribute("details",   calDate[7]);
   div.setAttribute("startTime", calDate[1]);
-  div.setAttribute("stopTime",   calDate[2]);
+  div.setAttribute("stopTime",  calDate[2]);
   div.setAttribute("color",     calDate[6]);
 
   div.onclick=function editEvent(event){
@@ -178,9 +179,10 @@ function drawEvents(){
   return;
 }
 
-function calendarClick(event, item, calType){
+function calendarClick(event, item, calType, inStartTime = null, inEndTime = null){
   var senderElement = event.target;
-  if((senderElement.tagName=="TD")||(senderElement.tagName=="DIV" && senderElement.className === "calendarEvent")){
+  if((senderElement.tagName=="TD")||(senderElement.tagName=="DIV" && senderElement.className === "weekEvent")
+      ||(senderElement.tagName=="DIV" && senderElement.className === "monthEvent")){
     closeCalendarPopup();
   }else{
     return;
@@ -229,21 +231,26 @@ function calendarClick(event, item, calType){
     todayColl = 7;
   }
   if (calType == "month"){
-    var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
-     selectedDay = cell.name;
+     if (senderElement.tagName === "DIV"){ // editing existing event
+       var result = new Date(senderElement.getAttribute("weekDay"));
+       selectedDay = result.getDate();
+     }else{
+       var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
+       selectedDay = cell.name;
+     }
      selectedMonth = result.getMonth()+1;
-  }else{
-    if (senderElement.tagName == "DIV"){
-      var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
-      var newDate = new Date(result.setDate(result.getDate() - todayColl+parseInt(senderElement.getAttribute("weekDay"))+1 ));
-      selectedDay = newDate.getDate();
-      selectedMonth = newDate.getMonth()+1;
+  }else if (calType == "week"){
+    var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
+    var newDate;
+    if (senderElement.tagName == "DIV"){ // editing existing event
+      newDate = new Date(result.setDate(result.getDate() - todayColl+parseInt(senderElement.getAttribute("weekDay"))+1 ));
     }else{
-      var result = new Date("{{year|safe}}-{{month|safe}}-{{day|safe}}");
-      var newDate = new Date(result.setDate(result.getDate() + parseInt(cell.cellIndex-todayColl)));
-      selectedDay = newDate.getDate();
-      selectedMonth = newDate.getMonth()+1;
+      newDate = new Date(result.setDate(result.getDate() + parseInt(cell.cellIndex-todayColl)));
     }
+    selectedDay = newDate.getDate();
+    selectedMonth = newDate.getMonth()+1;
+  }else{
+    console.log("unknown calendar type: ", calType)
   }
 
   // if selectedDay < 1 then its gonna be last month
@@ -277,7 +284,7 @@ function calendarClick(event, item, calType){
   alldayContainer.appendChild(allDayText);
 
   var startTime = document.createElement("textarea");
-  var stopTime = document.createElement("textarea");
+  var stopTime  = document.createElement("textarea");
   startTime.classList.add("calEventTime")
   stopTime.classList.add("calEventTime")
   startTime.style.resize="none";
@@ -287,14 +294,19 @@ function calendarClick(event, item, calType){
   startTime.cols = 5;
   stopTime.cols = 5;
 
-  startTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("startTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows),2)+":00";
-  stopTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("stopTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows)+1, 2)+":00";
-  if (calType == "week"){
-    if((senderElement.tagName == "DIV")  && (startTime.value=="None")){
-      allDayCheckBox.checked = true;
-      startTime.disabled=true;
-      stopTime.disabled=true;
+  if (inStartTime === null){
+    startTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("startTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows),2)+":00";
+    stopTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("stopTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows)+1, 2)+":00";
+    if (calType == "week"){
+      if((senderElement.tagName == "DIV")  && (startTime.value=="None")){
+        allDayCheckBox.checked = true;
+        startTime.disabled=true;
+        stopTime.disabled=true;
+      }
     }
+  }else{
+    startTime.value = inStartTime;
+    stopTime.value  = inEndTime;
   }
 
   var text2 = document.createElement("span");
@@ -347,7 +359,14 @@ function calendarClick(event, item, calType){
   submitBtn.style.float="right";
   submitBtn.style.marginRight="5px";
   submitBtn.style.marginBottom="5px";
+  if (cell.tagName == "DIV"){ // this is for the editing of the existing events
+    columnNumber = cell.parentElement.cellIndex - 1
+  }else{
+    columnNumber = cell.cellIndex - 1
+  }
+  submitBtn.setAttribute("column", columnNumber)
   submitBtn.onclick=function closPopUp(){
+    colNum = this.getAttribute("column")
     if (!validateFields(eventName.value, startTime.value, stopTime.value, daySelector.value, startTime.disabled)){
       return;
     }
@@ -375,10 +394,11 @@ function calendarClick(event, item, calType){
                 "action": 'edit'}
       });
       if (calType == "week"){
-        removeEventFromCalDates(senderElement.getAttribute("weekDay"), senderElement.getAttribute("name"), senderElement.getAttribute("startTime"), senderElement.getAttribute("stopTime"))
-        calDates.push([Math.abs(daySelector.value.split("-")[2]-({{day}}-todayColl)-1), ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value])
+        removeEventFromCalDates(calDates, senderElement.getAttribute("weekDay"), senderElement.getAttribute("name"), senderElement.getAttribute("startTime"), senderElement.getAttribute("stopTime"))
+        calDates.push([parseInt(colNum), ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value])
         drawEvents();
       }else{
+        removeEventFromCalDates(calMonths, oldDate, senderElement.getAttribute("name"), senderElement.getAttribute("startTime"), senderElement.getAttribute("stopTime"))
         calMonths.push([daySelector.value, ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value])
         drawMonthEvents()
       }
@@ -396,7 +416,7 @@ function calendarClick(event, item, calType){
                 "action": 'create'}
       });
       if (calType == "week"){
-        calDates.push([Math.abs(daySelector.value.split("-")[2]-({{day}}-todayColl)-1),
+        calDates.push([parseInt(colNum),
                       ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
                       eventName.value, 1, 1, color.value, eventDescription.value])
         drawEvents();
@@ -405,9 +425,7 @@ function calendarClick(event, item, calType){
                       eventName.value, 1, 1, color.value, eventDescription.value])
         drawMonthEvents()
       }
-
     }
-
     closeCalendarPopup();
   }
   var closeBtn = document.createElement("button");
@@ -437,8 +455,16 @@ function calendarClick(event, item, calType){
                   "date": daySelector.value,
                   "action": 'delete'}
         });
-        removeEventFromCalDates(senderElement.getAttribute("weekDay"), eventName.value, startTime.value, stopTime.value);
+        removeEventFromCalDates(calDates, senderElement.getAttribute("weekDay"), eventName.value, startTime.value, stopTime.value);
         drawEvents();
+
+        if (calType == "week"){
+          removeEventFromCalDates(calDates, senderElement.getAttribute("weekDay"), eventName.value, startTime.value, stopTime.value);
+          drawEvents();
+        }else{
+          removeEventFromCalDates(calMonths, daySelector.value, eventName.value, startTime.value, stopTime.value)
+          drawMonthEvents()
+        }
       }
       closeCalendarPopup();
     }
@@ -633,7 +659,7 @@ function dropCalEvent(event){
             "date": currentDay,
             "action": 'edit'}
   });
-  removeEventFromCalDates(oldWeekday, eventName, oldStartTime, oldEndTime)
+  removeEventFromCalDates(calDates, oldWeekday, eventName, oldStartTime, oldEndTime)
   calDates.push([destCol-1, newStartTime, newEndTime, eventName, 1, 1, color, eventDescription])
   drawEvents();
 }
@@ -652,4 +678,56 @@ var weekNumberCell = document.getElementById("weekNumber")
 date = new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)
 weekNumberCell.textContent = date.getWeek();
 
+
+var draggin = false
+document.getElementById("calTab").addEventListener("mousemove", function(event){
+  table = document.getElementById("calTab");
+  if(event.buttons===1 && draggin===false){
+    var cell = event.path[0];
+    cellRow = cell.parentElement.rowIndex;
+
+    if(cell.parentElement.rowIndex < 2){
+      return;
+    }
+
+    draggin=true
+    calendarDrag = document.createElement("div");
+    calendarDrag.id = "calendarDrag";
+
+    scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+    scrollTop  = window.pageYOffset || document.documentElement.scrollTop;
+    calendarDrag.style.left = cell.getBoundingClientRect().x;
+    calendarDrag.style.top = event.clientY+scrollTop+"px";
+    calendarDrag.style.height = "10px";
+
+    cellHeight = cell.getBoundingClientRect().bottom - cell.getBoundingClientRect().top
+    eventTop = event.clientY- cell.getBoundingClientRect().top
+    mins = parseInt((eventTop/cellHeight)*4)*15
+    startTime = table.rows[cellRow].cells.item(0).textContent
+    startTime = (startTime.split(":")[0]+":"+zeroPad(mins,2)).trim()
+    calendarDrag.setAttribute("startTime",startTime)
+    table.appendChild(calendarDrag)
+
+  }else if((event.buttons===0 && draggin===true)){ // released!
+    draggin = false
+    calendarDrag = document.getElementById("calendarDrag");
+
+    var cell = event.path[0];
+    cellRow = cell.parentElement.rowIndex;
+    cellHeight = cell.getBoundingClientRect().bottom - cell.getBoundingClientRect().top
+    eventTop = event.clientY- cell.getBoundingClientRect().top
+    mins = parseInt((eventTop/cellHeight)*4)*15
+    endTime = table.rows[cellRow].cells.item(0).textContent
+    endTime = (endTime.split(":")[0]+":"+ zeroPad(mins,2)).trim()
+    calendarClick(event, table, 'week', calendarDrag.getAttribute("startTime"), endTime)
+    
+    calendarDrag.remove()
+
+  }else if(event.buttons===1 && draggin===true){ // still dragging
+    calendarDrag = document.getElementById("calendarDrag");
+    scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    newY  = event.clientY+scrollTop;
+    calendarDrag.style.height = (newY-parseInt(calendarDrag.style.top.replace("px", "")))+"px";
+  }
+});
 </script>

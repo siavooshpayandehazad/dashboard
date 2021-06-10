@@ -7,10 +7,8 @@
   <link rel="stylesheet" href="/static/lib/WorldMap/dist/css/jsvectormap.css" />
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
   <script src="/static/lib/WorldMap/dist/js/jsvectormap.min.js"></script>
-  <script src="/static/lib/WorldMap/dist/maps/world.js"></script>
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
-  <script src="{{ url_for('static', filename='js/commonFunctions.js') }}"></script>
   <title>My Journal</title>
 </head>
 
@@ -19,106 +17,15 @@
 {% else %}
 <body>
 {% endif %}
-<div id="overlay">
-  <div style="border-radius: 20px; margin-left: 40%; margin-top: 20%;width:200px;height:80px;background-color:white; text-align: center;">
-    enter your password</br>
-    <input type="password" id="password"><i class="fa fa-eye" style="margin-left:10px;" onclick="togglePassword()"></i><br>
-    <input type="submit" style="float:right;margin-right: 10%; margin-top: 5px;" onclick="login()">
-  </div>
-</div>
-
-<script type="text/javascript">
-
-  function togglePassword() {
-    var x = document.getElementById("password");
-    if (x.type === "password") {
-      x.type = "text";
-    } else {
-      x.type = "password";
-    }
-  }
-
-  function login(){
-    var password = document.getElementById("password").value;
-     document.getElementById("password").value = "";
-    $.ajax({
-        type: "POST",
-        url: "/home",
-        data: {"password": password},
-    }).success(function(result){
-      if (result == "success"){
-        localStorage.setItem('token',"true");
-        document.getElementById("overlay").style.display = "none";
-        document.getElementById("password").style.backgroundColor = "white";
-      }
-      else{
-        document.getElementById("password").style.backgroundColor = "#fc9272";
-      }
-    })
-  }
-
-  function checkLoggedIn () {
-    const token = localStorage.getItem('token');
-    if ((token !== "true")){
-      document.getElementById("overlay").style.display = "block";
-    }
-  }
-
-  function logout(){
-    document.getElementById("overlay").style.display = "block";
-    localStorage.setItem('token',"false");
-  }
-  function toggleMonthYear(){
-    if (document.getElementById("monthlyToggle").checked){
-      document.getElementById("MonthlyDisplay").style.display = "none";
-      document.getElementById("YearlyDisplay").style.display = "";
-      document.getElementById("titleLabelMonthly").style.display = "none";
-      document.getElementById("titleLabelYearly").style.display = "";
-    }else{
-      document.getElementById("MonthlyDisplay").style.display = "";
-      document.getElementById("YearlyDisplay").style.display = "none";
-      document.getElementById("titleLabelMonthly").style.display = "";
-      document.getElementById("titleLabelYearly").style.display = "none";
-    }
-  }
-  checkLoggedIn();
-</script>
 
   {% include "trackerModules/graphFuncs.html" %}
+
   {% with page="index" %}
-    {% include "header.html" %}
+    {% include "generic_modules/header.html" %}
   {% endwith %}
 
-  <div style="margin-bottom:20px;">
-    <label class="switch" style="float:right">
-      {% if request.args.get('yearlyView') == "True" %}
-        <input type="checkbox" id= "monthlyToggle" onclick="toggleMonthYear()" checked>
-      {%else%}
-        <input type="checkbox" id= "monthlyToggle" onclick="toggleMonthYear()" unchecked>
-      {%endif%}
-      <span class="slider round"></span>
-    </label>
-    <!-- Header! -->
-    {% if request.args.get('yearlyView') == "True" %}
-      <h1 id="titleLabelMonthly" style= "margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
-    {%else%}
-      <h1 id="titleLabelMonthly" style= "margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
-    {%endif%}
-          <a style="margin-left:30%;" class= "arrow hover-red"  href="/home?date={{PageYear-1}}-01-01&yearlyView=False">&#9668;</a>
-          {{PageYear}}
-          <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-01-01&yearlyView=False">&#9658;</a>
-      </h1>
-
-    {% if request.args.get('yearlyView') == "True" %}
-      <h1 id="titleLabelYearly"  style= "margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
-    {%else%}
-      <h1 id="titleLabelYearly"  style= "margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
-    {%endif%}
-        <a style="margin-left:30%;" class= "arrow hover-red"  href="/home?date={{PageYear-1}}-01-01&yearlyView=True">&#9668;</a>
-        {{PageYear}}
-        <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-01-01&yearlyView=True">&#9658;</a>
-      </h1>
-  </div>
+<!--- %%%%%%%%%%%%%%    Home Header    %%%%%%%%%%%%%% ---->
+  {% include "home_modules/home_header.html" %}
 
 <!--- %%%%%%%%%%%%%%    Monthly View    %%%%%%%%%%%%%% ---->
   {% if request.args.get('yearlyView') == "True" %}
@@ -127,9 +34,9 @@
     <div id="MonthlyDisplay">
   {%endif%}
 
-    {% with page="index" %}
-      {% include "monthlyView.html" %}
-    {% endwith %}
+  {% with page="index" %}
+    {% include "home_modules/monthlyView.html" %}
+  {% endwith %}
   </div>
 
 <!--- %%%%%%%%%%%%%%    YEARLY View    %%%%%%%%%%%%%% ---->
@@ -139,9 +46,9 @@
     <div id="YearlyDisplay" style="display:none;">
   {%endif%}
 
-    {% with page="index" %}
-      {% include "yearlyView.html" %}
-    {% endwith %}
+  {% with page="index" %}
+    {% include "home_modules/yearlyView.html" %}
+  {% endwith %}
   </div>
 
 </body>
