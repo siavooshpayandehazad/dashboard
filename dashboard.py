@@ -74,10 +74,13 @@ class dash(Resource):
         monthsSteps      = generateStepChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         monthsRuns       = generateRunningChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         HR_Min, HR_Max   = generateHRChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        BP_Min, BP_Max   = generateBPChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        BO               = generateYearOxygenChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         YearsSavings     = generateSavingTrackerChartData(pageYear, c)
         monthsPaces      = generatePaceChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         ChartMonthDays   = [str(i) for i in range(1, numberOfDays+1)]
         travels          = getTravelDests(c)
+        print(BO)
         # ----------------------------------------------
         yearRuns = generateYearRunChartData(int(pageYear), numberOfDays, c)
         yearSteps = generateYearStepChartData(int(pageYear), numberOfDays, c)
@@ -93,6 +96,7 @@ class dash(Resource):
                                              ChartMonthDays = ChartMonthDays, ChartYearMonths = monthsOfTheYear,
                                              monthsWeights = chartWeights, monthsSleepTimes = monthsSleepTimes,
                                              monthsSteps = monthsSteps, HR_Min = HR_Min, HR_Max = HR_Max,
+                                             BP_Min = BP_Min, BP_Max = BP_Max, BO = BO,
                                              monthsRuns = monthsRuns, monthsPaces = monthsPaces,
                                              monthsWorkHours = monthsWorkHours, YearsSavings = YearsSavings,
                                              yearSteps = yearSteps, yearSleep = yearSleep, yearWH = yearWH,
@@ -125,8 +129,12 @@ class dash(Resource):
         todaysDate = parseDate(args['date'])
         if args['tracker_type'] == 'HR':
             return addTrackerItemToTable(args['value'].split(","), "", [], "HRTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] == 'BP':
+            return addTrackerItemToTable(args['value'].split(","), "", [], "BPTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'weight':
             return addTrackerItemToTable(args['value'].lower(), "weight", [], "weightTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] == 'blood oxygen':
+            return addTrackerItemToTable(args['value'].lower(), "oxygen", [], "oxygenTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'sleep':
             return addTrackerItemToTable(args['value'].lower(), "", [], "sleepTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'running':

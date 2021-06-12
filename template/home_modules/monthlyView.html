@@ -60,6 +60,19 @@
     {% include "trackerModules/heartRateTracker.html" %}
   {% endwith %}
 
+  {% with BP_Max = BP_Max, BP_Min = BP_Min, ChartMonthDays = ChartMonthDays, PageYear = PageYear, PageMonth = PageMonth, yearMonth = "month"%}
+    {% include "trackerModules/bloodPressureTracker.html" %}
+  {% endwith %}
+
+  {% with dataset = BO, ChartMonthDays = ChartMonthDays, chartType = "line",
+        thresholds = [], trackerName = "blood oxygen", unit="(kg)", addAvg="true", tcf="true",
+        pointStyle = 'cicle', showTotalVal = False, suggestedMin = 65, yearMonth = "month", clickable="true",
+        accumulate = "false",
+        bgColors = ['rgba(128,205,193, 0.3)'],
+        bColors = ['rgba(53,151,143, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+  {% endwith %}
+
   {% with dataset = monthsSleepTimes, ChartMonthDays = ChartMonthDays, chartType = "bar",
         thresholds = [8], trackerName = "sleep", unit="(hrs)", addAvg="true", tcf="true",
         pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
@@ -77,6 +90,7 @@
         bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
     {% include "trackerModules/singleChart.html" %}
   {% endwith %}
+
   </div>
 
 

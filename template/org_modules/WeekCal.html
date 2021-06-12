@@ -1,5 +1,6 @@
 
 <script type="text/javascript">
+var draggin = false
 var calOffsetRows = 2;
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 var calDates = {{calDate|safe}};
@@ -291,8 +292,8 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   stopTime.style.resize="none";
   startTime.rows = 1;
   stopTime.rows = 1;
-  startTime.cols = 5;
-  stopTime.cols = 5;
+  startTime.cols = 4;
+  stopTime.cols = 4;
 
   if (inStartTime === null){
     startTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("startTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows),2)+":00";
@@ -311,7 +312,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
 
   var text2 = document.createElement("span");
   var text3 = document.createElement("span");
-  text2.textContent= "from ";
+  text2.textContent= "from: ";
   text3.textContent= "  to: ";
   timeContainer.appendChild(text1);
   timeContainer.appendChild(daySelector);
@@ -426,6 +427,10 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
         drawMonthEvents()
       }
     }
+    if(document.getElementById("calendarDrag")!==null){
+      document.getElementById("calendarDrag").remove()
+      draggin=false
+    };
     closeCalendarPopup();
   }
   var closeBtn = document.createElement("button");
@@ -433,6 +438,10 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   closeBtn.innerHTML = "close";
   closeBtn.style.float="right";
   closeBtn.onclick=function closPopUp(){
+    if(document.getElementById("calendarDrag")!==null){
+      document.getElementById("calendarDrag").remove()
+      draggin=false
+    };
     closeCalendarPopup();
   }
   if (senderElement.tagName=="DIV"){
@@ -679,16 +688,29 @@ date = new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}
 weekNumberCell.textContent = date.getWeek();
 
 
-var draggin = false
+
 document.getElementById("calTab").addEventListener("mousemove", function(event){
   table = document.getElementById("calTab");
   if(event.buttons===1 && draggin===false){
     var cell = event.path[0];
     cellRow = cell.parentElement.rowIndex;
 
+    if (cell.tagName !== "TD"){ // only drag from a table cell
+      return;
+    }
     if(cell.parentElement.rowIndex < 2){
       return;
     }
+
+    if(cell.cellIndex < 1){
+      return;
+    }
+
+    closeCalendarPopup()
+    if(document.getElementById("calendarDrag")!==null){
+      document.getElementById("calendarDrag").remove()
+      draggin=false
+    };
 
     draggin=true
     calendarDrag = document.createElement("div");
@@ -698,7 +720,6 @@ document.getElementById("calTab").addEventListener("mousemove", function(event){
     scrollTop  = window.pageYOffset || document.documentElement.scrollTop;
     calendarDrag.style.left = cell.getBoundingClientRect().x;
     calendarDrag.style.top = event.clientY+scrollTop+"px";
-    calendarDrag.style.height = "10px";
 
     cellHeight = cell.getBoundingClientRect().bottom - cell.getBoundingClientRect().top
     eventTop = event.clientY- cell.getBoundingClientRect().top
@@ -708,26 +729,39 @@ document.getElementById("calTab").addEventListener("mousemove", function(event){
     calendarDrag.setAttribute("startTime",startTime)
     table.appendChild(calendarDrag)
 
-  }else if((event.buttons===0 && draggin===true)){ // released!
+  }else if(event.buttons===1 && draggin===true){ // still dragging
+    calendarDrag = document.getElementById("calendarDrag");
+    if(calendarDrag!==null){
+      scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      newY = event.clientY+scrollTop-2;
+      calendarDrag.style.height = (newY-parseInt(calendarDrag.style.top.replace("px", "")))+"px";
+    }else{
+      draggin=false
+    }
+  }
+});
+
+
+document.getElementById("calTab").addEventListener("mouseup", function(event){
+  var table = document.getElementById("calTab");
+  var cell = event.path[0];
+  if (cell.tagName==="DIV" && cell.className === "weekEvent"){
+    if(document.getElementById("calendarDrag")!==null){
+      document.getElementById("calendarDrag").remove()
+    };
+    return;
+  }
+  if((draggin===true) && (document.getElementById("calendarDrag")!==null)){ // released!
     draggin = false
     calendarDrag = document.getElementById("calendarDrag");
-
-    var cell = event.path[0];
     cellRow = cell.parentElement.rowIndex;
     cellHeight = cell.getBoundingClientRect().bottom - cell.getBoundingClientRect().top
     eventTop = event.clientY- cell.getBoundingClientRect().top
     mins = parseInt((eventTop/cellHeight)*4)*15
     endTime = table.rows[cellRow].cells.item(0).textContent
     endTime = (endTime.split(":")[0]+":"+ zeroPad(mins,2)).trim()
-    calendarClick(event, table, 'week', calendarDrag.getAttribute("startTime"), endTime)
-    
-    calendarDrag.remove()
-
-  }else if(event.buttons===1 && draggin===true){ // still dragging
-    calendarDrag = document.getElementById("calendarDrag");
-    scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    newY  = event.clientY+scrollTop;
-    calendarDrag.style.height = (newY-parseInt(calendarDrag.style.top.replace("px", "")))+"px";
+    startTime = calendarDrag.getAttribute("startTime")
+    calendarClick(event, table, 'week', startTime, endTime)
   }
 });
 </script>

@@ -102,6 +102,39 @@ def generateYearHRChartData(pageYear: int, numberOfDays: int, dbCursur):
             HR_Max_Avg.append("nan")
     return HR_Min_Avg, HR_Max_Avg
 
+def generateBPChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+    monthsBP = []
+    dbCursur.execute("""SELECT * FROM BPTracker WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
+    monthsBP += dbCursur.fetchall()
+    print(monthsBP)
+    chartBP_Min=[]
+    chartBP_Max=[]
+    for i in range(1, numberOfDays+1):
+        bp_min = "nan"
+        bp_max = "nan"
+        for item in monthsBP:
+            if int(item[2].split("-")[2]) == i:
+                bp_min, bp_max = float(item[0]), float(item[1])
+        chartBP_Min.append(bp_min)
+        chartBP_Max.append(bp_max)
+    return chartBP_Min, chartBP_Max
+
+def generateYearOxygenChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+    monthsBO = []
+    dbCursur.execute("""SELECT * FROM oxygenTracker WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
+    monthsBO += dbCursur.fetchall()
+
+    BOTrackerData=[]
+
+    for i in range(1, numberOfDays+1):
+        BO = "nan"     # set to zero in order to avoid failing when adding value
+        for item in monthsBO:
+            if int(item[1].split("-")[2]) == i:
+                BO = float(item[0])
+        BOTrackerData.append(BO)
+    return BOTrackerData
 
 def generateWorkTrakcerChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsWorkHours = []

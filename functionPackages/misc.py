@@ -46,7 +46,6 @@ def getAudiobooks(path):
                                   "progress": "0.0"
                                   }
                         path = os.path.realpath(b)+"/metadata.json"
-                        print(path)
                         f = open(path, 'w+')
                         json.dump(books[b.name], f)
                         f.close()
@@ -189,7 +188,7 @@ def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
         else:
             dbCursur.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, item))
     if not delete:
-        if tableName == "HRTracker":
+        if tableName in ["HRTracker", "BPTracker"]:
             dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?, ?)", (item[0], item[1], date))
         else:
             dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?)", (item, date))
@@ -275,6 +274,10 @@ def generateDBTables(DBCursor):
              Destination text, latitude text, longitude text)""")
     DBCursor.execute("""CREATE TABLE if not exists HRTracker (
              HR_Min text, HR_Max text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists BPTracker (
+             BP_Min text, BP_Max text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists oxygenTracker (
+             BO text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists sleepTracker (
              sleepTime text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists savingTracker (

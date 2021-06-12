@@ -64,6 +64,7 @@ tbody.calendartb td{
 #calendarDrag{
   z-index: 10;
   width: 125px;
+  opacity: 0.5;
   margin-left: 1px;
   position: absolute;
   background-color: #c6dbef;
