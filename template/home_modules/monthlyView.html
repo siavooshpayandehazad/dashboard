@@ -65,11 +65,11 @@
   {% endwith %}
 
   {% with dataset = BO, ChartMonthDays = ChartMonthDays, chartType = "line",
-        thresholds = [], trackerName = "blood oxygen", unit="(kg)", addAvg="true", tcf="true",
-        pointStyle = 'cicle', showTotalVal = False, suggestedMin = 65, yearMonth = "month", clickable="true",
+        thresholds = [], trackerName = "blood oxygen", unit="(%)", addAvg="true", tcf="true",
+        pointStyle = 'cicle', showTotalVal = False, suggestedMin = 90, yearMonth = "month", clickable="true",
         accumulate = "false",
-        bgColors = ['rgba(128,205,193, 0.3)'],
-        bColors = ['rgba(53,151,143, 1)']%}
+        bgColors = ['rgba(252,197,192, 0.3)'],
+        bColors = ['rgba(221,52,151, 1)']%}
     {% include "trackerModules/singleChart.html" %}
   {% endwith %}
 

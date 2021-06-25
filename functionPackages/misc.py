@@ -316,6 +316,7 @@ def setupSettingTable(dbCursur, dbConnection):
     dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
     dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
     dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", "None"))
+    dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("activityList", "None"))
     dbConnection.commit()
 
 

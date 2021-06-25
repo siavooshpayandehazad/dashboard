@@ -9,7 +9,8 @@ async function isLoggedIn () {
 async function autoRedirect () {
   const validLogin = await isLoggedIn()
   if (!validLogin)
-    window.location.replace('/home')
+    if(window.location.pathname !== '/home')
+      window.location.replace('/home')
 }
 
 function logout(){

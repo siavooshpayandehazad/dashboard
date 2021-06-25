@@ -31,7 +31,7 @@ parser = reqparse.RequestParser()
 for item in ['tracker_type', 'value', 'oldValue', 'display', 'date', 'done', 'action',
              'type', 'name', 'cardProj', 'cardTask', 'currentList', 'notes',
              'destList', 'priority', 'Theme', 'counter', 'password', 'planner',
-             'entry', 'notebook', 'chapter', 'rename', 'color']:
+             'entry', 'notebook', 'chapter', 'rename', 'color', 'activityList']:
     parser.add_argument(item)
 
 conn, c = createDB("journal.db")
@@ -44,6 +44,7 @@ class dash(Resource):
         args = parser.parse_args()
         try:
             pageTheme = fetchSettingParamFromDB(c, "Theme")
+            activityList = fetchSettingParamFromDB(c, "activityList").replace(" ", "").split(",")
         except:
             pageTheme = "Dark"
             setupSettingTable(c, conn)
@@ -75,20 +76,21 @@ class dash(Resource):
         monthsRuns       = generateRunningChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         HR_Min, HR_Max   = generateHRChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         BP_Min, BP_Max   = generateBPChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        BO               = generateYearOxygenChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        BO               = generateOxygenChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         YearsSavings     = generateSavingTrackerChartData(pageYear, c)
         monthsPaces      = generatePaceChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         ChartMonthDays   = [str(i) for i in range(1, numberOfDays+1)]
         travels          = getTravelDests(c)
-        print(BO)
         # ----------------------------------------------
-        yearRuns = generateYearRunChartData(int(pageYear), numberOfDays, c)
-        yearSteps = generateYearStepChartData(int(pageYear), numberOfDays, c)
-        yearSleep = generateYearSleepChartData(int(pageYear), numberOfDays, c)
-        yearWeight = generateYearWeightChartData(int(pageYear), numberOfDays, c)
-        yearWH = generateYearWHChartData(int(pageYear), numberOfDays, c)
+        yearRuns   = genYearChartData(int(pageYear), "runningTracker",  runFunc,   c)
+        yearSteps  = genYearChartData(int(pageYear), "stepTracker",     stepFunc,   c)
+        yearSleep  = genYearChartData(int(pageYear), "sleepTracker",    sleepFunc,  c)
+        yearWeight = genYearChartData(int(pageYear), "weightTracker",   weightFunc, c)
+        yearBO     = genYearChartData(int(pageYear), "oxygenTracker",   BOFunc,     c)
+        yearWH     = genYearChartData(int(pageYear), "workHourTracker", WHFunc,     c)
+        yearMood   = genYearChartData(int(pageYear), "moodTracker",     moodFunc,   c)
         yearHR_Min, yearHR_Max = generateYearHRChartData(int(pageYear), numberOfDays, c)
-        yearMood = generateYearMoodChartData(int(pageYear), numberOfDays, c)
+        yearBP_Min, yearBP_Max = generateYearBPChartData(int(pageYear), numberOfDays, c)
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth = int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
@@ -100,7 +102,9 @@ class dash(Resource):
                                              monthsRuns = monthsRuns, monthsPaces = monthsPaces,
                                              monthsWorkHours = monthsWorkHours, YearsSavings = YearsSavings,
                                              yearSteps = yearSteps, yearSleep = yearSleep, yearWH = yearWH,
-                                             yearHR_Min = yearHR_Min, yearHR_Max = yearHR_Max, yearMood = yearMood,
+                                             yearHR_Min = yearHR_Min, yearHR_Max = yearHR_Max,
+                                             yearBP_Min = yearBP_Min, yearBP_Max = yearBP_Max,
+                                             yearMood = yearMood, yearBO = yearBO,
                                              yearWeight = yearWeight, yearRuns = yearRuns,
                                              # ----------------------
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
@@ -338,6 +342,7 @@ class settings(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
+        activityList = fetchSettingParamFromDB(c, "activityList")
         return make_response(render_template('settings.html', activityList=activityList,
                                              pageTheme=pageTheme),200,headers)
 
@@ -346,6 +351,10 @@ class settings(Resource):
         if args['Theme'] is not None:
             pageTheme = args['Theme']
             updateSettingParam(c, conn, "Theme", pageTheme)
+        if args['activityList'] is not None:
+            activityList = args['activityList']
+            print(activityList)
+            updateSettingParam(c, conn, "activityList", activityList)
         if args['password'] is not None:
             pass_dict = eval((args['password']))
             hashed_password = fetchSettingParamFromDB(c, "password")
@@ -371,7 +380,6 @@ class gallery(Resource):
             photoDir=os.getcwd()+"/static/photos/"+str(year)+"/"+date
             todaysPhotos=allPotosInDir(photoDir, year, date)
             monthsPhotos.append(todaysPhotos)
-            print(date, monthsPhotos)
         return make_response(render_template('gallery.html', day=day, month=month, year=year,
                                              numberOfDays=numberOfDays, monthsBeginning=monthsBeginning,
                                              monthsPhotos=monthsPhotos,
@@ -629,7 +637,6 @@ class homeAutomation(Resource):
     def post(self):
         args = parser.parse_args()
         value = json.loads(args['value'])
-        print(value['date'], value['hour'], value['temp'])
         directory="homeAutomation/room_"+value['room']+"/temp"
         if not os.path.exists(directory):
             os.makedirs(directory)

@@ -1,8 +1,9 @@
-activityList = ["reading", "swedish", "english", "arabic", "programming", "meditation", "excercise", "running", "walking", "chores"]
-
 moodList = ["awful", "bad", "ok", "good", "great"]
 
-monthsOfTheYear = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+monthsOfTheYear = ['Jan', "", "", "", 'Feb', "", "", "", 'Mar', "", "", "",
+                   'Apr', "", "", "", 'May', "", "", "", 'Jun', "", "", "",
+                   'Jul', "", "", "", 'Aug', "", "", "", 'Sep', "", "", "",
+                   'Oct', "", "", "", 'Nov', "", "", "", 'Dec', "", "", "",]
 
 daysOfTheWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 

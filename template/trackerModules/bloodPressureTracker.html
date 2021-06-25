@@ -1,36 +1,36 @@
 <script type="text/javascript">
-var hr_Min = {{HR_Min|safe}};
-var hr_Max = {{HR_Max|safe}};
+var bp_Min = {{BP_Min|safe}};
+var bp_Max = {{BP_Max|safe}};
 
-function renderHeartRateChart(hrMin, hrMax){
-  var ctx = document.getElementById("HRTracker").getContext('2d');
+function renderHeartBPChart(bpMin, bpMax){
+  var ctx = document.getElementById("BPTracker").getContext('2d');
   var today = new Date();
   var dd = String(today.getDate()).padStart(2, '0');
-  if (hrMin){
-    hr_Min[dd-1] = hrMin;
+  if (bpMin){
+    bp_Min[dd-1] = bpMin;
   }
-  if (hrMin){
-    hr_Max[dd-1] = hrMax;
+  if (bpMin){
+    bp_Max[dd-1] = bpMax;
   }
 
-  var HRLineChart = new Chart(ctx, {
+  var BPLineChart = new Chart(ctx, {
      type: 'line',
      data: {
         labels: {{ChartMonthDays|safe}},
         datasets: [{
-           label: "HR Min (bpm)",
-           data: hr_Min,
+           label: "BP Min (bpm)",
+           data: bp_Min,
            backgroundColor: ['rgba(0,0,0, 0)'],
-           borderColor: ['rgba(33,113,181, 1)'],
+           borderColor: ['rgba(37,52,148, 1)'],
            borderWidth: 2,
            spanGaps: true,
            tension: 0,
            pointStyle: 'circle',
         }, {
-           label: "HR Max (bpm)",
-           data: hr_Max,
+           label: "BP Max (bpm)",
+           data: bp_Max,
            backgroundColor: ['rgba(0,0,0, 0)'],
-           borderColor: ['rgba(252,78,42, 1)'],
+           borderColor: ['rgba(65,182,196, 1)'],
            borderWidth: 2,
            spanGaps: true,
            tension: 0,
@@ -38,7 +38,7 @@ function renderHeartRateChart(hrMin, hrMax){
         }]
      },
      options: { legend: {labels: {usePointStyle: true}},
-                scales: { yAxes: [{ ticks:{ suggestedMin: 50, suggestedMax: 200 }}]},
+                scales: { yAxes: [{ ticks:{ suggestedMin: 40, suggestedMax: 120 }}]},
                 onClick: function(event, array){
                   if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
                      (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
@@ -46,20 +46,20 @@ function renderHeartRateChart(hrMin, hrMax){
                     return;
                   }
                   var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
-                  var selectedVal =  hr_Min[selectedDay-1]+","+hr_Max[selectedDay-1]
-                  var newVal = window.prompt("Update HR (coma separated format:\"min,max\") for day " + selectedDay + "?", selectedVal);
+                  var selectedVal =  bp_Min[selectedDay-1]+","+bp_Max[selectedDay-1]
+                  var newVal = window.prompt("Update Blood Pressure (coma separated format:\"min,max\") for day " + selectedDay + "?", selectedVal);
                   if ((newVal===null)){return;}
-                  var minHR = newVal.split(",")[0]
-                  var maxHR = newVal.split(",")[1]
-                  if (isNaN(minHR) || isNaN(maxHR)){return;}
+                  var minBP = newVal.split(",")[0]
+                  var maxBP = newVal.split(",")[1]
+                  if (isNaN(minBP) || isNaN(maxBP)){return;}
                   var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
                   $.ajax({
                       type: "POST",
                       url: "http://"+window.location.hostname+":5000/home",
-                      data: {"tracker_type":"HR", "value" : minHR + ',' + maxHR, "date": date},
+                      data: {"tracker_type":"BP", "value" : minBP + ',' + maxBP, "date": date},
                   });
-                  hr_Max[selectedDay-1] = maxHR;
-                  hr_Min[selectedDay-1] = minHR;
+                  bp_Max[selectedDay-1] = maxBP;
+                  bp_Min[selectedDay-1] = minBP;
                   this.update();
                 }
             },
@@ -71,8 +71,8 @@ function renderHeartRateChart(hrMin, hrMax){
 
 
 <div class="graphCard">
-  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">heart rate tracker</h2>
+  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">blood pressure tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">
-    <canvas  height="100px" id="HRTracker"></canvas>
+    <canvas  height="100px" id="BPTracker"></canvas>
   </div>
 </div>

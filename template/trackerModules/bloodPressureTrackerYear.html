@@ -1,36 +1,36 @@
 <script type="text/javascript">
-var hr_MinY = {{HR_Min|safe}};
-var hr_MaxY = {{HR_Max|safe}};
+var bp_MinY = {{BP_Min|safe}};
+var bp_MaxY = {{BP_Max|safe}};
 
-function renderHeartRateChartYear(hrMin, hrMax){
-  var ctx = document.getElementById("HRTrackerYear").getContext('2d');
+function renderBloodPressureChartYear(bpMin, bpMax){
+  var ctx = document.getElementById("BPTrackerYear").getContext('2d');
   var today = new Date();
   var dd = String(today.getDate()).padStart(2, '0');
-  if (hrMin){
-    hr_MinY[dd-1] = hrMin;
+  if (bpMin){
+    bp_MinY[dd-1] = bpMin;
   }
-  if (hrMin){
-    hr_MaxY[dd-1] = hrMax;
+  if (bpMin){
+    bp_MaxY[dd-1] = bpMax;
   }
 
-  var HRLineChart = new Chart(ctx, {
+  var BPLineChart = new Chart(ctx, {
      type: 'line',
      data: {
         labels: {{ChartMonthDays|safe}},
         datasets: [{
-           label: "HR Min (bpm)",
-           data: hr_MinY,
+           label: "BP Min (bpm)",
+           data: bp_MinY,
            backgroundColor: ['rgba(0,0,0, 0)'],
-           borderColor: ['rgba(33,113,181, 1)'],
+           borderColor: ['rgba(37,52,148, 1)'],
            borderWidth: 2,
            spanGaps: true,
            tension: 0,
            pointStyle: 'circle',
         }, {
-           label: "HR Max (bpm)",
-           data: hr_MaxY,
+           label: "BP Max (bpm)",
+           data: bp_MaxY,
            backgroundColor: ['rgba(0,0,0, 0)'],
-           borderColor: ['rgba(252,78,42, 1)'],
+           borderColor: ['rgba(65,182,196, 1)'],
            borderWidth: 2,
            spanGaps: true,
            tension: 0,
@@ -48,8 +48,8 @@ function renderHeartRateChartYear(hrMin, hrMax){
 
 
 <div class="graphCard">
-  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">yearly heart rate tracker</h2>
+  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">yearly blood pressure tracker</h2>
   <div style="float:left; width:90%; margin-left:5%">
-    <canvas  height="100px" id="HRTrackerYear"></canvas>
+    <canvas  height="100px" id="BPTrackerYear"></canvas>
   </div>
 </div>

@@ -22,6 +22,15 @@
         document.body.className = "";
       }
     }
+
+    function activityList(){
+      var activities = document.getElementById("activities").value;
+      $.ajax({
+          type: "POST",
+          url: "http://"+window.location.hostname+":5000/settings",
+          data: {"activityList": activities},
+      });
+    }
   </script>
 </head>
 
@@ -71,10 +80,10 @@
   <div class="divider" style="width:100%;height:2px;margin-top:20px;"></div>
 
   <div style="width: 100%;float:left">
-    <h4>Activity Tracker Setting (TO DO...)</h4>
+    <h4>Activity Tracker Setting</h4>
     you can enter the activities you are interested in the field <br>
-    bellow (in a comma separated list):
-    <form action="javascript:;" onsubmit="return submitEntry();">
+    bellow (comma separated):
+    <form action="javascript:;" onsubmit="return activityList();">
        <textarea id="activities" type="text" cols="40" rows="5" style="margin-top: 5px;margin-left: 1%; min-height:100px;width:28%; outline:None; resize:None">{{activityList|string()}}</textarea><br>
        <input type="submit" style="margin-left: 23%;margin-top: 5px;">
     </form>

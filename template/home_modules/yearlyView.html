@@ -1,5 +1,5 @@
 {% with dataset = yearMood, ChartMonthDays = ChartYearMonths, chartType = "bar",
-        thresholds = [1,2,3,4], trackerName = "Yearly Moods", unit="", addAvg="true", tcf="true",
+        thresholds = [1,2,3,4], trackerName = "yearly mood tracker", unit="", addAvg="true", tcf="true",
         pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
         accumulate = "false",
         bgColors = ['rgba(244, 165, 130, 1)', 'rgb(253, 219, 199, 1)', 'rgb(222, 235, 247, 1)', 'rgb(159, 222, 208, 1)', 'rgb(29, 145, 192, 1)'],
@@ -13,7 +13,7 @@
 </div>
 
 {% with dataset = yearWH, ChartMonthDays = ChartYearMonths, chartType = "bar",
-        thresholds = [70, 100, 120, 150], trackerName = "Yearly Work Hour", unit="(hr)", addAvg="true", tcf="true",
+        thresholds = [10, 20, 30, 100], trackerName = "yearly work hour", unit="(hr)", addAvg="true", tcf="true",
         pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
         accumulate = "false",
         bgColors = ['rgba(252,146,114, 1)', 'rgba(254,196,79, 1)', 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)'],
@@ -21,7 +21,7 @@
     {% include "trackerModules/singleChart.html" %}
 {% endwith %}
 
-{% with YearsSavings = YearsSavings, ChartYearMonths = ChartYearMonths,
+{% with YearsSavings = YearsSavings, ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         PageYear = PageYear, PageMonth = PageMonth%}
     {% include "trackerModules/savingTracker.html" %}
 {% endwith %}
@@ -32,7 +32,7 @@
 </div>
 
 {% with dataset = yearRuns, ChartMonthDays = ChartYearMonths, chartType = "bar",
-      thresholds = [40], trackerName = "Yearly Running", unit="(km)", addAvg="true", tcf="true",
+      thresholds = [10], trackerName = "yearly running", unit="(km)", addAvg="true", tcf="true",
       pointStyle = 'cicle', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
       accumulate = "false",
       bgColors = ['rgba(254,217,118, 0.8)', 'rgba(253,141,60, 0.8)'],
@@ -44,8 +44,21 @@
     {% include "trackerModules/heartRateTrackerYear.html" %}
 {% endwith %}
 
+{% with BP_Max = yearBP_Max, BP_Min = yearBP_Min, ChartMonthDays = ChartYearMonths, PageYear = PageYear, PageMonth = PageMonth, yearMonth = "year"%}
+    {% include "trackerModules/bloodPressureTrackerYear.html" %}
+{% endwith %}
+
+{% with dataset = yearBO, ChartMonthDays = ChartYearMonths, chartType = "line",
+      thresholds = [], trackerName = "yearly blood oxygen", unit="(%)", addAvg="false", tcf="true",
+      pointStyle = 'cicle', showTotalVal = False, suggestedMin = 90, yearMonth = "year", clickable="false",
+      accumulate = "false",
+      bgColors = ['rgba(252,197,192, 0.3)'],
+      bColors = ['rgba(221,52,151, 1)']%}
+  {% include "trackerModules/singleChart.html" %}
+{% endwith %}
+
 {% with dataset = yearSleep, ChartMonthDays = ChartYearMonths, chartType = "bar",
-        thresholds = [225], trackerName = "Yearly Sleep", unit="(hr)", addAvg="true", tcf="true",
+        thresholds = [56], trackerName = "yearly sleep", unit="(hr)", addAvg="true", tcf="true",
         pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
         accumulate = "false",
         bgColors = ['rgba(188,189,220, 1)', 'rgba(106,81,163, 1)'],
@@ -54,7 +67,7 @@
 {% endwith %}
 
 {% with dataset = yearSteps, ChartMonthDays = ChartYearMonths, chartType = "bar",
-        thresholds = [300000], trackerName = "Yearly Steps", unit="", addAvg="true", tcf="true",
+        thresholds = [75000], trackerName = "yearly steps", unit="", addAvg="true", tcf="true",
         pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
         accumulate = "false",
         bgColors = ['rgba(173,221,142, 1)', 'rgba(0,109,44, 1)'],
@@ -63,7 +76,7 @@
 {% endwith %}
 
 {% with dataset = yearWeight, ChartMonthDays = ChartYearMonths, chartType = "line",
-      thresholds = [], trackerName = "Yearly Weight", unit="(kg)", addAvg="false", tcf="true",
+      thresholds = [], trackerName = "yearly weight", unit="(kg)", addAvg="false", tcf="true",
       pointStyle = 'cicle', showTotalVal = False, suggestedMin = 60, yearMonth = "year", clickable="false",
       accumulate = "false",
       bgColors = ['rgba(128,205,193, 0.3)'],
