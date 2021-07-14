@@ -66,7 +66,7 @@
       date =  new Date();
       if (({{PageYear}} == date.getFullYear()) && ({{PageMonth}}-1 == date.getMonth())){
         if (YearMonth == "year"){
-          return [({{PageMonth}}-1)*4+parseInt(date.getDate()/7)-1]
+          return [4*(date.getMonth())+parseInt(date.getDate()/7)]
         }else{
           return [{{today}}-1]
         }

@@ -5,12 +5,13 @@
       alert("Name must be filled out");
       return false;
     }
-    if((fileName.split(".")[1].toLowerCase()!="jpg") && (fileName.split(".")[1].toLowerCase()!="png")){
-      alert("only jpg files are allowed");
+    extension = fileName.split(".")[1].toLowerCase()
+    if((extension !="jpeg") && (extension !="jpg") && (extension !="png") && (extension !="tiff")  && (extension !="bmp") && (extension !="gif") && (extension !="mp4") ){
+      alert("only the following extensions are allowed: jpg, jpeg, png, tiff, bmp, gif and mp4");
       return false;
     }
   }
-  function uploadPhoto(){
+  function uploadMedia(){
     var uploader = document.getElementById("uploader")
     if(uploader.style.display === "none"){
       uploader.style.display = 'block';
@@ -20,10 +21,10 @@
   }
 </script>
 
-<i class="fa fa-upload uploadIcon hover-red"  aria-hidden="true" onclick="uploadPhoto()"></i>
+<i class="fa fa-upload uploadIcon hover-red"  aria-hidden="true" onclick="uploadMedia()"></i>
 <br><br>
 <div  id = "uploader">
-  Upload a photo:
+  Upload your media:
   <form  name="photoUploader" action = "/uploader" method = "POST" enctype = "multipart/form-data" style="margin-top:5px;" onsubmit="return validateForm()">
       <input type = "file" name = "file" />
       <input type="text" name="date" value = "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" style ="display:none;">

@@ -25,10 +25,12 @@ function editChapterName(item){
       if(this.value != oldChapterName){
          $.ajax({ type: "POST",
                   url: "http://"+window.location.hostname+":5000/notes",
-                  data: {"rename":JSON.stringify({"type": "chapterName",
-                                                  "noteBookName": notebookName,
-                                                  "oldName": oldChapterName,
-                                                  "newName": this.value,}),
+                  data: {"type:"  : "notes",
+                         "action" : "rename",
+                         "value"  : JSON.stringify({"type": "chapterName",
+                                                    "noteBookName": notebookName,
+                                                    "oldName": oldChapterName,
+                                                    "newName": this.value,}),
                         },
                  });
       }
@@ -66,9 +68,11 @@ function addChapter(item){
 function createNewChapter(item){
   $.ajax({ type: "POST",
       url: "http://"+window.location.hostname+":5000/notes",
-      data: {"entry":"",
-             "notebook": document.getElementById("notebookName").textContent,
-             "chapter" : item.value,},
+      data: {"type:"  : "notes",
+             "value"  : JSON.stringify({ "entry":"",
+                                         "notebook": document.getElementById("notebookName").textContent,
+                                         "chapter" : item.value}),
+            },
   });
   document.getElementById("chapterName").innerHTML = item.value;
   document.getElementById("chapterContent").innerHTML = "";
@@ -178,9 +182,11 @@ function createNewNotebook(item){
   }
   $.ajax({ type: "POST",
       url: "http://"+window.location.hostname+":5000/notes",
-      data: {"entry":"",
-             "notebook": noteBookName,
-             "chapter" : "Chapter 1",},
+      data: {"type:"  : "notes",
+             "value"  : JSON.stringify({"entry":"",
+                                        "notebook": noteBookName,
+                                        "chapter" : "Chapter 1"}),
+           },
   });
   var notebookLabels = document.getElementById("notebookLabels")
   var Label = document.createElement("div")
@@ -218,9 +224,11 @@ function editNoteBook(item){
       if(this.value != oldNoteBookName){
         $.ajax({ type: "POST",
                  url: "http://"+window.location.hostname+":5000/notes",
-                 data: {"rename":JSON.stringify({"type": "noteBookName",
-                                                 "oldName": oldNoteBookName,
-                                                 "newName": this.value,}),
+                 data: {"type:"  : "notes",
+                        "action" : "rename",
+                        "value"  : JSON.stringify({"type": "noteBookName",
+                                                   "oldName": oldNoteBookName,
+                                                   "newName": this.value,}),
                        },
                 });
       }
@@ -238,8 +246,9 @@ function deleteNotebook(item){
     // send an ajax to delete the the notebook
     $.ajax({ type: "POST",
         url: "http://"+window.location.hostname+":5000/notes",
-        data: {"notebook": noteBookName,
-               "action" : "delete",},
+        data: {"type"   : "notes",
+               "action" : "delete",
+               "value"  : JSON.stringify({"notebook": noteBookName})},
     });
     item.parentElement.remove();
   }
@@ -283,9 +292,10 @@ function chapterMouseIn(item){
       console.log("deleting chapter:", chapterName, "from notebook:", noteBookName,)
       $.ajax({ type: "POST",
           url: "http://"+window.location.hostname+":5000/notes",
-          data: {"notebook": noteBookName,
-                 "chapter": chapterName,
-                 "action" : "delete",},
+          data: {"type"   : "notes",
+                 "action" : "delete",
+                 "value"  : JSON.stringify({"notebook": noteBookName,
+                                            "chapter": chapterName})},
       });
       this.parentElement.remove();
       //reset the notebook to select the first present item!

@@ -52,6 +52,7 @@ def getAudiobooks(path):
             metadata[author]=books
     return audiobooks, metadata
 
+
 def getFlashCards(dbCursur):
     dbCursur.execute("""SELECT * FROM flashcards""")
     flashCards = dbCursur.fetchall()
@@ -70,14 +71,17 @@ def getFlashCards(dbCursur):
         cnts[int(item[3])] += 1
     return setNames, maxDaysNumbers, cnts, toReview
 
+
 def addFlashCards(setName, side1, side2, lastTimeReviewed, dbCursur, dbConnection):
     dbCursur.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""", (setName, side1, side2, 1, lastTimeReviewed))
     dbConnection.commit()
+
 
 def deleteFlashCards(setName, side1, side2, dbCursur, dbConnection):
     print(f"deleting card {side1} and {side2} from set {setName}")
     dbCursur.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
     dbConnection.commit()
+
 
 def changeFlashCards(setName, side1, side2, lastTimeReviewed, increament, dbCursur, dbConnection):
     dbCursur.execute("""SELECT * FROM flashcards WHERE setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
@@ -95,6 +99,7 @@ def changeFlashCards(setName, side1, side2, lastTimeReviewed, increament, dbCurs
     dbCursur.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""", (setName, side1, side2, value, lastTimeReviewed))
     dbConnection.commit()
 
+
 def getTravelDests(dbCursur):
     dbCursur.execute("""SELECT * FROM travelTracker""")
     travels = dbCursur.fetchall()
@@ -103,9 +108,11 @@ def getTravelDests(dbCursur):
         allTravels.append({'name': item[0], 'coords': [item[1], item[2]],})
     return allTravels
 
+
 def addTravelItem(name, latitude, longitude, dbCursur, dbConnection):
     dbCursur.execute("""INSERT INTO travelTracker VALUES(?, ?, ?)""", (name, latitude, longitude))
     dbConnection.commit()
+
 
 def getCalEvents(todaysDate, dbCursur):
     dt = datetime.datetime.strptime(todaysDate, '%Y-%m-%d')
@@ -125,6 +132,7 @@ def getCalEvents(todaysDate, dbCursur):
             print("something went wrong here!")
     return calList
 
+
 def getCalEventsMonth(pageMonth, pageYear, dbCursur):
     dbCursur.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
               (getMonthsBeginning(pageMonth, pageYear).date(),
@@ -137,6 +145,7 @@ def getCalEventsMonth(pageMonth, pageYear, dbCursur):
         except:
             print("something went wrong here!")
     return calList
+
 
 def getTodaysLogs(dbCursur, todaysDate):
     dbCursur.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate,))
@@ -154,16 +163,18 @@ def allPotosInDir(photoDir, year, date):
     todayPhotos = []
     if os.path.isdir(photoDir):
         for file in os.listdir(photoDir):
-            if file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".png"):
+            if file.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif', '.mp4')):
                 todayPhotos.append(str(year)+"/"+date+"/"+file)
     todayPhotos.sort()
     return todayPhotos
 
-def allDaysWithPotos(photoDir, year, month):
+
+def allDaysWithPhotos(photoDir, year, month):
     daysWithPhotos = []
     if os.path.isdir(photoDir):
         daysWithPhotos = [int(x.split("-")[2]) for x in os.listdir(photoDir) if str(year)+"-"+'%02d' % (month) in x ]
     return sorted(daysWithPhotos)
+
 
 def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
                           date: str, delete: bool, deleteDay: bool, dbCursur,
@@ -174,19 +185,21 @@ def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
     dbCursur.execute("SELECT * FROM " + tableName + " WHERE date = ?", (date,))
     fetchedData = dbCursur.fetchall()
 
-    if tableName == "workHourTracker":
+    if tableName == "workTracker":
         print(f"@{datetime.datetime.now()} :: adding {item} time to todays work hours")
         if len(fetchedData)>0:
             item = float(fetchedData[0][0])+float(item)
+
     if tableName == "moodTracker":     # trying to remove old mood from the table
         for oldItem, todaysDate in fetchedData:
             dbCursur.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, oldItem))
             dbConnection.commit()
-    else:
+    else:   # all other trackers
         if deleteDay:
             dbCursur.execute("DELETE from "+tableName+" where date = ?", (date,))
-        else:
+        else: # try removing the tracker
             dbCursur.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, item))
+
     if not delete:
         if tableName in ["HRTracker", "BPTracker"]:
             dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?, ?)", (item[0], item[1], date))
@@ -284,7 +297,7 @@ def generateDBTables(DBCursor):
              saving text, month text)""")
     DBCursor.execute("""CREATE TABLE if not exists weightTracker (
              weight text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists workHourTracker (
+    DBCursor.execute("""CREATE TABLE if not exists workTracker (
              work_hour text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists stepTracker (
              steps text, date text)""")

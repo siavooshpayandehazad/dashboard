@@ -1,10 +1,3 @@
-#------------------------------------
-# add an activity for today: curl http://localhost:5000/activityTracker -d "activity=python"
-# add an activity on a specific day: curl http://localhost:5000/activityTracker -d "activity=python" -d "date=2019-05-1"
-#------------------------------------
-# get daily activity list: curl http://localhost:5000/activityTracker -d "display=day"
-# get monthy activity list: curl http://localhost:5000/activityTracker -d "display=month"
-#------------------------------------
 from functionPackages.misc import *
 from functionPackages.charts import *
 from functionPackages.dateTime import *
@@ -28,10 +21,7 @@ app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
 
 parser = reqparse.RequestParser()
-for item in ['tracker_type', 'value', 'oldValue', 'display', 'date', 'done', 'action',
-             'type', 'name', 'cardProj', 'cardTask', 'currentList', 'notes',
-             'destList', 'priority', 'Theme', 'counter', 'password', 'planner',
-             'entry', 'notebook', 'chapter', 'rename', 'color', 'activityList']:
+for item in ['tracker_type', 'value', 'oldValue', 'date', 'action', 'type', 'planner']:
     parser.add_argument(item)
 
 conn, c = createDB("journal.db")
@@ -87,7 +77,7 @@ class dash(Resource):
         yearSleep  = genYearChartData(int(pageYear), "sleepTracker",    sleepFunc,  c)
         yearWeight = genYearChartData(int(pageYear), "weightTracker",   weightFunc, c)
         yearBO     = genYearChartData(int(pageYear), "oxygenTracker",   BOFunc,     c)
-        yearWH     = genYearChartData(int(pageYear), "workHourTracker", WHFunc,     c)
+        yearWH     = genYearChartData(int(pageYear), "workTracker", WHFunc,     c)
         yearMood   = genYearChartData(int(pageYear), "moodTracker",     moodFunc,   c)
         yearHR_Min, yearHR_Max = generateYearHRChartData(int(pageYear), numberOfDays, c)
         yearBP_Min, yearBP_Max = generateYearBPChartData(int(pageYear), numberOfDays, c)
@@ -112,43 +102,32 @@ class dash(Resource):
                                              pageTheme = pageTheme, counterValue = counterValue, travels = travels),200,headers)
 
     def post(self):
+        activityList = fetchSettingParamFromDB(c, "activityList").replace(" ", "").split(",")
         args = parser.parse_args()
-        if args['password'] is not None:
+        if args['type'] == "password":
             password = fetchSettingParamFromDB(c, "password")
             if password == "None":
                 return "success", 200
             else:
-                if not verifyPassword(password, args['password']):
+                if not verifyPassword(password, args['value']):
                     return "failed", 200
                 else:
                     return "success", 200
 
-        if args['counter'] is not None:
-            if args['counter'] == "countup":
+        if args['type'] == "counter":
+            if args['value'] == "countup":
                 counterVal = int(fetchSettingParamFromDB(c, "counter")) + 1
-            elif args['counter'] == "reset":    # reset the counter
+            elif args['value'] == "reset":    # reset the counter
                 counterVal = 0
             updateSettingParam(c, conn, "counter", counterVal)
 
         todaysDate = parseDate(args['date'])
-        if args['tracker_type'] == 'HR':
-            return addTrackerItemToTable(args['value'].split(","), "", [], "HRTracker", todaysDate, False, True, c, conn)
-        if args['tracker_type'] == 'BP':
-            return addTrackerItemToTable(args['value'].split(","), "", [], "BPTracker", todaysDate, False, True, c, conn)
-        if args['tracker_type'] == 'weight':
-            return addTrackerItemToTable(args['value'].lower(), "weight", [], "weightTracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] in ['sleep', 'running', 'pace', 'step', 'weight', 'work']:
+            return addTrackerItemToTable(args['value'].lower(), "", [], args['tracker_type']+"Tracker", todaysDate, False, True, c, conn)
+        if args['tracker_type'] in ['HR', 'BP']:
+            return addTrackerItemToTable(args['value'].split(","), "", [], args['tracker_type']+"Tracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'blood oxygen':
-            return addTrackerItemToTable(args['value'].lower(), "oxygen", [], "oxygenTracker", todaysDate, False, True, c, conn)
-        if args['tracker_type'] == 'sleep':
-            return addTrackerItemToTable(args['value'].lower(), "", [], "sleepTracker", todaysDate, False, True, c, conn)
-        if args['tracker_type'] == 'running':
-            return addTrackerItemToTable(args['value'].lower(), "", [], "runningTracker", todaysDate, False, True, c, conn)
-        if args['tracker_type'] == 'pace':
-            return addTrackerItemToTable(args['value'].lower(), "", [], "paceTracker", todaysDate, False, True, c, conn)
-        if args['tracker_type'] == 'step':
-            return addTrackerItemToTable(args['value'].lower(), "", [], "stepTracker", todaysDate, False, True, c, conn)
-        if args['tracker_type'] == 'work hours':
-            return addTrackerItemToTable(args['value'].lower(), "work_hour", [], "workHourTracker", todaysDate, False, True, c, conn)
+            return addTrackerItemToTable(args['value'].lower(), "", [], "oxygenTracker", todaysDate, False, True, c, conn)
         if args['tracker_type'] == 'saving':
             return addsSavingItemToTable(args['value'].lower(), todaysDate, c, conn)
         if args['tracker_type'] == 'mood':
@@ -174,7 +153,7 @@ class journal(Resource):
         day, month, year = sparateDayMonthYear(todaysDate)
         photoDir=os.getcwd()+"/static/photos/"+str(year)+"/"+todaysDate
         photoDir2=os.getcwd()+"/static/photos/"+str(year)
-        daysWithPhotos = allDaysWithPotos(photoDir2, year, month)
+        daysWithPhotos = allDaysWithPhotos(photoDir2, year, month)
         todayPhotos =  allPotosInDir(photoDir, year, todaysDate)
         todaysLog, todaysLogText = getTodaysLogs(c, todaysDate)
         numberOfDays = numberOfDaysInMonth(int(month), int(year))
@@ -190,7 +169,7 @@ class journal(Resource):
 
     def post(self):
         args = parser.parse_args()
-        if args['entry'] == 'log':
+        if args['type'] == 'log':
             todaysDate = parseDate(args['date'])
             log = args['value'].lower()
             c.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate, ))
@@ -199,6 +178,17 @@ class journal(Resource):
             c.execute("""INSERT INTO logTracker VALUES(?, ?)""", (log, todaysDate))
             conn.commit()
             print(f"added log for date: {todaysDate}")
+        if args['type'] == "photo":
+            if args['action'] == "delete":
+                file = "./static"+args['value'].split("/static")[1]
+                if os.path.isfile(file):
+                    os.remove(file)
+                    parentDir = "./static"+"/".join(args['value'].split("/static")[1].split("/")[:-1])
+                    print(parentDir)
+                    if len(os.listdir(parentDir))==0:
+                        os.rmdir(parentDir)
+                else:
+                    return "File Doesnt Exist!", 400
         return "Done", 200
 
 
@@ -215,7 +205,7 @@ class org(Resource):
         c.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (todaysDate,))
         all_due_events = sorted(c.fetchall(), key=lambda tup: tup[1])
 
-        c.execute("""SELECT * FROM todoList WHERE date < ? and date >= ? and done = 'true'""", (todaysDate, monthsBeginning))
+        c.execute("""SELECT * FROM todoList WHERE date < ? and date >= ? and done = 'true'""", (todaysDate, monthsBeginning.date()))
         all_due_events += sorted(c.fetchall(), key=lambda tup: tup[1])
 
         weekDay = datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d').weekday()
@@ -270,22 +260,21 @@ class org(Resource):
 
     def post(self):
         args = parser.parse_args()
-        if args['entry'] == 'todo':
+        if args['type'] == 'todo':
             todaysDate = parseDate(args['date'])
-            todo = args['value'].lower()
-            c.execute("""DELETE from todoList where date = ? and task = ?""", (todaysDate, todo))
+            value_dict = eval((args['value']))
+            c.execute("""DELETE from todoList where date = ? and task = ?""", (todaysDate, value_dict['value'].lower()))
             if args['action'] == "delete":
-                print(f"removed todo {todo} from todoList for date: {todaysDate} as {args['done']}")
+                print(f"removed todo {value_dict['value'].lower()} from todoList for date: {todaysDate} as {value_dict['done']}")
             else:
-                c.execute("""INSERT INTO todoList VALUES(?, ?, ?, ?)""", (todo, todaysDate, args['done'], args['color']))
-                print(f"added todo {todo} to todoList for date: {todaysDate} as {args['done']}")
+                c.execute("""INSERT INTO todoList VALUES(?, ?, ?, ?)""", (value_dict['value'].lower(), todaysDate, value_dict['done'], value_dict['color']))
+                print(f"added todo {value_dict['value'].lower()} to todoList for date: {todaysDate} as {value_dict['done']}")
             conn.commit()
 
-        elif args['entry'] == 'calendar':
+        elif args['type'] == 'calendar':
             if args["action"] == "create":
                 date = args['date']
                 values = json.loads(args['value'])
-
                 c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (date, values["startTime"], values["stopTime"], values["name"], values["color"], values["details"]))
                 conn.commit()
             elif args["action"] == "delete":
@@ -301,23 +290,24 @@ class org(Resource):
                 c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (values["date"], values["startTime"], values["stopTime"], values["name"], values["color"], values["details"]))
                 conn.commit()
 
-        elif args['cardProj'] is not None:
-            proj = args['cardProj']
-            task = args['cardTask']
-            if args['currentList'] is not None:
-                currentList = args['currentList']
-                if args['action'] == "delete":
+        elif args['type'] == "scrum":
+            scrum_dict = eval((args['value']))
+            proj = scrum_dict['cardProj']
+            task = scrum_dict['cardTask']
+            if scrum_dict.get('currentList', None) is not None:
+                currentList = scrum_dict['currentList']
+                if scrum_dict.get('action', "") == "delete":
                     print("deleting card:", task)
                     c.execute("""DELETE from scrumBoard where project = ? and task = ? and stage = ?""", (proj, task, currentList))
                     conn.commit()
                 else:
-                    destList = args['destList']
+                    destList = scrum_dict.get('destList', "")
                     c.execute("""SELECT * FROM scrumBoard WHERE project = ? and task = ? and stage = ? """, (proj, task, currentList))
                     tasks = c.fetchall()
                     if len(tasks)>0:
                         priority = tasks[0][-2]
                     else:
-                        priority = args['priority']
+                        priority = scrum_dict.get('priority', "")
 
                     if destList == "done":
                         c.execute("""DELETE from scrumBoard where project = ? and task = ? """, (proj, task))
@@ -332,7 +322,7 @@ class org(Resource):
                         c.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, destList, priority, " "))
                     conn.commit()
             else:   # its a new card!
-                priority = args['priority']
+                priority = scrum_dict['priority']
                 c.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, "backlog", priority, " "))
                 conn.commit()
         return "Done", 200
@@ -348,15 +338,14 @@ class settings(Resource):
 
     def post(self):
         args = parser.parse_args()
-        if args['Theme'] is not None:
-            pageTheme = args['Theme']
+        if args['type'] == "Theme":
+            pageTheme = args['value']
             updateSettingParam(c, conn, "Theme", pageTheme)
-        if args['activityList'] is not None:
-            activityList = args['activityList']
-            print(activityList)
+        if args['type'] == "activityList":
+            activityList = args['value']
             updateSettingParam(c, conn, "activityList", activityList)
-        if args['password'] is not None:
-            pass_dict = eval((args['password']))
+        if args['type'] == "password":
+            pass_dict = eval((args['value']))
             hashed_password = fetchSettingParamFromDB(c, "password")
             if (hashed_password == "None") or verifyPassword(hashed_password, pass_dict["currntpwd"]):
                 updateSettingParam(c, conn, "password", hashPassword(pass_dict["newpwd"]))
@@ -388,6 +377,7 @@ class gallery(Resource):
     def post(self):
         return "Done", 200
 
+
 class lists(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
@@ -405,12 +395,14 @@ class lists(Resource):
     def post(self):
         args = parser.parse_args()
         if args['action'] == "delete":
-            print(f"deleted {args['name'].lower()} from {args['type']}")
-            c.execute("""DELETE from lists where name = ? and type = ?  """, (args["name"].lower(), args["type"]))
+            value_dict = eval((args['value']))
+            print(f"deleted {value_dict['name'].lower()} from {value_dict['type']}")
+            c.execute("""DELETE from lists where name = ? and type = ?  """, (value_dict["name"].lower(), value_dict["type"]))
         else:
-            print(f"added {args['name'].lower()} to {args['type']} as {args['done']} ")
-            c.execute("""DELETE from lists where name = ? and type = ? """, (args["name"].lower(), args["type"]))
-            c.execute("""INSERT INTO lists VALUES(?, ?, ?, ?)""", (args["name"].lower(), args["done"], args["type"], args["notes"]))
+            value_dict = eval((args['value']))
+            print(f"added {value_dict['name'].lower()} to {value_dict['type']} as {value_dict['done']} ")
+            c.execute("""DELETE from lists where name = ? and type = ? """, (value_dict["name"].lower(), value_dict["type"]))
+            c.execute("""INSERT INTO lists VALUES(?, ?, ?, ?)""", (value_dict["name"].lower(), value_dict["done"], value_dict["type"], value_dict["notes"]))
         conn.commit()
         return "Done", 200
 
@@ -426,21 +418,22 @@ class notes(Resource):
             if len(root.split("notebookPhotos/"))>1:
                 for filename in files:
                     notebookName = root.split("notebookPhotos/")[1]
-                    if (".jpg" in filename) or (".png" in filename):
+                    if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif', '.mp4')):
                         photos[notebookName] = photos.get(notebookName, [])+[filename]
         return make_response(render_template('notes.html', pageTheme=pageTheme, Notebooks=Notebooks, photos=photos),200,headers)
 
     def post(self):
         args = parser.parse_args()
+        value_dict = eval((args['value']))
         if  args['action'] == "delete":
-            if (args['chapter']):
-                print(f"deleting the chapter {args['chapter']} from notebook: {args['notebook']}")
-                c.execute("""DELETE from Notes where Notebook = ? and  Chapter = ? """, (args["notebook"],args['chapter'],))
+            if value_dict.get("chapter", None) != None:
+                print(f"deleting the chapter {value_dict['chapter']} from notebook: {value_dict['notebook']}")
+                c.execute("""DELETE from Notes where Notebook = ? and  Chapter = ? """, (value_dict["notebook"],value_dict["chapter"],))
             else:
-                print(f"deleting the notebook: {args['notebook']}")
-                c.execute("""DELETE from Notes where Notebook = ? """, (args["notebook"],))
-        elif args['rename'] is not None:
-            parsjson = json.loads(args['rename'])
+                print(f"deleting the notebook: {value_dict['notebook']}")
+                c.execute("""DELETE from Notes where Notebook = ? """, (value_dict["notebook"],))
+        elif args['action'] == "rename":
+            parsjson = json.loads(args['value'])
             if (parsjson["type"] == "noteBookName") and(parsjson["oldName"] != parsjson["newName"]):
                 c.execute("""SELECT * FROM Notes WHERE Notebook = ?""", (parsjson["oldName"],))
                 allNotes = c.fetchall()
@@ -467,8 +460,8 @@ class notes(Resource):
                 conn.commit()
                 return "all good!", 200
         else:
-            c.execute("""DELETE from Notes where Notebook = ? and Chapter = ?  """, (args["notebook"], args["chapter"]))
-            c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (args["notebook"], args["chapter"], args['entry']))
+            c.execute("""DELETE from Notes where Notebook = ? and Chapter = ?  """, (value_dict["notebook"], value_dict["chapter"]))
+            c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (value_dict["notebook"], value_dict["chapter"], value_dict['entry']))
         conn.commit()
         return "nothing here!", 200
 
@@ -490,7 +483,7 @@ class learning(Resource):
 
     def post(self):
         args = parser.parse_args()
-        if args["entry"] == "flashCards":
+        if args["type"] == "flashCards":
             if args["action"] == "create":
                 values =  json.loads(args['value'])
                 setName = values["setName"]
@@ -515,6 +508,7 @@ class learning(Resource):
                 else:
                     changeFlashCards(setName, side1, side2, lastTimeReviewed, False, c, conn)
         return "Done", 200
+
 
 class server(Resource):
     def get(self):
@@ -613,6 +607,7 @@ class audiobooks(Resource):
         metadataFile.close()
         return "Done", 200
 
+
 class homeAutomation(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
@@ -644,6 +639,7 @@ class homeAutomation(Resource):
         f.write(value['hour']+" -> "+value['temp']+"\n")
         f.close()
         return "Done", 200
+
 
 @app.route("/downloadDB/")
 def downloadDB():

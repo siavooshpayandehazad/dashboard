@@ -3,7 +3,7 @@ moodList = ["awful", "bad", "ok", "good", "great"]
 monthsOfTheYear = ['Jan', "", "", "", 'Feb', "", "", "", 'Mar', "", "", "",
                    'Apr', "", "", "", 'May', "", "", "", 'Jun', "", "", "",
                    'Jul', "", "", "", 'Aug', "", "", "", 'Sep', "", "", "",
-                   'Oct', "", "", "", 'Nov', "", "", "", 'Dec', "", "", "",]
+                   'Oct', "", "", "", 'Nov', "", "", "", 'Dec', "", "", ""]
 
 daysOfTheWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 

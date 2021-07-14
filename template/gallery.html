@@ -17,28 +17,40 @@
 </head>
 
 <script type="text/javascript">
-
-function photoClicked(item){
-  var overlay = document.getElementById("PhotoOverlay")
-  overlay.style.display = "block";
-  var img = document.createElement('img');
-  img.src = item.src;
-  img.id = "PhotoOverlayPicture"
-  img.style.maxWidth = "70%";
-  img.style.maxHeight = "80%";
-  img.style.float = "center";
-  img.style.marginTop = "5%";
-  img.onclick= function() {closeOverlay()}
-  overlay.appendChild(img);
-}
-
 function closeOverlay(){
-  var img = document.getElementById("PhotoOverlayPicture")
-  img.remove();
+  var media = document.getElementById("PhotoOverlayPicture")
+  if(media.nodeName == "VIDEO"){
+    media.pause();
+  }
+  media.remove();
   var overlay = document.getElementById("PhotoOverlay")
   overlay.style.display = "none";
 }
-
+function mediaClicked(item){
+  var overlay = document.getElementById("PhotoOverlay")
+  overlay.style.display = "block";
+  if (item.nodeName == "IMG"){
+    var media = document.createElement('img');
+    media.src = item.src;
+  }else if (item.nodeName == "VIDEO") {
+    var media = document.createElement('video');
+    media.setAttribute("controls", "controls");
+    var source = document.createElement('source');
+    source.src = item.childNodes[1].src;
+    media.setAttribute("src", source.src);
+    media.appendChild(source)
+  }
+  media.id = "PhotoOverlayPicture"
+  media.style.maxWidth = "70%";
+  media.style.maxHeight = "80%";
+  media.style.float = "center";
+  media.style.marginTop = "5%";
+  media.onclick = function() {
+    event.preventDefault();
+    closeOverlay();
+  }
+  overlay.appendChild(media);
+}
 </script>
 
 {%if pageTheme=="Dark"%}
@@ -81,8 +93,17 @@ function closeOverlay(){
             <div style="width:49%; height:5px; float:left; margin-top: 7.5px; background-color:gray"></div>
           </div>
           <div style="width:100%;float:left;">
-            {% for photo in monthsPhotos[i]%}
-              <img src= "static/photos/{{ photo }}" alt="image alt text" onclick="photoClicked(this)" class="galleryPhoto"/>
+            {% for media in monthsPhotos[i]%}
+              <div style="float:left; position: relative;">
+                {%if ".mp4" in media%}
+                  <i class = "fa fa-video-camera" style="color:black; position:absolute; left:5px; top:5px; z-index:2; width:15px; height:15px; "></i>
+                  <video onclick="mediaClicked(this)" class="galleryPhoto">
+                    <source src="static/photos/{{ media }}"  type="video/mp4" >
+                  </video>
+                {%else%}
+                  <img src= "static/photos/{{ media }}" alt="image alt text" onclick="mediaClicked(this)" class="galleryPhoto"/>
+                {%endif%}
+              </div>
             {% endfor %}
           </div>
         </div>

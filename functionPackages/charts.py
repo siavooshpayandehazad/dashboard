@@ -2,12 +2,14 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from functionPackages.misc import getMonthsBeginning, getMonthsEnd, numberOfDaysInMonth
 
+
 def is_number(s):
     try:
         float(s)
         return True
     except ValueError:
         return False
+
 
 def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     lastMonthsBeginning = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-relativedelta(months=+1)
@@ -50,6 +52,7 @@ def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, db
         chartWeights.append(weight)
     return chartWeights
 
+
 def weightFunc(res, weight):
     weightList = [float(x[0]) for x in res if is_number(x[0])]
     if len(weightList)>0:
@@ -57,6 +60,7 @@ def weightFunc(res, weight):
     else:
         weight.append("nan")
     return weight
+
 
 def BOFunc(res, BO):
     BOList = [float(x[0]) for x in res if is_number(x[0])]
@@ -66,17 +70,21 @@ def BOFunc(res, BO):
         BO.append("nan")
     return BO
 
+
 def WHFunc(res, yearWH):
     yearWH.append(sum([float(x[0]) for x in res if is_number(x[0])]))
     return yearWH
+
 
 def sleepFunc(res, yearSleep):
     yearSleep.append(sum([float(x[0]) for x in res if is_number(x[0])]))
     return yearSleep
 
+
 def stepFunc(res, yearStep):
     yearStep.append(sum([float(x[0]) for x in res if is_number(x[0])]))
     return yearStep
+
 
 def moodFunc(res, yearMoods):
     res = [x[0] for x in res]
@@ -88,9 +96,11 @@ def moodFunc(res, yearMoods):
         yearMoods.append("nan")
     return yearMoods
 
+
 def runFunc(res, yearRuns):
     yearRuns.append(sum([float(x[0]) for x in res if is_number(x[0])]))
     return yearRuns
+
 
 def genYearChartData(pageYear: int, tableName: str, calcFunc, dbCursur):
     retList = []
@@ -126,6 +136,7 @@ def generateHRChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCurs
         chartHR_Min.append(hr_min)
         chartHR_Max.append(hr_max)
     return chartHR_Min, chartHR_Max
+
 
 def generateYearHRChartData(pageYear: int, numberOfDays: int, dbCursur):
     HR_Min_Avg = []
@@ -164,6 +175,7 @@ def generateYearHRChartData(pageYear: int, numberOfDays: int, dbCursur):
             HR_Max_Avg.append("nan")
     return HR_Min_Avg, HR_Max_Avg
 
+
 def generateBPChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsBP = []
     dbCursur.execute("""SELECT * FROM BPTracker WHERE date >= ? and date <= ?  """,
@@ -180,6 +192,7 @@ def generateBPChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCurs
         chartBP_Min.append(bp_min)
         chartBP_Max.append(bp_max)
     return chartBP_Min, chartBP_Max
+
 
 def generateYearBPChartData(pageYear: int, numberOfDays: int, dbCursur):
     BP_Min_Avg = []
@@ -235,9 +248,10 @@ def generateOxygenChartData(pageMonth: int, pageYear: int, numberOfDays: int, db
         BOTrackerData.append(BO)
     return BOTrackerData
 
+
 def generateWorkTrakcerChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsWorkHours = []
-    dbCursur.execute("""SELECT * FROM workHourTracker WHERE date >= ? and date <= ?  """,
+    dbCursur.execute("""SELECT * FROM workTracker WHERE date >= ? and date <= ?  """,
               (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
     monthsWorkHours += dbCursur.fetchall()
 
@@ -266,6 +280,7 @@ def generateSavingTrackerChartData(pageYear: int, dbCursur):
                 savingsVal = float(item[0])
         savingTrackerData.append(savingsVal)
     return savingTrackerData
+
 
 def generateSleepChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsSleepHours = []
@@ -324,6 +339,7 @@ def generateRunningChartData(pageMonth: int, pageYear: int, numberOfDays: int, d
                     run_value = "nan"
         runningTrackerData.append(run_value)
     return runningTrackerData
+
 
 def generatePaceChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     monthsPaces = []

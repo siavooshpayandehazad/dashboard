@@ -1,73 +1,134 @@
 <script type="text/javascript">
-  function photoClicked(item){
-    var overlay = document.getElementById("PhotoOverlay")
+  function removeTrashIcon(){
+    var hoverDiv = document.getElementsByClassName("mediaHoverDots");
+    while(hoverDiv.length>0){
+        hoverDiv[0].remove();
+    }
+  }
+  function mediaClicked(item){
+    var overlay = document.getElementById("mediaOverlay")
     overlay.style.display = "block";
-    var img = document.createElement('img');
-    img.src = item.src;
-    img.id = "PhotoOverlayPicture"
-    img.style.maxWidth = "70%";
-    img.style.maxHeight = "80%";
-    img.style.float = "center";
-    img.style.marginTop = "5%";
-    img.onclick= function() {closeOverlay()}
-    overlay.appendChild(img);
+    if (item.nodeName == "IMG"){
+      var media = document.createElement('img');
+      media.src = item.src;
+    }else if (item.nodeName == "VIDEO") {
+      var media = document.createElement('video');
+      media.setAttribute("controls", "controls");
+      var source = document.createElement('source');
+      source.src = item.src;
+      media.setAttribute("src", source.src);
+      media.appendChild(source)
+    }
+    media.id = "mediaOverlayContent"
+    media.style.maxWidth = "70%";
+    media.style.maxHeight = "80%";
+    media.style.float = "center";
+    media.style.marginTop = "5%";
+    media.onclick= function(event){
+      event.preventDefault();
+      closeOverlay();
+    }
+    overlay.appendChild(media);
   }
   function closeOverlay(){
-    var img = document.getElementById("PhotoOverlayPicture")
-    img.remove();
-    var overlay = document.getElementById("PhotoOverlay")
+    var media = document.getElementById("mediaOverlayContent")
+    if(media.nodeName == "VIDEO"){
+      media.pause();
+    }
+    media.remove();
+    var overlay = document.getElementById("mediaOverlay")
     overlay.style.display = "none";
   }
-  function nextPic(){
-    var img = document.getElementById("PhotoOverlayPicture");
-    var allIMGs = document.getElementsByClassName("journalPhoto");
+  function nextPic(dir){
+    var media = document.getElementById("mediaOverlayContent");
+    var allIMGs = document.getElementsByClassName("journalMedia");
+    if (media.nodeName == "VIDEO"){
+      src1 = media.getElementsByTagName("SOURCE")[0].src
+    }else{
+      src1 = media.src;
+    }
     for (i = 0; i < allIMGs.length; i++) {
-      if (allIMGs[i].src == img.src){
-        img.src = allIMGs[(i+1)%allIMGs.length].src;
+      if (allIMGs[i].nodeName == "VIDEO"){
+        src2 = allIMGs[i].src
+      }else{
+        src2 = allIMGs[i].src
+      }
+      if (src1 == src2){
+        closeOverlay()
+        mediaClicked(allIMGs[(i+dir+allIMGs.length)%allIMGs.length])
         return;
       }
     }
   }
-  function prevPic(){
-    var img = document.getElementById("PhotoOverlayPicture");
-    var allIMGs = document.getElementsByClassName("journalPhoto");
-    for (i = 0; i < allIMGs.length; i++) {
-      if (allIMGs[i].src == img.src){
-        img.src = allIMGs[(i-1+allIMGs.length)%allIMGs.length].src;
-        return;
+  function mediaHover(event, item){
+    var i = document.createElement("i")
+    i.style.top = parseInt(item.getBoundingClientRect().y)+5+"px";
+    i.style.left = parseInt(item.getBoundingClientRect().right)-20+"px";
+    i.setAttribute("class", " fa fa-trash-o hover-red mediaHoverDots");
+    i.setAttribute("src", item.src);
+    i.onclick = function(){
+      decision = confirm("do you want to permenently delete the media?");
+      if (decision){
+        removeTrashIcon()
+        var media = document.getElementsByClassName("journalMedia");
+        for (var i=0; i<media.length; i++){
+            if(media[i].src == this.getAttribute("src")){
+              media[i].remove();
+            }
+        }
+        $.ajax({ type: "POST",
+                 url: "http://"+window.location.hostname+":5000/journal",
+                 data: {"type": "photo", "action": "delete", "value":this.getAttribute("src")},
+        });
       }
     }
+    document.body.appendChild(i);
+  }
+  function mediaHoverLeave(event){
+    event.stopPropagation();
+    if(event.toElement.nodeName == "I")
+      return;
+    removeTrashIcon()
   }
 </script>
 
-<div id="PhotoOverlay" style="text-align:center">
+<div id="mediaOverlay" style="text-align:center">
   <div style="float:left; width:100%; ">
     <i class="fa fa-times closeButton hover-red" aria-hidden="true" onclick="closeOverlay()"></i>
   </div>
-  <div onclick="prevPic()"  style="float:left; width:10%; height:100%;">
+  <div onclick="nextPic(-1)"  style="float:left; width:10%; height:100%;">
       <i class="fa fa-chevron-left chevronIcon hover-red" aria-hidden="true"></i>
   </div>
-  <div onclick="nextPic()" style="float:right; width:10%; height:100%;">
+  <div onclick="nextPic(1)" style="float:right; width:10%; height:100%;">
       <i class="fa fa-chevron-right chevronIcon hover-red" aria-hidden="true"></i>
   </div>
 </div>
 
 <div style="float:left">
   {%if todayPhotos|length >0%}
-    {% for photo in todayPhotos%}
-      <img src= "static/photos/{{ photo }}" onclick="photoClicked(this)" class="journalPhoto"/>
+    {% for media in todayPhotos%}
+      <div style="float:left; position: relative;">
+        {%if ".mp4" in media%}
+          <i class = "fa fa-video-camera" style="color:black; position:absolute; left:5px; top:5px; z-index:2; width:15px; height:15px; "></i>
+          <video onclick="mediaClicked(this)" src="static/photos/{{ media }}"  type="video/mp4" onmouseover="mediaHover(event, this)" onmouseout="mediaHoverLeave(event)" class="journalMedia">
+
+          </video>
+        {%else%}
+          <img src= "static/photos/{{ media }}" onclick="mediaClicked(this)" onmouseover="mediaHover(event, this)" onmouseout="mediaHoverLeave(event)" class="journalMedia"/>
+        {%endif%}
+      </div>
     {% endfor %}
   {%endif%}
 </div>
 
 <script type="text/javascript">
   document.addEventListener('keydown', (e) => {
-    var overlay = document.getElementById("PhotoOverlay");
+    var overlay = document.getElementById("mediaOverlay");
     if(overlay.style.display === "block"){
         if (e.code === "ArrowRight"){
-          nextPic();
+          nextPic(1);
         }else if (e.code === "ArrowLeft") {
-          prevPic();
+          nextPic(-1);
         }else if (e.code === "Escape"){
           closeOverlay();
         }

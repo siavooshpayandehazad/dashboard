@@ -102,7 +102,7 @@ function deleteCard(promptUser){
     var setName = document.getElementById("setName").value;
     $.ajax({ type: "POST",
        url: "/learning",
-       data: {"entry": "flashCards",
+       data: {"type": "flashCards",
               "value": "{" + "\"setName\": \""+setName+
                              "\", \"side1\": \""+side1+
                              "\", \"side2\": \""+side2+
@@ -210,7 +210,7 @@ function flashPopUp(edit){
 function submitCardValue(setName, side1, side2, cardValue){
   $.ajax({ type: "POST",
      url: "/learning",
-     data: {"entry": "flashCards",
+     data: {"type": "flashCards",
             "value": "{" + "\"setName\": \""+setName+
                            "\", \"side1\": \""+side1+
                            "\", \"side2\": \""+side2+
@@ -268,7 +268,7 @@ function createFlashCard(){
     }
     $.ajax({ type: "POST",
        url: "/learning",
-       data: {"entry": "flashCards",
+       data: {"type": "flashCards",
               "value": "{" + "\"setName\": \""+setName+
                              "\", \"side1\": \""+side1+
                              "\", \"side2\": \""+side2+

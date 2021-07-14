@@ -5,20 +5,25 @@ var todayTasks = {{todayTodos|tojson}};
 var monthsTasks = {{thisMonthsEvents|tojson}};
 var overDueTasks = {{overDue|tojson}};
 
-
-function deleteTodo(item) {
+function deleteTodo(item, delete_note=true) {
     var listItem = item.childNodes[0].parentElement.parentElement;
-    console.log('deleting item', listItem.querySelector(".task").innerHTML, listItem.querySelector(".date").innerHTML)
-    $.ajax({ type: "POST",
-       url: "/org",
-       data: {"entry": "todo",
-              "value": listItem.querySelector(".task").innerHTML,
-              "date": listItem.querySelector(".date").innerHTML,
-              "action": 'delete'}
-    });
-    listItem.remove();
+    var todoVal  = listItem.querySelector(".task").innerHTML;
+    var decision = true;
+    if (delete_note){
+      decision = confirm("you are permenently deleting "+todoVal+" todo! are you sure?");
+    }
+    if(decision == true){
+      console.log('deleting item', listItem.querySelector(".task").innerHTML, listItem.querySelector(".date").innerHTML)
+      $.ajax({ type: "POST",
+         url: "/org",
+         data: {"type": "todo",
+                "date": listItem.querySelector(".date").innerHTML,
+                "action": 'delete',
+                "value"  : JSON.stringify({"value": todoVal})},
+      });
+      listItem.remove();
+    }
 }
-
 function editTaskColor(item, event){
   if(item !== event.target){
     return;
@@ -44,14 +49,23 @@ function editTaskColor(item, event){
       var taskStatus = item.parentElement.getElementsByClassName("todoCheckbox")[0].checked;
       var chosenColor = this.style.backgroundColor;
 
-      $.ajax({ type: "POST",
-          url: "/org",
-          data: {"entry": "todo", "value": textVlue, "date": date, "action": 'delete'}
+      $.ajax({type: "POST",
+              url: "/org",
+              data: {"type": "todo",
+                     "date": date,
+                     "action": 'delete',
+                     "value"  : JSON.stringify({"value": textVlue}),
+              }
         }).success(function() {
-            $.ajax({ type: "POST",
-                url: "/org",
-                data: {"entry": "todo", "value": textVlue, "date": date, "done": taskStatus, "color": chosenColor}
-                });
+            $.ajax({type: "POST",
+                    url: "/org",
+                    data: {"type": "todo",
+                           "date": date,
+                           "value"  : JSON.stringify({"value": textVlue,
+                                                       "done": taskStatus.toString(),
+                                                       "color": chosenColor})
+                          },
+                    });
           });
 
       item.parentElement.getElementsByClassName("taskColorLabel")[0].style.backgroundColor=chosenColor;
@@ -63,13 +77,11 @@ function editTaskColor(item, event){
         }
       }
     };
-
     colorSelector.appendChild(color);
   }
 
   item.appendChild(colorSelector)
 }
-
 function AddItemToList(name, date, list, color){
   var li = document.createElement("li");
   li.setAttribute("style", "word-wrap: break-word; width:98%; white-space: normal;");
@@ -111,7 +123,6 @@ function AddItemToList(name, date, list, color){
   var ul = list;
   ul.appendChild(li)
 }
-
 function hoverText(event, item){
   var dropDownMenus = document.getElementsByClassName("toDoEditHover");
   if(dropDownMenus.length>0){
@@ -129,24 +140,20 @@ function hoverText(event, item){
   div.classList.add("toDoHoverText");
   document.body.appendChild(div);
 }
-
 function highlightToDoText(item){
   var task = item.parentElement.parentElement.getElementsByClassName("task")[0]
   task.style.color = "red";
 }
-
 function removeToDoHighlight(item){
   var task = item.parentElement.parentElement.getElementsByClassName("task")[0]
   task.style.color = "black";
 }
-
 function removeHover(){
   var hoverDiv = document.getElementsByClassName("toDoHoverText");
   for(var i=0; i<hoverDiv.length; i++){
       hoverDiv[i].remove();
   }
 }
-
 function dropDownMenu(item, event){
   var dropDownMenus = document.getElementsByClassName("toDoEditHover");
   if(dropDownMenus.length>0){
@@ -167,10 +174,15 @@ function dropDownMenu(item, event){
     // Post to server
     $.ajax({ type: "POST",
         url: "/org",
-        data: {"entry": "todo", "value": item.textContent, "date": date, "done": 'false', "color": color}
+        data: {"type": "todo",
+               "date": date,
+               "value"  : JSON.stringify({"value": item.textContent,
+                                          "done": 'false',
+                                          "color": color}),
+      }
     }).success( function (){
       AddItemToList(item.textContent, date, document.getElementById("todayList"), color);
-      deleteTodo(item.parentElement.getElementsByClassName("deleteSpan")[0]);
+      deleteTodo(item.parentElement.getElementsByClassName("deleteSpan")[0], delete_note=false);
       div.remove();
     });
   }
@@ -195,14 +207,23 @@ function editTodo(item){
       color = listElement.getElementsByClassName("taskColorLabel")[0].style.backgroundColor;
       $.ajax({ type: "POST",
           url: "/org",
-          data: {"entry": "todo", "value": textVlue, "date": date, "action": 'delete'}
+          data: {"type": "todo",
+                 "action": 'delete',
+                 "date": date,
+                 "value"  : JSON.stringify({"value": textVlue}),
+               },
         }).success(function() {
             $.ajax({ type: "POST",
                 url: "/org",
-                data: {"entry": "todo", "value": textarea.value, "date": date, "done": taskStatus, "color": color}
-                });
-          });
-    }
+                data: {"type": "todo",
+                       "date": date,
+                       "value"  : JSON.stringify({"value": textarea.value,
+                                                  "done": taskStatus.toString(),
+                                                  "color": color}),
+                      },
+            });
+        });
+      }
   }
   if ((event.keyCode ==27) ||(event.keyCode ==13)) {
     item.innerHTML = textarea.value;
@@ -212,7 +233,6 @@ function editTodo(item){
   }
 });
 }
-
 function toggle(){
   showDone = document.getElementById("hideDone").checked
   renderTodos("overDueTasks", "", overDueTasks, true, showDone, true);
@@ -226,7 +246,7 @@ function toggle(){
 </div>
 
 <div style="float:left; width:20%; margin-bottom:10px;">
- <b class="titleNewTask"><i class="fa fa-filter" style="color:white"></i> </b>
+ <b class="titleNewTask"><i class="fa fa-filter" style="color:white; margin-top:4px"></i> </b>
  <select id="colorFilter" onchange="colorFilterChange(this)">
     <option>None</option>
     <option style="background-color:tomato">red</option>
@@ -234,6 +254,7 @@ function toggle(){
     <option style="background-color:darkorchid">purple</option>
     <option style="background-color:darkorange">orange</option>
   </select>
+
   <label class="switch" style="float:right">
     {% if request.args.get('Done') == "true" %}
         <input type="checkbox" id= "hideDone" onclick="toggle()" checked>
@@ -242,6 +263,7 @@ function toggle(){
       {%endif%}
     <span class="slider round"></span>
   </label>
+  <i class="fa fa-eye-slash" style="color:white; float:right; margin-top:5px" aria-hidden="true"></i>
 </div>
 
 <!--Over due tasks-->
@@ -264,18 +286,13 @@ function toggle(){
  </div>
 
 <script type="text/javascript">
-
-
-
   function cleanTodos(DivID){
     taskCountainer = document.getElementById(DivID)
     while (taskCountainer.firstChild) {
       taskCountainer.removeChild(taskCountainer.firstChild);
     }
   }
-
   function renderTodos(DivID, ULID, tasks, addDropDown, showDone, showDate){
-
     cleanTodos(DivID);
     // ShowDone: shows the tasks that are marked done
     // showDate: shows the date of the taskondblclicks
@@ -345,20 +362,18 @@ function toggle(){
    }
    div.appendChild(list);
   }
-
   function boxchange(event) {
       var listItem = event.target.parentElement;
       $.ajax({ type: "POST",
           url: "/org",
-          data: {"entry": "todo",
-                 "value": listItem.querySelector(".task").innerHTML,
+          data: {"type": "todo",
                  "date": listItem.querySelector(".date").innerHTML,
-                 "done": listItem.querySelector("input").checked,
-                 "color": listItem.getElementsByClassName("taskColorLabel")[0].style.backgroundColor,
+                 "value"  : JSON.stringify({"value": listItem.querySelector(".task").innerHTML,
+                                             "done": listItem.querySelector("input").checked.toString(),
+                                             "color": listItem.getElementsByClassName("taskColorLabel")[0].style.backgroundColor}),
                  }
       });
   }
-
   function validateToDoInput(value){
     if(value.length == 0){
       window.alert("input field can not be empty!");
@@ -378,7 +393,11 @@ function toggle(){
               // Post to server
               $.ajax({ type: "POST",
                   url: "/org",
-                  data: {"entry": "todo", "value": taskValue, "date": taskDate, "done": 'false', 'color': 'tomato'}
+                  data: {"type": "todo",
+                         "date": taskDate,
+                         "value"  : JSON.stringify({"value": taskValue,
+                                                    "done": 'false',
+                                                    "color": 'tomato'}),}
               });
               // add the new element to the list!
               AddItemToList(taskValue, taskDate, document.getElementById("todayList"), "tomato")
@@ -386,7 +405,6 @@ function toggle(){
               document.getElementById("task").value = "";
           }
       });
-
 
   function colorFilterChange(item){
     todoColorFilter = item[item.selectedIndex].style.backgroundColor;

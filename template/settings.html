@@ -14,7 +14,7 @@
       $.ajax({
           type: "POST",
           url: "http://"+window.location.hostname+":5000/settings",
-          data: {"Theme": themeColor},
+          data: {"type": "Theme", "value": themeColor},
       });
       if(themeColor == "Dark"){
         document.body.className = "featured";
@@ -28,7 +28,7 @@
       $.ajax({
           type: "POST",
           url: "http://"+window.location.hostname+":5000/settings",
-          data: {"activityList": activities},
+          data: {"type": "activityList", "value": activities},
       });
     }
   </script>
@@ -99,7 +99,7 @@ function resetPass(){
   $.ajax({
       type: "POST",
       url: "http://"+window.location.hostname+":5000/settings",
-      data: {"password": JSON.stringify({"currntpwd":currntpwd, "newpwd":newpwd})},
+      data: {"type" : "password", "value" : JSON.stringify({"currntpwd":currntpwd, "newpwd":newpwd})},
   }).success(function(result){
     if (result=="succeded"){
       alert("password updated successfully")

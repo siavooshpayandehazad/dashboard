@@ -1,11 +1,11 @@
-.journalPhoto{
+.journalMedia{
   border: 1px solid transparent;
   height: 120px;
 }
-.journalPhoto:hover{
+.journalMedia:hover{
   border: 1px solid white;
 }
-#PhotoOverlay {
+#mediaOverlay {
   position: fixed;
   display: none;
   width: 100%;
@@ -15,7 +15,7 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0,0,0,0.9);
-  z-index: 2;
+  z-index: 10;
   cursor: pointer;
 }
 .closeButton{
@@ -57,4 +57,12 @@ div.dailyEntry{
  margin-right:20px;
  margin-top: 30px;
  background-color: var(--dailyentry-clr);
+}
+.mediaHoverDots{
+  text-shadow: 1px 1px 1px #FFFFFF, -1px -1px 1px #FFFFFF, -1px 1px 1px #FFFFFF, 1px -1px 1px #FFFFFF;
+  z-index : 2;
+  position : fixed;
+  font-size: 100%;
+  border-radius: 10px;
+  color:black;
 }

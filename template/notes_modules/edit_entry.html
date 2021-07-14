@@ -20,9 +20,11 @@
       var notebookName = document.getElementById("notebookName").innerHTML
       $.ajax({ type: "POST",
           url: "http://"+window.location.hostname+":5000/notes",
-          data: {"entry":notebookEntry,
-                 "notebook": notebookName,
-                 "chapter" : chapterName,},
+          data: {"type:"  : "notes",
+                 "value"  : JSON.stringify({"entry":notebookEntry,
+                                            "notebook": notebookName,
+                                            "chapter" : chapterName}),
+                },
       });
       document.getElementById("chapterContent").innerHTML = notebookEntry;
       tempNotebooks[notebookName][chapterName]=notebookEntry;

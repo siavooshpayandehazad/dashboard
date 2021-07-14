@@ -3,7 +3,7 @@
     var newText = document.getElementById("dailyEntry").value;
     $.ajax({ type: "POST",
         url: "http://"+window.location.hostname+":5000/journal",
-        data: {"entry": "log", "value":newText, "date": document.getElementById("dailyEntry").name},
+        data: {"type": "log", "value":newText, "date": document.getElementById("dailyEntry").name},
     });
     document.getElementById("todayslog").innerHTML = newText.replace(/\n/g, "<br>");;
   }

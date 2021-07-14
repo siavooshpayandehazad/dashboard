@@ -375,7 +375,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
       var oldDate = "{{year|safe}}-{{'%02d' % (month)}}-"+zeroPad(selectedDay, 2)
       $.ajax({ type: "POST",
          url: "/org",
-         data: {"entry": "calendar",
+         data: {"type": "calendar",
                 "value": "{" + "\"name\": \""+eventName.value+
                                "\", \"details\": \""+eventDescription.value+
                                "\", \"startTime\": \""+ ((startTime.disabled) ? "None" : (startTime.value)) +
@@ -406,7 +406,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
     }else{ // just create a new event
       $.ajax({ type: "POST",
          url: "/org",
-         data: {"entry": "calendar",
+         data: {"type": "calendar",
                 "value": "{" + "\"name\": \""+eventName.value+
                                "\", \"details\": \""+eventDescription.value+
                                "\", \"startTime\": \""+ ((startTime.disabled) ? "None" : (startTime.value)) +
@@ -454,7 +454,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
       if(decision == true){
         $.ajax({ type: "POST",
            url: "/org",
-           data: {"entry": "calendar",
+           data: {"type": "calendar",
                   "value": "{" + "\"name\": \""+eventName.value+
                                  "\", \"details\": \""+eventDescription.value+
                                  "\", \"startTime\": \""+startTime.value +
@@ -649,7 +649,7 @@ function dropCalEvent(event){
 
   $.ajax({ type: "POST",
      url: "/org",
-     data: {"entry": "calendar",
+     data: {"type": "calendar",
             "value": "{" + "\"name\": \""+eventName+
                            "\", \"details\": \""+eventDescription+
                            "\", \"startTime\": \""+ newStartTime +

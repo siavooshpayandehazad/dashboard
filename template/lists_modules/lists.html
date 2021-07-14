@@ -74,16 +74,26 @@ function itemdblclick(item){
     var newDetails = itemDetailsArea.value;
     var newItemName = itemNameTextArea.value;
     var doneState = item.parentElement.querySelector("input").checked;
+    console.log(doneState)
     var newName = itemNameTextArea.value;
     item.parentElement.getElementsByClassName("task")[0].textContent = newName;
     item.parentElement.getElementsByClassName("note")[0].textContent = newDetails;
     $.ajax({ type: "POST",
         url: "/lists",
-        data: {"name": oldItemName, "type": type, "action": "delete"}
+        data: {"type:"  : "lists",
+               "action": "delete",
+               "value"  : JSON.stringify({"name": oldItemName,
+                                          "type": type}),
+              },
     }).success(function() {
       $.ajax({ type: "POST",
         url: "/lists",
-        data: {"name": newItemName, "type": type, "notes": newDetails, "done": doneState}
+        data: {"type:"  : "lists",
+               "value"  : JSON.stringify({"name": newItemName,
+                                          "type": type,
+                                          "notes": newDetails,
+                                          "done": doneState.toString()}),
+              },
       });
     });
     this.parentElement.remove()
@@ -221,7 +231,11 @@ function listSettings(item){
           document.getElementById("countAll "+type).textContent = value - 1;
           $.ajax({ type: "POST",
               url: "/lists",
-              data: {"name": itemName, "type": type, "action": "delete"}
+              data: {"type:"  : "lists",
+                     "action" : "delete",
+                     "value"  : JSON.stringify({"name": itemName,
+                                                "type": type}),
+                    },
           });
           listItem.remove();
         }
@@ -242,7 +256,12 @@ function listSettings(item){
         }
         $.ajax({ type: "POST",
                  url: "/lists",
-                 data: {"name": name, "type": type, "notes": notes, "done": checked}
+                 data: {"type:"  : "lists",
+                        "value"  : JSON.stringify({"name" : name,
+                                                   "type" : type,
+                                                   "notes": notes,
+                                                   "done" : checked.toString()}),
+                       },
                }).error(function(){
                       window.alert("something went wrong!");
                });
@@ -257,7 +276,12 @@ function listSettings(item){
           }
           $.ajax({ type: "POST",
               url: "/lists",
-              data: {"name": listItemValue, "type": listItemType, "notes": "None", "done": 'false'}
+              data: {"type:"  : "lists",
+                     "value"  : JSON.stringify({"name": listItemValue,
+                                                "type": listItemType,
+                                                "notes": "None",
+                                                "done": 'false'}),
+                    },
           }).error(function(){
                  window.alert("something went wrong!");
           });

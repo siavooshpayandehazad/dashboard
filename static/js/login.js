@@ -35,7 +35,7 @@ function login(){
   $.ajax({
       type: "POST",
       url: "/home",
-      data: {"password": password},
+      data: {"type":"password", "value": password},
   }).success(function(result){
     if (result == "success"){
       localStorage.setItem('token',"true");

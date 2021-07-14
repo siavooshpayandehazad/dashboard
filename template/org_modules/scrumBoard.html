@@ -149,8 +149,8 @@
       var currentList = event.target.parentElement.parentElement.id.split("_")[0];
       $.ajax({ type: "POST",
           url: "/org",
-          data: {"cardProj": cardProj, "cardTask": cardTask,
-                 "action": "delete" , "currentList": currentList}
+          data: {"type" : "scrum", "value" : JSON.stringify({"cardProj": cardProj, "cardTask": cardTask,
+                 "action": "delete" , "currentList": currentList})},
       });
       event.target.parentElement.parentElement.remove();
     }
@@ -175,7 +175,8 @@
         }
         $.ajax({ type: "POST",
             url: "/org",
-            data: {"cardProj": project, "cardTask": task, "priority": priority}
+            data: {"type" : "scrum", "value" : JSON.stringify({"cardProj": project,
+                   "cardTask": task, "priority": priority})},
         });
 
         var backlogList = document.getElementById("backlogList")
@@ -249,8 +250,8 @@
           //console.log(cardProj,cardTask, currentList)
           $.ajax({ type: "POST",
               url: "/org",
-              data: {"cardProj": cardProj, "cardTask": cardTask,
-                     "currentList": currentList , "destList": "archive"}
+              data: {"type" : "scrum", "value" : JSON.stringify({"cardProj": cardProj, "cardTask": cardTask,
+                     "currentList": currentList , "destList": "archive"})},
           });
           event.target.parentElement.parentElement.remove();
         }
@@ -294,8 +295,9 @@
           ev.target.appendChild(document.getElementById(data));
           $.ajax({ type: "POST",
               url: "/org",
-              data: {"cardProj": cardProj, "cardTask": cardTask, "priority": priority,
-                     "currentList": currentList , "destList": destList}
+              data: {"type" : "scrum", "value" : JSON.stringify({"cardProj": cardProj,
+                    "cardTask": cardTask, "priority": priority,
+                     "currentList": currentList , "destList": destList})},
           });
           // here im fixing the color of the moved card!
           var item = document.getElementById(data)
