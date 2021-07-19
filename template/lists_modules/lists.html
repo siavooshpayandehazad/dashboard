@@ -9,7 +9,6 @@
   }
 
 function itemdblclick(item){
-  console.log("here")
   parentDiv = item.parentElement.parentElement.parentElement
   oldItemName = item.parentElement.getElementsByClassName("task")[0].innerHTML
 
@@ -296,13 +295,20 @@ function listSettings(item){
             input.setAttribute('type', 'checkbox');
             input.setAttribute('onchange', 'boxchange(event)');
             input.style = 'margin-right:10px';
+
+            var span0 = document.createElement("span");
+            span0.textContent =  "None";
+            span0.classList.add("note");
+            span0.style.display="none";
+
             var span1 = document.createElement("span");
             span1.textContent = event.srcElement.value;
             span1.classList.add("task");
             span1.setAttribute("type", event.srcElement.name);
-            span1.ondblclick=function(){itemdblclick(this)};
+            span1.setAttribute("ondblclick", "itemdblclick(this)");
 
             li.appendChild(input);
+            li.appendChild(span0);
             li.appendChild(span1);
 
             var span2 = document.createElement("span");

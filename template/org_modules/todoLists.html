@@ -93,6 +93,7 @@ function AddItemToList(name, date, list, color){
   var span1 = document.createElement("span");
   span1.setAttribute("class", "task");
   span1.innerHTML= name;
+  span1.ondblclick = function (){editTodo(this)}
 
   var span3 = document.createElement("span");
   span3.setAttribute("class", "date");
@@ -325,7 +326,6 @@ function toggle(){
          span1.classList="task";
          span1.style="margin-left:10px";
          span1.innerHTML=tasks[i][0];
-         span1.setAttribute('ondblclick', 'editTodo(this)');
          span1.ondblclick = function (){editTodo(this)}
          if(addDropDown){
            span1.onclick = function (){dropDownMenu(this, event)}
