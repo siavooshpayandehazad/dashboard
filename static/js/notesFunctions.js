@@ -19,9 +19,17 @@ function editChapterName(item){
     if (key === 13) {
       chapterLabel = document.getElementById("chapterName")
       chapterLabel.textContent = this.value;
+
+      if (tempNotebooks[notebookName][this.value]!==undefined){
+        alert("chapter "+this.value+"already exists in this notebook!");
+        this.parentElement.textContent = oldChapterName;
+        return;
+      }
+
       this.parentElement.textContent = this.value;
       tempNotebooks[notebookName][this.value] = tempNotebooks[notebookName][oldChapterName]
       delete tempNotebooks[notebookName][oldChapterName]
+
       if(this.value != oldChapterName){
          $.ajax({ type: "POST",
                   url: "http://"+window.location.hostname+":5000/notes",

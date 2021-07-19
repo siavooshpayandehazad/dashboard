@@ -261,14 +261,14 @@ class org(Resource):
     def post(self):
         args = parser.parse_args()
         if args['type'] == 'todo':
-            todaysDate = parseDate(args['date'])
+            dateVal = parseDate(args['date'])
             value_dict = eval((args['value']))
-            c.execute("""DELETE from todoList where date = ? and task = ?""", (todaysDate, value_dict['value'].lower()))
+            c.execute("""DELETE from todoList where date = ? and task = ?""", (dateVal, value_dict['value'].lower()))
             if args['action'] == "delete":
-                print(f"removed todo {value_dict['value'].lower()} from todoList for date: {todaysDate} as {value_dict['done']}")
+                print(f"removed todo {value_dict['value'].lower()} from todoList for date: {dateVal}")
             else:
-                c.execute("""INSERT INTO todoList VALUES(?, ?, ?, ?)""", (value_dict['value'].lower(), todaysDate, value_dict['done'], value_dict['color']))
-                print(f"added todo {value_dict['value'].lower()} to todoList for date: {todaysDate} as {value_dict['done']}")
+                c.execute("""INSERT INTO todoList VALUES(?, ?, ?, ?)""", (value_dict['value'].lower(), dateVal, value_dict['done'], value_dict['color']))
+                print(f"added todo {value_dict['value'].lower()} to todoList for date: {dateVal} as {value_dict['done']}")
             conn.commit()
 
         elif args['type'] == 'calendar':
