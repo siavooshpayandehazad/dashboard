@@ -106,10 +106,9 @@ def genYearChartData(pageYear: int, tableName: str, calcFunc, dbCursur):
     retList = []
     for i in range(1, 13):
         monthsBeginning = str(getMonthsBeginning(i, pageYear).date())
-        aggregateDays = round(numberOfDaysInMonth(int(i), int(pageYear))/4)
         for j in range(0, 3):
-            weekBeginning = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=aggregateDays*j)
-            weekEnd = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=aggregateDays*(j+1))
+            weekBeginning = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=7*j)
+            weekEnd = weekBeginning+datetime.timedelta(days=7)
             dbCursur.execute("SELECT * FROM " + tableName + " WHERE date >= ? and date < ?  ",
                 (weekBeginning.date(), weekEnd.date(),))
             retList = calcFunc(dbCursur.fetchall(), retList)
@@ -143,10 +142,9 @@ def generateYearHRChartData(pageYear: int, numberOfDays: int, dbCursur):
     HR_Max_Avg = []
     for i in range(1, 13):
         monthsBeginning = str(getMonthsBeginning(i, pageYear).date())
-        aggregateDays = round(numberOfDaysInMonth(int(i), int(pageYear))/4)
         for j in range(0, 3):
-            weekBeginning = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=aggregateDays*j)
-            weekEnd = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=aggregateDays*(j+1))
+            weekBeginning = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=7*j)
+            weekEnd = weekBeginning+datetime.timedelta(days=7)
             dbCursur.execute("""SELECT * FROM HRTracker WHERE date >= ? and date < ?  """,
                 (weekBeginning.date(), weekEnd.date(),))
             res = dbCursur.fetchall()
@@ -201,8 +199,8 @@ def generateYearBPChartData(pageYear: int, numberOfDays: int, dbCursur):
         monthsBeginning = str(getMonthsBeginning(i, pageYear).date())
         aggregateDays = round(numberOfDaysInMonth(int(i), int(pageYear))/4)
         for j in range(0, 3):
-            weekBeginning = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=aggregateDays*j)
-            weekEnd = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=aggregateDays*(j+1))
+            weekBeginning = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=7*j)
+            weekEnd = weekBeginning+datetime.timedelta(days=7)
             dbCursur.execute("""SELECT * FROM BPTracker WHERE date >= ? and date < ?  """,
                 (weekBeginning.date(), weekEnd.date(),))
             res = dbCursur.fetchall()
