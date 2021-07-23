@@ -21,7 +21,7 @@ function editChapterName(item){
       chapterLabel.textContent = this.value;
 
       if (tempNotebooks[notebookName][this.value]!==undefined){
-        alert("chapter "+this.value+"already exists in this notebook!");
+        alert("chapter "+this.value+" already exists in this notebook!");
         this.parentElement.textContent = oldChapterName;
         return;
       }
@@ -74,12 +74,19 @@ function addChapter(item){
   addChapterTextArea.style.display = "block";
 }
 function createNewChapter(item){
+  notebookName = document.getElementById("notebookName").textContent;
+  chapterName = item.value;
+  if (tempNotebooks[notebookName][chapterName]!==undefined){
+    alert("chapter "+chapterName+" already exists in this notebook!");
+    return;
+  }
+
   $.ajax({ type: "POST",
       url: "http://"+window.location.hostname+":5000/notes",
       data: {"type:"  : "notes",
              "value"  : JSON.stringify({ "entry":"",
-                                         "notebook": document.getElementById("notebookName").textContent,
-                                         "chapter" : item.value}),
+                                         "notebook": notebookName,
+                                         "chapter" : chapterName}),
             },
   });
   document.getElementById("chapterName").innerHTML = item.value;
@@ -186,6 +193,11 @@ function createNewNotebook(item){
   var noteBookName = item.value.trim();
   if(noteBookName.length == 0){
     window.alert("input field can not be empty!");
+    return false;
+  }
+  if (tempNotebooks[noteBookName]!==undefined){
+    alert("notebook "+noteBookName+" already exists in this notebook!");
+    item.value = "";
     return false;
   }
   $.ajax({ type: "POST",

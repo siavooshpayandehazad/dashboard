@@ -226,7 +226,7 @@ function editTodo(item){
         });
       }
   }
-  if ((event.keyCode ==27) ||(event.keyCode ==13)) {
+  if ((event.keyCode ==27) || (event.keyCode ==13)) {
     item.innerHTML = textarea.value;
     item.style.display = "inline";
     item.style.marginRight = "0px";
@@ -240,11 +240,75 @@ function toggle(){
   renderTodos("todaysTasks", "todayList", todayTasks, false,  showDone, false);
   renderTodos("nextMonthsTasks", "", monthsTasks, true, showDone, true);
 }
+function clearSearchItems(){
+  searchItems = document.getElementsByClassName("searchedTodoItem")
+  while (searchItems.length>0){
+    searchItems[0].remove()
+  }
+}
+function search(){
+  search_term = document.getElementById("todoSearchBar").value
+  $.ajax({ type: "POST",
+      url: "/org",
+      data: {"type": "todo",
+             "action": 'search',
+             "value"  : JSON.stringify({"search_term": search_term}),
+           },
+      success: function(d){
+        searchResDiv = document.getElementById("todoSearchResult")
+        clearSearchItems()
+        for (var i=0; i<d.length; i++){
+          div = document.createElement("div")
+          div.classList.add("searchedTodoItem")
+          div.date = d[i][1]
+          span = document.createElement("span")
+          span.textContent = d[i][0]
+          if (d[i][2] == "true"){
+            span.style.textDecoration = "line-through";
+          }
+          span.fontSize ="70%";
+          
+          span2 = document.createElement("span")
+          span2.style.float = "right";
+          span2.textContent = d[i][1]
+          span2.fontSize ="70%";
+          div.onclick=function(){
+            url = "/org?date="+this.date;
+            window.location.href = url;
+          }
+          div.appendChild(span)
+          div.appendChild(span2)
+          searchResDiv.appendChild(div)
+        }
+       }
+    })
+}
+function toggleOverlay(displayStatus){
+  overlay = document.getElementById("todoSearchOverlay")
+  overlay.style.display=displayStatus;
+  clearSearchItems()
+  search_term = document.getElementById("todoSearchBar")
+  search_term.value = ""
+}
 </script>
+
+<div id="todoSearchOverlay" style = "display:None;">
+  <i class="fa fa-times" style="color:white; float:right; margin-right:20px; margin-top:10px;" aria-hidden="true" onclick="toggleOverlay('None')"></i>
+  <div style = "margin-left:10%; height:30px; float:left; margin-bottom:10px; color: white;">
+    <span style="float:left; margin-top:10px;">Search: </span>
+    <textarea id="todoSearchBar" rows="1" cols="40"></textarea>
+    <i class="fa fa-search todoSearch" style="margin-left:10px; margin-top:10px;" onclick="search()"></i>
+  </div>
+  <div id="todoSearchResult">
+
+  </div>
+</div>
 
 <div style = "width:75%; float:left; margin-bottom:10px;">
   <b class="titleNewTask">Add new task:</b> <input id="task", name ="{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}",  type="text" class="newTodo">
 </div>
+
+<i class="fa fa-search todoSearch" style="margin-top:5px" onclick="toggleOverlay('block')"></i>
 
 <div style="float:left; width:20%; margin-bottom:10px;">
  <b class="titleNewTask"><i class="fa fa-filter" style="color:white; margin-top:4px"></i> </b>
