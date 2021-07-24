@@ -169,7 +169,12 @@ div.todoColorPopup{
   border-radius: 10px;
   z-index:10;
 }
-
+.todoSearchClose{
+  color: white;
+  float:right;
+  margin-right:20px;
+  margin-top:10px;
+}
 div.searchedTodoItem:hover{
   background-color: #deebf7;
   cursor: pointer;

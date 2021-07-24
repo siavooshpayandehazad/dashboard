@@ -26,7 +26,7 @@ for item in ['tracker_type', 'value', 'oldValue', 'date', 'action', 'type', 'pla
 
 conn, c = createDB("journal.db")
 backupDatabase(conn)
-generateDBTables(c)
+generateDBTables(c, conn)
 
 
 class dash(Resource):
@@ -201,47 +201,15 @@ class org(Resource):
         todaysDate = parseDate(args['date'])
         day, month, year = sparateDayMonthYear(todaysDate)
         monthsBeginning = getMonthsBeginning(month, year)
-
-        c.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (todaysDate,))
-        all_due_events = sorted(c.fetchall(), key=lambda tup: tup[1])
-
-        c.execute("""SELECT * FROM todoList WHERE date < ? and date >= ? and done = 'true'""", (todaysDate, monthsBeginning.date()))
-        all_due_events += sorted(c.fetchall(), key=lambda tup: tup[1])
-
         weekDay = datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d').weekday()
         numberOfDays = numberOfDaysInMonth(int(month), int(year))
-        c.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? """, (getNextDay(todaysDate), getThirtyDaysFromNow(day, month, year)))
-        thisMonthsEvents = sorted(c.fetchall(), key=lambda tup: tup[1])
-
-        c.execute("""SELECT * FROM todoList WHERE date = ? """, (todaysDate,))
-        todayTodos = c.fetchall()
-
-
         monthsBeginningWeekDay = monthsBeginning.weekday()
-        scrumBoardLists = {}
-        for stage in ["backlog", "todo", "in progress", "done"]:
-            c.execute("""SELECT * FROM scrumBoard WHERE stage = ? """, (stage, ))
-            # sort based on priority
-            scrumBoardLists[stage] = sorted([(task, proj, priority) for task, proj, stage, priority, done_date in c.fetchall()], key = lambda x: x[2])
 
-        # find all the tasks done during this month's period!
-        monthsEnd = getMonthsEnd(month, year)
-        c.execute("""SELECT * FROM scrumBoard WHERE done_date >= ? and done_date <= ? """, (monthsBeginning.date(),  monthsEnd.date()))
-        doneTasks = sorted([int(done_date.split("-")[2]) for proj, task,  stage, priority, done_date in c.fetchall()])
-        current_done = 0
-        ChartDoneTasks=[]
-        for i in range(1, numberOfDays+1):
-            current_done += doneTasks.count(i)
-            ChartDoneTasks.append(current_done)
-        ChartMonthDays = [str(i) for i in range(1, numberOfDays+1)]
-        if todaysDate == str(datetime.date.today()):
-            thisMonthTasksNum = len(scrumBoardLists["done"])+len(scrumBoardLists["in progress"])+len(scrumBoardLists["todo"])
-        else:
-            thisMonthTasksNum = ChartDoneTasks[-1]
-        ChartthisMonthTasks = [thisMonthTasksNum for i in range(numberOfDays)]
+        all_due_events, thisMonthsEvents, todayTodos =  getTodos (todaysDate, c)
+        scrumBoardLists, ChartDoneTasks, ChartMonthDays, ChartthisMonthTasks = getScrumTasks (todaysDate, c)
 
         calDate = getCalEvents(todaysDate, c)
-        calMonth = getCalEventsMonth(month, year, c)
+        calMonth = getCalEventsMonth(todaysDate, c)
         #---------------------------
         headerDates = []
         dayVal= datetime.datetime.strptime(todaysDate, '%Y-%m-%d')-datetime.timedelta(days=weekDay) # weekstart
@@ -307,9 +275,7 @@ class org(Resource):
             if scrum_dict.get('currentList', None) is not None:
                 currentList = scrum_dict['currentList']
                 if scrum_dict.get('action', "") == "delete":
-                    print("deleting card:", task)
-                    c.execute("""DELETE from scrumBoard where project = ? and task = ? and stage = ?""", (proj, task, currentList))
-                    conn.commit()
+                    deleteScrumTask(proj, task, c, conn)
                 else:
                     destList = scrum_dict.get('destList', "")
                     c.execute("""SELECT * FROM scrumBoard WHERE project = ? and task = ? and stage = ? """, (proj, task, currentList))
@@ -318,23 +284,21 @@ class org(Resource):
                         priority = tasks[0][-2]
                     else:
                         priority = scrum_dict.get('priority', "")
-
                     if destList == "done":
-                        c.execute("""DELETE from scrumBoard where project = ? and task = ? """, (proj, task))
-                        c.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, destList, priority, str(datetime.date.today())))
+                        deleteScrumTask(proj, task, c, conn)
+                        addScrumTask(proj, task, destList, priority, str(datetime.date.today()), c, conn)
                     elif destList == "archive":
                         c.execute("""SELECT * FROM scrumBoard WHERE project = ? and task = ? """, (proj, task))
                         date = c.fetchall()[0][-1]
-                        c.execute("""DELETE from scrumBoard where project = ? and task = ? """, (proj, task))
-                        c.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, destList, priority, str(date)))
+                        deleteScrumTask(proj, task, c, conn)
+                        addScrumTask(proj, task, destList, priority, str(date), c, conn)
                     else:
-                        c.execute("""DELETE from scrumBoard where project = ? and task = ? """, (proj, task))
-                        c.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, destList, priority, " "))
+                        deleteScrumTask(proj, task, c, conn)
+                        addScrumTask(proj, task, destList, priority, " ", c, conn)
                     conn.commit()
             else:   # its a new card!
                 priority = scrum_dict['priority']
-                c.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, "backlog", priority, " "))
-                conn.commit()
+                addScrumTask(proj, task, "backlog", priority, " ", c, conn)
         return "Done", 200
 
 
@@ -442,6 +406,7 @@ class notes(Resource):
             else:
                 print(f"deleting the notebook: {value_dict['notebook']}")
                 c.execute("""DELETE from Notes where Notebook = ? """, (value_dict["notebook"],))
+            conn.commit()
         elif args['action'] == "rename":
             parsjson = json.loads(args['value'])
             if (parsjson["type"] == "noteBookName") and(parsjson["oldName"] != parsjson["newName"]):
@@ -472,7 +437,7 @@ class notes(Resource):
         else:
             c.execute("""DELETE from Notes where Notebook = ? and Chapter = ?  """, (value_dict["notebook"], value_dict["chapter"]))
             c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (value_dict["notebook"], value_dict["chapter"], value_dict['entry']))
-        conn.commit()
+            conn.commit()
         return "nothing here!", 200
 
 

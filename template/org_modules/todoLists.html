@@ -267,7 +267,11 @@ function search(){
             span.style.textDecoration = "line-through";
           }
           span.fontSize ="70%";
-          
+
+          colorDiv = document.createElement("div")
+          colorDiv.classList.add("taskColorLabel")
+          colorDiv.style.backgroundColor = d[i][3]
+
           span2 = document.createElement("span")
           span2.style.float = "right";
           span2.textContent = d[i][1]
@@ -278,6 +282,7 @@ function search(){
           }
           div.appendChild(span)
           div.appendChild(span2)
+          div.appendChild(colorDiv)
           searchResDiv.appendChild(div)
         }
        }
@@ -293,7 +298,7 @@ function toggleOverlay(displayStatus){
 </script>
 
 <div id="todoSearchOverlay" style = "display:None;">
-  <i class="fa fa-times" style="color:white; float:right; margin-right:20px; margin-top:10px;" aria-hidden="true" onclick="toggleOverlay('None')"></i>
+  <i class="fa fa-times todoSearchClose hover-red" aria-hidden="true" onclick="toggleOverlay('None')"></i>
   <div style = "margin-left:10%; height:30px; float:left; margin-bottom:10px; color: white;">
     <span style="float:left; margin-top:10px;">Search: </span>
     <textarea id="todoSearchBar" rows="1" cols="40"></textarea>

@@ -133,10 +133,11 @@ def getCalEvents(todaysDate, dbCursur):
     return calList
 
 
-def getCalEventsMonth(pageMonth, pageYear, dbCursur):
+def getCalEventsMonth(todaysDate, dbCursur):
+    day, month, year = sparateDayMonthYear(todaysDate)
     dbCursur.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
-              (getMonthsBeginning(pageMonth, pageYear).date(),
-               getMonthsEnd(pageMonth, pageYear).date(),))
+              (getMonthsBeginning(month, year).date(),
+               getMonthsEnd(month, year).date(),))
     weeklyCalEvents = dbCursur.fetchall()
     calList = []
     for item in weeklyCalEvents:
@@ -278,7 +279,7 @@ def createDB(DBName):
     return DBConnection, DBCursor
 
 
-def generateDBTables(DBCursor):
+def generateDBTables(DBCursor, dbConnection):
     DBCursor.execute("""CREATE TABLE if not exists calendar (
              date text, startTime text, endTime text, eventName text, color text, details text)""")
     DBCursor.execute("""CREATE TABLE if not exists flashcards (
@@ -323,6 +324,7 @@ def generateDBTables(DBCursor):
              name text, done text, type text, note text)""")
     DBCursor.execute("""CREATE TABLE if not exists Notes (
              Notebook text, Chapter text, Content text)""")
+    dbConnection.commit()
 
 
 def setupSettingTable(dbCursur, dbConnection):
@@ -406,3 +408,64 @@ def verifyPassword(stored_password: str, provided_password: str) -> bool:
                                   100000)
     pwdhash = binascii.hexlify(pwdhash).decode('ascii')
     return pwdhash == stored_password
+
+
+def getTodos (todaysDate, dbCursur):
+    day, month, year = sparateDayMonthYear(todaysDate)
+    monthsBeginning = getMonthsBeginning(month, year)
+
+    dbCursur.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (todaysDate,))
+    all_due_events = sorted(dbCursur.fetchall(), key=lambda tup: tup[1])
+
+    dbCursur.execute("""SELECT * FROM todoList WHERE date < ? and date >= ? and done = 'true'""", (todaysDate, monthsBeginning.date()))
+    all_due_events += sorted(dbCursur.fetchall(), key=lambda tup: tup[1])
+
+    dbCursur.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? """, (getNextDay(todaysDate), getThirtyDaysFromNow(day, month, year)))
+    thisMonthsEvents = sorted(dbCursur.fetchall(), key=lambda tup: tup[1])
+
+    dbCursur.execute("""SELECT * FROM todoList WHERE date = ? """, (todaysDate,))
+    todayTodos = dbCursur.fetchall()
+
+    return all_due_events, thisMonthsEvents, todayTodos
+
+
+def getScrumTasks (todaysDate, dbCursur):
+    day, month, year = sparateDayMonthYear(todaysDate)
+    monthsBeginning = getMonthsBeginning(month, year)
+    numberOfDays = numberOfDaysInMonth(int(month), int(year))
+    monthsEnd = getMonthsEnd(month, year)
+
+    scrumBoardLists = {}
+    for stage in ["backlog", "todo", "in progress", "done"]:
+        dbCursur.execute("""SELECT * FROM scrumBoard WHERE stage = ? """, (stage, ))
+        # sort based on priority
+        scrumBoardLists[stage] = sorted([(task, proj, priority) for task, proj, stage, priority, done_date in dbCursur.fetchall()], key = lambda x: x[2])
+
+    # find all the tasks done during this month's period!
+
+    dbCursur.execute("""SELECT * FROM scrumBoard WHERE done_date >= ? and done_date <= ? """, (monthsBeginning.date(),  monthsEnd.date()))
+    doneTasks = sorted([int(done_date.split("-")[2]) for proj, task,  stage, priority, done_date in dbCursur.fetchall()])
+    current_done = 0
+    ChartDoneTasks=[]
+    for i in range(1, numberOfDays+1):
+        current_done += doneTasks.count(i)
+        ChartDoneTasks.append(current_done)
+    ChartMonthDays = [str(i) for i in range(1, numberOfDays+1)]
+    if todaysDate == str(datetime.date.today()):
+        thisMonthTasksNum = len(scrumBoardLists["done"])+len(scrumBoardLists["in progress"])+len(scrumBoardLists["todo"])
+    else:
+        thisMonthTasksNum = ChartDoneTasks[-1]
+    ChartthisMonthTasks = [thisMonthTasksNum for i in range(numberOfDays)]
+    return scrumBoardLists, ChartDoneTasks, ChartMonthDays, ChartthisMonthTasks
+
+
+def deleteScrumTask(proj, task, dbCursur, dbConnection):
+    print("deleting card:", task)
+    dbCursur.execute("""DELETE from scrumBoard where project = ? and task = ?""", (proj, task))
+    dbConnection.commit()
+    return None
+
+def addScrumTask(proj, task, list, priority, date, dbCursur, dbConnection):
+    dbCursur.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, list, priority, date))
+    dbConnection.commit()
+    return None
