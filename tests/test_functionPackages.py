@@ -1,8 +1,8 @@
 import datetime
 import pytest
 import sys
-sys.path.insert(1, '../')
-sys.path.insert(1, '../functionPackages')
+sys.path.insert(1, '.')
+sys.path.insert(1, 'functionPackages')
 print(sys.path)
 from functionPackages.misc import *
 from functionPackages.charts import *
@@ -10,6 +10,8 @@ from functionPackages.dateTime import *
 from package import *
 
 db_connection, db_cursor = None, None
+activityList = None
+
 
 def setup_module(module):
     global db_connection, db_cursor
@@ -22,7 +24,7 @@ def teardown_module(module):
 
 
 def test_generateDBTables():
-    generateDBTables(db_cursor)
+    generateDBTables(db_cursor, db_connection)
     #check if tables exist
     for tableName in ["activityTracker", "moodTracker", "logTracker", "todoList", "scrumBoard", "settings", "lists"]:
         db_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (tableName, ))
@@ -30,7 +32,7 @@ def test_generateDBTables():
 
 
 @pytest.mark.parametrize('activity, colName, tableName, date, list, delete, deleteDay', [
-                         ("reading", "activity_name", "activityTracker", str(datetime.date.today()), activityList, False, False),
+                         ("reading", "activity_name", "activityTracker", str(datetime.date.today()), [], False, False),
                          ("bad", "mood_name", "moodTracker", str(datetime.date.today()), moodList, False, False)
 ])
 def test_addTrackerItemToTable(activity, colName, tableName, date, list, delete, deleteDay):
