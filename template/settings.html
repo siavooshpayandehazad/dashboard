@@ -31,6 +31,37 @@
           data: {"type": "activityList", "value": activities},
       });
     }
+    function updateMailSetting(){
+
+      const MAIL_SERVER = document.getElementById("MAIL_SERVER").value;
+      const MAIL_USERNAME = document.getElementById("MAIL_USERNAME").value;
+      const MAIL_PASSWORD = document.getElementById("MAIL_PASSWORD").value;
+      console.log(MAIL_PASSWORD)
+      const MAIL_PORT = document.getElementById("MAIL_PORT").value;
+      const MAIL_USE_SSL = document.getElementById("MAIL_USE_SSL").value;
+      const MAIL_RECIPIENT = document.getElementById("MAIL_RECIPIENT").value;
+
+      $.ajax({
+          type: "POST",
+          url: "http://"+window.location.hostname+":5000/settings",
+          data: {"type" : "mailSetting",
+                 "value" : JSON.stringify({"MAIL_SERVER":    MAIL_SERVER,
+                                           "MAIL_USERNAME":  MAIL_USERNAME,
+                                           "MAIL_PASSWORD":  MAIL_PASSWORD,
+                                           "MAIL_PORT":      MAIL_PORT,
+                                           "MAIL_USE_SSL":   MAIL_USE_SSL,
+                                           "MAIL_RECIPIENT": MAIL_RECIPIENT,
+                                         })
+                },
+      }).success(function(result){
+        if (result=="succeded"){
+          alert("mail setting updated successfully")
+        }else{
+          alert("failed to update the mail settings")
+        }
+      }
+      );
+    }
   </script>
 </head>
 
@@ -89,6 +120,47 @@
     </form>
     * the activities will appear in the same order that you define here!
   </div>
+
+  <div class="divider" style="width:100%;height:2px;margin-top:20px;"></div>
+  <div style="width: 100%;float:left">
+    <h4>Mail server setup</h4>
+    <form action="javascript:;" onsubmit="return updateMailSetting()">
+
+        <span style="float: left; min-width: 140px;"> MAIL_SERVER: </span>
+        <textarea id="MAIL_SERVER" type="text" rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None">{{email_setting["MAIL_SERVER"]}}</textarea><br>
+
+        <span style="float: left; min-width: 140px;"> MAIL_PORT: </span>
+        <textarea id="MAIL_PORT" type="text"  rows="1" style="margin-top: 5px;margin-left: 1%; width:60px; outline:None; resize:None">{{email_setting["MAIL_PORT"]}}</textarea><br>
+
+        <span style="float: left; min-width: 153px;"> MAIL_USE_SSL: </span>
+        <select id="MAIL_USE_SSL" style="float:left;">
+          {%if email_setting["MAIL_USE_SSL"]=="True"%}
+            <option selected="selected">True</option>
+          {% else %}
+            <option>True</option>
+          {% endif %}
+          {%if email_setting["MAIL_USE_SSL"]=="False"%}
+            <option selected="selected">False</option>
+          {% else %}
+            <option>False</option>
+          {% endif %}
+        </select><br>
+
+        <span style="float: left; min-width: 140px;"> MAIL_USERNAME: </span>
+        <textarea id="MAIL_USERNAME" type="text"  rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None">{{email_setting["MAIL_USERNAME"]}}</textarea><br>
+
+        <span style="float: left; min-width: 140px;"> MAIL_PASSWORD: </span>
+        <input id="MAIL_PASSWORD" type="password" value = "{{email_setting["MAIL_PASSWORD"]}}" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None"><br>
+
+        <span style="float: left; min-width: 140px;"> MAIL_RECIPIENT: </span>
+        <textarea id="MAIL_RECIPIENT" type="text" rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None">{{email_setting["MAIL_RECIPIENT"]}}</textarea><br>
+
+        <input type="submit" style="margin-left: 23%;margin-top: 5px;">
+    </form>
+  </div>
+  <div class="divider" style="width:100%;height:2px;margin-top:20px;"></div>
+
+
 </div>
 </body>
 

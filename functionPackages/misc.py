@@ -328,10 +328,27 @@ def generateDBTables(DBCursor, dbConnection):
 
 
 def setupSettingTable(dbCursur, dbConnection):
-    dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
-    dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
-    dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("password", "None"))
-    dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("activityList", "None"))
+
+    dbCursur.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("Theme",))
+    try:
+        parameter = dbCursur.fetchall()[0][1]
+    except:
+        dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
+
+    dbCursur.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("counter",))
+    try:
+        parameter = dbCursur.fetchall()[0][1]
+    except:
+        dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
+
+    for item in ["activityList", "activityList", "MAIL_SERVER", "MAIL_PORT", "MAIL_USE_SSL",
+                 "MAIL_USERNAME", "MAIL_PASSWORD", "MAIL_RECIPIENT"]:
+        dbCursur.execute("""SELECT * FROM settings WHERE parameter = ?  """, (item,))
+        try:
+            parameter = dbCursur.fetchall()[0][1]
+        except:
+            dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "None"))
+
     dbConnection.commit()
 
 

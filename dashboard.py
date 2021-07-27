@@ -16,9 +16,11 @@ import json
 import os
 from random import randint
 
+from flask_mail import Mail,  Message
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
+mail = Mail()
 
 parser = reqparse.RequestParser()
 for item in ['tracker_type', 'value', 'oldValue', 'date', 'action', 'type', 'planner']:
@@ -27,7 +29,7 @@ for item in ['tracker_type', 'value', 'oldValue', 'date', 'action', 'type', 'pla
 conn, c = createDB("journal.db")
 backupDatabase(conn)
 generateDBTables(c, conn)
-
+setupSettingTable(c, conn)
 
 class dash(Resource):
     def get(self):
@@ -37,7 +39,6 @@ class dash(Resource):
             activityList = fetchSettingParamFromDB(c, "activityList").replace(" ", "").split(",")
         except:
             pageTheme = "Dark"
-            setupSettingTable(c, conn)
             print("could not fetch page theme! replacing with default values")
         if args['date'] is not None:
             pageYear, pageMonth, pageDay = args['date'].split("-")
@@ -307,8 +308,22 @@ class settings(Resource):
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
         activityList = fetchSettingParamFromDB(c, "activityList")
+
+        mailUsername = fetchSettingParamFromDB(c, "MAIL_USERNAME")
+        mailpass = len(fetchSettingParamFromDB(c, "MAIL_PASSWORD"))*"*"
+        mailServer = fetchSettingParamFromDB(c, "MAIL_SERVER")
+        mailPort = fetchSettingParamFromDB(c, "MAIL_PORT")
+        mailSSL = fetchSettingParamFromDB(c, "MAIL_USE_SSL")
+        recipientEmail = fetchSettingParamFromDB(c, "MAIL_RECIPIENT")
+        email_setting = {"MAIL_USERNAME": mailUsername,
+                         "MAIL_SERVER": mailServer,
+                         "MAIL_PORT": mailPort,
+                         "MAIL_USE_SSL": mailSSL,
+                         "MAIL_PASSWORD": "mailpass",
+                         "MAIL_RECIPIENT": recipientEmail
+                         }
         return make_response(render_template('settings.html', activityList=activityList,
-                                             pageTheme=pageTheme),200,headers)
+                                             pageTheme=pageTheme, email_setting=email_setting),200,headers)
 
     def post(self):
         args = parser.parse_args()
@@ -325,6 +340,15 @@ class settings(Resource):
                 updateSettingParam(c, conn, "password", hashPassword(pass_dict["newpwd"]))
                 return "succeded", 200
             return "failed", 200
+        if args['type'] == "mailSetting":
+            value_dict = eval((args['value']))
+            for item in value_dict:
+                if item != "MAIL_PASSWORD":
+                    updateSettingParam(c, conn, item, value_dict[item])
+                else:
+                    if value_dict[item] != "mailpass":
+                        updateSettingParam(c, conn, item, value_dict[item])
+            return "succeded", 200
         return "Done", 200
 
 
@@ -659,6 +683,7 @@ def upload_file_notes():
 def shutdown_server():
     if request.method == 'POST':
         print("shutdown request recieved...")
+        send_mail("Server shutting down", "shut down command received.", app, mail, c)
         shutdownReq = request.environ.get('werkzeug.server.shutdown')
         if shutdownReq is None:
             raise RuntimeError('Not running with the Werkzeug Server')
@@ -667,6 +692,31 @@ def shutdown_server():
         conn.close()
         print("shutting down the server...")
         return "server is shutting down..."
+
+
+def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur):
+    serverEmail = fetchSettingParamFromDB(dbCursur, "MAIL_USERNAME")
+    appPassword = fetchSettingParamFromDB(dbCursur, "MAIL_PASSWORD")
+    mailServer = fetchSettingParamFromDB(dbCursur, "MAIL_SERVER")
+    mailPort = fetchSettingParamFromDB(dbCursur, "MAIL_PORT")
+    mailSSL = fetchSettingParamFromDB(dbCursur, "MAIL_USE_SSL")
+    recipientEmail = fetchSettingParamFromDB(dbCursur, "MAIL_RECIPIENT")
+    if (serverEmail != "None") and (appPassword != "None") and (recipientEmail != "None"):
+        flask_app.config.update(
+            MAIL_SERVER = str(mailServer),
+            MAIL_PORT = int(mailPort),
+            MAIL_USE_SSL = bool(mailSSL),
+            MAIL_USERNAME = serverEmail,
+            MAIL_PASSWORD = appPassword
+        )
+        mailInstance.init_app(app)
+        msg = mailInstance.send_message(
+            msg_subject,
+            sender=str(serverEmail),
+            recipients=[str(recipientEmail)],
+            body=msg_content
+        )
+    return 'Mail sent'
 
 
 api.add_resource(dash, '/home')

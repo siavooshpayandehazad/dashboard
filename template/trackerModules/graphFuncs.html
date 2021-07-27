@@ -66,7 +66,6 @@
       date =  new Date();
       if (({{PageYear}} == date.getFullYear()) && ({{PageMonth}}-1 == date.getMonth())){
         if (YearMonth == "year"){
-          console.log(date.getMonth(), parseInt(date.getDate()/7))
           return [4*(date.getMonth())+parseInt(date.getDate()/7)]
         }else{
           return [{{today}}-1]
