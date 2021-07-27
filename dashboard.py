@@ -10,6 +10,7 @@ from flask import Flask, request, url_for, redirect
 from flask import send_from_directory
 from flask_restful import reqparse, abort, Api, Resource
 from flask import render_template, make_response
+from apscheduler.schedulers.background import BackgroundScheduler
 from werkzeug import secure_filename
 import requests
 import json
@@ -683,7 +684,7 @@ def upload_file_notes():
 def shutdown_server():
     if request.method == 'POST':
         print("shutdown request recieved...")
-        send_mail("Server shutting down", "shut down command received.", app, mail, c)
+        send_mail("Server:: shutting down", "shut down command received.", app, mail, c)
         shutdownReq = request.environ.get('werkzeug.server.shutdown')
         if shutdownReq is None:
             raise RuntimeError('Not running with the Werkzeug Server')
@@ -691,6 +692,7 @@ def shutdown_server():
         print("closing the DB connection...")
         conn.close()
         print("shutting down the server...")
+        scheduler.shutdown()
         return "server is shutting down..."
 
 
@@ -701,6 +703,7 @@ def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur):
     mailPort = fetchSettingParamFromDB(dbCursur, "MAIL_PORT")
     mailSSL = fetchSettingParamFromDB(dbCursur, "MAIL_USE_SSL")
     recipientEmail = fetchSettingParamFromDB(dbCursur, "MAIL_RECIPIENT")
+    print("sending email to:", recipientEmail)
     if (serverEmail != "None") and (appPassword != "None") and (recipientEmail != "None"):
         flask_app.config.update(
             MAIL_SERVER = str(mailServer),
@@ -709,14 +712,42 @@ def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur):
             MAIL_USERNAME = serverEmail,
             MAIL_PASSWORD = appPassword
         )
-        mailInstance.init_app(app)
+        mailInstance.init_app(flask_app)
         msg = mailInstance.send_message(
             msg_subject,
             sender=str(serverEmail),
             recipients=[str(recipientEmail)],
             body=msg_content
         )
+    print("email sent!")
     return 'Mail sent'
+
+
+def sendCalNotification():
+    with app.app_context():
+        todaysDate = str(datetime.date.today())
+        day, month, year = sparateDayMonthYear(todaysDate)
+        c.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
+                  (getMonthsBeginning(month, year).date(),
+                   getMonthsEnd(month, year).date(),))
+        calEvents = c.fetchall()
+        for item in calEvents:
+            if item[0]==todaysDate:
+                timeSplit = item[1].split(":")
+                now = datetime.datetime.now()
+                newdatetime = datetime.datetime.now().replace(hour=int(timeSplit[0]), minute=int(timeSplit[1]))
+                diff = newdatetime-now
+                minutesDiff = int(diff.total_seconds()/60)
+                if (minutesDiff == 30) or (minutesDiff == 15):
+                    body = "Event time: "+item[1]+" - "+item[2]+"\n"+ \
+                           "Event: "+item[3]+"\n"+ \
+                           "Description: "+item[5]+"\n"
+                    send_mail("Server:: event notification", body, app, mail, c)
+
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=sendCalNotification, trigger="interval", seconds=60)
+scheduler.start()
 
 
 api.add_resource(dash, '/home')
@@ -732,6 +763,6 @@ api.add_resource(audiobooks, '/audiobooks')
 api.add_resource(homeAutomation, '/homeAutomation')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
 
 conn.close()
