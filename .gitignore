@@ -6,6 +6,7 @@ static/docs/
 static/decorationImages/
 serverScripts/reports/
 journal.db
+test.db
 backups/
 venv*
 tests/.coverage
