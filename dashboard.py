@@ -696,33 +696,6 @@ def shutdown_server():
         return "server is shutting down..."
 
 
-def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur):
-    serverEmail = fetchSettingParamFromDB(dbCursur, "MAIL_USERNAME")
-    appPassword = fetchSettingParamFromDB(dbCursur, "MAIL_PASSWORD")
-    mailServer = fetchSettingParamFromDB(dbCursur, "MAIL_SERVER")
-    mailPort = fetchSettingParamFromDB(dbCursur, "MAIL_PORT")
-    mailSSL = fetchSettingParamFromDB(dbCursur, "MAIL_USE_SSL")
-    recipientEmail = fetchSettingParamFromDB(dbCursur, "MAIL_RECIPIENT")
-    print("sending email to:", recipientEmail)
-    if (serverEmail != "None") and (appPassword != "None") and (recipientEmail != "None"):
-        flask_app.config.update(
-            MAIL_SERVER = str(mailServer),
-            MAIL_PORT = int(mailPort),
-            MAIL_USE_SSL = bool(mailSSL),
-            MAIL_USERNAME = serverEmail,
-            MAIL_PASSWORD = appPassword
-        )
-        mailInstance.init_app(flask_app)
-        msg = mailInstance.send_message(
-            msg_subject,
-            sender=str(serverEmail),
-            recipients=[str(recipientEmail)],
-            body=msg_content
-        )
-    print("email sent!")
-    return 'Mail sent'
-
-
 def sendCalNotification():
     with app.app_context():
         todaysDate = str(datetime.date.today())
@@ -731,6 +704,7 @@ def sendCalNotification():
                   (getMonthsBeginning(month, year).date(),
                    getMonthsEnd(month, year).date(),))
         calEvents = c.fetchall()
+        notificationsToBeSent = []
         for item in calEvents:
             if item[0]==todaysDate:
                 timeSplit = item[1].split(":")
@@ -739,10 +713,12 @@ def sendCalNotification():
                 diff = newdatetime-now
                 minutesDiff = int(diff.total_seconds()/60)
                 if (minutesDiff == 30) or (minutesDiff == 15):
-                    body = "Event time: "+item[1]+" - "+item[2]+"\n"+ \
-                           "Event: "+item[3]+"\n"+ \
-                           "Description: "+item[5]+"\n"
-                    send_mail("Server:: event notification", body, app, mail, c)
+                    notificationsToBeSent.append(item)
+        for item in notificationsToBeSent:
+            body = "Event time: "+item[1]+" - "+item[2]+"\n"+ \
+                   "Event: "+item[3]+"\n"+ \
+                   "Description: "+item[5]+"\n"
+            send_mail("Server:: event notification", body, app, mail, c)
 
 
 scheduler = BackgroundScheduler()

@@ -482,7 +482,35 @@ def deleteScrumTask(proj, task, dbCursur, dbConnection):
     dbConnection.commit()
     return None
 
+
 def addScrumTask(proj, task, list, priority, date, dbCursur, dbConnection):
     dbCursur.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, list, priority, date))
     dbConnection.commit()
     return None
+
+
+def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur):
+    serverEmail = fetchSettingParamFromDB(dbCursur, "MAIL_USERNAME")
+    appPassword = fetchSettingParamFromDB(dbCursur, "MAIL_PASSWORD")
+    mailServer = fetchSettingParamFromDB(dbCursur, "MAIL_SERVER")
+    mailPort = fetchSettingParamFromDB(dbCursur, "MAIL_PORT")
+    mailSSL = fetchSettingParamFromDB(dbCursur, "MAIL_USE_SSL")
+    recipientEmail = fetchSettingParamFromDB(dbCursur, "MAIL_RECIPIENT")
+    print("sending email to:", recipientEmail)
+    if (serverEmail != "None") and (appPassword != "None") and (recipientEmail != "None"):
+        flask_app.config.update(
+            MAIL_SERVER = str(mailServer),
+            MAIL_PORT = int(mailPort),
+            MAIL_USE_SSL = bool(mailSSL),
+            MAIL_USERNAME = serverEmail,
+            MAIL_PASSWORD = appPassword
+        )
+        mailInstance.init_app(flask_app)
+        msg = mailInstance.send_message(
+            msg_subject,
+            sender=str(serverEmail),
+            recipients=[str(recipientEmail)],
+            body=msg_content
+        )
+    print("email sent!")
+    return 'Mail sent'
