@@ -191,6 +191,19 @@ class journal(Resource):
                         os.rmdir(parentDir)
                 else:
                     return "File Doesnt Exist!", 400
+        if args['type'] == "tag":
+            if args['action'] == "delete":
+                value_dict = eval(args['value'])
+                tags = value_dict["tag"]
+                fileName = "./static/photos/"+value_dict["fileName"]
+                if os.path.isfile(fileName):
+                    remove_tag_from_picture(fileName, tags)
+            else:
+                value_dict = eval(args['value'])
+                tags = value_dict["tag"]
+                fileName = "./static/photos/"+value_dict["fileName"]
+                if os.path.isfile(fileName):
+                    add_tag_to_picture(fileName, tags)
         return "Done", 200
 
 
@@ -612,7 +625,6 @@ class homeAutomation(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
-
         tempData = {}
         tempData["room_1"] = {}
         with open('homeAutomation/room_1/temp/2021-03-24.txt', 'r') as reader2:
@@ -707,18 +719,19 @@ def sendCalNotification():
         notificationsToBeSent = []
         for item in calEvents:
             if item[0]==todaysDate:
-                timeSplit = item[1].split(":")
-                now = datetime.datetime.now()
-                newdatetime = datetime.datetime.now().replace(hour=int(timeSplit[0]), minute=int(timeSplit[1]))
-                diff = newdatetime-now
-                minutesDiff = int(diff.total_seconds()/60)
-                if (minutesDiff == 30) or (minutesDiff == 15):
-                    notificationsToBeSent.append(item)
+                if item[1] != "None":
+                    timeSplit = item[1].split(":")
+                    now = datetime.datetime.now()
+                    newdatetime = datetime.datetime.now().replace(hour=int(timeSplit[0]), minute=int(timeSplit[1]))
+                    diff = newdatetime-now
+                    minutesDiff = int(diff.total_seconds()/60)
+                    if (minutesDiff == 30) or (minutesDiff == 15):
+                        notificationsToBeSent.append(item)
         for item in notificationsToBeSent:
             body = "Event time: "+item[1]+" - "+item[2]+"\n"+ \
                    "Event: "+item[3]+"\n"+ \
                    "Description: "+item[5]+"\n"
-            send_mail("Server:: event notification", body, app, mail, c)
+            send_mail("Upcomming event: "+item[3], body, app, mail, c)
 
 
 scheduler = BackgroundScheduler()

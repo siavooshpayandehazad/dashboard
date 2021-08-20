@@ -90,6 +90,7 @@ function removeAllMonthEvents(){
 }
 
 function drawMonthEvents(){
+  color = document.getElementById("calFilter").value
   removeAllMonthEvents();
   var table = document.getElementById("calTabMonth");
   startdayNum = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getDay();
@@ -98,6 +99,11 @@ function drawMonthEvents(){
     for (var j=0; j<calMonths.length; j++){
       date = parseInt("{{year}}")+"-"+zeroPad({{'%02d'%month}}, 2)+"-"+zeroPad(i-startdayNum+1, 2);
       if(calMonths[j][0] == date){
+        if (color !== undefined && color !== "None"){
+          if(calMonths[j][6].toLowerCase() !== color.toLowerCase()){
+            continue;
+          }
+        }
         div = document.createElement("div")
         div.classList.add("monthEvent")
         div.style="margin-left:5%; width:112px; height:16; padding-left:2px; margin-bottom:5px;text-overflow: ellipsis; overflow: hidden; white-space: nowrap; border-radius: 5px; font-size:13px;";

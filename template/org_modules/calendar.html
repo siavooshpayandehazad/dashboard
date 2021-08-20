@@ -21,10 +21,34 @@
         drawEvents();
       }
     }
+
+
+    function colorFilterCalendar(){
+      console.log(window["CalType"])
+      if (window["CalType"] == "Week" || window["CalType"] == undefined){
+        drawEvents();
+      }else{
+        drawMonthEvents()
+      }
+    }
 </script>
 
 
-<div style="widht=100%">
+<div style="widht:100%">
+
+  <div style="float:right; width:100%;">
+    <div style="float:right; margin-top:10px; margin-right:10px;">
+       <b ><i class="fa fa-filter" style="color:white; margin-right:4px"></i> </b>
+       <select id="calFilter" onchange="colorFilterCalendar(this)">
+          <option>None</option>
+          {% for color in ["pink", "gold", "powderblue", "tomato", "skyBlue", "teal"]%}
+            <option style="background-color:{{color}}">{{color}}</option>
+          {% endfor %}
+        </select>
+    </div>
+  </div>
+
+
   <img src= "{{url_for('static', filename = 'decorationImages/calenderSide.png')}}" float="left" width="180px" style="margin-top:0px;"alt="page1_Large_dark">
   {% with  month = month, year = year, day = day, calMonth = calMonth%}
            {% include "org_modules/MonthCal.html" %}

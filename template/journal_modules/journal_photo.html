@@ -1,4 +1,6 @@
 <script type="text/javascript">
+  todayPhotos = {{todayPhotos|safe}}
+
   function removeTrashIcon(){
     var hoverDiv = document.getElementsByClassName("mediaHoverDots");
     while(hoverDiv.length>0){
@@ -21,14 +23,106 @@
     }
     media.id = "mediaOverlayContent"
     media.style.maxWidth = "70%";
-    media.style.maxHeight = "80%";
+    media.style.maxHeight = "70%";
     media.style.float = "center";
     media.style.marginTop = "5%";
     media.onclick= function(event){
       event.preventDefault();
       closeOverlay();
     }
+    div =  document.createElement('div');
+    div.id = "mediaOverlayTags"
+    div.style.width = "70%";
+    div.style.height = "20%";
+    div.style.marginLeft = "15%";
+    div.style.float = "center";
+    div.style.paddingTop = "20px";
+    mediaKey = media.getAttribute("src").split("photos/")[1]
+    tags = todayPhotos[mediaKey]
+    for (i = 0; i < tags.length; i++) {
+      div2 =  document.createElement('div');
+      div2.textContent = tags[i];
+      div2.style.backgroundColor = "white";
+      div2.style.minWidth = "70px";
+      div2.style.height = "20px";
+      div2.style.float = "left";
+      div2.style.marginLeft = "5px";
+      div2.style.float = "center";
+      div2.style.borderRadius = "10px";
+      closeIcon =  document.createElement('i');
+      closeIcon.classList.add("fa");
+      closeIcon.classList.add("fa-times");
+      closeIcon.classList.add("hover-red");
+      closeIcon.style.float="right";
+      closeIcon.style.marginRight="5px";
+      closeIcon.onclick = function(){
+        this.parentElement.remove()
+        tag = this.parentElement.textContent
+        $.ajax({ type: "POST",
+                 url: "http://"+window.location.hostname+":5000/journal",
+                 data: {"type": "tag", "action": "delete",
+                        "value": JSON.stringify({"tag": tag, "fileName": mediaKey})},
+        });
+      }
+      div2.appendChild(closeIcon)
+      div.appendChild(div2)
+    }
+    div3 = document.createElement('div');
+    addIcon = document.createElement('i');
+    addIcon.classList.add("fa");
+    addIcon.classList.add("fa-plus");
+    addIcon.classList.add("hover-red");
+    addIcon.style.marginLeft ="5px";
+    addIcon.style.marginRight="5px";
+
+    div3.style.float="right";
+    div3.style.borderRadius = "10px";
+    div3.style.padding = "5px";
+    div3.style.marginLeft ="5px";
+    div3.style.backgroundColor="#d9d9d9";
+    div3.textContent="add tags";
+    div3.appendChild(addIcon)
+    div.appendChild(div3)
+
+    div3.onclick = function(){
+      mainDiv = this.parentElement
+      var tag = window.prompt("add new tag");
+      if (tag === null){
+        return;
+      }
+      $.ajax({ type: "POST",
+               url: "http://"+window.location.hostname+":5000/journal",
+               data: {"type": "tag", "value": JSON.stringify({"tag": tag, "fileName": mediaKey})},
+      });
+      div2 =  document.createElement('div');
+      div2.textContent = tag;
+      div2.style.backgroundColor = "white";
+      div2.style.minWidth = "70px";
+      div2.style.height = "20px";
+      div2.style.float = "left";
+      div2.style.marginLeft = "5px";
+      div2.style.float = "center";
+      div2.style.borderRadius = "10px";
+      closeIcon =  document.createElement('i');
+      closeIcon.classList.add("fa");
+      closeIcon.classList.add("fa-times");
+      closeIcon.classList.add("hover-red");
+      closeIcon.style.float="right";
+      closeIcon.style.marginRight="5px";
+      closeIcon.onclick = function(){
+        this.parentElement.remove()
+        tag = this.parentElement.textContent
+        $.ajax({ type: "POST",
+                 url: "http://"+window.location.hostname+":5000/journal",
+                 data: {"type": "tag", "action": "delete",
+                        "value": JSON.stringify({"tag": tag, "fileName": mediaKey})},
+        });
+      }
+      div2.appendChild(closeIcon)
+      mainDiv.appendChild(div2)
+    }
     overlay.appendChild(media);
+    overlay.appendChild(div);
   }
   function closeOverlay(){
     var media = document.getElementById("mediaOverlayContent")
@@ -38,6 +132,8 @@
     media.remove();
     var overlay = document.getElementById("mediaOverlay")
     overlay.style.display = "none";
+    var tags = document.getElementById("mediaOverlayTags")
+    tags.remove();
   }
   function nextPic(dir){
     var media = document.getElementById("mediaOverlayContent");
@@ -96,10 +192,10 @@
   <div style="float:left; width:100%; ">
     <i class="fa fa-times closeButton hover-red" aria-hidden="true" onclick="closeOverlay()"></i>
   </div>
-  <div onclick="nextPic(-1)"  style="float:left; width:10%; height:100%;">
+  <div onclick="nextPic(-1)"  style="float:left; width:10%; height:80%;">
       <i class="fa fa-chevron-left chevronIcon hover-red" aria-hidden="true"></i>
   </div>
-  <div onclick="nextPic(1)" style="float:right; width:10%; height:100%;">
+  <div onclick="nextPic(1)" style="float:right; width:10%; height:80%;">
       <i class="fa fa-chevron-right chevronIcon hover-red" aria-hidden="true"></i>
   </div>
 </div>
@@ -111,7 +207,6 @@
         {%if ".mp4" in media%}
           <i class = "fa fa-video-camera" style="color:black; position:absolute; left:5px; top:5px; z-index:2; width:15px; height:15px; "></i>
           <video onclick="mediaClicked(this)" src="static/photos/{{ media }}"  type="video/mp4" onmouseover="mediaHover(event, this)" onmouseout="mediaHoverLeave(event)" class="journalMedia">
-
           </video>
         {%else%}
           <img src= "static/photos/{{ media }}" onclick="mediaClicked(this)" onmouseover="mediaHover(event, this)" onmouseout="mediaHoverLeave(event)" class="journalMedia"/>

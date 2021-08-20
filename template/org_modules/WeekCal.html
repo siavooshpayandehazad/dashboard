@@ -151,33 +151,51 @@ function updateEventPlacement(){
     calDates[i][4] = 1;
     calDates[i][5] = 1;
   }
+  var count;
+  var counted = []
   for (var i = 0; i<calDates.length; i++){ // event A
     startA = parseInt(calDates[i][1].slice(0,2))+parseInt(calDates[i][1].slice(3,5))/60;
     stopA  = parseInt(calDates[i][2].slice(0,2))+parseInt(calDates[i][2].slice(3,5))/60;
-    for (var j = i+1; j < calDates.length; j++){ // event B
-        startB = parseInt(calDates[j][1].slice(0,2))+parseInt(calDates[j][1].slice(3,5))/60;
-        stopB  = parseInt(calDates[j][2].slice(0,2))+parseInt(calDates[j][2].slice(3,5))/60;
-        if (calDates[i][0] == calDates[j][0]){ // same day
-          if( (startB < startA && startA < stopB) || (startB < stopA && stopA < stopB) ||
-              (startA < startB && startB < stopA) || (startA < stopB && stopB < stopA) ||
-              (startA == startB && stopB == stopA))
-            {
-                calDates[i][4] = parseInt(calDates[i][4]) + 1;
-                calDates[j][4] = parseInt(calDates[j][4]) + 1;
-                calDates[j][5] = parseInt(calDates[i][5]) + 1;
+    max_count = 0
+    counted = []
+    for (var timestamp = startA; timestamp<stopA; timestamp=timestamp+0.1)
+    {
+      count = 0;
+      for (var j = i+1; j < calDates.length; j++){ // event B
+        if(!counted.includes(j)){
+          if (calDates[i][0] == calDates[j][0]){ // same day
+            startB = parseInt(calDates[j][1].slice(0,2))+parseInt(calDates[j][1].slice(3,5))/60;
+            stopB  = parseInt(calDates[j][2].slice(0,2))+parseInt(calDates[j][2].slice(3,5))/60;
+            if (startB < timestamp && timestamp < stopB){
+              count = count + 1; // count how many overlap this time stamp
+              max_count = Math.max(max_count, count)
+              calDates[j][4] = parseInt(calDates[i][4]) + 1;
+              calDates[j][5] = parseInt(calDates[i][5]) + 1;
+              counted.push(j) // exclude the ones that has been counted
             }
+          }
         }
+      }
+    }
+    if (max_count>0){ // increase by overlapping timestamp
+      calDates[i][4] = parseInt(calDates[i][4]) + max_count;
     }
   }
 }
 
 function drawEvents(){
+  color = document.getElementById("calFilter").value
   removeAllEvents();
   updateEventPlacement();
-  for (var i =0; i<calDates.length; i++){
-    drawCell(calDates[i], i)
-  }
-  return;
+    for (var i=0; i<calDates.length; i++){
+      if (color !== "None"){
+        if(calDates[i][6].toLowerCase() !== color.toLowerCase()){
+          continue;
+        }
+      }
+      drawCell(calDates[i], i)
+    }
+    return;
 }
 
 function calendarClick(event, item, calType, inStartTime = null, inEndTime = null){
@@ -334,20 +352,17 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   var colorContainer = document.createElement("div");
   colorContainer.style.marginLeft="5px";
   var color = document.createElement("select");
-  var option1 = document.createElement("option");
-  var option2 = document.createElement("option");
-  var option3 = document.createElement("option");
-  option1.text = "pink";
-  option1.style.backgroundColor = "pink";
-  option2.text = "gold";
-  option2.style.backgroundColor = "gold";
-  option3.text = "powderblue";
-  option3.style.backgroundColor = "powderblue";
+
+  colors = ["pink", "gold", "powderblue", "tomato", "skyBlue", "teal"]
+  for (let i = 0; i < colors.length; i++){
+     var option = document.createElement("option");
+     option.style.backgroundColor = colors[i];
+     option.text = colors[i];
+     color.appendChild(option);
+  }
+
   var text4 = document.createElement("span");
   text4.textContent= "color: ";
-  color.appendChild(option1);
-  color.appendChild(option2);
-  color.appendChild(option3);
   color.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("color") : "powderblue";
   colorContainer.appendChild(text4);
   colorContainer.appendChild(color);

@@ -5,7 +5,9 @@ from typing import Any
 from functionPackages.dateTime import *
 from collections import Counter
 from datetime import date
+from pyexiv2 import ImageMetadata, exif
 import json
+
 
 def getAudiobooks(path):
     audiobooks = {}
@@ -161,12 +163,24 @@ def getTodaysLogs(dbCursur, todaysDate):
 
 
 def allPotosInDir(photoDir, year, date):
-    todayPhotos = []
+    todayPhotos = {}
     if os.path.isdir(photoDir):
         for file in os.listdir(photoDir):
-            if file.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif', '.mp4')):
-                todayPhotos.append(str(year)+"/"+date+"/"+file)
-    todayPhotos.sort()
+            if file.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+                tags = []
+                try:
+                    fileName = "./static/photos/"+str(year)+"/"+date+"/"+file
+                    metadata = ImageMetadata(fileName)
+                    metadata.read()
+                    if 'Exif.Photo.UserComment' in metadata:
+                        userdata=json.loads(metadata['Exif.Photo.UserComment'].value)
+                        if userdata["tags"] != None:
+                            tags = list(userdata["tags"])
+                except Exception as e:
+                    print(e)
+                todayPhotos[str(year)+"/"+date+"/"+file] = tags
+            if file.lower().endswith(('.mp4')):
+                todayPhotos[str(year)+"/"+date+"/"+file] = []
     return todayPhotos
 
 
@@ -514,3 +528,39 @@ def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur):
         )
     print("email sent!")
     return 'Mail sent'
+
+
+def add_tag_to_picture(filename, tag):
+    metadata = ImageMetadata(filename)
+    metadata.read()
+    currentTags = []
+    if 'Exif.Photo.UserComment' in metadata:
+        userdata=json.loads(metadata['Exif.Photo.UserComment'].value)
+        if userdata["tags"] != None:
+            currentTags = list(userdata["tags"])
+    tags = [tag] + currentTags
+    metadata = ImageMetadata(filename)
+    metadata.read()
+    userdata={'tags':tags}
+    metadata['Exif.Photo.UserComment']=json.dumps(userdata)
+    metadata.write()
+    return True
+
+
+def remove_tag_from_picture(filename, tag):
+    metadata = ImageMetadata(filename)
+    metadata.read()
+    currentTags = []
+    if 'Exif.Photo.UserComment' in metadata:
+        userdata=json.loads(metadata['Exif.Photo.UserComment'].value)
+        if userdata["tags"] != None:
+            currentTags = list(userdata["tags"])
+    currentTags = [] if userdata["tags"] == None else list(userdata["tags"])
+    if len(currentTags)>0:
+        currentTags.remove(tag)
+    metadata = ImageMetadata(filename)
+    metadata.read()
+    userdata={'tags':currentTags}
+    metadata['Exif.Photo.UserComment']=json.dumps(userdata)
+    metadata.write()
+    return True
