@@ -12,3 +12,4 @@ backups/
 venv*
 tests/.coverage
 tests/test.db
+logs/*

@@ -26,7 +26,10 @@ app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
 mail = Mail()
 
-
+try:
+    os.mkdir("./logs")
+except:
+    pass
 logfile = "logs/log.log"
 log = logging.getLogger(__name__)
 logging.basicConfig(filename = logfile,
