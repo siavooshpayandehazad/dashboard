@@ -1,0 +1,55 @@
+<script type="text/javascript">
+var minList = {{dataset["min"]|safe}};
+var maxList = {{dataset["max"]|safe}};
+
+function renderYearlyTrackerChart(){
+  var ctx = document.getElementById("{{trackerName}}TrackerYearly").getContext('2d');
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+
+  var LineChart = new Chart(ctx, {
+     type: 'line',
+     data: {
+        labels: {{ChartMonthDays|safe}},
+        datasets: [{
+           label: "{{trackerName}} min {{unit}}",
+           data: minList,
+           backgroundColor: ['{{bgcolor|safe}}'],
+           borderColor: ['{{color[0]|safe}}'],
+           borderWidth: 2,
+           spanGaps: true,
+           tension: 0,
+           pointStyle: 'circle',
+        }, {
+           label: "{{trackerName}} max {{unit}}",
+           data: maxList,
+           backgroundColor: ['{{bgcolor|safe}}'],
+           borderColor: ['{{color[1]|safe}}'],
+           borderWidth: 2,
+           spanGaps: true,
+           tension: 0,
+           pointStyle: 'circle',
+        }]
+     },
+     options: { legend: {labels: {usePointStyle: true}},
+                scales: { yAxes: [{ ticks:{ suggestedMin: {{suggestedMin}}, suggestedMax: {{suggestedMax}} }}]},
+            },
+      lineAtIndex: todayLineInChart("{{yearMonth}}"),
+      lineAtIndexColor: ['rgba(252,78,42, 1)'],
+  });
+}
+</script>
+
+
+<div class="graphCard" style = "width:{{width}};">
+  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">{{trackerName}} yearly tracker</h2>
+  <div style="float:left; width:90%; margin-left:15px; background-color: white">
+    <canvas  height="{{height}}" id="{{trackerName}}TrackerYearly"></canvas>
+  </div>
+</div>
+
+
+
+<script type="text/javascript">
+  renderYearlyTrackerChart();
+</script>
