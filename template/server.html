@@ -43,43 +43,61 @@
 
 <div style="float:left; width:100%;">
 
-  <div style="float:left; width:35%;">
-    <div style="background-color: white; width:49%; float:left; border-radius:10px 10px 10px 10px; margin-top: 20px;">
+  <div style="float:left; width:15%;">
+
+    <div style="text-align: center; background-color: white; height:40px; width:100%; line-height:40px; float:left; margin-top: 10px; border-radius:10px 10px 10px 10px;">
+      <b>Server up time: <span style="color:red">{{upTime}}</span> hr(s) </b>
+    </div>
+
+    <div style="background-color: white; width:100%; float:left; border-radius:10px 10px 10px 10px; margin-top: 10px;">
       <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Disk Space</h2><br>
       <div style="width:100%; margin-top:10px;"> <canvas id="diskSpace1" ></canvas> </div>
       <div style="width:100%; margin-top:10px; margin-bottom:10px;"> <canvas id="diskSpace2" ></canvas> </div>
     </div>
 
-    <div style="background-color: white; width:49%; float:left; border-radius:10px 10px 10px 10px; margin-top: 20px; margin-left:2%;">
+    <div style="background-color: white; width:100%; float:left; border-radius:10px 10px 10px 10px; margin-top: 10px;">
       <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Memory</h2><br>
       <div style="width:100%; margin-top:10px;"> <canvas id="diskSpace3" ></canvas> </div>
       <div style="width:100%; margin-top:10px; margin-bottom:10px;"> <canvas id="diskSpace4" ></canvas> </div>
     </div>
 
-    <div style="text-align: center; background-color: white; height:40px; width:49%; line-height:40px; float:left; border-radius:10px 10px 10px 10px; margin-top: 1%;">
-      <b>Server up time: <span style="color:red">{{upTime}}</span> hr(s) </b>
-    </div>
   </div>
 
-  <div style="float:right; margin-top:20px;width:65%;">
+  <div style="float:right; margin-top:10px; width:85%;">
     {% with dataset = cpuTemps, ChartMonthDays = cpuTempsTimes, chartType = "bar",
           thresholds = [40, 60, 80], trackerName = "CPU Temperature", unit="(°C)", addAvg="true", tcf="true",
           pointStyle = 'rect', showTotalVal = false, suggestedMin = 20, yearMonth = "", clickable="false",
-          accumulate = "false", width = "95%",
+          accumulate = "false", width = "450px", height = "120px",
           bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)', 'rgba(244,165,130, 0.5)', 'rgba(178,24,43, 0.5)'],
           bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)', 'rgba(244,165,130, 1)', 'rgba(178,24,43, 1)']%}
       {% include "trackerModules/singleChart.html" %}
     {% endwith %}
+
+    {% with dataset = cpuTempsYearly, ChartMonthDays = chart_months, chartType = "line",
+          thresholds = [30, 50, 80], trackerName = "CPU Temperature Yearly", unit="(°C)",
+          pointStyle = 'circle',  suggestedMin = 0, suggestedMax = 100, yearMonth = "year",
+          bgcolor='rgba(0,0,0, 0)', color=['rgba(252,146,114,1)', 'rgba(65,182,196, 1)'],
+          width = "500px", height = "100px" %}
+      {% include "homeAutomation_modules/minMaxChart.html" %}
+    {% endwith %}
   </div>
 
-  <div style="float:right; margin-top:20px;width:65%;">
+  <div style="float:right; margin-top:20px; width:85%;">
     {% with dataset = cpuUsage, ChartMonthDays = cpuUsageTimes, chartType = "bar",
           thresholds = [30, 50, 80], trackerName = "CPU Utilization", unit="(%)", addAvg="true", tcf="true",
           pointStyle = 'rect', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
-          accumulate = "false", width = "95%",
+          accumulate = "false", width = "450px", height = "120px",
           bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)', 'rgba(244,165,130, 0.5)', 'rgba(178,24,43, 0.5)'],
           bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)', 'rgba(244,165,130, 1)', 'rgba(178,24,43, 1)']%}
       {% include "trackerModules/singleChart.html" %}
+    {% endwith %}
+
+    {% with dataset = cpuUsageYearly, ChartMonthDays = chart_months, chartType = "line",
+          thresholds = [30, 50, 80], trackerName = "CPU Utilization Yearly", unit="(%)",
+          pointStyle = 'circle',  suggestedMin = 0, suggestedMax = 100, yearMonth = "year",
+          bgcolor='rgba(0,0,0, 0)', color=['rgba(252,146,114,1)', 'rgba(65,182,196, 1)'],
+          width = "500px", height = "100px" %}
+      {% include "homeAutomation_modules/minMaxChart.html" %}
     {% endwith %}
   </div>
 

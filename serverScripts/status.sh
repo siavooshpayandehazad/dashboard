@@ -1,8 +1,11 @@
 #!/bin/bash
 date=$(date '+%Y-%m-%d %H:%M:%S')
 today=$(date +"%d-%m-%y")
+year=$(date +"%Y")
 
-CPUReportDir="/home/pi/dashboard/serverScripts/reports/cpuReports"
+CPUReportDir="/home/pi/dashboard/serverScripts/reports/cpuReports/$year"
+mkdir $CPUReportDir
+
 
 cpu=$(mpstat | grep -A 1 "idle" | tail -n 1)
 OUTFILE="$CPUReportDir/cpuUsageData_$today.txt"

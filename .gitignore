@@ -5,6 +5,7 @@ static/books/
 static/docs/
 static/decorationImages/
 serverScripts/reports/
+homeAutomation
 journal.db
 test.db
 backups/

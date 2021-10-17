@@ -10,7 +10,7 @@
           first = i;
           found = 1;
         }
-        sum = sum + valList[i];
+        sum = sum + parseFloat(valList[i]);
         count = count + 1;
         last = i;
       }
@@ -36,6 +36,7 @@
         return data[pointIndex]._model.x;
     },
     renderVerticalLine: function (chartInstance, pointIndex, color) {
+      if ({{HideLine}} !== true){
         const lineLeftOffset = this.getLinePosition(chartInstance, pointIndex);
         const scale = chartInstance.scales['y-axis-0'];
         const context = chartInstance.chart.ctx;
@@ -47,9 +48,11 @@
         context.moveTo(lineLeftOffset, scale.top+3);
         context.lineTo(lineLeftOffset, scale.bottom);
         context.stroke();
+      }
     },
 
     afterDatasetsDraw: function (chart, easing) {
+      if ({{HideLine}} !== true){
         if (chart.config.lineAtIndex) {
           if (chart.config.lineAtIndexColor) {
             for(var i = 0; i < chart.config.lineAtIndexColor.length; i++ ){
@@ -57,21 +60,24 @@
             }
           }
         }
+      }
     }
     };
 
     Chart.plugins.register(verticalLinePlugin);
 
     function todayLineInChart(YearMonth){
+      if ({{HideLine}} == "ture"){
+        return
+      }
       date =  new Date();
       if (({{PageYear}} == date.getFullYear()) && ({{PageMonth}}-1 == date.getMonth())){
         if (YearMonth == "year"){
-          return [4*(date.getMonth())+parseInt(date.getDate()/8)]
+          return [4*(date.getMonth())+parseInt((date.getDate()-1)/7)]
         }else{
           return [{{today}}-1]
         }
-      }
-      else{
+      }else{
         return
       }
     }

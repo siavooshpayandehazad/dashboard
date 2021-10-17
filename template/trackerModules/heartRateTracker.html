@@ -49,14 +49,21 @@ function renderHeartRateChart(hrMin, hrMax){
                   var selectedVal =  hr_Min[selectedDay-1]+","+hr_Max[selectedDay-1]
                   var newVal = window.prompt("Update HR (coma separated format:\"min,max\") for day " + selectedDay + "?", selectedVal);
                   if ((newVal===null)){return;}
-                  var minHR = newVal.split(",")[0]
-                  var maxHR = newVal.split(",")[1]
-                  if (isNaN(minHR) || isNaN(maxHR)){return;}
                   var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
+                  var value;
+                  if(newVal !== ""){
+                    var minHR = newVal.split(",")[0]
+                    var maxHR = newVal.split(",")[1]
+                    if (isNaN(minHR) || isNaN(maxHR)){return;}
+                    value = minHR + ',' + maxHR
+                  }else{
+                    console.log("deleting data for day: ", date)
+                    value = ""
+                  }
                   $.ajax({
                       type: "POST",
                       url: "http://"+window.location.hostname+":5000/home",
-                      data: {"tracker_type":"HR", "value" : minHR + ',' + maxHR, "date": date},
+                      data: {"tracker_type":"HR", "value" : value, "date": date},
                   });
                   hr_Max[selectedDay-1] = maxHR;
                   hr_Min[selectedDay-1] = minHR;

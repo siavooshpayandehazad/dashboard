@@ -5,6 +5,9 @@ monthsOfTheYear = ['Jan', "", "", "", 'Feb', "", "", "", 'Mar', "", "", "",
                    'Jul', "", "", "", 'Aug', "", "", "", 'Sep', "", "", "",
                    'Oct', "", "", "", 'Nov', "", "", "", 'Dec', "", "", ""]
 
+chart_months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
+
 daysOfTheWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 HEADER = '\033[95m'

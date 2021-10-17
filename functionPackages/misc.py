@@ -8,6 +8,10 @@ from datetime import date
 from pyexiv2 import ImageMetadata, exif
 import json
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def getAudiobooks(path):
     audiobooks = {}
@@ -36,8 +40,9 @@ def getAudiobooks(path):
                                 f = open(f,'r')
                                 data = json.load(f)
                                 books[b.name]=data
-                            except:
-                                print("something is wrong with", f.name)
+                            except Exception as e:
+                                logger.error(e)
+                                logger.error("something is wrong with", f.name)
                             break
                     # if book metadate doesnt exist add it
                     if b.name not in books.keys():
@@ -80,7 +85,7 @@ def addFlashCards(setName, side1, side2, lastTimeReviewed, dbCursur, dbConnectio
 
 
 def deleteFlashCards(setName, side1, side2, dbCursur, dbConnection):
-    print(f"deleting card {side1} and {side2} from set {setName}")
+    logger.info(f"deleting card {side1} and {side2} from set {setName}")
     dbCursur.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
     dbConnection.commit()
 
@@ -91,12 +96,12 @@ def changeFlashCards(setName, side1, side2, lastTimeReviewed, increament, dbCurs
     value = int(val[0][3])
     if increament:
         value += 1
-        print("increase the reviewInDays to", value)
+        logger.info("increase the reviewInDays to", value)
     else:
         if value == 1:
             return
         value -= 1
-        print("increase the reviewInDays to", value)
+        logger.info("increase the reviewInDays to", value)
     dbCursur.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
     dbCursur.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""", (setName, side1, side2, value, lastTimeReviewed))
     dbConnection.commit()
@@ -130,8 +135,8 @@ def getCalEvents(todaysDate, dbCursur):
             d1 =  datetime.datetime.strptime(item[0], '%Y-%m-%d')
             delta = d1 - weeksBeginning
             calList.append([delta.days, item[1], item[2], item[3], 1,1, item[4], item[5]])
-        except:
-            print("something went wrong here!")
+        except Exception as e:
+            logger.error(e)
     return calList
 
 
@@ -145,8 +150,8 @@ def getCalEventsMonth(todaysDate, dbCursur):
     for item in weeklyCalEvents:
         try:
             calList.append([item[0], item[1], item[2], item[3], 1,1, item[4], item[5]])
-        except:
-            print("something went wrong here!")
+        except Exception as e:
+            logger.error(e)
     return calList
 
 
@@ -177,7 +182,7 @@ def allPotosInDir(photoDir, year, date):
                         if userdata["tags"] != None:
                             tags = list(userdata["tags"])
                 except Exception as e:
-                    print(e)
+                    logger.error(e)
                 todayPhotos[str(year)+"/"+date+"/"+file] = tags
             if file.lower().endswith(('.mp4')):
                 todayPhotos[str(year)+"/"+date+"/"+file] = []
@@ -201,8 +206,8 @@ def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
     fetchedData = dbCursur.fetchall()
 
     if tableName == "workTracker":
-        print(f"@{datetime.datetime.now()} :: adding {item} time to todays work hours")
-        if len(fetchedData)>0:
+        if (len(fetchedData)>0) and (delete == False):
+            logger.info(f"@{datetime.datetime.now()} :: adding {item} time to todays work hours")
             item = float(fetchedData[0][0])+float(item)
 
     if tableName == "moodTracker":     # trying to remove old mood from the table
@@ -220,9 +225,9 @@ def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
             dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?, ?)", (item[0], item[1], date))
         else:
             dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?)", (item, date))
-        print(f"{tableName}:: added {item} for date: {date}")
+        logger.info(f"{tableName}:: added {item} for date: {date}")
     else:
-        print(f"{tableName}:: removed {item} from date: {date}")
+        logger.info(f"{tableName}:: removed {item} from date: {date}")
     dbConnection.commit()
     return "Done", 200
 
@@ -387,9 +392,9 @@ def backupDatabase(conn):
         backupCon = sqlite3.connect('backups/journal_backup_'+str(datetime.date.today())+'.db')
         with backupCon:
             conn.backup(backupCon, pages=1, progress=progress)
-        print("backup successful")
+        logger.info("backup successful")
     except sqlite3.Error as error:
-        print("Error while taking backup: ", error)
+        logger.error("Error while taking backup: ", error)
     finally:
         if(backupCon):
             backupCon.close()
@@ -491,7 +496,7 @@ def getScrumTasks (todaysDate, dbCursur):
 
 
 def deleteScrumTask(proj, task, dbCursur, dbConnection):
-    print("deleting card:", task)
+    logger.info("deleting card:", task)
     dbCursur.execute("""DELETE from scrumBoard where project = ? and task = ?""", (proj, task))
     dbConnection.commit()
     return None
@@ -510,7 +515,7 @@ def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur):
     mailPort = fetchSettingParamFromDB(dbCursur, "MAIL_PORT")
     mailSSL = fetchSettingParamFromDB(dbCursur, "MAIL_USE_SSL")
     recipientEmail = fetchSettingParamFromDB(dbCursur, "MAIL_RECIPIENT")
-    print("sending email to:", recipientEmail)
+    logger.info("sending email to: " + recipientEmail)
     if (serverEmail != "None") and (appPassword != "None") and (recipientEmail != "None"):
         flask_app.config.update(
             MAIL_SERVER = str(mailServer),
@@ -526,7 +531,7 @@ def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur):
             recipients=[str(recipientEmail)],
             body=msg_content
         )
-    print("email sent!")
+    logger.info("email sent!")
     return 'Mail sent'
 
 

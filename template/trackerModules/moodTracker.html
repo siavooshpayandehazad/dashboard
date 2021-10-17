@@ -61,6 +61,18 @@
     var moodTracker = document.getElementsByClassName("moodTracker")[0];
     moodTracker.appendChild(div);
   }
+
+  function highlightMoods(){
+    var moodTable = document.getElementsByClassName("moodTrackerTable")[0]
+    for (let row of moodTable.rows) {
+        for(let cell of row.cells) {
+           if (cell.innerText == "{{today}}"){
+             cell.style.border= "1px solid red";
+           }
+        }
+    }
+  }
+
 </script>
 
 <!-- Mood Tracker-->
@@ -104,3 +116,7 @@
     </tr>
   </table>
 </div>
+
+<script type="text/javascript">
+    highlightMoods()
+</script>

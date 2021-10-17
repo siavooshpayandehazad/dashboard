@@ -1,7 +1,13 @@
 import datetime
 from dateutil.relativedelta import relativedelta
 from functionPackages.misc import getMonthsBeginning, getMonthsEnd, numberOfDaysInMonth
+import os
+import json
 
+from flask import current_app as app
+import logging
+
+logger = logging.getLogger(__name__)
 
 def is_number(s):
     try:
@@ -358,3 +364,175 @@ def generatePaceChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCu
                     pace_value = "nan"
         paceTrackerData.append(pace_value)
     return paceTrackerData
+
+
+def generate_weather_monthly(ha_directory: str, year):
+    # extract the year data
+    yearData = {}
+    for room in os.listdir(ha_directory):
+        if os.path.isdir(ha_directory+"/"+room):
+            yearData[room] = yearData.get(room, {})
+            for year_folder in os.listdir(ha_directory+"/"+room):
+                if int(year_folder) == int(year):
+                    for file in os.listdir(ha_directory+"/"+room+"/"+year_folder):
+                        # f = open('homeAutomation/room_1/'+file, 'r')
+                        f_month = int(file.replace(".txt", "").split("-")[1])
+                        yearData[room][f_month] = yearData[room].get(f_month, {"time":[], "temp":[], "humidity":[], "pressure":[]})
+                        f = open("homeAutomation/"+room+"/"+year_folder+"/"+file, 'r')
+                        line2 = f.readline()
+                        while (line2 != ""):
+                            value = json.loads(line2)
+                            yearData[room][f_month]["time"].append(value["time"])
+                            yearData[room][f_month]["temp"].append(value["temp"])
+                            yearData[room][f_month]["humidity"].append(value["humidity"])
+                            yearData[room][f_month]["pressure"].append(float(value["pressure"])/1000.0)
+                            line2 = f.readline()
+                        f.close()
+    # calculate min max for each month
+    monthly_Data = {}
+    for room in yearData:
+        monthly_Data[room] = monthly_Data.get(room, {})
+        for monthVal in range(1, 13):
+            for item in ["temp", "humidity", "pressure"]:
+                monthly_Data[room][item] = monthly_Data[room].get(item, {"min":[], "max":[]})
+                if monthVal in yearData[room]:
+                    monthly_Data[room][item]["min"].append(min(yearData[room][monthVal][item]))
+                    monthly_Data[room][item]["max"].append(max(yearData[room][monthVal][item]))
+                else:
+                    monthly_Data[room][item]["min"].append("NaN")
+                    monthly_Data[room][item]["max"].append("NaN")
+
+    return monthly_Data
+
+
+def genenrate_weather_daily(ha_directory:str, todaysDate):
+    daily_data = {}
+    for room in os.listdir(ha_directory):
+        if os.path.isdir(ha_directory+"/"+room):
+            daily_data[room] = daily_data.get(room, {"time": [], "temp":[], "humidity":[], "pressure": []})
+            try:
+                f = open("homeAutomation/"+room+"/"+todaysDate.split("-")[0]+"/"+todaysDate+'.txt', 'r')
+                line2 = f.readline()
+                while (line2 != ""):
+                    value = json.loads(line2)
+                    daily_data["room_1"]["time"].append(value["time"])
+                    daily_data["room_1"]["temp"].append(value["temp"])
+                    daily_data["room_1"]["humidity"].append(value["humidity"])
+                    daily_data["room_1"]["pressure"].append(float(value["pressure"])/1000.0)
+                    line2 = f.readline()
+                f.close()
+            except Exception as e:
+                daily_data["room_1"] = {"time": [0], "temp":[0], "humidity":[0], "pressure": [0]}
+                logger.error(e)
+                try:
+                    f.close()
+                except:
+                    pass
+    return daily_data
+
+
+def generate_cpu_stat(todaysDate, year):
+    server_report_dir='serverScripts/reports/cpuReports/'+str(year)
+    cpuTemps = []
+    cpuTempsTimes = []
+
+    cpuUsage = []
+    cpuUsageTimes = []
+    try:
+        with open(server_report_dir+'/cpuUsageData_'+str(todaysDate)+'.txt', 'r') as reader2:
+            line2 = reader2.readline()
+            while (line2 != ""):
+                lineSplit = line2.split(" ")
+                cpuUsage.append(float(lineSplit[2]))
+                cpuUsageTimes.append(lineSplit[0])
+                line2 = reader2.readline()
+        reader2.close()
+    except Exception as e:
+        logger.error(e)
+        try:
+            reader2.close()
+        except:
+            pass
+    try:
+        with open(server_report_dir+'/cpuTempData_'+str(todaysDate)+'.txt', 'r') as reader2:
+            line2 = reader2.readline()
+            while (line2 != ""):
+                lineSplit = line2.split(" ")
+                cpuTemps.append(float(lineSplit[0])/1000)
+                cpuTempsTimes.append(lineSplit[2])
+                line2 = reader2.readline()
+        reader2.close()
+    except Exception as e:
+        logger.error(e)
+        try:
+            reader2.close()
+        except:
+            pass
+
+    try:
+        discSpace1 = int(os.popen('df -h | grep "/dev/root"').read().split()[4][:-1])
+        discSpace2 = int(os.popen('df -h | grep "/dev/sda1"').read().split()[4][:-1])
+        discSpace3Temp = os.popen('free -m | grep "Mem"').read().split()
+        discSpace3 = (float(discSpace3Temp[2])/float(discSpace3Temp[1]))*100
+        discSpace4Temp = os.popen('free -m | grep "Swap"').read().split()
+        discSpace4 = (float(discSpace4Temp[2])/float(discSpace4Temp[1]))*100
+        discSpace = {"/dev/root" : [discSpace1, 100-discSpace1],
+                     "/dev/sda1": [discSpace2, 100-discSpace2],
+                     "Mem": [discSpace3, 100-discSpace3],
+                     "Swap": [discSpace4, 100-discSpace4]}
+        upTimeString = " ".join(os.popen('uptime -s').read().split())
+        bootTime = datetime.datetime.strptime(upTimeString, '%Y-%m-%d %H:%M:%S')
+        upTime = datetime.datetime.now() - bootTime
+        upTime = int(upTime.total_seconds()/3600)
+    except:
+            discSpace = {"/dev/root" : [0, 100], "/dev/sda1": [0, 100],
+                         "Mem": [0, 100], "Swap": [0, 100]}
+            upTime = 0
+
+    return cpuTemps, cpuTempsTimes, cpuUsage, cpuUsageTimes, discSpace, upTime
+
+
+def generate_cpu_stat_yearly(year: str):
+    server_report_dir='serverScripts/reports/cpuReports/'+str(year)
+    cpuTemps = {}
+    cpuUsage = {}
+
+    for file in os.listdir(server_report_dir):
+        file_year = file.split(".")[0].split("-")[2]
+        file_month = int(file.split(".")[0].split("-")[1])
+        try:
+            with open(server_report_dir+"/"+file, 'r') as reader2:
+                line2 = reader2.readline()
+                while (line2 != ""):
+                    lineSplit = line2.strip().split(" ")
+                    if "cpuUsageData" in file:
+                        cpuUsage[file_month] = cpuUsage.get(file_month, [])
+                        cpuUsage[file_month].append(float(lineSplit[2]))
+                    else:
+                        cpuTemps[file_month] = cpuTemps.get(file_month, [])
+                        cpuTemps[file_month].append(float(lineSplit[0])/1000)
+                    line2 = reader2.readline()
+            reader2.close()
+        except Exception as e:
+            logger.error(file, e)
+            logger.error("line:", line2)
+            try:
+                reader2.close()
+            except:
+                pass
+    cpuUsageYearly={"min":[], "max":[]}
+    cpuTempsYearly={"min":[], "max":[]}
+    for i in range(1, 13):
+        if i in cpuUsage:
+            cpuUsageYearly["min"].append(min(cpuUsage[i]))
+            cpuUsageYearly["max"].append(max(cpuUsage[i]))
+        else:
+            cpuUsageYearly["min"].append("nan")
+            cpuUsageYearly["max"].append("nan")
+        if i in cpuTemps:
+            cpuTempsYearly["min"].append(min(cpuTemps[i]))
+            cpuTempsYearly["max"].append(max(cpuTemps[i]))
+        else:
+            cpuTempsYearly["min"].append("nan")
+            cpuTempsYearly["max"].append("nan")
+    return cpuTempsYearly, cpuUsageYearly

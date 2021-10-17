@@ -13,162 +13,94 @@
 
 <script type="text/javascript">
 const zeroPad = (num, places) => String(num).padStart(places, '0')
-tempData = {{tempData|safe}}
+tempData = {{daily_data|safe}}
 
-function drawTempGauge(gauge, temp){
-  temp = 44.22;
-  temp = Math.round(temp * 10) / 10;
-  MinTemp = 10; MaxTemp = 50;
-  if (temp > MaxTemp){
-    console.log("temp over max!");
+function moveDay(delta){
+  date = new Date(parseInt("{{PageYear}}"), parseInt("{{PageMonth}}")-1, parseInt("{{day}}"), 0, 0, 0);
+  date.setDate(date.getDate() + delta);
+  var dd = date.getDate();
+  var mm = date.getMonth()+1; //January is 0!`
+  var yyyy = date.getFullYear();
+  window.location.href = "/homeAutomation?date="+zeroPad(yyyy, 2)+"-"+zeroPad(mm, 2)+"-"+zeroPad(dd, 2);
+}
+
+function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_cold, tc_warm){
+  lastVal = Math.round(dataset[dataset.length-1] * 100) / 100;
+
+  if (lastVal > MaxVal){
+    console.log("value over max!", lastVal);
     return;
   }
-  if (temp < MinTemp){
-    console.log("temp bellow min!");
+  if (lastVal < MinVal){
+    console.log("value bellow min!", lastVal);
     return;
   }
+
+  var minOfDay = MaxVal
+  var maxOfDay = MinVal
+  for (var i=0; i<= dataset.length; i++){
+    if (minOfDay > dataset[i]){
+      minOfDay = dataset[i]
+    }
+    if (maxOfDay < dataset[i]){
+      maxOfDay = dataset[i]
+    }
+  }
+  minOfDay = Math.round(minOfDay * 10) / 10
+  maxOfDay = Math.round(maxOfDay * 10) / 10
 
   numberOfTicks = 20;
 
-  hotColorRGB = [152,0,67];
-  coldColor   = [231,225,239];
-  ratio = (temp-MinTemp)/MaxTemp;
+  ratio = (lastVal-MinVal)/MaxVal;
 
-  r = ratio*(hotColorRGB[0]-coldColor[0])+coldColor[0]
-  g = ratio*(hotColorRGB[1]-coldColor[1])+coldColor[1]
-  b = ratio*(hotColorRGB[2]-coldColor[2])+coldColor[2]
+  r = ratio*(bgc_warm[0]-bgc_cold[0])+bgc_cold[0]
+  g = ratio*(bgc_warm[1]-bgc_cold[1])+bgc_cold[1]
+  b = ratio*(bgc_warm[2]-bgc_cold[2])+bgc_cold[2]
 
   gauge.style.backgroundColor = "rgb("+r+","+g+","+b+")"
 
-  hotColorRGB = [4,   90,  141];
-  coldColor   = [236, 231, 242];
+  r = ratio*(tc_cold[0]-tc_warm[0])+tc_warm[0]
+  g = ratio*(tc_cold[1]-tc_warm[1])+tc_warm[1]
+  b = ratio*(tc_cold[2]-tc_warm[2])+tc_warm[2]
 
-  r = ratio*(coldColor[0]-hotColorRGB[0])+hotColorRGB[0]
-  g = ratio*(coldColor[1]-hotColorRGB[1])+hotColorRGB[1]
-  b = ratio*(coldColor[2]-hotColorRGB[2])+hotColorRGB[2]
+  ValDiv = document.createElement("div")
+  ValDiv.style.color     = "rgb("+r+","+g+","+b+")";
+  ValDiv.style.width     = "100%";
+  ValDiv.style.left      = "10px";
+  ValDiv.style.bottom    = "20px";
+  ValDiv.style.position  = "absolute";
+  ValDiv.style.fontSize  = "50px";
+  Val = document.createElement("span")
+  Val.textContent = lastVal + unit;
+  ValDiv.appendChild(Val)
+  gauge.appendChild(ValDiv)
 
-  tempValDiv = document.createElement("div")
-  tempValDiv.style.color     = "rgb("+r+","+g+","+b+")";
-  tempValDiv.style.width     = "100%";
-  tempValDiv.style.left      = "0px";
-  tempValDiv.style.bottom    = "10px";
-  tempValDiv.style.position  = "absolute";
-  tempValDiv.style.fontSize  = "70px";
-  tempValDiv.style.textAlign = "center";
-  tempVal = document.createElement("span")
-  tempVal.textContent = temp+"°";
-  tempValDiv.appendChild(tempVal)
-  gauge.appendChild(tempValDiv)
+  minValDiv = document.createElement("div")
+  minValDiv.style.color     = "rgb("+r+","+g+","+b+")";
+  minValDiv.style.width     = "100%";
+  minValDiv.style.left      = "180px";
+  minValDiv.style.bottom    = "65px";
+  minValDiv.style.position  = "absolute";
+  minValDiv.style.fontSize  = "25px";
+  minVal = document.createElement("span")
+  minVal.textContent = minOfDay;
+  minValDiv.appendChild(minVal)
+  gauge.appendChild(minValDiv)
 
-  // big ticks
-  for (var i=0; i<=numberOfTicks; i++){
-    tick = document.createElement("div")
-    tick.style = "width: 10px; height: 2px; position: absolute; background-color:rgb("+r+","+g+","+b+");";
-    tick.style.left   =  (120+Math.cos(Math.PI*(i/numberOfTicks))*100)+"px";
-    tick.style.bottom =  (10+Math.sin(Math.PI*(i/numberOfTicks))*100)+"px";
-    tick.style.transformOrigin = "bottom left";
-    tick.style.transform = "rotate(-"+(180/numberOfTicks)*i+"deg)";
-    gauge.appendChild(tick)
-  }
-
-  // small ticks
-  for (var j=1; j<=2*numberOfTicks; j=j+2){
-    tick = document.createElement("div")
-    tick.style = "width: 5px; height: 2px; position: absolute; background-color:rgb("+r+","+g+","+b+");";
-    tick.style.left   =  (120+Math.cos(Math.PI*(j/(2*numberOfTicks)))*100)+"px";
-    tick.style.bottom =  (10+Math.sin(Math.PI*(j/(2*numberOfTicks)))*100)+"px";
-    tick.style.transformOrigin = "bottom left";
-    tick.style.transform = "rotate(-"+((180/(2*numberOfTicks))*j)+"deg)";
-    gauge.appendChild(tick)
-  }
-
-  handleAngle = 180 - ((temp-MinTemp)/(MaxTemp-MinTemp))*180
-  handle = document.createElement("div")
-  handle.style.backgroundColor="rgb("+r+","+g+","+b+")";
-  handle.classList.add("handle")
-  handle.style.transform = "rotate(-"+handleAngle+"deg)";
-  gauge.appendChild(handle)
-
-  handleBase = document.createElement("div")
-  handleBase.classList.add("handleBase");
-  handleBase.style.backgroundColor="rgb("+r+","+g+","+b+")";
-  gauge.appendChild(handleBase)
+  maxValDiv = document.createElement("div")
+  maxValDiv.style.color     = "rgb("+r+","+g+","+b+")";
+  maxValDiv.style.width     = "100%";
+  maxValDiv.style.left      = "180px";
+  maxValDiv.style.bottom    = "100px";
+  maxValDiv.style.position  = "absolute";
+  maxValDiv.style.fontSize  = "25px";
+  maxVal = document.createElement("span")
+  maxVal.textContent = maxOfDay;
+  maxValDiv.appendChild(maxVal)
+  gauge.appendChild(maxValDiv)
 
 }
 
-function drawHumidtyGauge(gauge, humidity){
-  humidity = Math.round(humidity * 10) / 10;
-  humidity = 10.1
-  MinHumid = 0; MaxHumid = 100;
-
-  ratio = (humidity-MinHumid)/MaxHumid;
-
-  coldColor = [198,219,239];
-  hotColorRGB   = [8,81,156];
-
-  r = ratio*(hotColorRGB[0]-coldColor[0])+coldColor[0]
-  g = ratio*(hotColorRGB[1]-coldColor[1])+coldColor[1]
-  b = ratio*(hotColorRGB[2]-coldColor[2])+coldColor[2]
-
-  gauge.style.backgroundColor = "rgb("+r+","+g+","+b+")"
-
-  humidityDiv = document.createElement("div")
-  humidityDiv.style.color     = "white";
-  humidityDiv.style.width     = "100%";
-  humidityDiv.style.left      = "0px";
-  humidityDiv.style.bottom    = "10px";
-  humidityDiv.style.position  = "absolute";
-  humidityDiv.style.fontSize  = "90px";
-  humidityDiv.style.textAlign = "center";
-  humidityVal = document.createElement("span")
-  humidityVal.textContent = humidity+"%";
-  humidityDiv.appendChild(humidityVal)
-  gauge.appendChild(humidityDiv)
-
-}
-
-
-function drawLightGauge(gauge, light){
-  light = Math.round(light * 10) / 10;
-  light = 10.1
-  MinLight = 0; MaxLight = 100;
-
-  ratio = (light-MinLight)/MaxLight;
-
-  coldColor = [0,0,0];
-  hotColorRGB   = [217,217,217];
-
-  r = ratio*(hotColorRGB[0]-coldColor[0])+coldColor[0]
-  g = ratio*(hotColorRGB[1]-coldColor[1])+coldColor[1]
-  b = ratio*(hotColorRGB[2]-coldColor[2])+coldColor[2]
-
-  gauge.style.backgroundColor = "rgb("+r+","+g+","+b+")"
-
-  lightValDiv = document.createElement("div")
-  lightValDiv.style.color     = "white";
-  lightValDiv.style.width     = "100%";
-  lightValDiv.style.left      = "0px";
-  lightValDiv.style.bottom    = "10px";
-  lightValDiv.style.position  = "absolute";
-  lightValDiv.style.fontSize  = "90px";
-  lightValDiv.style.textAlign = "center";
-  lightVal = document.createElement("span")
-  lightVal.textContent = light+"%";
-  lightValDiv.appendChild(lightVal)
-  gauge.appendChild(lightValDiv)
-
-}
-
-function toggle(){
-  if (document.getElementById("monthlyToggle").checked){
-    document.getElementById("monthlyDisplay").style.display = "none";
-    document.getElementById("dailyDisplay").style.display = "inline";
-  }else{
-    document.getElementById("monthlyDisplay").style.display = "inline";
-    document.getElementById("dailyDisplay").style.display   = "none";
-
-  }
-}
 </script>
 
 {%if pageTheme=="Dark"%}
@@ -183,52 +115,102 @@ function toggle(){
     {% include "generic_modules/header.html" %}
 {% endwith %}
 
-<div style="float:right;  width:100%;">
-  <label class="switch" style="float:right">
-      <input type="checkbox" id= "monthlyToggle" onclick="toggle()" checked>
-    <span class="slider round"></span>
-  </label>
+<div style="float:left; width:100%;">
+  <h2 class="title journal" style="margin-left:40%">
+    <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
+    {{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}
+    <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
+  </h2>
 </div>
 
-<div id="dailyDisplay" style="float:right; margin-top:20px; width:100%;">
-  {% for room in tempData %}
-    <div style="float: left; margin-bottom:10px; height:165px; background-color:#54278f; border-radius:10px;">
-      <div id="tempGauge" style="float: left; margin-top: 10px; margin-left: 5px; margin-right: 5px; position:relative; width:240px; height:145px; border-radius:20px;">
+<div style="float:right; width:100%;">
+  {% for room in daily_data %}
+    <div style="float: left; width:100%;">
+      <h3 style="margin-left: 3%; color:white;">Room {{loop.index}}</h3>
+      <div id="tempGauge" style="float: left; margin-left: 4%; margin-top: 10px; position:relative; width:250px; height:145px; border-radius:20px;">
         <h5 style="float: left; margin-left: 10px; margin-top:5px;">Temperature</h5>
       </div>
-      <div id="humidityGauge" style="float: left; margin-top: 10px; margin-left: 5px; margin-right: 5px; position:relative; width:240px; height:145px; border-radius:20px;">
-        <h5 style="float: left; margin-left: 10px; margin-top:5px;">Humidty</h5>
+      <div style="float: left; margin-left: 10px; width:400px;">
+        {% with dataset = daily_data[room]["temp"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
+              thresholds = [], trackerName = "Temperature", unit="(°C)", addAvg="true", tcf="false",
+              pointStyle = 'circle', showTotalVal = false, suggestedMin = 10, yearMonth = "", clickable="false",
+              accumulate = "false", width = "100%", height = "150px",
+              bgColors = ['rgba(203,24,29, 0.5)'],
+              bColors = ['rgba(203,24,29, 1)']%}
+          {% include "trackerModules/singleChart.html" %}
+        {% endwith %}
       </div>
-      <div id="lightGauge" style="float: left; margin-top: 10px; margin-left: 5px; margin-right: 5px; position:relative; width:240px; height:145px; border-radius:20px;">
-        <h5 style="float: left; margin-left: 10px; margin-top:5px; color:white;">Light Level</h5>
+      <div style="float: left;  margin-left: 10px;  width:450px;">
+        {% with dataset = monthly_Data[room]["temp"], ChartMonthDays = chart_months, chartType = "line",
+              thresholds = [25], trackerName = "Temperature", unit="(°C)",
+              pointStyle = 'circle',  suggestedMin = 10, suggestedMax = 20, yearMonth = "year",
+              bgcolor='rgba(0,0,0, 0)', color=['rgba(252,146,114,1)', 'rgba(203,24,29, 1)'],
+              width = "100%", height = "130px" %}
+          {% include "homeAutomation_modules/minMaxChart.html" %}
+        {% endwith %}
       </div>
     </div>
-  {%endfor%}
 
+    <div style="float: left; width:100%;">
+      <div id="humidityGauge" style="float: left;  margin-left: 4%; margin-top: 10px; position:relative; width:250px; height:145px; border-radius:20px;">
+        <h5 style="float: left; margin-left: 10px; margin-top:5px;">Humidty</h5>
+      </div>
+      <div style="float: left; margin-left: 10px; width:400px;">
+        {% with dataset = daily_data[room]["humidity"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
+              thresholds = [], trackerName = "Humidty", unit="(%)", addAvg="true", tcf="false",
+              pointStyle = 'circle', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
+              accumulate = "false", width = "100%", height = "150px",
+              bgColors = ['rgba(29,145,192, 0.5)'],
+              bColors = ['rgba(29,145,192, 1)']%}
+          {% include "trackerModules/singleChart.html" %}
+        {% endwith %}
+      </div>
+      <div style="float: left;  margin-left: 10px;  width:450px;">
+        {% with dataset = monthly_Data[room]["humidity"], ChartMonthDays = chart_months, chartType = "line",
+              thresholds = [25], trackerName = "Humidity", unit="(%)",
+              pointStyle = 'circle',  suggestedMin = 0, suggestedMax = 100, yearMonth = "year",
+              bgcolor='rgba(0,0,0, 0)', color=['rgba(65,182,196, 1)', 'rgba(37,52,148, 1)'],
+              width = "100%", height = "130px" %}
+          {% include "homeAutomation_modules/minMaxChart.html" %}
+        {% endwith %}
+      </div>
+    </div>
+
+    <div style="float: left; width:100%;">
+      <div id="pressureGauge" style="float: left;  margin-left: 4%; margin-top: 10px; position:relative; width:250px; height:145px; border-radius:20px;">
+        <h5 style="float: left; margin-left: 10px; margin-top:5px; color:white;">Pressure Level</h5>
+      </div>
+      <div style="float: left; margin-left: 10px; width:400px;">
+        {% with dataset = daily_data[room]["pressure"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
+              thresholds = [], trackerName = "Pressure", unit="(bar)", addAvg="true", tcf="false",
+              pointStyle = 'circle', showTotalVal = false, suggestedMin = 0.9, yearMonth = "", clickable="false",
+              accumulate = "false", width = "100%", height = "150px",
+              bgColors = [ 'rgba(106,81,163, 0.5)'],
+              bColors = ['rgba(106,81,163, 1)']%}
+          {% include "trackerModules/singleChart.html" %}
+        {% endwith %}
+      </div>
+      <div style="float: left;  margin-left: 10px;  width:450px;">
+        {% with dataset = monthly_Data[room]["pressure"], ChartMonthDays = chart_months, chartType = "line",
+              thresholds = [25], trackerName = "Pressure", unit="(bar)",
+              pointStyle = 'circle',  suggestedMin = 0.9, suggestedMax = 1.1, yearMonth = "year",
+              bgcolor='rgba(0,0,0, 0)', color=['rgba(158,154,200,1)', 'rgba(106,81,163, 1)'],
+              width = "100%", height = "130px" %}
+          {% include "homeAutomation_modules/minMaxChart.html" %}
+        {% endwith %}
+      </div>
+    </div>
+
+  </div>
+
+  <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
+    <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
+    <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
+  </div>
+  {%endfor%}
 </div>
 
 
-<div id="monthlyDisplay" style="float:right; margin-top:20px; width:100%; display:none">
-  <div style="float: left; width:600px;height:100%">
-    {% with dataset = tempData["room_1"]["temp"], ChartMonthDays = tempData["room_1"]["time"], chartType = "line",
-          thresholds = [25], trackerName = "Temperature", unit="(%)", addAvg="false", tcf="true",
-          pointStyle = 'rect', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
-          accumulate = "false", width = "95%",
-          bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)'],
-          bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)']%}
-      {% include "trackerModules/singleChart.html" %}
-    {% endwith %}
-  </div>
-  <div style="float: left; width:600px;height:100%">
-    {% with dataset = tempData["room_1"]["temp"], ChartMonthDays = tempData["room_1"]["time"], chartType = "line",
-          thresholds = [25], trackerName = "Humidty", unit="(%)", addAvg="false", tcf="true",
-          pointStyle = 'rect', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
-          accumulate = "false", width = "95%",
-          bgColors = ['rgba(67,147,195, 0.5)', 'rgba(116,196,118, 0.5)'],
-          bColors = ['rgba(67,147,195, 1)', 'rgba(116,196,118, 1)']%}
-      {% include "trackerModules/singleChart.html" %}
-    {% endwith %}
-  </div>
 </div>
 
 </body>
@@ -236,9 +218,9 @@ function toggle(){
 <script type="text/javascript">
 gauge_1_1 = document.getElementById("tempGauge")
 gauge_1_2 = document.getElementById("humidityGauge")
-gauge_1_3 = document.getElementById("lightGauge")
-drawTempGauge(gauge_1_1, tempData["room_1"]["temp"][tempData["room_1"]["temp"].length-1]/100);
-drawHumidtyGauge(gauge_1_2, tempData["room_1"]["temp"][tempData["room_1"]["temp"].length-1]/100);
-drawLightGauge(gauge_1_3, 20)
+gauge_1_3 = document.getElementById("pressureGauge")
+drawGauge(gauge_1_1, tempData["room_1"]["temp"], "°C", 0, 100, [231,225,239], [152,0,67], [236, 231, 242], [4, 90, 141]);
+drawGauge(gauge_1_2, tempData["room_1"]["humidity"], "%", 0, 100, [198,219,239], [8,81,156], [240,240,240], [240,240,240]);
+drawGauge(gauge_1_3, tempData["room_1"]["pressure"], "bar", 0, 2, [0,0,0], [217,217,217], [240,240,240], [240,240,240]);
 </script>
 </html>

@@ -49,14 +49,21 @@ function renderHeartBPChart(bpMin, bpMax){
                   var selectedVal =  bp_Min[selectedDay-1]+","+bp_Max[selectedDay-1]
                   var newVal = window.prompt("Update Blood Pressure (coma separated format:\"min,max\") for day " + selectedDay + "?", selectedVal);
                   if ((newVal===null)){return;}
-                  var minBP = newVal.split(",")[0]
-                  var maxBP = newVal.split(",")[1]
-                  if (isNaN(minBP) || isNaN(maxBP)){return;}
                   var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
+                  var value;
+                  if(newVal !== ""){
+                    var minBP = newVal.split(",")[0]
+                    var maxBP = newVal.split(",")[1]
+                    if (isNaN(minBP) || isNaN(maxBP)){return;}
+                    value = minBP + ',' + maxBP
+                  }else{
+                    console.log("deleting data for day: ", date)
+                    value = ""
+                  }
                   $.ajax({
                       type: "POST",
                       url: "http://"+window.location.hostname+":5000/home",
-                      data: {"tracker_type":"BP", "value" : minBP + ',' + maxBP, "date": date},
+                      data: {"tracker_type":"BP", "value" : value, "date": date},
                   });
                   bp_Max[selectedDay-1] = maxBP;
                   bp_Min[selectedDay-1] = minBP;

@@ -4,24 +4,36 @@ from functionPackages.dateTime import *
 
 import sqlite3
 import datetime
-import sys, os
+import sys
 from package import *
 from flask import Flask, request, url_for, redirect
 from flask import send_from_directory
 from flask_restful import reqparse, abort, Api, Resource
 from flask import render_template, make_response
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 from werkzeug import secure_filename
 import requests
 import json
 import os
 from random import randint
+import logging
+from logging.handlers import RotatingFileHandler
 
 from flask_mail import Mail,  Message
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
 mail = Mail()
+
+
+logfile = "logs/log.log"
+log = logging.getLogger(__name__)
+logging.basicConfig(filename = logfile,
+                    level = logging.DEBUG,
+                    format = '%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+handler = RotatingFileHandler(logfile, maxBytes=1024, backupCount=1)
+log.addHandler(handler)
 
 parser = reqparse.RequestParser()
 for item in ['tracker_type', 'value', 'oldValue', 'date', 'action', 'type', 'planner']:
@@ -40,7 +52,7 @@ class dash(Resource):
             activityList = fetchSettingParamFromDB(c, "activityList").replace(" ", "").split(",")
         except:
             pageTheme = "Dark"
-            print("could not fetch page theme! replacing with default values")
+            logger.info("could not fetch page theme! replacing with default values")
         if args['date'] is not None:
             pageYear, pageMonth, pageDay = args['date'].split("-")
         else:
@@ -98,6 +110,7 @@ class dash(Resource):
                                              yearBP_Min = yearBP_Min, yearBP_Max = yearBP_Max,
                                              yearMood = yearMood, yearBO = yearBO,
                                              yearWeight = yearWeight, yearRuns = yearRuns,
+                                             HideLine = "false",
                                              # ----------------------
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
                                              activityList = activityList, days=moodTrackerDays, highlight = highlight,
@@ -124,12 +137,15 @@ class dash(Resource):
             updateSettingParam(c, conn, "counter", counterVal)
 
         todaysDate = parseDate(args['date'])
+        deleteDay = False
+        if (len(args['value'].strip()) == 0) :
+            deleteDay = True
         if args['tracker_type'] in ['sleep', 'running', 'pace', 'step', 'weight', 'work']:
-            return addTrackerItemToTable(args['value'].lower(), "", [], args['tracker_type']+"Tracker", todaysDate, False, True, c, conn)
+            return addTrackerItemToTable(args['value'].lower(), "", [], args['tracker_type']+"Tracker", todaysDate, deleteDay, True, c, conn)
         if args['tracker_type'] in ['HR', 'BP']:
-            return addTrackerItemToTable(args['value'].split(","), "", [], args['tracker_type']+"Tracker", todaysDate, False, True, c, conn)
+            return addTrackerItemToTable(args['value'].split(","), "", [], args['tracker_type']+"Tracker", todaysDate, deleteDay, True, c, conn)
         if args['tracker_type'] == 'blood oxygen':
-            return addTrackerItemToTable(args['value'].lower(), "", [], "oxygenTracker", todaysDate, False, True, c, conn)
+            return addTrackerItemToTable(args['value'].lower(), "", [], "oxygenTracker", todaysDate, deleteDay, True, c, conn)
         if args['tracker_type'] == 'saving':
             return addsSavingItemToTable(args['value'].lower(), todaysDate, c, conn)
         if args['tracker_type'] == 'mood':
@@ -179,14 +195,14 @@ class journal(Resource):
                 c.execute("""DELETE from logTracker where date = ?""", (todaysDate, ))
             c.execute("""INSERT INTO logTracker VALUES(?, ?)""", (log, todaysDate))
             conn.commit()
-            print(f"added log for date: {todaysDate}")
+            logger.info(f"added log for date: {todaysDate}")
         if args['type'] == "photo":
             if args['action'] == "delete":
                 file = "./static"+args['value'].split("/static")[1]
                 if os.path.isfile(file):
                     os.remove(file)
                     parentDir = "./static"+"/".join(args['value'].split("/static")[1].split("/")[:-1])
-                    print(parentDir)
+                    logger.info("parent Directory:", parentDir)
                     if len(os.listdir(parentDir))==0:
                         os.rmdir(parentDir)
                 else:
@@ -258,10 +274,10 @@ class org(Resource):
                 value_dict = eval((args['value']))
                 c.execute("""DELETE from todoList where date = ? and task = ?""", (dateVal, value_dict['value'].lower()))
                 if args['action'] == "delete":
-                    print(f"removed todo {value_dict['value'].lower()} from todoList for date: {dateVal}")
+                    logger.info(f"removed todo {value_dict['value'].lower()} from todoList for date: {dateVal}")
                 else:
                     c.execute("""INSERT INTO todoList VALUES(?, ?, ?, ?)""", (value_dict['value'].lower(), dateVal, value_dict['done'], value_dict['color']))
-                    print(f"added todo {value_dict['value'].lower()} to todoList for date: {dateVal} as {value_dict['done']}")
+                    logger.info(f"added todo {value_dict['value'].lower()} to todoList for date: {dateVal} as {value_dict['done']}")
                 conn.commit()
 
         elif args['type'] == 'calendar':
@@ -408,11 +424,11 @@ class lists(Resource):
         args = parser.parse_args()
         if args['action'] == "delete":
             value_dict = eval((args['value']))
-            print(f"deleted {value_dict['name'].lower()} from {value_dict['type']}")
+            logger.info(f"deleted {value_dict['name'].lower()} from {value_dict['type']}")
             c.execute("""DELETE from lists where name = ? and type = ?  """, (value_dict["name"].lower(), value_dict["type"]))
         else:
             value_dict = eval((args['value']))
-            print(f"added {value_dict['name'].lower()} to {value_dict['type']} as {value_dict['done']} ")
+            logger.info(f"added {value_dict['name'].lower()} to {value_dict['type']} as {value_dict['done']} ")
             c.execute("""DELETE from lists where name = ? and type = ? """, (value_dict["name"].lower(), value_dict["type"]))
             c.execute("""INSERT INTO lists VALUES(?, ?, ?, ?)""", (value_dict["name"].lower(), value_dict["done"], value_dict["type"], value_dict["notes"]))
         conn.commit()
@@ -439,10 +455,10 @@ class notes(Resource):
         value_dict = eval((args['value']))
         if  args['action'] == "delete":
             if value_dict.get("chapter", None) != None:
-                print(f"deleting the chapter {value_dict['chapter']} from notebook: {value_dict['notebook']}")
+                logger.info(f"deleting the chapter {value_dict['chapter']} from notebook: {value_dict['notebook']}")
                 c.execute("""DELETE from Notes where Notebook = ? and  Chapter = ? """, (value_dict["notebook"],value_dict["chapter"],))
             else:
-                print(f"deleting the notebook: {value_dict['notebook']}")
+                logger.info(f"deleting the notebook: {value_dict['notebook']}")
                 c.execute("""DELETE from Notes where Notebook = ? """, (value_dict["notebook"],))
             conn.commit()
         elif args['action'] == "rename":
@@ -537,55 +553,19 @@ class server(Resource):
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
 
-        cpuTemps = []
-        cpuTempsTimes = []
-
-        cpuUsage = []
-        cpuUsageTimes = []
-
-        try:
-            with open('serverScripts/reports/cpuReports/cpuUsageData_'+str(todaysDate)+'.txt', 'r') as reader2:
-                line2 = reader2.readline()
-                while (line2 != ""):
-                    lineSplit = line2.split(" ")
-                    cpuUsage.append(float(lineSplit[2]))
-                    cpuUsageTimes.append(lineSplit[0])
-                    line2 = reader2.readline()
-        except:
-            print("something went wrong!")
-        try:
-            with open('serverScripts/reports/cpuReports/cpuTempData_'+str(todaysDate)+'.txt', 'r') as reader2:
-                line2 = reader2.readline()
-                while (line2 != ""):
-                    lineSplit = line2.split(" ")
-                    cpuTemps.append(float(lineSplit[0])/1000)
-                    cpuTempsTimes.append(lineSplit[2])
-                    line2 = reader2.readline()
-        except:
-            print("something went wrong!")
-
-        discSpace1 = int(os.popen('df -h | grep "/dev/root"').read().split()[4][:-1])
-        discSpace2 = int(os.popen('df -h | grep "/dev/sda1"').read().split()[4][:-1])
-        discSpace3Temp = os.popen('free -m | grep "Mem"').read().split()
-        discSpace3 = (float(discSpace3Temp[2])/float(discSpace3Temp[1]))*100
-        discSpace4Temp = os.popen('free -m | grep "Swap"').read().split()
-        discSpace4 = (float(discSpace4Temp[2])/float(discSpace4Temp[1]))*100
-        discSpace = {"/dev/root" : [discSpace1, 100-discSpace1],
-                     "/dev/sda1": [discSpace2, 100-discSpace2],
-                     "Mem": [discSpace3, 100-discSpace3],
-                     "Swap": [discSpace4, 100-discSpace4]}
-
-        upTimeString = " ".join(os.popen('uptime -s').read().split())
-        bootTime = datetime.datetime.strptime(upTimeString, '%Y-%m-%d %H:%M:%S')
-        upTime = datetime.datetime.now() - bootTime
-        upTime = int(upTime.total_seconds()/3600)
+        cpuTemps, cpuTempsTimes, cpuUsage, cpuUsageTimes, discSpace, upTime = generate_cpu_stat(todaysDate, year)
+        cpuTempsYearly, cpuUsageYearly = generate_cpu_stat_yearly(year)
 
         return make_response(render_template('server.html', pageTheme=pageTheme,
                              cpuTemps=cpuTemps, cpuTempsTimes=cpuTempsTimes,
                              cpuUsage=cpuUsage, cpuUsageTimes=cpuUsageTimes,
-                             upTime=upTime,
+                             cpuUsageYearly=cpuUsageYearly, cpuTempsYearly=cpuTempsYearly,
+                             upTime=upTime, HideLine = "true", chart_months=chart_months,
                              discSpace=discSpace, year=int(year), month=int(month), day=int(day),
                              PageYear = 1999, PageMonth = 10),200,headers)
+
+    def post(self):
+        return "Nothing to be posted!", 200
 
 
 class audiobooks(Resource):
@@ -603,7 +583,10 @@ class audiobooks(Resource):
         pageTheme = fetchSettingParamFromDB(c, "Theme")
 
         path = "static/audiobooks/"
-        audiobooks, metadata = getAudiobooks(path)
+        try:
+            audiobooks, metadata = getAudiobooks(path)
+        except:
+            audiobooks = metadata = {}
         return make_response(render_template('audiobooks.html', audiobooks=audiobooks, metadata=metadata, pageTheme=pageTheme ),200,headers)
 
     def post(self):
@@ -623,33 +606,46 @@ class audiobooks(Resource):
 
 class homeAutomation(Resource):
     def get(self):
+        args = parser.parse_args()
+        if args['date'] is not None:
+            year, month, day = args['date'].split("-")
+            todaysDate = "-".join([year, month, day])
+        else:
+            today = datetime.date.today()
+            day, month, year = today.day, today.month, today.year
+            todaysDate = today.strftime('%Y-%m-%d')
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
-        tempData = {}
-        tempData["room_1"] = {}
-        with open('homeAutomation/room_1/temp/2021-03-24.txt', 'r') as reader2:
-            tempData["room_1"]["time"] = []
-            tempData["room_1"]["temp"] = []
-            line2 = reader2.readline()
-            while (line2 != ""):
-                lineSplit = line2.split(" -> ")
-                tempData["room_1"]["time"].append(str(lineSplit[0]).strip())
-                tempData["room_1"]["temp"].append(float(lineSplit[1]))
-                line2 = reader2.readline()
-        reader2.close()
 
-        return make_response(render_template('homeAutomation.html', tempData=tempData,
-                             PageYear = 1999, PageMonth = 10, pageTheme=pageTheme ),200,headers)
+        ha_directory="homeAutomation"
+        monthly_data = generate_weather_monthly(ha_directory, year)
+        daily_data = genenrate_weather_daily(ha_directory, todaysDate)
+
+        return make_response(render_template('homeAutomation.html', daily_data=daily_data,
+                             monthly_Data = monthly_data, chart_months=chart_months,
+                             pageTheme=pageTheme, HideLine = "true",
+                             PageYear=int(year), PageMonth=int(month), day=int(day),),200,headers)
 
     def post(self):
         args = parser.parse_args()
         value = json.loads(args['value'])
-        directory="homeAutomation/room_"+value['room']+"/temp"
+        directory="homeAutomation"
         if not os.path.exists(directory):
             os.makedirs(directory)
-        f = open("homeAutomation/room_"+value['room']+"/temp/"+value['date']+".txt", "a")
-        f.write(value['hour']+" -> "+value['temp']+"\n")
+        directory="homeAutomation/room_"+value['room']
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        year = value['date'].split("-")[0]
+        directory="homeAutomation/room_"+value['room']+"/"+year
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        f = open("homeAutomation/room_"+value['room']+"/"+year+"/"+value['date']+".txt", "a")
+        f.write("{\"time\": \"" + value['hour'] + "\"")
+        for item in ["temp", "humidity", "pressure"]:
+            f.write(", \""+ item + "\": \""+ value[item] + "\"")
+        f.write("}\n")
         f.close()
+
         return "Done", 200
 
 
@@ -695,15 +691,15 @@ def upload_file_notes():
 @app.route('/shutdown', methods = ['POST'])
 def shutdown_server():
     if request.method == 'POST':
-        print("shutdown request recieved...")
+        logger.info("shutdown request recieved...")
         send_mail("Server:: shutting down", "shut down command received.", app, mail, c)
         shutdownReq = request.environ.get('werkzeug.server.shutdown')
         if shutdownReq is None:
             raise RuntimeError('Not running with the Werkzeug Server')
         shutdownReq()
-        print("closing the DB connection...")
+        logger.info("closing the DB connection...")
         conn.close()
-        print("shutting down the server...")
+        logger.info("shutting down the server...")
         scheduler.shutdown()
         return "server is shutting down..."
 
@@ -734,8 +730,32 @@ def sendCalNotification():
             send_mail("Upcomming event: "+item[3], body, app, mail, c)
 
 
+def sendDailyDigest():
+    with app.app_context():
+        todaysDate = str(datetime.date.today())
+        day, month, year = sparateDayMonthYear(todaysDate)
+        c.execute("""SELECT * FROM calendar WHERE date = ? """,
+                  (todaysDate,))
+        calEvents = c.fetchall()
+        c.execute("""SELECT * FROM todoList WHERE date = ? """,
+                  (todaysDate,))
+        todos = c.fetchall()
+        body = "Here is your daily digest for:   "+ todaysDate + "\n"
+        body += "\n\nCalendar events:\n"
+        for item in calEvents:
+            body += "\t* Event: " + item[3] + "\n" + \
+                    "\t         Event time: " + item[1] + " - " + item[2] + "\n" + \
+                    "\t         Description: "+item[5]+"\n"
+        body += "\n\nTODOs events:\n"
+        for item in todos:
+            body += "\t* Todo: " + item[0] + "\n"
+            body += "\t       Status: "+ ("Done" if item[2] == "true" else "Not Done") + "\n"
+        send_mail("Daily Digest for: "+todaysDate, body, app, mail, c)
+
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=sendCalNotification, trigger="interval", seconds=60)
+scheduler.add_job(func=sendDailyDigest, trigger=CronTrigger.from_crontab('0 6 * * *'))
 scheduler.start()
 
 
@@ -752,6 +772,6 @@ api.add_resource(audiobooks, '/audiobooks')
 api.add_resource(homeAutomation, '/homeAutomation')
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
 
 conn.close()

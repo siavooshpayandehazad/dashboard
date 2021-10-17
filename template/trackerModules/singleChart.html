@@ -85,6 +85,9 @@ function renderTrackerChart(){
                       }
                       if (isNaN(newVal) || (newVal===null)){return;}
                       var date = {{PageYear}}+"-"+zeroPad({{PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
+                      if(newVal == ""){
+                        console.log("deleting data for day: ", date)
+                      }
                       // submit new value
                       $.ajax({
                           type: "POST",
@@ -137,8 +140,8 @@ function countTotalVal(list, floatRes, trackerName){
     <span style="float: right; margin-right: 10px; margin-top: 5px; font-family:verdana; font-size:11px"> monthly {{trackerName}}: <b><span id="total{{trackerName}}"></span></b> {{unit}}</span>
   {% endif %}
   <h2  class="title lightbg"  style="float:left; margin-left: 10px;">{{trackerName}} tracker</h2>
-  <div style="float:left; width:90%; margin-left:5%; background-color: white">
-    <canvas  height="100px" id="{{trackerName}}Tracker"></canvas>
+  <div style="float:left; width:90%; margin-left:15px; background-color: white">
+    <canvas  height="{{height}}" id="{{trackerName}}Tracker"></canvas>
   </div>
 </div>
 

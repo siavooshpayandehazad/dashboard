@@ -1,6 +1,7 @@
 import datetime
 import re
 
+
 def sparateDayMonthYear(todaysDate:str) -> tuple:
     if not checkIfDateValid(todaysDate):
         raise ValueError("Wrong date format is passed!")

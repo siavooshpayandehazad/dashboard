@@ -1,22 +1,25 @@
 .moodTrackerTable{
-  margin-left: 6%;
-  margin-right: 6%;
-  margin-bottom: 6%;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
   float:left;
 }
 .moodSelectorCell{
-  min-width:6%;
+  min-width:20px;
   border-radius:5px;
   text-align: center;
+  border: 1px solid white;
 }
 .moodSelectorCell:hover{
   cursor: pointer;
 }
 th.moodTracker{
+  border: 1px solid white;
+  min-width:20px;
   text-align: center;
 }
 div.moodTracker {
-  width: 13%;
+  width: 195px;
   border-radius:12px;
   background-color:var(--moodtracker-bg-clr);
   float: left;
@@ -30,5 +33,5 @@ div.moodSelectorPopUp{
   border: solid black 2px;
   border-radius: 5px;
   width: 100px;
-  z-index: 10; 
+  z-index: 10;
 }
