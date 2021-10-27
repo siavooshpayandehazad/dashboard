@@ -3,7 +3,7 @@ date=$(date '+%Y-%m-%d %H:%M:%S')
 today=$(date +"%d-%m-%y")
 year=$(date +"%Y")
 
-CPUReportDir="/home/pi/dashboard/serverScripts/reports/cpuReports/$year"
+CPUReportDir="/media/pi/ec83d7d4-47dd-4b33-9fe9-261c1b6700fa/dashboard/serverScripts/reports/cpuReports/$year"
 mkdir $CPUReportDir
 
 

@@ -127,7 +127,7 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
   {% for room in daily_data %}
     <div style="float: left; width:100%;">
       <h3 style="margin-left: 3%; color:white;">Room {{loop.index}}</h3>
-      <div id="tempGauge" style="float: left; margin-left: 4%; margin-top: 10px; position:relative; width:250px; height:145px; border-radius:20px;">
+      <div id="tempGauge" style="float: left; margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
         <h5 style="float: left; margin-left: 10px; margin-top:5px;">Temperature</h5>
       </div>
       <div style="float: left; margin-left: 10px; width:400px;">
@@ -145,14 +145,14 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
               thresholds = [25], trackerName = "Temperature", unit="(°C)",
               pointStyle = 'circle',  suggestedMin = 10, suggestedMax = 20, yearMonth = "year",
               bgcolor='rgba(0,0,0, 0)', color=['rgba(252,146,114,1)', 'rgba(203,24,29, 1)'],
-              width = "100%", height = "130px" %}
+              width = "100%", height = "133px" %}
           {% include "homeAutomation_modules/minMaxChart.html" %}
         {% endwith %}
       </div>
     </div>
 
     <div style="float: left; width:100%;">
-      <div id="humidityGauge" style="float: left;  margin-left: 4%; margin-top: 10px; position:relative; width:250px; height:145px; border-radius:20px;">
+      <div id="humidityGauge" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
         <h5 style="float: left; margin-left: 10px; margin-top:5px;">Humidty</h5>
       </div>
       <div style="float: left; margin-left: 10px; width:400px;">
@@ -170,14 +170,14 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
               thresholds = [25], trackerName = "Humidity", unit="(%)",
               pointStyle = 'circle',  suggestedMin = 0, suggestedMax = 100, yearMonth = "year",
               bgcolor='rgba(0,0,0, 0)', color=['rgba(65,182,196, 1)', 'rgba(37,52,148, 1)'],
-              width = "100%", height = "130px" %}
+              width = "100%", height = "133px" %}
           {% include "homeAutomation_modules/minMaxChart.html" %}
         {% endwith %}
       </div>
     </div>
 
     <div style="float: left; width:100%;">
-      <div id="pressureGauge" style="float: left;  margin-left: 4%; margin-top: 10px; position:relative; width:250px; height:145px; border-radius:20px;">
+      <div id="pressureGauge" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
         <h5 style="float: left; margin-left: 10px; margin-top:5px; color:white;">Pressure Level</h5>
       </div>
       <div style="float: left; margin-left: 10px; width:400px;">
@@ -195,7 +195,7 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
               thresholds = [25], trackerName = "Pressure", unit="(bar)",
               pointStyle = 'circle',  suggestedMin = 0.9, suggestedMax = 1.1, yearMonth = "year",
               bgcolor='rgba(0,0,0, 0)', color=['rgba(158,154,200,1)', 'rgba(106,81,163, 1)'],
-              width = "100%", height = "130px" %}
+              width = "100%", height = "133px" %}
           {% include "homeAutomation_modules/minMaxChart.html" %}
         {% endwith %}
       </div>

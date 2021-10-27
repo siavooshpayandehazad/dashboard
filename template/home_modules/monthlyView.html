@@ -91,6 +91,15 @@
     {% include "trackerModules/singleChart.html" %}
   {% endwith %}
 
+  {% with dataset = monthsHydration, ChartMonthDays = ChartMonthDays, chartType = "bar",
+        thresholds = [2], trackerName = "hydration", unit="(l)", addAvg="true", tcf="false",
+        pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
+        accumulate = "false", height = "100px",
+        bgColors = ['rgba(158,202,225, 1)', 'rgba(33,113,181, 1)'],
+        bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
+    {% include "trackerModules/singleChart.html" %}
+  {% endwith %}
+
   </div>
 
 

@@ -19,8 +19,8 @@ import os
 from random import randint
 import logging
 from logging.handlers import RotatingFileHandler
-
 from flask_mail import Mail,  Message
+import time
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
@@ -33,7 +33,7 @@ except:
 logfile = "logs/log.log"
 log = logging.getLogger(__name__)
 logging.basicConfig(filename = logfile,
-                    level = logging.DEBUG,
+                    level = logging.INFO,
                     format = '%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 handler = RotatingFileHandler(logfile, maxBytes=1024, backupCount=1)
 log.addHandler(handler)
@@ -49,6 +49,7 @@ setupSettingTable(c, conn)
 
 class dash(Resource):
     def get(self):
+        start_time = time.time()
         args = parser.parse_args()
         try:
             pageTheme = fetchSettingParamFromDB(c, "Theme")
@@ -64,6 +65,7 @@ class dash(Resource):
 
         headers      = {'Content-Type': 'text/html'}
         pageTitle    = "DashBoard "
+
         titleDate    = monthsOfTheYear[int(pageMonth)-1]+"-"+pageYear
         numberOfDays = numberOfDaysInMonth(int(pageMonth), int(pageYear))
         monthsBeginningWeekDay = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d').weekday()
@@ -76,28 +78,30 @@ class dash(Resource):
         highlight    = shouldHighlight(pageYear, pageMonth)
         counterValue = fetchSettingParamFromDB(c, "counter")
         # gather chart information ----------------------
-        chartWeights     = generateWeightChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        monthsWorkHours  = generateWorkTrakcerChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        monthsSleepTimes = generateSleepChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        monthsSteps      = generateStepChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        monthsRuns       = generateRunningChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        HR_Min, HR_Max   = generateHRChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        BP_Min, BP_Max   = generateBPChartData(int(pageMonth), int(pageYear), numberOfDays, c)
-        BO               = generateOxygenChartData(int(pageMonth), int(pageYear), numberOfDays, c)
+        chartWeights     = generateWeightChartData(int(pageMonth),      int(pageYear), numberOfDays, c)
+        HR_Min, HR_Max   = generateHRChartData(int(pageMonth),          int(pageYear), numberOfDays, c)
+        BP_Min, BP_Max   = generateBPChartData(int(pageMonth),          int(pageYear), numberOfDays, c)
+        monthsPaces      = generateMonthlyChartData(int(pageMonth), int(pageYear), "paceTracker", numberOfDays, c)
+        BO               = generateMonthlyChartData(int(pageMonth), int(pageYear), "oxygenTracker", numberOfDays, c)
+        monthsWorkHours  = generateMonthlyChartData(int(pageMonth), int(pageYear), "workTracker", numberOfDays, c)
+        monthsSleepTimes = generateMonthlyChartData(int(pageMonth), int(pageYear), "sleepTracker", numberOfDays, c)
+        monthsSteps      = generateMonthlyChartData(int(pageMonth), int(pageYear), "stepTracker", numberOfDays, c)
+        monthsHydration  = generateMonthlyChartData(int(pageMonth), int(pageYear), "hydrationTracker", numberOfDays, c)
+        monthsRuns       = generateMonthlyChartData(int(pageMonth), int(pageYear), "runningTracker",numberOfDays, c)
         YearsSavings     = generateSavingTrackerChartData(pageYear, c)
-        monthsPaces      = generatePaceChartData(int(pageMonth), int(pageYear), numberOfDays, c)
         ChartMonthDays   = [str(i) for i in range(1, numberOfDays+1)]
         travels          = getTravelDests(c)
         # ----------------------------------------------
-        yearRuns   = genYearChartData(int(pageYear), "runningTracker",  runFunc,   c)
+        yearRuns   = genYearChartData(int(pageYear), "runningTracker",  runFunc,    c)
         yearSteps  = genYearChartData(int(pageYear), "stepTracker",     stepFunc,   c)
         yearSleep  = genYearChartData(int(pageYear), "sleepTracker",    sleepFunc,  c)
         yearWeight = genYearChartData(int(pageYear), "weightTracker",   weightFunc, c)
         yearBO     = genYearChartData(int(pageYear), "oxygenTracker",   BOFunc,     c)
-        yearWH     = genYearChartData(int(pageYear), "workTracker", WHFunc,     c)
+        yearWH     = genYearChartData(int(pageYear), "workTracker",     WHFunc,     c)
         yearMood   = genYearChartData(int(pageYear), "moodTracker",     moodFunc,   c)
         yearHR_Min, yearHR_Max = generateYearHRChartData(int(pageYear), numberOfDays, c)
         yearBP_Min, yearBP_Max = generateYearBPChartData(int(pageYear), numberOfDays, c)
+        logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth = int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
@@ -106,7 +110,7 @@ class dash(Resource):
                                              monthsWeights = chartWeights, monthsSleepTimes = monthsSleepTimes,
                                              monthsSteps = monthsSteps, HR_Min = HR_Min, HR_Max = HR_Max,
                                              BP_Min = BP_Min, BP_Max = BP_Max, BO = BO,
-                                             monthsRuns = monthsRuns, monthsPaces = monthsPaces,
+                                             monthsRuns = monthsRuns, monthsPaces = monthsPaces, monthsHydration = monthsHydration,
                                              monthsWorkHours = monthsWorkHours, YearsSavings = YearsSavings,
                                              yearSteps = yearSteps, yearSleep = yearSleep, yearWH = yearWH,
                                              yearHR_Min = yearHR_Min, yearHR_Max = yearHR_Max,
@@ -143,7 +147,7 @@ class dash(Resource):
         deleteDay = False
         if (len(args['value'].strip()) == 0) :
             deleteDay = True
-        if args['tracker_type'] in ['sleep', 'running', 'pace', 'step', 'weight', 'work']:
+        if args['tracker_type'] in ['sleep', 'running', 'pace', 'step', 'weight', 'work', 'hydration']:
             return addTrackerItemToTable(args['value'].lower(), "", [], args['tracker_type']+"Tracker", todaysDate, deleteDay, True, c, conn)
         if args['tracker_type'] in ['HR', 'BP']:
             return addTrackerItemToTable(args['value'].split(","), "", [], args['tracker_type']+"Tracker", todaysDate, deleteDay, True, c, conn)
@@ -167,6 +171,7 @@ class dash(Resource):
 
 class journal(Resource):
     def get(self):
+        start_time = time.time()
         args = parser.parse_args()
         pageTheme = fetchSettingParamFromDB(c, "Theme")
         headers = {'Content-Type': 'text/html'}
@@ -181,7 +186,7 @@ class journal(Resource):
         monthsBeginning = getMonthsBeginning(month, year).weekday()
         c.execute("""SELECT * FROM logTracker WHERE date >= ? and date <= ? """, (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(), ))
         logged_days = [int(x[1].split("-")[2]) for x in c.fetchall()]
-
+        logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('journal.html', numberOfDays = numberOfDays,
                              day = day, month = month, year=year, monthsBeginning=monthsBeginning,
                              log = todaysLog, todaysLogText = todaysLogText, todayPhotos= todayPhotos,
@@ -228,6 +233,7 @@ class journal(Resource):
 
 class org(Resource):
     def get(self):
+        start_time = time.time()
         pageTheme = fetchSettingParamFromDB(c, "Theme")
 
         headers = {'Content-Type': 'text/html'}
@@ -250,7 +256,7 @@ class org(Resource):
         for i in range(1, 8):
             headerDates.append(str(dayVal.date()).split("-")[2])
             dayVal = datetime.datetime.strptime(str(dayVal.date()), '%Y-%m-%d')+datetime.timedelta(days=1)
-
+        logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('org.html', day = day, month = month, year=year, weekDay = daysOfTheWeek[weekDay],
                                              monthsBeginning=monthsBeginningWeekDay, todayTodos=todayTodos, overDue = all_due_events,
                                              numberOfDays=numberOfDays, thisMonthsEvents = thisMonthsEvents, calDate = calDate, calMonth = calMonth,
@@ -387,6 +393,7 @@ class settings(Resource):
 
 class gallery(Resource):
     def get(self):
+        start_time = time.time()
         args = parser.parse_args()
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
@@ -400,6 +407,7 @@ class gallery(Resource):
             photoDir=os.getcwd()+"/static/photos/"+str(year)+"/"+date
             todaysPhotos=allPotosInDir(photoDir, year, date)
             monthsPhotos.append(todaysPhotos)
+        logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('gallery.html', day=day, month=month, year=year,
                                              numberOfDays=numberOfDays, monthsBeginning=monthsBeginning,
                                              monthsPhotos=monthsPhotos,
@@ -411,12 +419,14 @@ class gallery(Resource):
 
 class lists(Resource):
     def get(self):
+        start_time = time.time()
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
         lists = {}
         for listName in ["book", "movie", "anime", "bucketList", "toLearnList"]:
             c.execute("""SELECT * FROM lists WHERE type = ? """, (listName, ))
             lists[listName] = sorted(sorted([(name, done, note) for name, done, type, note in c.fetchall()]), key=lambda x: x[1])
+        logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('lists.html', readList = lists["book"],
                                              animeList=lists["anime"], movieList = lists["movie"],
                                              bucketList=lists["bucketList"],
@@ -440,6 +450,7 @@ class lists(Resource):
 
 class notes(Resource):
     def get(self):
+        start_time = time.time()
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme")
         Notebooks = fetchNotebooks(c)
@@ -451,6 +462,7 @@ class notes(Resource):
                     notebookName = root.split("notebookPhotos/")[1]
                     if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif', '.mp4')):
                         photos[notebookName] = photos.get(notebookName, [])+[filename]
+        logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('notes.html', pageTheme=pageTheme, Notebooks=Notebooks, photos=photos),200,headers)
 
     def post(self):
@@ -544,6 +556,7 @@ class learning(Resource):
 
 class server(Resource):
     def get(self):
+        start_time = time.time()
         args = parser.parse_args()
         if args['date'] is not None:
             year, month, day = args['date'].split("-")
@@ -557,8 +570,8 @@ class server(Resource):
         pageTheme = fetchSettingParamFromDB(c, "Theme")
 
         cpuTemps, cpuTempsTimes, cpuUsage, cpuUsageTimes, discSpace, upTime = generate_cpu_stat(todaysDate, year)
-        cpuTempsYearly, cpuUsageYearly = generate_cpu_stat_yearly(year)
-
+        cpuTempsYearly, cpuUsageYearly = generate_cpu_stat_monthly(year)
+        logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('server.html', pageTheme=pageTheme,
                              cpuTemps=cpuTemps, cpuTempsTimes=cpuTempsTimes,
                              cpuUsage=cpuUsage, cpuUsageTimes=cpuUsageTimes,
@@ -573,6 +586,7 @@ class server(Resource):
 
 class audiobooks(Resource):
     def get(self):
+        start_time = time.time()
         args = parser.parse_args()
         if args['date'] is not None:
             year, month, day = args['date'].split("-")
@@ -590,6 +604,7 @@ class audiobooks(Resource):
             audiobooks, metadata = getAudiobooks(path)
         except:
             audiobooks = metadata = {}
+        logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('audiobooks.html', audiobooks=audiobooks, metadata=metadata, pageTheme=pageTheme ),200,headers)
 
     def post(self):
@@ -609,6 +624,7 @@ class audiobooks(Resource):
 
 class homeAutomation(Resource):
     def get(self):
+        start_time = time.time()
         args = parser.parse_args()
         if args['date'] is not None:
             year, month, day = args['date'].split("-")
@@ -623,7 +639,7 @@ class homeAutomation(Resource):
         ha_directory="homeAutomation"
         monthly_data = generate_weather_monthly(ha_directory, year)
         daily_data = genenrate_weather_daily(ha_directory, todaysDate)
-
+        logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('homeAutomation.html', daily_data=daily_data,
                              monthly_Data = monthly_data, chart_months=chart_months,
                              pageTheme=pageTheme, HideLine = "true",

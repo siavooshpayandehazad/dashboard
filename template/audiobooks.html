@@ -127,7 +127,7 @@ function loadChapters(bookName, author){
 
     progressLine = document.createElement("div");
     progressLine.classList.add("progressLine")
-    progressLine.style.width = 180*parseFloat(ChapterMetadata["progress"])
+    progressLine.style.width = (95*parseFloat(ChapterMetadata["progress"])) + "%";
 
     span = document.createElement("span");
     span.style = "color:white";
@@ -170,7 +170,7 @@ function loadBooks(author){
         ChapterMetadata = metadata[author][bookName]["chapter "+(k+1)];
         progress = progress + ChapterMetadata["progress"]/Object.keys(metadata[author][bookName]).length
       }
-      progressLine.style.width = 180*parseFloat(Math.min(progress, 1))
+      progressLine.style.width = (95*parseFloat(ChapterMetadata["progress"])) + "%";
 
       span = document.createElement("span");
       span.style = "color:white";
@@ -214,7 +214,7 @@ function updateAuthors(){
           progress = progress + ChapterMetadata["progress"]/(numberOfChapters*numberOfBooks)
         }
       }
-      progressLine.style.width = 180*parseFloat(Math.min(progress, 1))
+      progressLine.style.width = (95*parseFloat(ChapterMetadata["progress"])) + "%";
 
       span = document.createElement("span");
       span.style = "color:white";
@@ -238,7 +238,7 @@ function updateAuthors(){
     {% include "generic_modules/header.html" %}
 {% endwith %}
 
-<div id="authors" style="width:100%; margin-top:40px; float: left; display:inline">
+<div id="authors" style="width:100%; padding-left: 5%; margin-top:40px; float: left; display:inline">
 </div>
 
 <div id="books" style="width:100%; margin-top:20px; float: left; display:none;">

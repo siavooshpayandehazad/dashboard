@@ -1,0 +1,3 @@
+*/10 * * * * /bin/bash /media/pi/ec83d7d4-47dd-4b33-9fe9-261c1b6700fa/dashboard/serverScripts/status.sh
+0 8 * * * /bin/bash /media/pi/ec83d7d4-47dd-4b33-9fe9-261c1b6700fa/dashboard/serverScripts/backup.sh
+

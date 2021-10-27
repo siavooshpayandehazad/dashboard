@@ -321,6 +321,8 @@ def generateDBTables(DBCursor, dbConnection):
              work_hour text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists stepTracker (
              steps text, date text)""")
+    DBCursor.execute("""CREATE TABLE if not exists hydrationTracker (
+             hydration text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists runningTracker (
              run text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists paceTracker (
