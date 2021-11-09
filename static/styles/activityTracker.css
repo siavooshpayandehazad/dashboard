@@ -1,3 +1,7 @@
+td.tracker{
+  border: 1px solid white;
+  min-width:20px;
+}
 td.tracker:hover {
  background-color:  var(--tracker-hvr-clr);
  cursor: pointer;
@@ -9,26 +13,26 @@ td.planned {
  background-color:   var(--tracker-plnd-hvr-clr);
 }
 td.trackerLabel{
-  border: 1px solid white;
   border-radius: 3px;
+  border: 1px solid white;
+  font-size: 12px;
 }
 td.trackerHeader{
-  border: 1px solid white;
   border-radius: 3px;
+  border: 1px solid white;
   text-align: center;
+  font-size: 12px;
 }
 td.todayMarker{
   background-color: var(--todayMarker-bg-clr);
   border-radius:10px;
   text-align: center;
+  font-size: 15px;
 }
 div.activityTracker {
   border-radius:12px;
   background-color:var(--activityracker-bg-clr);
-  min-width: 750px;
-  min-height: 300px;
   float:left;
-  margin-left:10px;
   margin-top:20px;
 }
 #eraser {

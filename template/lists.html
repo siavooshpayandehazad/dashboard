@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
 
 </head>
@@ -22,21 +23,35 @@
   <body  class="journal" background="{{url_for('static', filename='decorationImages/journal_background.png') }}">
 {% endif %}
 
-{% with page="lists" %}
-    {% include "generic_modules/header.html" %}
-{% endwith %}
+<div class="container-fluid" style="background-color:black">
 
+<div class="row">
+  <div class="col">
+    {% with page="lists" %}
+        {% include "generic_modules/header.html" %}
+    {% endwith %}
+  </div>
+</div>
+
+<div class="row">
   {%for listName, listContent, Type in [("Book List", readList, "book"),
                                         ("Anime List", animeList, "anime"),
                                         ("Movie/Series List", movieList, "movie"),
                                         ("Bucket List", bucketList, "bucketList"),
                                         ("To-Learn List", toLearnList, "toLearnList")]%}
-      {% with listName = listName, listContent = listContent, Type = Type %}
-          {% include "lists_modules/lists.html" %}
-      {% endwith %}
+      <div class="col-sm-6 col-lg-4">
+        {% with listName = listName, listContent = listContent, Type = Type %}
+            {% include "lists_modules/lists.html" %}
+        {% endwith %}
+      </div>
   {%endfor%}
+</div>
 
-  </body>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</body>
 
 
 </html>

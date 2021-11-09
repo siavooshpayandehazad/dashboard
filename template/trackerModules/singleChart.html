@@ -139,8 +139,8 @@ function countTotalVal(list, floatRes, trackerName){
   {% if showTotalVal == True%}
     <span style="float: right; margin-right: 10px; margin-top: 5px; font-family:verdana; font-size:11px"> monthly {{trackerName}}: <b><span id="total{{trackerName}}"></span></b> {{unit}}</span>
   {% endif %}
-  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">{{trackerName}} tracker</h2>
-  <div style="float:left; width:90%; margin-left:15px; background-color: white">
+  <h4  class="title lightbg"  style="float:left; margin-left: 10px;">{{trackerName}} tracker</h4>
+  <div style="float:left; width:95%; margin-left:10px; background-color: white">
     <canvas  height="{{height}}" id="{{trackerName}}Tracker"></canvas>
   </div>
 </div>

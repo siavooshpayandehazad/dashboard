@@ -1,7 +1,7 @@
 <script src="{{ url_for('static', filename='js/commonFunctions.js') }}"></script>
 
-<div style="width:7%; padding-top: 20px; float: left;">
-{% for listMonth in ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]%}
+<div style="width:80%; padding-top: 20px; float: left;">
+{% for listMonth in ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]%}
   {% if loop.index0+1==PageMonth  %}
     <div class="monthTab selected" onclick="goToMonth({{PageYear}}, {{loop.index0}})">
   {%else%}

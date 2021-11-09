@@ -35,8 +35,9 @@
     div.classList.add("moodSelectorPopUp");
     scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
     scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    div.style.left = event.clientX+2+scrollLeft+"px";
-    div.style.top = event.clientY+2+scrollTop+"px";
+    console.log(event, scrollLeft)
+    div.style.left = event.layerX+2+scrollLeft+"px";
+    div.style.top = event.layerY+2+scrollTop+"px";
 
     var table = document.createElement("table");
     var moods = ["Great", "Good", "OK", "Bad", "Awful"]
@@ -53,6 +54,7 @@
         moodSelect(mood, date)
       };
       c2.innerHTML = moods[i];
+      c2.style.fontSize= "9px";
       row.appendChild(c1);
       row.appendChild(c2);
       table.appendChild(row);
@@ -60,6 +62,7 @@
     div.appendChild(table);
     var moodTracker = document.getElementsByClassName("moodTracker")[0];
     moodTracker.appendChild(div);
+    console.log(div)
   }
 
   function highlightMoods(){
@@ -77,7 +80,7 @@
 
 <!-- Mood Tracker-->
 <div class="moodTracker">
-  <h2  class="title lightbg">mood tracker</h2>
+  <h4  class="title lightbg" style="margin-left:10px">mood tracker</h4>
   <table class="moodTrackerTable">
     <tr> <th class="moodTracker"> M </th> <th class="moodTracker"> T </th>
          <th class="moodTracker"> W </th> <th class="moodTracker"> T </th>

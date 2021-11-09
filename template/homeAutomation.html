@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/homeAutomation.css') }}">
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <title>My Journal</title>
 </head>
 
@@ -109,109 +110,121 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
   <body>
 {% endif %}
 
+<div class="container-fluid" style="background-color:black">
+
 {% include "trackerModules/graphFuncs.html" %}
 
 {% with page="homeAutomation" %}
     {% include "generic_modules/header.html" %}
 {% endwith %}
 
-<div style="float:left; width:100%;">
-  <h2 class="title journal" style="margin-left:40%">
-    <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
-    {{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}
-    <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
-  </h2>
+<div class="row">
+  <div class="col">
+    <div style="float:left; width:100%;">
+      <h2 class="title journal" style="margin-left:40%">
+        <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
+        {{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}
+        <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
+      </h2>
+    </div>
+  </div>
 </div>
 
-<div style="float:right; width:100%;">
   {% for room in daily_data %}
-    <div style="float: left; width:100%;">
-      <h3 style="margin-left: 3%; color:white;">Room {{loop.index}}</h3>
-      <div id="tempGauge" style="float: left; margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
-        <h5 style="float: left; margin-left: 10px; margin-top:5px;">Temperature</h5>
-      </div>
-      <div style="float: left; margin-left: 10px; width:400px;">
-        {% with dataset = daily_data[room]["temp"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
-              thresholds = [], trackerName = "Temperature", unit="(°C)", addAvg="true", tcf="false",
-              pointStyle = 'circle', showTotalVal = false, suggestedMin = 10, yearMonth = "", clickable="false",
-              accumulate = "false", width = "100%", height = "150px",
-              bgColors = ['rgba(203,24,29, 0.5)'],
-              bColors = ['rgba(203,24,29, 1)']%}
-          {% include "trackerModules/singleChart.html" %}
-        {% endwith %}
-      </div>
-      <div style="float: left;  margin-left: 10px;  width:450px;">
-        {% with dataset = monthly_Data[room]["temp"], ChartMonthDays = chart_months, chartType = "line",
-              thresholds = [25], trackerName = "Temperature", unit="(°C)",
-              pointStyle = 'circle',  suggestedMin = 10, suggestedMax = 20, yearMonth = "year",
-              bgcolor='rgba(0,0,0, 0)', color=['rgba(252,146,114,1)', 'rgba(203,24,29, 1)'],
-              width = "100%", height = "133px" %}
-          {% include "homeAutomation_modules/minMaxChart.html" %}
-        {% endwith %}
-      </div>
-    </div>
+  <h3 style="margin-left: 3%; color:white;">Room {{loop.index}}</h3>
 
-    <div style="float: left; width:100%;">
-      <div id="humidityGauge" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
-        <h5 style="float: left; margin-left: 10px; margin-top:5px;">Humidty</h5>
-      </div>
-      <div style="float: left; margin-left: 10px; width:400px;">
-        {% with dataset = daily_data[room]["humidity"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
-              thresholds = [], trackerName = "Humidty", unit="(%)", addAvg="true", tcf="false",
-              pointStyle = 'circle', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
-              accumulate = "false", width = "100%", height = "150px",
-              bgColors = ['rgba(29,145,192, 0.5)'],
-              bColors = ['rgba(29,145,192, 1)']%}
-          {% include "trackerModules/singleChart.html" %}
-        {% endwith %}
-      </div>
-      <div style="float: left;  margin-left: 10px;  width:450px;">
-        {% with dataset = monthly_Data[room]["humidity"], ChartMonthDays = chart_months, chartType = "line",
-              thresholds = [25], trackerName = "Humidity", unit="(%)",
-              pointStyle = 'circle',  suggestedMin = 0, suggestedMax = 100, yearMonth = "year",
-              bgcolor='rgba(0,0,0, 0)', color=['rgba(65,182,196, 1)', 'rgba(37,52,148, 1)'],
-              width = "100%", height = "133px" %}
-          {% include "homeAutomation_modules/minMaxChart.html" %}
-        {% endwith %}
-      </div>
-    </div>
-
-    <div style="float: left; width:100%;">
-      <div id="pressureGauge" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
-        <h5 style="float: left; margin-left: 10px; margin-top:5px; color:white;">Pressure Level</h5>
-      </div>
-      <div style="float: left; margin-left: 10px; width:400px;">
-        {% with dataset = daily_data[room]["pressure"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
-              thresholds = [], trackerName = "Pressure", unit="(bar)", addAvg="true", tcf="false",
-              pointStyle = 'circle', showTotalVal = false, suggestedMin = 0.9, yearMonth = "", clickable="false",
-              accumulate = "false", width = "100%", height = "150px",
-              bgColors = [ 'rgba(106,81,163, 0.5)'],
-              bColors = ['rgba(106,81,163, 1)']%}
-          {% include "trackerModules/singleChart.html" %}
-        {% endwith %}
-      </div>
-      <div style="float: left;  margin-left: 10px;  width:450px;">
-        {% with dataset = monthly_Data[room]["pressure"], ChartMonthDays = chart_months, chartType = "line",
-              thresholds = [25], trackerName = "Pressure", unit="(bar)",
-              pointStyle = 'circle',  suggestedMin = 0.9, suggestedMax = 1.1, yearMonth = "year",
-              bgcolor='rgba(0,0,0, 0)', color=['rgba(158,154,200,1)', 'rgba(106,81,163, 1)'],
-              width = "100%", height = "133px" %}
-          {% include "homeAutomation_modules/minMaxChart.html" %}
-        {% endwith %}
-      </div>
-    </div>
-
+  <div class="row">
+        <div class="col-sm-3">
+          <div id="tempGauge" style="float: left; margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
+            <h5 style="float: left; margin-left: 10px; margin-top:5px;">Temperature</h5>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          {% with dataset = daily_data[room]["temp"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
+                thresholds = [], trackerName = "Temperature", unit="(°C)", addAvg="true", tcf="false",
+                pointStyle = 'circle', showTotalVal = false, suggestedMin = 10, yearMonth = "", clickable="false",
+                accumulate = "false", width = "100%", height = "150px",
+                bgColors = ['rgba(203,24,29, 0.5)'],
+                bColors = ['rgba(203,24,29, 1)']%}
+            {% include "trackerModules/singleChart.html" %}
+          {% endwith %}
+        </div>
+        <div class="col-sm-4">
+          {% with dataset = monthly_Data[room]["temp"], ChartMonthDays = chart_months, chartType = "line",
+                thresholds = [25], trackerName = "Temperature", unit="(°C)",
+                pointStyle = 'circle',  suggestedMin = 10, suggestedMax = 20, yearMonth = "year",
+                bgcolor='rgba(0,0,0, 0)', color=['rgba(252,146,114,1)', 'rgba(203,24,29, 1)'],
+                width = "100%", height = "133px" %}
+            {% include "homeAutomation_modules/minMaxChart.html" %}
+          {% endwith %}
+        </div>
   </div>
 
-  <div style="width:100%; margin-right:5px; margin-bottom: 10px; float:left; min-width:200px;">
-    <div class="divider" style="width:90%; height:4px; float:right; margin-right: 3.3%; margin-top: 18px;"></div>
-    <img src= "{{url_for('static', filename = 'decorationImages/page1_Small.png')}}" style="transform: rotate(180deg); float:right" width="50px" alt="page1_Small">
+  <div class="row">
+      <div class="col-sm-3">
+        <div id="humidityGauge" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
+          <h5 style="float: left; margin-left: 10px; margin-top:5px;">Humidty</h5>
+        </div>
+        </div>
+        <div class="col-sm-4">
+          {% with dataset = daily_data[room]["humidity"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
+                thresholds = [], trackerName = "Humidty", unit="(%)", addAvg="true", tcf="false",
+                pointStyle = 'circle', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
+                accumulate = "false", width = "100%", height = "150px",
+                bgColors = ['rgba(29,145,192, 0.5)'],
+                bColors = ['rgba(29,145,192, 1)']%}
+            {% include "trackerModules/singleChart.html" %}
+          {% endwith %}
+        </div>
+        <div class="col-sm-4">
+          {% with dataset = monthly_Data[room]["humidity"], ChartMonthDays = chart_months, chartType = "line",
+                thresholds = [25], trackerName = "Humidity", unit="(%)",
+                pointStyle = 'circle',  suggestedMin = 0, suggestedMax = 100, yearMonth = "year",
+                bgcolor='rgba(0,0,0, 0)', color=['rgba(65,182,196, 1)', 'rgba(37,52,148, 1)'],
+                width = "100%", height = "133px" %}
+            {% include "homeAutomation_modules/minMaxChart.html" %}
+          {% endwith %}
+        </div>
   </div>
+
+  <div class="row">
+        <div class="col-sm-3">
+          <div id="pressureGauge" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
+            <h5 style="float: left; margin-left: 10px; margin-top:5px; color:white;">Pressure Level</h5>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          {% with dataset = daily_data[room]["pressure"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
+                thresholds = [], trackerName = "Pressure", unit="(bar)", addAvg="true", tcf="false",
+                pointStyle = 'circle', showTotalVal = false, suggestedMin = 0.9, yearMonth = "", clickable="false",
+                accumulate = "false", width = "100%", height = "150px",
+                bgColors = [ 'rgba(106,81,163, 0.5)'],
+                bColors = ['rgba(106,81,163, 1)']%}
+            {% include "trackerModules/singleChart.html" %}
+          {% endwith %}
+        </div>
+        <div class="col-sm-4">
+          {% with dataset = monthly_Data[room]["pressure"], ChartMonthDays = chart_months, chartType = "line",
+                thresholds = [25], trackerName = "Pressure", unit="(bar)",
+                pointStyle = 'circle',  suggestedMin = 0.9, suggestedMax = 1.1, yearMonth = "year",
+                bgcolor='rgba(0,0,0, 0)', color=['rgba(158,154,200,1)', 'rgba(106,81,163, 1)'],
+                width = "100%", height = "133px" %}
+            {% include "homeAutomation_modules/minMaxChart.html" %}
+          {% endwith %}
+        </div>
+    </div>
+
+    {% with dir="left" %}
+      {% include "generic_modules/divider.html" %}
+    {% endwith %}
+    
   {%endfor%}
+
 </div>
 
 
-</div>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
 </body>
 

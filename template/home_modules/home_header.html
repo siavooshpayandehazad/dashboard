@@ -1,48 +1,68 @@
 <script type="text/javascript">
+
   function toggleMonthYear(){
     if (document.getElementById("monthlyToggle").checked){
       document.getElementById("MonthlyDisplay").style.display = "none";
       document.getElementById("YearlyDisplay").style.display = "";
       document.getElementById("titleLabelMonthly").style.display = "none";
       document.getElementById("titleLabelYearly").style.display = "";
+      window['yearlyView']='true'
     }else{
       document.getElementById("MonthlyDisplay").style.display = "";
       document.getElementById("YearlyDisplay").style.display = "none";
       document.getElementById("titleLabelMonthly").style.display = "";
       document.getElementById("titleLabelYearly").style.display = "none";
+      window['yearlyView']='false'
+    }
+  }
+
+  function moveYear(dir){
+    if (dir=="1"){
+      window.location.href =  "/home?date={{PageYear+1}}-01-01&yearlyView="+window['yearlyView'];
+    }else{
+      window.location.href =  "/home?date={{PageYear-1}}-01-01&yearlyView="+window['yearlyView'];
     }
   }
 </script>
 
-
-<div style="margin-bottom:20px;">
-  <label class="switch" style="float:right">
-    {% if request.args.get('yearlyView') == "True" %}
-      <input type="checkbox" id= "monthlyToggle" onclick="toggleMonthYear()" checked>
+<div class="row">
+  <div class="col-sm-6">
+    {% if request.args.get('yearlyView') == "true" %}
+      <h3 id="titleLabelMonthly" style= "color:white; margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
     {%else%}
-      <input type="checkbox" id= "monthlyToggle" onclick="toggleMonthYear()" unchecked>
+      <h3 id="titleLabelMonthly" style= "color:white; margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
     {%endif%}
-    <span class="slider round"></span>
-  </label>
-  <i class="fa fa-calendar" style="float:right; color:white; margin-top:5px;" aria-hidden="true"></i>
-  <!-- Header! -->
-  {% if request.args.get('yearlyView') == "True" %}
-    <h1 id="titleLabelMonthly" style= "margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
-  {%else%}
-    <h1 id="titleLabelMonthly" style= "margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
-  {%endif%}
-        <a style="margin-left:30%;" class= "arrow hover-red"  href="/home?date={{PageYear-1}}-01-01&yearlyView=False">&#9668;</a>
-        {{PageYear}}
-        <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-01-01&yearlyView=False">&#9658;</a>
-    </h1>
+    </h3>
 
-  {% if request.args.get('yearlyView') == "True" %}
-    <h1 id="titleLabelYearly"  style= "margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
-  {%else%}
-    <h1 id="titleLabelYearly"  style= "margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
-  {%endif%}
-      <a style="margin-left:30%;" class= "arrow hover-red"  href="/home?date={{PageYear-1}}-01-01&yearlyView=True">&#9668;</a>
-      {{PageYear}}
-      <a class= "arrow hover-red" href="/home?date={{PageYear+1}}-01-01&yearlyView=True">&#9658;</a>
-    </h1>
+    {% if request.args.get('yearlyView') == "true" %}
+      <h3 id="titleLabelYearly"  style= "color:white; margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
+    {%else%}
+      <h3 id="titleLabelYearly"  style= "color:white;  margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
+    {%endif%}
+    </h3>
+  </div>
+  <div class="col-sm-5">
+    <!-- Header! -->
+    <h3 style= "color:white;">
+        <a  class= "arrow hover-red"  onclick="moveYear(-1)">&#9668;</a>
+        {{PageYear}}
+        <a class= "arrow hover-red" onclick="moveYear(1)">&#9658;</a>
+    </h3>
+  </div>
+
+  <div class="col-sm-1">
+    <i class="fa fa-calendar" style=" color:white; margin-top:5px;" aria-hidden="true"></i>
+    <label class="switch">
+      {% if request.args.get('yearlyView') == "true" %}
+        <input type="checkbox" id= "monthlyToggle" onclick="toggleMonthYear()" checked>
+      {%else%}
+        <input type="checkbox" id= "monthlyToggle" onclick="toggleMonthYear()" unchecked>
+      {%endif%}
+      <span class="slider round"></span>
+    </label>
+  </div>
 </div>
+
+<script type="text/javascript">
+  window['yearlyView'] = document.getElementById("monthlyToggle").checked;
+</script>

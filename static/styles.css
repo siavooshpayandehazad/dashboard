@@ -69,9 +69,7 @@ html{
 
 body{
   background-color: var(--bckgrnd-clr);
-  width: 1250px;
   min-height:100vh;
-  margin-left: calc((100% - 1250px)/2)
 }
 body.journal{
   background-repeat:no-repeat; background-position: 120% 380px;
@@ -233,16 +231,7 @@ div.settingpage{
   color: var(--settingpage-txt-color);
 }
 
-td.moodselector{
-  min-width:17px;
-  min-height:17px;
-  border-radius:5px;
-  border: 1px solid white;
-}
-td.moodselector:hover{
-  border: 1px solid black;
-  cursor: pointer;
-}
+
 /*Day Selector used in Journal and Org page*/
 td.DS{
   min-width: 20px;
@@ -304,6 +293,7 @@ a.tabBar{
   font-family:Times;
   text-decoration: none;
   color : #000;
+  line-height: 20px;
 }
 a.arrow{
   text-decoration: none;
@@ -418,6 +408,7 @@ b.titleNewTask{
   float:right;
   margin-right:10px;
   width: 40px;
+  line-height: 30px;
   border-radius: 25px 25px 25px 25px;
   text-align: center;
   position: relative;

@@ -118,11 +118,11 @@ function countTotalRun(){
 
 </script>
 
-<div class="graphCard">
-  <h2  class="title lightbg"  style="float:left; margin-left: 10px;">running tracker</h2>
-  <span style="float: right; margin-right: 10px; margin-top: 5px; font-family:verdana; font-size:11px"> monthly running distance: <b><span id="totalRun"></span></b> km</span>
+<div class="graphCard" style = "width:{{width}};">
+  <h4  class="title lightbg"  style="float:left; margin-left: 10px;">running tracker</h4>
+  <span style="float: right; margin-right: 10px; margin-top: 5px; font-family:verdana; font-size:11px"> monthly distance: <b><span id="totalRun"></span></b> km</span>
   <div style="float:left; width:90%; margin-left:5%">
-    <canvas  height="100px" id="runningTracker"></canvas>
+    <canvas  height="{{height}}" id="runningTracker"></canvas>
   </div>
 </div>
 

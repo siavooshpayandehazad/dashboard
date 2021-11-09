@@ -98,7 +98,7 @@
       <i class="fa fa-eraser" id="eraser" style="font-size:20px;" ></i>
     </label>
 
-    <h2  class="title lightbg">activity tracker</h2>
+    <h4  class="title lightbg" style="margin-left:40%">activity tracker</h4>
       <table border="0" style="margin-bottom:10px; margin-right:10px; margin-left:10px;">
         <tr><td></td>
         {% for day in days %}
@@ -131,12 +131,12 @@
                     {%endif%}
                 {%endfor%}
                 {%if ns.found== 1 %}
-                  <td class="tracker found" style="min-width:17px", onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
+                  <td class="tracker found", onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
                 {% else %}
                   {%if ns.planned== 1 %}
-                    <td class="tracker planned" style="min-width:17px" onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
+                    <td class="tracker planned"  onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
                   {% else %}
-                    <td class="tracker" style="min-width:17px" onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
+                    <td class="tracker"  onmouseout="mouseOutTracker(this)", onmouseover="mouseOverTracker(this)", onclick="return cmd('{{activity|string()}}', '{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}', '{{pageTheme|string()}}', this);"></td>
                   {% endif %}
                 {% endif %}
               {%endif%}

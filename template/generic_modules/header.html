@@ -23,21 +23,23 @@ document.addEventListener('keydown', (e) => {
 });
 </script>
 
-
-
-<div class = "tabBar">
-  <a class="tabBar" href="/home">           <div {%if page=="index"%}          class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Main    </b> </div> </a>
-  <a class="tabBar" href="/journal">        <div {%if page=="journal"%}        class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Journal </b> </div> </a>
-  <a class="tabBar" href="/org">            <div {%if page=="org"%}            class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Org.    </b> </div> </a>
-  <a class="tabBar" href="/lists">          <div {%if page=="lists"%}          class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Lists   </b> </div> </a>
-  <a class="tabBar" href="/notes">          <div {%if page=="notes"%}          class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Notes   </b> </div> </a>
-  <a class="tabBar" href="/gallery">        <div {%if page=="gallery"%}        class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i class="fa fa-image"></i>  </b> </div> </a>
-  <a class="tabBar" href="/audiobooks">     <div {%if page=="audiobooks"%}     class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i style="margin-right:5px;" class="fa fa-music"></i> <i class="fa fa-book"></i> </b> </div> </a>
-  <a class="tabBar" href="/server">         <div {%if page=="server"%}         class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i class="fa fa-server"></i> </b> </div> </a>
-  <a class="tabBar" href="/homeAutomation"> <div {%if page=="homeAutomation"%} class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i class="fa fa-home"></i>   </b> </div> </a>
-  <a class="tabBar" href="/learning">       <div {%if page=="learning"%}       class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Learning</b> </div> </a>
-  <a class="tabBar" style="float:right; margin-right:5px;" onclick="shutdown()"> <i class="fa fa-power-off hover-red"></i></a>
-  <a class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out hover-red" aria-hidden="true" onclick="logout()"></i></a>
-  <a class="tabBar" style="float:right; margin-right:5px;" href="/settings"><i class="fa myGear hover-red">&#xf013;</i></a>
-  <div class="divider"></div>
+<div class = "row">
+  <div class="col">
+    <div class = "tabBar">
+      <a class="tabBar" href="/home">           <div {%if page=="index"%}          class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Main    </b> </div> </a>
+      <a class="tabBar" href="/journal">        <div {%if page=="journal"%}        class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Journal </b> </div> </a>
+      <a class="tabBar" href="/org">            <div {%if page=="org"%}            class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Org.    </b> </div> </a>
+      <a class="tabBar" href="/lists">          <div {%if page=="lists"%}          class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Lists   </b> </div> </a>
+      <a class="tabBar" href="/notes">          <div {%if page=="notes"%}          class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Notes   </b> </div> </a>
+      <a class="tabBar" href="/gallery">        <div {%if page=="gallery"%}        class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i class="fa fa-image"></i>  </b> </div> </a>
+      <a class="tabBar" href="/audiobooks">     <div {%if page=="audiobooks"%}     class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i style="margin-right:5px;" class="fa fa-music"></i> <i class="fa fa-book"></i> </b> </div> </a>
+      <a class="tabBar" href="/server">         <div {%if page=="server"%}         class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i class="fa fa-server"></i> </b> </div> </a>
+      <a class="tabBar" href="/homeAutomation"> <div {%if page=="homeAutomation"%} class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i class="fa fa-home"></i>   </b> </div> </a>
+      <a class="tabBar" href="/learning">       <div {%if page=="learning"%}       class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> Learning</b> </div> </a>
+      <a class="tabBar" style="float:right; margin-right:5px;" onclick="shutdown()"> <i class="fa fa-power-off hover-red" style="font-size:20px"></i></a>
+      <a class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out hover-red" style="font-size:20px" aria-hidden="true" onclick="logout()"></i></a>
+      <a class="tabBar" style="float:right; margin-right:5px;" href="/settings"><i class="fa myGear hover-red" style="font-size:20px">&#xf013;</i></a>
+      <div class="divider"></div>
+    </div>
+  </div>
 </div>

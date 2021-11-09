@@ -13,6 +13,7 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/gallery.css') }}">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
 </head>
 
@@ -59,57 +60,75 @@ function mediaClicked(item){
   <body  class="journal" background="{{url_for('static', filename='decorationImages/journal_background.png') }}">
 {% endif %}
 
-{% with page="gallery" %}
-  {% include "generic_modules/header.html" %}
-{% endwith %}
+<div class="container-fluid" style="background-color:black">
 
-<div id="PhotoOverlay" style="text-align:center">
-  <div style="float:left; width:100%; ">
-    <i class="fa fa-times closeButton hover-red" aria-hidden="true" onclick="closeOverlay()"></i>
+  <div class="row">
+    <div class="col">
+      {% with page="gallery" %}
+        {% include "generic_modules/header.html" %}
+      {% endwith %}
+    </div>
+  </div>
+
+<div class="row">
+  <div class="col">
+    <div id="PhotoOverlay" style="text-align:center">
+        <i class="fa fa-times closeButton hover-red" aria-hidden="true" onclick="closeOverlay()"></i>
+    </div>
   </div>
 </div>
 
-<div style="margin-left:15%; width:100%; float:left;">
-  <h2 class="title journal">
-      <a class= "arrow hover-red"  href="/gallery?date={{year-1}}-01-01">&#9668;</a>
-      {{year}}
-      <a class= "arrow hover-red" href="/gallery?date={{year+1}}-01-01">&#9658;</a>
-  </h2>
+<div class="row">
+  <div class="col">
+      <h2 class="title journal">
+          <a class= "arrow hover-red"  href="/gallery?date={{year-1}}-01-01">&#9668;</a>
+          {{year}}
+          <a class= "arrow hover-red" href="/gallery?date={{year+1}}-01-01">&#9658;</a>
+      </h2>
+  </div>
 </div>
 
-{% with PageYear=year, PageMonth=month%}
-  {% include "generic_modules/monthSelector.html" %}
-{% endwith %}
-
-<div style="margin-left: 1%; width:80%; height: 600px; float:left;overflow-y: scroll;">
-  {% for i in range(numberOfDays) %}
-      {%if monthsPhotos[i]|length >0%}
-        <div style="width:100%; float:left; margin-top:10px;">
-          <div style="width:100%; float:left; margin-bottom:10px;">
-            <div style="width:49%; height:5px; float:left; margin-top: 7.5px; background-color:gray"></div>
-            <div style="width: 2%; height:20px; float:left; border-radius: 10px; background-color: gray; text-align:center">
-              <span style="color:white;"><a href="/journal?date={{year}}-{{'%02d' % month}}-{{'%02d' % (i+1)}}">{{i+1}}</a></style>
-            </div>
-            <div style="width:49%; height:5px; float:left; margin-top: 7.5px; background-color:gray"></div>
-          </div>
-          <div style="width:100%;float:left;">
-            {% for media in monthsPhotos[i]%}
-              <div style="float:left; position: relative;">
-                {%if ".mp4" in media%}
-                  <i class = "fa fa-video-camera" style="color:black; position:absolute; left:5px; top:5px; z-index:2; width:15px; height:15px; "></i>
-                  <video onclick="mediaClicked(this)" class="galleryPhoto">
-                    <source src="static/photos/{{ media }}"  type="video/mp4" >
-                  </video>
-                {%else%}
-                  <img src= "static/photos/{{ media }}" alt="image alt text" onclick="mediaClicked(this)" class="galleryPhoto"/>
-                {%endif%}
+<div class="row">
+  <div class="col-sm-1 col-lg-1">
+    {% with PageYear=year, PageMonth=month%}
+      {% include "generic_modules/monthSelector.html" %}
+    {% endwith %}
+  </div>
+  <div class="col-sm-11 col-lg-11">
+    <div style="width:100%; height: 800px; float:left;overflow-y: scroll;">
+      {% for i in range(numberOfDays) %}
+          {%if monthsPhotos[i]|length >0%}
+            <div style="width:100%; float:left; margin-top:10px;">
+              <div style="width:100%; float:left; margin-bottom:10px;">
+                <div style="width:49%; height:5px; float:left; margin-top: 7.5px; background-color:gray"></div>
+                <div style="width: 2%; height:20px; float:left; border-radius: 10px; background-color: gray; text-align:center">
+                  <span style="color:white;"><a href="/journal?date={{year}}-{{'%02d' % month}}-{{'%02d' % (i+1)}}">{{i+1}}</a></style>
+                </div>
+                <div style="width:49%; height:5px; float:left; margin-top: 7.5px; background-color:gray"></div>
               </div>
-            {% endfor %}
-          </div>
-        </div>
-      {%endif%}
-  {%endfor%}
+              <div style="width:100%;float:left;">
+                {% for media in monthsPhotos[i]%}
+                  <div style="float:left; position: relative;">
+                    {%if ".mp4" in media%}
+                      <i class = "fa fa-video-camera" style="color:black; position:absolute; left:5px; top:5px; z-index:2; width:15px; height:15px; "></i>
+                      <video onclick="mediaClicked(this)" class="galleryPhoto">
+                        <source src="static/photos/{{ media }}"  type="video/mp4" >
+                      </video>
+                    {%else%}
+                      <img src= "static/photos/{{ media }}" alt="image alt text" onclick="mediaClicked(this)" class="galleryPhoto"/>
+                    {%endif%}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {%endif%}
+      {%endfor%}
+    </div>
+  </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
 </body>
 

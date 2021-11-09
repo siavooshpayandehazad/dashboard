@@ -10,9 +10,9 @@
 </script>
 
 <div class="dailyEntry">
-   <h2  class="title lightbg">Edit Today's Entry</h2>
+   <h4  class="title lightbg" style="margin-left:10px;">Edit Today's Entry</h4>
    <form action="javascript:;" onsubmit="return submitEntry();">
       <textarea id="dailyEntry" name= "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" type="text" cols="40" rows="5" class="dailyEntry">{{todaysLogText|string()}}</textarea><br>
-      <input type="submit" style="margin-left: 80%;">
+      <input type="submit" style="float: right; margin-right: 10px;">
    </form>
 </div>

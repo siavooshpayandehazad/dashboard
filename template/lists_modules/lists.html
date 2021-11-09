@@ -17,8 +17,10 @@ function itemdblclick(item){
   var popUpWidth = 300;
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
   scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  popupDiv.style.top = parentDiv.getBoundingClientRect().y+scrollTop+(parentDiv.clientHeight)/4+"px";
-  popupDiv.style.left = parentDiv.getBoundingClientRect().x+scrollLeft+(parentDiv.clientWidth-popUpWidth)/2+"px";
+  //popupDiv.style.top = parentDiv.getBoundingClientRect().y+scrollTop+(parentDiv.clientHeight)/4+"px";
+  //popupDiv.style.left = parentDiv.getBoundingClientRect().x+scrollLeft+(parentDiv.clientWidth-popUpWidth)/2+"px";
+  popupDiv.style.left = "50px";
+  popupDiv.style.top = "120px";
   popupDiv.className = "genericPopup";
   popupDiv.style.width= popUpWidth+"px";
 
@@ -128,11 +130,13 @@ function listSettings(item){
   popupDiv = document.createElement("div");
   popupDiv.id = item.id + "popUp";
   var popUpWidth = 300;
-  var popUpHeight = 50;
+  var popUpHeight = 80;
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
   scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  popupDiv.style.top = parentDiv.getBoundingClientRect().y+scrollTop+(parentDiv.clientHeight-popUpHeight)/2+"px";
-  popupDiv.style.left = parentDiv.getBoundingClientRect().x+scrollLeft+(parentDiv.clientWidth-popUpWidth)/2+"px";
+  //popupDiv.style.top = parentDiv.getBoundingClientRect().y+scrollTop+(parentDiv.clientHeight-popUpHeight)/2+"px";
+  //popupDiv.style.left = parentDiv.getBoundingClientRect().x+scrollLeft+(parentDiv.clientWidth-popUpWidth)/2+"px";
+  popupDiv.style.left = "50px";
+  popupDiv.style.top = "120px";
   popupDiv.className = "genericPopup";
   popupDiv.style.height= popUpHeight+"px";
   popupDiv.style.width= popUpWidth+"px";
@@ -142,9 +146,9 @@ function listSettings(item){
   listNameText.style = "marginLeft: 10px; margin-right:10px";
 
   var listName = document.createElement("textarea");
-  var listName = document.createElement("textarea");
   listName.value = item.id;
   listName.style.resize = "none";
+  listName.style.marginTop = "5px";
   listName.rows = 1;
   listName.cols = 20;
 
@@ -173,7 +177,7 @@ function listSettings(item){
 </script>
 
 <div>
-  <div style="margin-top: 40px; margin-left: 1%; width:32%; float:left;">
+  <div style="margin-top: 40px; margin-left: 1%; width:100%; float:left;">
     <div style = "width:100%;">
       <b class="titleNewTask">Add new item:</b> <input name={{Type}} type="text" onkeypress="submitonEnter(event)"><br>
     </div><br>
