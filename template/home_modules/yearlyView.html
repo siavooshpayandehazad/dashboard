@@ -15,7 +15,7 @@
   {% include "generic_modules/divider.html" %}
 {% endwith %}
 
-<div class="row no-gutters justify-content-evenly">
+<div class="row no-gutters justify-content-center">
   <div class="col-sm-12 col-lg-5">
     {% with dataset = yearWH, ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [10, 20, 30, 100], trackerName = "yearly work hour", unit="(hr)", addAvg="true", tcf="true",
@@ -38,7 +38,7 @@
   {% include "generic_modules/divider.html" %}
 {% endwith %}
 
-<div class="row no-gutters justify-content-evenly">
+<div class="row no-gutters justify-content-center">
   <div class="col-sm-12 col-lg-5">
     {% with dataset = yearRuns, ChartMonthDays = ChartYearMonths, chartType = "bar",
           thresholds = [10], trackerName = "yearly running", unit="(km)", addAvg="true", tcf="true",
