@@ -1,6 +1,7 @@
 <script type="text/javascript">
 var minList = {{dataset["min"]|safe}};
 var maxList = {{dataset["max"]|safe}};
+var avgList = {{dataset["avg"]|safe}};
 
 function renderYearlyTrackerChart(){
   var ctx = document.getElementById("{{trackerName}}TrackerYearly").getContext('2d');
@@ -12,7 +13,7 @@ function renderYearlyTrackerChart(){
      data: {
         labels: {{ChartMonthDays|safe}},
         datasets: [{
-           label: "{{trackerName}} min {{unit}}",
+           label: "min {{unit}}",
            data: minList,
            backgroundColor: ['{{bgcolor|safe}}'],
            borderColor: ['{{color[0]|safe}}'],
@@ -21,10 +22,19 @@ function renderYearlyTrackerChart(){
            tension: 0,
            pointStyle: 'circle',
         }, {
-           label: "{{trackerName}} max {{unit}}",
+           label: "max {{unit}}",
            data: maxList,
            backgroundColor: ['{{bgcolor|safe}}'],
            borderColor: ['{{color[1]|safe}}'],
+           borderWidth: 2,
+           spanGaps: true,
+           tension: 0,
+           pointStyle: 'circle',
+        }, {
+           label: "avg {{unit}}",
+           data: avgList,
+           backgroundColor: ['{{bgcolor|safe}}'],
+           borderColor: ["black"],
            borderWidth: 2,
            spanGaps: true,
            tension: 0,
@@ -42,7 +52,7 @@ function renderYearlyTrackerChart(){
 
 
 <div class="graphCard" style = "width:{{width}};">
-  <h4  class="title lightbg"  style="float:left; margin-left: 10px;">{{trackerName}} yearly tracker</h4>
+  <h4  class="title lightbg"  style="float:left; margin-left: 10px;">{{trackerName}} Tracker</h4>
   <div style="float:left; width:90%; margin-left:15px; background-color: white">
     <canvas  height="{{height}}" id="{{trackerName}}TrackerYearly"></canvas>
   </div>

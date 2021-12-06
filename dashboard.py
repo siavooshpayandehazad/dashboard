@@ -43,8 +43,10 @@ for item in ['tracker_type', 'value', 'oldValue', 'date', 'action', 'type', 'pla
     parser.add_argument(item)
 
 conn, c = createDB("journal.db")
+conn_ha, c_ha = createDB("ha.db")
 backupDatabase(conn)
 generateDBTables(c, conn)
+generate_ha_DBTables(c_ha, conn_ha)
 setupSettingTable(c, conn)
 
 class dash(Resource):
@@ -77,51 +79,21 @@ class dash(Resource):
         # highlights the current day in the activity tracker page!
         highlight    = shouldHighlight(pageYear, pageMonth)
         counterValue = fetchSettingParamFromDB(c, "counter")
-        # gather chart information ----------------------
-        chartWeights     = generateWeightChartData(int(pageMonth),      int(pageYear), numberOfDays, c)
-        HR_Min, HR_Max   = generateHRChartData(int(pageMonth),          int(pageYear), numberOfDays, c)
-        BP_Min, BP_Max   = generateBPChartData(int(pageMonth),          int(pageYear), numberOfDays, c)
-        monthsPaces      = generateMonthlyChartData(int(pageMonth), int(pageYear), "paceTracker", numberOfDays, c)
-        BO               = generateMonthlyChartData(int(pageMonth), int(pageYear), "oxygenTracker", numberOfDays, c)
-        monthsWorkHours  = generateMonthlyChartData(int(pageMonth), int(pageYear), "workTracker", numberOfDays, c)
-        monthsSleepTimes = generateMonthlyChartData(int(pageMonth), int(pageYear), "sleepTracker", numberOfDays, c)
-        monthsSteps      = generateMonthlyChartData(int(pageMonth), int(pageYear), "stepTracker", numberOfDays, c)
-        monthsHydration  = generateMonthlyChartData(int(pageMonth), int(pageYear), "hydrationTracker", numberOfDays, c)
-        monthsRuns       = generateMonthlyChartData(int(pageMonth), int(pageYear), "runningTracker",numberOfDays, c)
-        YearsSavings     = generateSavingTrackerChartData(pageYear, c)
-        ChartMonthDays   = [str(i) for i in range(1, numberOfDays+1)]
-        travels          = getTravelDests(c)
-        # ----------------------------------------------
-        yearRuns   = genYearChartData(int(pageYear), "runningTracker",  runFunc,    c)
-        yearSteps  = genYearChartData(int(pageYear), "stepTracker",     stepFunc,   c)
-        yearSleep  = genYearChartData(int(pageYear), "sleepTracker",    sleepFunc,  c)
-        yearWeight = genYearChartData(int(pageYear), "weightTracker",   weightFunc, c)
-        yearBO     = genYearChartData(int(pageYear), "oxygenTracker",   BOFunc,     c)
-        yearWH     = genYearChartData(int(pageYear), "workTracker",     WHFunc,     c)
-        yearMood   = genYearChartData(int(pageYear), "moodTracker",     moodFunc,   c)
-        yearHR_Min, yearHR_Max = generateYearHRChartData(int(pageYear), numberOfDays, c)
-        yearBP_Min, yearBP_Max = generateYearBPChartData(int(pageYear), numberOfDays, c)
+
+        ChartData = getChartData(pageMonth, pageYear, numberOfDays, c)
+
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
                                              PageYear = int(pageYear), PageMonth = int(pageMonth),
                                              today = datetime.date.today().day, moods = monthsMoods,
                                              # charts info
-                                             ChartMonthDays = ChartMonthDays, ChartYearMonths = monthsOfTheYear,
-                                             monthsWeights = chartWeights, monthsSleepTimes = monthsSleepTimes,
-                                             monthsSteps = monthsSteps, HR_Min = HR_Min, HR_Max = HR_Max,
-                                             BP_Min = BP_Min, BP_Max = BP_Max, BO = BO,
-                                             monthsRuns = monthsRuns, monthsPaces = monthsPaces, monthsHydration = monthsHydration,
-                                             monthsWorkHours = monthsWorkHours, YearsSavings = YearsSavings,
-                                             yearSteps = yearSteps, yearSleep = yearSleep, yearWH = yearWH,
-                                             yearHR_Min = yearHR_Min, yearHR_Max = yearHR_Max,
-                                             yearBP_Min = yearBP_Min, yearBP_Max = yearBP_Max,
-                                             yearMood = yearMood, yearBO = yearBO,
-                                             yearWeight = yearWeight, yearRuns = yearRuns,
+                                             ChartMonthDays = ChartData["ChartMonthDays"], ChartYearMonths = monthsOfTheYear,
+                                             ChartData = ChartData,
                                              HideLine = "false",
                                              # ----------------------
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
                                              activityList = activityList, days=moodTrackerDays, highlight = highlight,
-                                             pageTheme = pageTheme, counterValue = counterValue, travels = travels),200,headers)
+                                             pageTheme = pageTheme, counterValue = counterValue),200,headers)
 
     def post(self):
         activityList = fetchSettingParamFromDB(c, "activityList").replace(" ", "").split(",")
@@ -155,6 +127,8 @@ class dash(Resource):
             return addTrackerItemToTable(args['value'].lower(), "", [], "oxygenTracker", todaysDate, deleteDay, True, c, conn)
         if args['tracker_type'] == 'saving':
             return addsSavingItemToTable(args['value'].lower(), todaysDate, c, conn)
+        if args['tracker_type'] == 'mortgage':
+            return addsMortgageItemToTable(args['value'].lower(), todaysDate, c, conn)
         if args['tracker_type'] == 'mood':
             return addTrackerItemToTable(args['value'].lower(), "mood_name", moodList, "moodTracker", todaysDate, False, False, c, conn)
         if args['tracker_type'] == "activity":
@@ -637,8 +611,8 @@ class homeAutomation(Resource):
         pageTheme = fetchSettingParamFromDB(c, "Theme")
 
         ha_directory="homeAutomation"
-        monthly_data = generate_weather_monthly(ha_directory, year)
-        daily_data = genenrate_weather_daily(ha_directory, todaysDate)
+        monthly_data = generate_weather_monthly(c_ha, year)
+        daily_data = genenrate_weather_daily(c_ha, todaysDate)
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('homeAutomation.html', daily_data=daily_data,
                              monthly_Data = monthly_data, chart_months=chart_months,
@@ -664,7 +638,7 @@ class homeAutomation(Resource):
             f.write(", \""+ item + "\": \""+ value[item] + "\"")
         f.write("}\n")
         f.close()
-
+        add_data_to_ha_DB(c_ha, conn_ha, value['room'], value['date'], value['hour'], value["temp"], value["humidity"], value["pressure"])
         return "Done", 200
 
 
@@ -778,7 +752,7 @@ scheduler.add_job(func=sendDailyDigest, trigger=CronTrigger.from_crontab('0 6 * 
 scheduler.start()
 
 
-api.add_resource(dash, '/home')
+api.add_resource(dash, '/')
 api.add_resource(journal, '/journal')
 api.add_resource(org, '/org')
 api.add_resource(settings, '/settings')

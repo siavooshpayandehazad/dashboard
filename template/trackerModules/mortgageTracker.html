@@ -1,17 +1,17 @@
 <script type="text/javascript">
-var myAnnualSavings = {{YearsSavings|safe}}
-function renderSavingTrackerChart(){
-  var ctx = document.getElementById("savingTracker").getContext('2d');
+var myAnnualMortgages = {{YearsMortgages|safe}}
+function renderMortgageTrackerChart(){
+  var ctx = document.getElementById("mortgageTracker").getContext('2d');
 
-  var SavingLineChart = new Chart(ctx, {
+  var MortgageLineChart = new Chart(ctx, {
      type: 'line',
      data: {
         labels: {{ChartYearMonths|safe}},
         datasets: [{
-           label: "Current Savings (kr)",
-           data: myAnnualSavings,
-           backgroundColor: ['rgba(54,144,192, 0.3)'],
-           borderColor: ['rgba(54,144,192, 1)'],
+           label: "Current Mortgages (kr)",
+           data: myAnnualMortgages,
+           backgroundColor: ['rgba(165,15,21, 0.3)'],
+           borderColor: ['rgba(165,15,21, 1)'],
            borderWidth: 2,
            spanGaps: true,
            tension: 0,
@@ -20,30 +20,30 @@ function renderSavingTrackerChart(){
       ]
      },
      options: { legend: {labels: {usePointStyle: true}},
-               scales: { yAxes: [{ ticks:{ beginAtZero: true }}]},
+               scales: { yAxes: [{ ticks:{suggestedMax: {{suggestedMax}}, beginAtZero: true }}]},
                onClick: function(event, array){
                  if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
                     (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
                    return;
                  }
                  var selectedMonth = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
-                 var selectedVal =  parseInt(myAnnualSavings[selectedMonth-1])
+                 var selectedVal =  myAnnualMortgages[selectedMonth-1]
                  var date = {{PageYear}}+"-"+zeroPad(selectedMonth, 2)+"-01";
-                 var newVal = window.prompt("Add saving for the month " + selectedMonth + "?", 0);
+                 var newVal = window.prompt("Add mortgage for the month " + selectedMonth + "?", 0);
                  if (isNaN(newVal) || (newVal===null)){return;}
 
                  // submit new value
                  $.ajax({
                      type: "POST",
                      url: "http://"+window.location.hostname+":5000/home",
-                     data: {"tracker_type":"saving", "value": newVal, "date": date},
+                     data: {"tracker_type":"mortgage", "value": newVal, "date": date},
                  });
                  // update the step value
-                 if (isNaN(selectedVal)){
+                 if (isNaN(myAnnualMortgages[selectedMonth-1])){
                    // here we need to find the last valid value and add the current thing to that!
-                   myAnnualSavings[selectedMonth-1] = parseInt(newVal);
+                   myAnnualMortgages[selectedMonth-1] = parseInt(myAnnualMortgages[selectedMonth-1]) + parseInt(newVal);
                  }else{
-                   myAnnualSavings[selectedMonth-1] = parseInt(myAnnualSavings[selectedMonth-1]) + parseInt(newVal);
+                   myAnnualMortgages[selectedMonth-1] = parseInt(myAnnualMortgages[selectedMonth-1]) + parseInt(newVal);
                  }
                  this.update();
                }
@@ -54,8 +54,8 @@ function renderSavingTrackerChart(){
 
 
 <div class="graphCard">
-  <h4  class="title lightbg"  style="float:left; margin-left: 10px;">yearly savings tracker</h4>
+  <h4  class="title lightbg"  style="float:left; margin-left: 10px;">yearly mortgage tracker</h4>
   <div style="float:left; width:90%; margin-left:5%">
-    <canvas  height="100px" id="savingTracker"></canvas>
+    <canvas  height="100px" id="mortgageTracker"></canvas>
   </div>
 </div>

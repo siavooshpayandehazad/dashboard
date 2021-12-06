@@ -70,7 +70,7 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
   ValDiv.style.left      = "10px";
   ValDiv.style.bottom    = "20px";
   ValDiv.style.position  = "absolute";
-  ValDiv.style.fontSize  = "50px";
+  ValDiv.style.fontSize  = "40px";
   Val = document.createElement("span")
   Val.textContent = lastVal + unit;
   ValDiv.appendChild(Val)
@@ -79,24 +79,24 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
   minValDiv = document.createElement("div")
   minValDiv.style.color     = "rgb("+r+","+g+","+b+")";
   minValDiv.style.width     = "100%";
-  minValDiv.style.left      = "180px";
+  minValDiv.style.left      = "150px";
   minValDiv.style.bottom    = "65px";
   minValDiv.style.position  = "absolute";
-  minValDiv.style.fontSize  = "25px";
+  minValDiv.style.fontSize  = "23px";
   minVal = document.createElement("span")
-  minVal.textContent = minOfDay;
+  minVal.textContent = '⇂ ' + minOfDay + unit;
   minValDiv.appendChild(minVal)
   gauge.appendChild(minValDiv)
 
   maxValDiv = document.createElement("div")
   maxValDiv.style.color     = "rgb("+r+","+g+","+b+")";
   maxValDiv.style.width     = "100%";
-  maxValDiv.style.left      = "180px";
+  maxValDiv.style.left      = "150px";
   maxValDiv.style.bottom    = "100px";
   maxValDiv.style.position  = "absolute";
-  maxValDiv.style.fontSize  = "25px";
+  maxValDiv.style.fontSize  = "23px";
   maxVal = document.createElement("span")
-  maxVal.textContent = maxOfDay;
+  maxVal.innerHTML = '↿ ' + maxOfDay + unit;
   maxValDiv.appendChild(maxVal)
   gauge.appendChild(maxValDiv)
 
@@ -130,94 +130,16 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
   </div>
 </div>
 
-  {% for room in daily_data %}
-  <h3 style="margin-left: 3%; color:white;">Room {{loop.index}}</h3>
+  {% for item in daily_data %}
+      <h3 style="margin-left: 3%; color:white;">Room {{loop.index}}</h3>
 
-  <div class="row">
-        <div class="col-sm-3">
-          <div id="tempGauge" style="float: left; margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
-            <h5 style="float: left; margin-left: 10px; margin-top:5px;">Temperature</h5>
-          </div>
-        </div>
-        <div class="col-sm-4">
-          {% with dataset = daily_data[room]["temp"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
-                thresholds = [], trackerName = "Temperature", unit="(°C)", addAvg="true", tcf="false",
-                pointStyle = 'circle', showTotalVal = false, suggestedMin = 10, yearMonth = "", clickable="false",
-                accumulate = "false", width = "100%", height = "150px",
-                bgColors = ['rgba(203,24,29, 0.5)'],
-                bColors = ['rgba(203,24,29, 1)']%}
-            {% include "trackerModules/singleChart.html" %}
-          {% endwith %}
-        </div>
-        <div class="col-sm-4">
-          {% with dataset = monthly_Data[room]["temp"], ChartMonthDays = chart_months, chartType = "line",
-                thresholds = [25], trackerName = "Temperature", unit="(°C)",
-                pointStyle = 'circle',  suggestedMin = 10, suggestedMax = 20, yearMonth = "year",
-                bgcolor='rgba(0,0,0, 0)', color=['rgba(252,146,114,1)', 'rgba(203,24,29, 1)'],
-                width = "100%", height = "133px" %}
-            {% include "homeAutomation_modules/minMaxChart.html" %}
-          {% endwith %}
-        </div>
-  </div>
+      {% with room=loop.index%}
+        {% include "homeAutomation_modules/roomGauge.html" %}
+      {% endwith %}
 
-  <div class="row">
-      <div class="col-sm-3">
-        <div id="humidityGauge" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
-          <h5 style="float: left; margin-left: 10px; margin-top:5px;">Humidty</h5>
-        </div>
-        </div>
-        <div class="col-sm-4">
-          {% with dataset = daily_data[room]["humidity"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
-                thresholds = [], trackerName = "Humidty", unit="(%)", addAvg="true", tcf="false",
-                pointStyle = 'circle', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
-                accumulate = "false", width = "100%", height = "150px",
-                bgColors = ['rgba(29,145,192, 0.5)'],
-                bColors = ['rgba(29,145,192, 1)']%}
-            {% include "trackerModules/singleChart.html" %}
-          {% endwith %}
-        </div>
-        <div class="col-sm-4">
-          {% with dataset = monthly_Data[room]["humidity"], ChartMonthDays = chart_months, chartType = "line",
-                thresholds = [25], trackerName = "Humidity", unit="(%)",
-                pointStyle = 'circle',  suggestedMin = 0, suggestedMax = 100, yearMonth = "year",
-                bgcolor='rgba(0,0,0, 0)', color=['rgba(65,182,196, 1)', 'rgba(37,52,148, 1)'],
-                width = "100%", height = "133px" %}
-            {% include "homeAutomation_modules/minMaxChart.html" %}
-          {% endwith %}
-        </div>
-  </div>
-
-  <div class="row">
-        <div class="col-sm-3">
-          <div id="pressureGauge" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:250px; height:145px; border-radius:20px;">
-            <h5 style="float: left; margin-left: 10px; margin-top:5px; color:white;">Pressure Level</h5>
-          </div>
-        </div>
-        <div class="col-sm-4">
-          {% with dataset = daily_data[room]["pressure"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
-                thresholds = [], trackerName = "Pressure", unit="(bar)", addAvg="true", tcf="false",
-                pointStyle = 'circle', showTotalVal = false, suggestedMin = 0.9, yearMonth = "", clickable="false",
-                accumulate = "false", width = "100%", height = "150px",
-                bgColors = [ 'rgba(106,81,163, 0.5)'],
-                bColors = ['rgba(106,81,163, 1)']%}
-            {% include "trackerModules/singleChart.html" %}
-          {% endwith %}
-        </div>
-        <div class="col-sm-4">
-          {% with dataset = monthly_Data[room]["pressure"], ChartMonthDays = chart_months, chartType = "line",
-                thresholds = [25], trackerName = "Pressure", unit="(bar)",
-                pointStyle = 'circle',  suggestedMin = 0.9, suggestedMax = 1.1, yearMonth = "year",
-                bgcolor='rgba(0,0,0, 0)', color=['rgba(158,154,200,1)', 'rgba(106,81,163, 1)'],
-                width = "100%", height = "133px" %}
-            {% include "homeAutomation_modules/minMaxChart.html" %}
-          {% endwith %}
-        </div>
-    </div>
-
-    {% with dir="left" %}
-      {% include "generic_modules/divider.html" %}
-    {% endwith %}
-    
+      {% with dir="left" %}
+        {% include "generic_modules/divider.html" %}
+      {% endwith %}
   {%endfor%}
 
 </div>
@@ -229,11 +151,25 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
 </body>
 
 <script type="text/javascript">
-gauge_1_1 = document.getElementById("tempGauge")
-gauge_1_2 = document.getElementById("humidityGauge")
-gauge_1_3 = document.getElementById("pressureGauge")
-drawGauge(gauge_1_1, tempData["room_1"]["temp"], "°C", 0, 100, [231,225,239], [152,0,67], [236, 231, 242], [4, 90, 141]);
-drawGauge(gauge_1_2, tempData["room_1"]["humidity"], "%", 0, 100, [198,219,239], [8,81,156], [240,240,240], [240,240,240]);
-drawGauge(gauge_1_3, tempData["room_1"]["pressure"], "bar", 0, 2, [0,0,0], [217,217,217], [240,240,240], [240,240,240]);
+gauge_1_1 = document.getElementById("tempGauge_1")
+gauge_1_2 = document.getElementById("humidityGauge_1")
+gauge_1_3 = document.getElementById("pressureGauge_1")
+drawGauge(gauge_1_1, tempData[1]["temp"], "°C", 0, 100, [231,225,239], [152,0,67], [236, 231, 242], [4, 90, 141]);
+drawGauge(gauge_1_2, tempData[1]["humidity"], "%", 0, 100, [198,219,239], [8,81,156], [240,240,240], [240,240,240]);
+drawGauge(gauge_1_3, tempData[1]["pressure"], "bar", 0, 2, [0,0,0], [217,217,217], [240,240,240], [240,240,240]);
+
+gauge_2_1 = document.getElementById("tempGauge_2")
+gauge_2_2 = document.getElementById("humidityGauge_2")
+gauge_2_3 = document.getElementById("pressureGauge_2")
+drawGauge(gauge_2_1, tempData[2]["temp"], "°C", 0, 100, [231,225,239], [152,0,67], [236, 231, 242], [4, 90, 141]);
+drawGauge(gauge_2_2, tempData[2]["humidity"], "%", 0, 100, [198,219,239], [8,81,156], [240,240,240], [240,240,240]);
+drawGauge(gauge_2_3, tempData[2]["pressure"], "bar", 0, 2, [0,0,0], [217,217,217], [240,240,240], [240,240,240]);
+
+gauge_3_1 = document.getElementById("tempGauge_3")
+gauge_3_2 = document.getElementById("humidityGauge_3")
+gauge_3_3 = document.getElementById("pressureGauge_3")
+drawGauge(gauge_3_1, tempData[3]["temp"], "°C", 0, 100, [231,225,239], [152,0,67], [236, 231, 242], [4, 90, 141]);
+drawGauge(gauge_3_2, tempData[3]["humidity"], "%", 0, 100, [198,219,239], [8,81,156], [240,240,240], [240,240,240]);
+drawGauge(gauge_3_3, tempData[3]["pressure"], "bar", 0, 2, [0,0,0], [217,217,217], [240,240,240], [240,240,240]);
 </script>
 </html>

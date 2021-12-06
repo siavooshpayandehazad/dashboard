@@ -36,64 +36,64 @@
     {% include "generic_modules/header.html" %}
 {% endwith %}
 
-  <div id="notebookLabels">
-    {% for notebook in Notebooks.keys()|sort() %}
-      {%if notebook == Notebooks.keys()|sort()|first %}
-      <div class= "notebookLabel selected" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)" onmouseenter="noteBookMouseIn(this)" onmouseleave="noteBookMouseOut(this)" >{{notebook}}</div>
-      {%else%}
-      <div class= "notebookLabel" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)" onmouseenter="noteBookMouseIn(this)" onmouseleave="noteBookMouseOut(this)">{{notebook}}</div>
-      {%endif%}
-    {% endfor %}
-      <div class= "notebookLabel" onclick="addNotebook(this)">
-        <span class="addNotebookText">+ Add new Notebook</span>
-        <textarea class="addNotebookTextArea" cols="15" rows="1" style="margin-left: 10px; display:none; resize:none;" onkeypress="{
-          var key = window.event.keyCode;
-          if (key === 13) {createNewNotebook(this)}}"> </textarea>
-      </div>
-  </div>
-
-  <div id="notebook_background">
-
-    {% include "notes_modules/search.html" %}
-
-    <h2 class="title"> <span id ="notebookName">{{Notebooks.keys()|sort()|first}}</span> Notebook </h2>
-    <div class="ToCDiv">
-        <h2 class="title"> ToC </h2>
-        <div id="tocContent" style="margin-left:5px; margin-top: 5px;">
-          <ol class = "ToC">
-          {% for chapter in Notebooks[Notebooks.keys()|sort()|first].keys()|sort()%}
-            {%if chapter == Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first %}
-              <li class="ToCLabel selected hover-red" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)"><span class="ToCLabelText">{{chapter}}</span></li>
-            {%else%}
-              <li class="ToCLabel hover-red" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)"><span class="ToCLabelText">{{chapter}}</span></li>
-            {%endif%}
-          {%endfor%}
-        </ol>
-          <ol class="addToC">
-            <li class="ToCLabel hover-red" onclick="addChapter(this)">+ add new chapter</li>
-            <li class="ToCLabel hover-red" style="display:none"><textarea class="addChapterTextArea" cols="15" rows="1" style="resize:none;" onkeypress="{
-              var key = window.event.keyCode;
-              if (key === 13) {createNewChapter(this)}}"> </textarea></li>
-            <li class="ToCLabel hover-red" onclick="showGallery(this)"><i class="fa fa-camera"></i> Notebook Gallery</li>
-          <ol>
+    <div id="notebookLabels">
+      {% for notebook in Notebooks.keys()|sort() %}
+        {%if notebook == Notebooks.keys()|sort()|first %}
+        <div class= "notebookLabel selected" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)" onmouseenter="noteBookMouseIn(this)" onmouseleave="noteBookMouseOut(this)" >{{notebook}}</div>
+        {%else%}
+        <div class= "notebookLabel" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)" onmouseenter="noteBookMouseIn(this)" onmouseleave="noteBookMouseOut(this)">{{notebook}}</div>
+        {%endif%}
+      {% endfor %}
+        <div class= "notebookLabel" onclick="addNotebook(this)">
+          <span class="addNotebookText">+ Add new Notebook</span>
+          <textarea class="addNotebookTextArea" cols="15" rows="1" style="margin-left: 10px; display:none; resize:none;" onkeypress="{
+            var key = window.event.keyCode;
+            if (key === 13) {createNewNotebook(this)}}"> </textarea>
         </div>
     </div>
 
-    <div class="chapterContent">
-      <h2 class="title"> <span id ="chapterName">{{Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first}}</span></h2>
-      {% include "notes_modules/edit_entry.html" %}
-      {% include "notes_modules/pic_uploader.html" %}
-      <br>
-      <div id="chapterContent">
-          {{Notebooks[Notebooks.keys()|sort()|first][Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first]|safe}}
+    <div id="notebook_background">
+
+      {% include "notes_modules/search.html" %}
+
+      <h2 class="title"> <span id ="notebookName">{{Notebooks.keys()|sort()|first}}</span> Notebook </h2>
+      <div class="ToCDiv">
+          <h2 class="title"> ToC </h2>
+          <div id="tocContent" style="margin-left:5px; margin-top: 5px;">
+            <ol class = "ToC">
+            {% for chapter in Notebooks[Notebooks.keys()|sort()|first].keys()|sort()%}
+              {%if chapter == Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first %}
+                <li class="ToCLabel selected hover-red" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)"><span class="ToCLabelText">{{chapter}}</span></li>
+              {%else%}
+                <li class="ToCLabel hover-red" onclick="selectChapter(this)" onmouseenter="chapterMouseIn(this)" onmouseleave="chapterMouseOut(this)" ondblclick="editChapterName(this)"><span class="ToCLabelText">{{chapter}}</span></li>
+              {%endif%}
+            {%endfor%}
+          </ol>
+            <ol class="addToC">
+              <li class="ToCLabel hover-red" onclick="addChapter(this)">+ add new chapter</li>
+              <li class="ToCLabel hover-red" style="display:none"><textarea class="addChapterTextArea" cols="15" rows="1" style="resize:none;" onkeypress="{
+                var key = window.event.keyCode;
+                if (key === 13) {createNewChapter(this)}}"> </textarea></li>
+              <li class="ToCLabel hover-red" onclick="showGallery(this)"><i class="fa fa-camera"></i> Notebook Gallery</li>
+            <ol>
+          </div>
+      </div>
+
+      <div class="chapterContent">
+        <h2 class="title"> <span id ="chapterName">{{Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first}}</span></h2>
+        {% include "notes_modules/edit_entry.html" %}
+        {% include "notes_modules/pic_uploader.html" %}
+        <br>
+        <div id="chapterContent">
+            {{Notebooks[Notebooks.keys()|sort()|first][Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first]|safe}}
+        </div>
       </div>
     </div>
-  </div>
   </body>
 
   <script>
   var backGround = document.getElementById("notebook_background");
   var div = document.getElementById("notebookLabels");
-  div.style.height = (Math.floor((backGround.clientHeight-40)/46)-1)*46+"px";
+  div.style.height = ((Math.floor((backGround.clientHeight-40)/46)-1)*46)+51+"px";
   </script>
 </html>

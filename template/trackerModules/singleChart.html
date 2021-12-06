@@ -59,6 +59,7 @@ return  datasets;
 }
 
 function renderTrackerChart(){
+  console.log(window.location.href)
   var ctx = document.getElementById("{{trackerName}}Tracker").getContext('2d');
   new Chart(ctx, {
      type: "{{chartType}}",
@@ -76,7 +77,7 @@ function renderTrackerChart(){
                         return;
                       }
                       var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
-                      var selectedVal =  window['dataset_{{trackerName}}'][selectedDay-1]
+                      var selectedVal =  parseFloat(window['dataset_{{trackerName}}'][selectedDay-1]) || 0;
                       var newVal;
                       if(window['accumulate_{{trackerName}}'] == true){
                         newVal = window.prompt("Add {{trackerName}} for day " + selectedDay + "?", "");
@@ -91,11 +92,14 @@ function renderTrackerChart(){
                       // submit new value
                       $.ajax({
                           type: "POST",
-                          url: "http://"+window.location.hostname+":5000/home",
+                          url: "http://"+window.location.hostname+":5000/",
                           data: {"tracker_type":"{{trackerName}}", "value": newVal, "date": date},
+                          error: function(data) {
+                            window.alert("{{trackerName}} tracker failed to submit the value...")
+                          }
                       });
                       if(window['accumulate_{{trackerName}}'] == true){
-                        newVal = parseFloat(selectedVal) + parseFloat(newVal);
+                        newVal = selectedVal + parseFloat(newVal);
                       }
                       //update the step value
                       window['dataset_{{trackerName}}'][selectedDay-1] = parseFloat(newVal);
@@ -107,6 +111,7 @@ function renderTrackerChart(){
                       }
                       countTotalVal(window['dataset_{{trackerName}}'], ('{{tcf}}'=='true'), "{{trackerName}}");
                       this.update();
+
                     }
                 }
 

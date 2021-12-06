@@ -108,8 +108,9 @@ div.logText{
   color: var(--logText-clr);
 }
 div.tabBar{
-   width:100%;
-   height:30px;
+  margin-top: 5px;
+  width:100%;
+  height:30px;
 }
 div.tabButton{
    width: 70px; height: 25px;
@@ -308,14 +309,14 @@ span.date{
 }
 span.task{
       display: inline-block;
-      width: 220px;
+      width: calc(90% - 100px);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
 }
 .toDoHoverText {
   position: fixed;
-  weidth: 200px;
+  width: 200px;
   z-index: 2;
   padding:2px 10px 2px 10px;
   border-radius: 10px;

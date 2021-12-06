@@ -5,7 +5,7 @@
     {% endwith %}
   </div>
 
-  <div class="col-sm-11 col-lg-8">
+  <div class="col-sm-10 col-lg-7">
     {% with days = days, highlight=highlight,today=today, activityList=activityList, monthsActivitiesPlanned=monthsActivitiesPlanned%}
       {% include "trackerModules/activityTracker.html" %}
     {% endwith %}
@@ -13,7 +13,7 @@
 
   <div class="col-sm-3 col-lg-1">
       <div style="width:100%;">
-        <div style="float:right;">
+        <div style="float:left;">
           <!-- weather widget start -->
           {%if pageTheme=="Dark"%}
             <script type='text/javascript' src='https://darksky.net/widget/default-small/55.7081,13.1973/uk12/en.js?width=100%&height=60&title=Full Forecast&textColor=d9d9d9&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=&units=uk'></script>
@@ -42,7 +42,7 @@
 
 <div class="row no-gutters justify-content-center">
   <div class="col-sm-6 col-lg-4">
-  {% with dataset = monthsWorkHours, ChartMonthDays = ChartMonthDays, chartType = "bar",
+  {% with dataset = ChartData["monthsWorkHours"], ChartMonthDays = ChartMonthDays, chartType = "bar",
         thresholds = [4, 6, 8], trackerName = "work", unit="(hrs)", addAvg="true", tcf="true",
         pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
         accumulate = "true", height = "140px",  width = "95%",
@@ -52,14 +52,14 @@
   {% endwith %}
   </div>
   <div class="col-sm-6 col-lg-4">
-  {% with monthsRuns = monthsRuns, monthsPaces = monthsPaces, ChartMonthDays = ChartMonthDays,
+  {% with monthsRuns = ChartData["monthsRuns"], monthsPaces = ChartData["monthsPaces"], ChartMonthDays = ChartMonthDays,
     PageYear = PageYear, PageMonth = PageMonth, height = "150px", width = "95%"
   %}
     {% include "trackerModules/runningTracker.html" %}
   {% endwith %}
   </div>
   <div class="col-sm-6 col-lg-4">
-  {% with dataset = monthsWeights, ChartMonthDays = ChartMonthDays, chartType = "line",
+  {% with dataset = ChartData["monthsWeights"], ChartMonthDays = ChartMonthDays, chartType = "line",
         thresholds = [], trackerName = "weight", unit="(kg)", addAvg="true", tcf="true",
         pointStyle = 'cicle', showTotalVal = False, suggestedMin = 65, yearMonth = "month", clickable="true",
         accumulate = "false", height = "140px", width = "95%",
@@ -70,19 +70,19 @@
 </div>
 
 <div class="col-sm-6 col-lg-4">
-    {% with HR_Max = HR_Max, HR_Min = HR_Min, ChartMonthDays = ChartMonthDays, PageYear = PageYear,
+    {% with HR_Max = ChartData["HR_Max"], HR_Min = ChartData["HR_Min"], ChartMonthDays = ChartMonthDays, PageYear = PageYear,
       PageMonth = PageMonth, yearMonth = "month", height = "150px", width = "95%"%}
       {% include "trackerModules/heartRateTracker.html" %}
     {% endwith %}
 </div>
 <div class="col-sm-6 col-lg-4">
-  {% with BP_Max = BP_Max, BP_Min = BP_Min, ChartMonthDays = ChartMonthDays, PageYear = PageYear,
+  {% with BP_Max = ChartData["BP_Max"], BP_Min = ChartData["BP_Min"], ChartMonthDays = ChartMonthDays, PageYear = PageYear,
     PageMonth = PageMonth, yearMonth = "month", height = "150px", width = "95%"%}
     {% include "trackerModules/bloodPressureTracker.html" %}
   {% endwith %}
 </div>
 <div class="col-sm-6 col-lg-4">
-  {% with dataset = BO, ChartMonthDays = ChartMonthDays, chartType = "line",
+  {% with dataset = ChartData["BO"], ChartMonthDays = ChartMonthDays, chartType = "line",
         thresholds = [], trackerName = "blood oxygen", unit="(%)", addAvg="true", tcf="true",
         pointStyle = 'cicle', showTotalVal = False, suggestedMin = 90, yearMonth = "month", clickable="true",
         accumulate = "false", height = "140px", width = "95%",
@@ -92,7 +92,7 @@
   {% endwith %}
 </div>
 <div class="col-sm-6 col-lg-4">
-  {% with dataset = monthsSleepTimes, ChartMonthDays = ChartMonthDays, chartType = "bar",
+  {% with dataset = ChartData["monthsSleepTimes"], ChartMonthDays = ChartMonthDays, chartType = "bar",
         thresholds = [8], trackerName = "sleep", unit="(hrs)", addAvg="true", tcf="true",
         pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
         accumulate = "false", height = "140px", width = "95%",
@@ -102,7 +102,7 @@
   {% endwith %}
   </div>
 <div class="col-sm-6 col-lg-4">
-  {% with dataset = monthsSteps, ChartMonthDays = ChartMonthDays, chartType = "bar",
+  {% with dataset = ChartData["monthsSteps"], ChartMonthDays = ChartMonthDays, chartType = "bar",
         thresholds = [8000], trackerName = "step", unit="", addAvg="true", tcf="false",
         pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
         accumulate = "false", height = "140px", width = "95%",
@@ -112,7 +112,7 @@
   {% endwith %}
   </div>
 <div class="col-sm-6 col-lg-4">
-  {% with dataset = monthsHydration, ChartMonthDays = ChartMonthDays, chartType = "bar",
+  {% with dataset = ChartData["monthsHydration"], ChartMonthDays = ChartMonthDays, chartType = "bar",
         thresholds = [2], trackerName = "hydration", unit="(l)", addAvg="true", tcf="false",
         pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
         accumulate = "false", height = "140px", width = "95%",
@@ -129,7 +129,7 @@
 
 <div class="row">
   <div class="col">
-  {% with travels = travels%}
+  {% with travels = ChartData["travels"]%}
     {% include "trackerModules/travelTracker.html" %}
   {% endwith %}
   </div>

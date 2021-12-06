@@ -42,7 +42,7 @@ def getAudiobooks(path):
                                 books[b.name]=data
                             except Exception as e:
                                 logger.error(e)
-                                logger.error("something is wrong with", f.name)
+                                logger.error("something is wrong with" + str(f.name))
                             break
                     # if book metadate doesnt exist add it
                     if b.name not in books.keys():
@@ -96,24 +96,16 @@ def changeFlashCards(setName, side1, side2, lastTimeReviewed, increament, dbCurs
     value = int(val[0][3])
     if increament:
         value += 1
-        logger.info("increase the reviewInDays to", value)
+        logger.info("increase the reviewInDays to" + str(value))
     else:
         if value == 1:
             return
         value -= 1
-        logger.info("increase the reviewInDays to", value)
+        logger.info("increase the reviewInDays to" + str(value))
     dbCursur.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
     dbCursur.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""", (setName, side1, side2, value, lastTimeReviewed))
     dbConnection.commit()
 
-
-def getTravelDests(dbCursur):
-    dbCursur.execute("""SELECT * FROM travelTracker""")
-    travels = dbCursur.fetchall()
-    allTravels = []
-    for item in travels:
-        allTravels.append({'name': item[0], 'coords': [item[1], item[2]],})
-    return allTravels
 
 
 def addTravelItem(name, latitude, longitude, dbCursur, dbConnection):
@@ -273,6 +265,47 @@ def addsSavingItemToTable(item: str, date: str, dbCursur, dbConnection):
     return "Done", 200
 
 
+def addsMortgageItemToTable(item: str, date: str, dbCursur, dbConnection):
+    month = "-".join(date.split("-")[0:2])
+    dbCursur.execute("SELECT * FROM mortgageTracker WHERE month = ?", (month,))
+    fetchedData = dbCursur.fetchall()
+
+    if len(fetchedData)>0:
+        item = float(fetchedData[0][0])+float(item)
+    else:
+        # get last months value
+        currentMonth = int(date.split("-")[1])
+        currentYear = int(date.split("-")[0])
+        counter = 12
+        lastMonthFetch = []
+        while((len(lastMonthFetch)==0)):
+            if currentMonth != 1:
+                MonthVal = currentMonth-1
+                YearVal = currentYear
+            else:
+                MonthVal = 12
+                YearVal = currentYear -1
+
+            lastMonthVal = str(YearVal)+"-"+str(MonthVal).zfill(2)
+            dbCursur.execute("SELECT * FROM mortgageTracker WHERE month = ?", (lastMonthVal,))
+            lastMonthFetch = dbCursur.fetchall()
+            currentMonth = MonthVal
+            currentYear = YearVal
+            counter -= 1
+            if counter <= 0:
+                break;
+        if len(lastMonthFetch)>0:
+            lastMonthVal = float(lastMonthFetch[0][0])
+        else:
+            lastMonthVal = 0
+        item = float(lastMonthVal)+float(item)
+
+    dbCursur.execute("DELETE from mortgageTracker where month = ?", (month,))
+    dbCursur.execute("INSERT INTO mortgageTracker VALUES(?, ?)", (item, month))
+    dbConnection.commit()
+    return "Done", 200
+
+
 def collectMonthsData(pageMonth: int, pageYear: int, dbCursur):
     activities = []
     activitiesPlannes = []
@@ -315,6 +348,8 @@ def generateDBTables(DBCursor, dbConnection):
              sleepTime text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists savingTracker (
              saving text, month text)""")
+    DBCursor.execute("""CREATE TABLE if not exists mortgageTracker (
+             mortgage text, month text)""")
     DBCursor.execute("""CREATE TABLE if not exists weightTracker (
              weight text, date text)""")
     DBCursor.execute("""CREATE TABLE if not exists workTracker (
@@ -396,7 +431,7 @@ def backupDatabase(conn):
             conn.backup(backupCon, pages=1, progress=progress)
         logger.info("backup successful")
     except sqlite3.Error as error:
-        logger.error("Error while taking backup: ", error)
+        logger.error("Error while taking backup: " +  str(error))
     finally:
         if(backupCon):
             backupCon.close()
@@ -498,7 +533,7 @@ def getScrumTasks (todaysDate, dbCursur):
 
 
 def deleteScrumTask(proj, task, dbCursur, dbConnection):
-    logger.info("deleting card:", task)
+    logger.info("deleting card:" + str(task))
     dbCursur.execute("""DELETE from scrumBoard where project = ? and task = ?""", (proj, task))
     dbConnection.commit()
     return None
@@ -571,3 +606,18 @@ def remove_tag_from_picture(filename, tag):
     metadata['Exif.Photo.UserComment']=json.dumps(userdata)
     metadata.write()
     return True
+
+
+def generate_ha_DBTables(DBCursor, dbConnection):
+    DBCursor.execute("""CREATE TABLE if not exists weatherStation (
+             room text, date text, time text,  temp text, humidity text, pressure text)""")
+    dbConnection.commit()
+
+def add_data_to_ha_DB(DBCursor, dbConnection, room, date, time, temp, humidity, pressure):
+    try:
+        DBCursor.execute("""INSERT INTO weatherStation VALUES(?, ?, ?, ?, ?, ?)""", (room, date, time, temp, humidity, pressure))
+        dbConnection.commit()
+        return True
+    except Exception as err:
+        print(err)
+        return False

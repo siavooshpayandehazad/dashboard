@@ -18,6 +18,15 @@ def is_number(s):
         return False
 
 
+def getTravelDests(dbCursur):
+    dbCursur.execute("""SELECT * FROM travelTracker""")
+    travels = dbCursur.fetchall()
+    allTravels = []
+    for item in travels:
+        allTravels.append({'name': item[0], 'coords': [item[1], item[2]],})
+    return allTravels
+
+
 def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
     lastMonthsBeginning = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-relativedelta(months=+1)
     lastMonthsEnd = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-datetime.timedelta(days=1)
@@ -91,6 +100,11 @@ def sleepFunc(res, yearSleep):
 def stepFunc(res, yearStep):
     yearStep.append(sum([float(x[0]) for x in res if is_number(x[0])]))
     return yearStep
+
+
+def hydrationFunc(res, yearHydration):
+    yearHydration.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+    return yearHydration
 
 
 def moodFunc(res, yearMoods):
@@ -264,6 +278,24 @@ def generateSavingTrackerChartData(pageYear: int, dbCursur):
     return savingTrackerData
 
 
+
+def generateMortgageTrackerChartData(pageYear: int, dbCursur):
+    yearsSavings = []
+    dbCursur.execute("""SELECT * FROM mortgageTracker WHERE month >= ? and month <= ?  """,
+              (pageYear+"-"+"01", pageYear+"-"+"12"))
+    yearsSavings += dbCursur.fetchall()
+
+    mortgageTrackerData=[]
+    for i in range(1, 13):
+        mortgageVal = "nan"
+        for item in yearsSavings:
+            if int(item[1].split("-")[1]) == i:
+                mortgageVal = float(item[0])
+        mortgageTrackerData.append(mortgageVal)
+    return mortgageTrackerData
+
+
+
 def generateMonthlyChartData(pageMonth: int, pageYear: int, tabelName:str, numberOfDays: int, dbCursur):
     monthsVals = []
     dbCursur.execute("SELECT * FROM "+tabelName+" WHERE date >= ? and date <= ?  ",
@@ -282,68 +314,55 @@ def generateMonthlyChartData(pageMonth: int, pageYear: int, tabelName:str, numbe
     return monthsData
 
 
-def generate_weather_monthly(ha_directory: str, year):
+def generate_weather_monthly(dbCursur, year: int):
     # extract the year data
-    yearData = {}
-    for room in os.listdir(ha_directory):
-        if os.path.isdir(ha_directory+"/"+room):
-            yearData[room] = yearData.get(room, {})
-            for year_folder in os.listdir(ha_directory+"/"+room):
-                if int(year_folder) == int(year):
-                    for file in os.listdir(ha_directory+"/"+room+"/"+year_folder):
-                        # f = open('homeAutomation/room_1/'+file, 'r')
-                        f_month = int(file.replace(".txt", "").split("-")[1])
-                        yearData[room][f_month] = yearData[room].get(f_month, {"time":[], "temp":[], "humidity":[], "pressure":[]})
-                        f = open("homeAutomation/"+room+"/"+year_folder+"/"+file, 'r')
-                        line2 = f.readline()
-                        while (line2 != ""):
-                            value = json.loads(line2)
-                            yearData[room][f_month]["time"].append(value["time"])
-                            yearData[room][f_month]["temp"].append(value["temp"])
-                            yearData[room][f_month]["humidity"].append(value["humidity"])
-                            yearData[room][f_month]["pressure"].append(float(value["pressure"])/1000.0)
-                            line2 = f.readline()
-                        f.close()
-    # calculate min max for each month
-    monthly_Data = {}
-    for room in yearData:
-        monthly_Data[room] = monthly_Data.get(room, {})
-        for monthVal in range(1, 13):
-            for item in ["temp", "humidity", "pressure"]:
-                monthly_Data[room][item] = monthly_Data[room].get(item, {"min":[], "max":[]})
-                if monthVal in yearData[room]:
-                    monthly_Data[room][item]["min"].append(min(yearData[room][monthVal][item]))
-                    monthly_Data[room][item]["max"].append(max(yearData[room][monthVal][item]))
-                else:
-                    monthly_Data[room][item]["min"].append("NaN")
-                    monthly_Data[room][item]["max"].append("NaN")
+    returnData = {}
+    for month in range(1, 13):
+        dbCursur.execute("SELECT * FROM weatherStation WHERE date >= ? and date <= ?  ",
+                (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(),))
+        monthly_Data = dbCursur.fetchall()
+        tempData = {}
+        for item in monthly_Data:
+            room = int(item[0])
+            tempData[room] = tempData.get(room, {"temp":[], "pressure":[], "humidity": []})
+            tempData[room]["temp"].append(float(item[3].strip()))
+            tempData[room]["humidity"].append(float(item[4].strip()))
+            tempData[room]["pressure"].append(float(item[5].strip())/1000)
 
-    return monthly_Data
+        for item in tempData.keys():
+            room = item
+            returnData[room] = returnData.get(room,{"months": [],
+                                                    "temp":{"min": [], "max": [],"avg": []},
+                                                    "pressure":{"min": [], "max": [],"avg": []},
+                                                    "humidity":{"min": [], "max": [],"avg": []}})
+            returnData[room]["months"].append(month)
+            for parameter in ["temp", "pressure", "humidity"]:
+                returnData[room][parameter]["min"].append(min(tempData[room][parameter]))
+                returnData[room][parameter]["max"].append(max(tempData[room][parameter]))
+                returnData[room][parameter]["avg"].append(sum(tempData[room][parameter])/len(tempData[room][parameter]))
+    for month in range(1, 13):
+        for room in returnData.keys():
+            if month not in returnData[room]["months"]:
+                for parameter in ["temp", "pressure", "humidity"]:
+                    returnData[room][parameter]["min"] = returnData[room][parameter]["min"][:month-1] + ["nan"] + returnData[room][parameter]["min"][month-1:]
+                    returnData[room][parameter]["max"] = returnData[room][parameter]["max"][:month-1] + ["nan"] + returnData[room][parameter]["max"][month-1:]
+                    returnData[room][parameter]["avg"] = returnData[room][parameter]["avg"][:month-1] + ["nan"] + returnData[room][parameter]["avg"][month-1:]
+
+    return returnData
 
 
-def genenrate_weather_daily(ha_directory:str, todaysDate):
+def genenrate_weather_daily(dbCursur, todaysDate):
     daily_data = {}
-    for room in os.listdir(ha_directory):
-        if os.path.isdir(ha_directory+"/"+room):
-            daily_data[room] = daily_data.get(room, {"time": [], "temp":[], "humidity":[], "pressure": []})
-            try:
-                f = open("homeAutomation/"+room+"/"+todaysDate.split("-")[0]+"/"+todaysDate+'.txt', 'r')
-                line2 = f.readline()
-                while (line2 != ""):
-                    value = json.loads(line2)
-                    daily_data["room_1"]["time"].append(value["time"])
-                    daily_data["room_1"]["temp"].append(value["temp"])
-                    daily_data["room_1"]["humidity"].append(value["humidity"])
-                    daily_data["room_1"]["pressure"].append(float(value["pressure"])/1000.0)
-                    line2 = f.readline()
-                f.close()
-            except Exception as e:
-                daily_data["room_1"] = {"time": [0], "temp":[0], "humidity":[0], "pressure": [0]}
-                logger.error(e)
-                try:
-                    f.close()
-                except:
-                    pass
+    dbCursur.execute("SELECT * FROM weatherStation WHERE date = ? ", (todaysDate,))
+    todayVals = dbCursur.fetchall()
+
+    for item in todayVals:
+        room = int(item[0])
+        daily_data[room] = daily_data.get(room, {"time": [], "temp":[], "pressure":[], "humidity": []})
+        daily_data[room]["time"].append(item[2].strip())
+        daily_data[room]["temp"].append(item[3].strip())
+        daily_data[room]["humidity"].append(item[4].strip())
+        daily_data[room]["pressure"].append(float(item[5].strip())/1000)
     return daily_data
 
 
@@ -468,10 +487,42 @@ def generate_cpu_stat_monthly(year: str):
                 temporary_data["yearly_cpu_usage"][year]["min"][i-1] = min(cpuUsage[i])
                 temporary_data["yearly_cpu_usage"][year]["max"][i-1] = max(cpuUsage[i])
             if i in cpuTemps:
-                temporary_data["yearly_cpu_temp"][year]["min"][i-1] = min(cpuUsage[i])
-                temporary_data["yearly_cpu_temp"][year]["max"][i-1] = max(cpuUsage[i])
+                temporary_data["yearly_cpu_temp"][year]["min"][i-1] = min(cpuTemps[i])
+                temporary_data["yearly_cpu_temp"][year]["max"][i-1] = max(cpuTemps[i])
     cpuUsageYearly["min"] = temporary_data["yearly_cpu_usage"][year]["min"][:]
     cpuUsageYearly["max"] = temporary_data["yearly_cpu_usage"][year]["max"][:]
     cpuTempsYearly["min"] = temporary_data["yearly_cpu_temp"][year]["min"][:]
     cpuTempsYearly["max"] = temporary_data["yearly_cpu_temp"][year]["max"][:]
     return cpuTempsYearly, cpuUsageYearly
+
+
+def getChartData(pageMonth, pageYear, numberOfDays, c):
+    # gather chart information ----------------------
+    ChartData = {}
+    ChartData["monthsWeights"]    = generateWeightChartData(int(pageMonth),      int(pageYear), numberOfDays, c)
+    ChartData["monthsPaces"]      = generateMonthlyChartData(int(pageMonth), int(pageYear), "paceTracker", numberOfDays, c)
+    ChartData["BO"]               = generateMonthlyChartData(int(pageMonth), int(pageYear), "oxygenTracker", numberOfDays, c)
+    ChartData["monthsWorkHours"]  = generateMonthlyChartData(int(pageMonth), int(pageYear), "workTracker", numberOfDays, c)
+    ChartData["monthsSleepTimes"] = generateMonthlyChartData(int(pageMonth), int(pageYear), "sleepTracker", numberOfDays, c)
+    ChartData["monthsSteps"]      = generateMonthlyChartData(int(pageMonth), int(pageYear), "stepTracker", numberOfDays, c)
+    ChartData["monthsHydration"]  = generateMonthlyChartData(int(pageMonth), int(pageYear), "hydrationTracker", numberOfDays, c)
+    ChartData["monthsRuns"]       = generateMonthlyChartData(int(pageMonth), int(pageYear), "runningTracker",numberOfDays, c)
+    ChartData["YearsSavings"]     = generateSavingTrackerChartData(pageYear, c)
+    ChartData["YearsMortgages"]   = generateMortgageTrackerChartData(pageYear, c)
+    ChartData["ChartMonthDays"]   = [str(i) for i in range(1, numberOfDays+1)]
+    ChartData["travels"]          = getTravelDests(c)
+    ChartData["HR_Min"], ChartData["HR_Max"] = generateHRChartData(int(pageMonth),          int(pageYear), numberOfDays, c)
+    ChartData["BP_Min"], ChartData["BP_Max"] = generateBPChartData(int(pageMonth),          int(pageYear), numberOfDays, c)
+    # ----------------------------------------------
+    ChartData["yearRuns"]   = genYearChartData(int(pageYear), "runningTracker",  runFunc,    c)
+    ChartData["yearSteps"]  = genYearChartData(int(pageYear), "stepTracker",     stepFunc,   c)
+    ChartData["yearSleep"]  = genYearChartData(int(pageYear), "sleepTracker",    sleepFunc,  c)
+    ChartData["yearHydr"]   = genYearChartData(int(pageYear), "hydrationTracker",hydrationFunc,  c)
+    ChartData["yearWeight"] = genYearChartData(int(pageYear), "weightTracker",   weightFunc, c)
+    ChartData["yearBO"]     = genYearChartData(int(pageYear), "oxygenTracker",   BOFunc,     c)
+    ChartData["yearWH"]     = genYearChartData(int(pageYear), "workTracker",     WHFunc,     c)
+    ChartData["yearMood"]   = genYearChartData(int(pageYear), "moodTracker",     moodFunc,   c)
+    ChartData["yearHR_Min"], ChartData["yearHR_Max"] = generateYearHRChartData(int(pageYear), numberOfDays, c)
+    ChartData["yearBP_Min"], ChartData["yearBP_Max"] = generateYearBPChartData(int(pageYear), numberOfDays, c)
+
+    return ChartData

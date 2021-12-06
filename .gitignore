@@ -8,6 +8,7 @@ serverScripts/reports/
 homeAutomation
 journal.db
 test.db
+ha.db
 backups/
 venv*
 tests/.coverage

@@ -32,9 +32,10 @@ div.NoteBookCloseButton:hover{
 }
 .ToC{
   list-style: none;
+  padding-left: 25px;
 }
 .ToCLabel{
-  width: 140px;
+  width: 100%;
   margin-left: -20px;
 }
 .ToCLabel.selected{
@@ -43,7 +44,7 @@ div.NoteBookCloseButton:hover{
 .ToCLabelText{
   display: inline-block;
   overflow: hidden;
-  width: 110px;
+  width: calc(100% - 25px);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
