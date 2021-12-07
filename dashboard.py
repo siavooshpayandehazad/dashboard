@@ -21,6 +21,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 from flask_mail import Mail,  Message
 import time
+from threading import Lock
+
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
@@ -42,20 +44,24 @@ parser = reqparse.RequestParser()
 for item in ['tracker_type', 'value', 'oldValue', 'date', 'action', 'type', 'planner']:
     parser.add_argument(item)
 
+lock= Lock()
+
 conn, c = createDB("journal.db")
 conn_ha, c_ha = createDB("ha.db")
 backupDatabase(conn)
-generateDBTables(c, conn)
-generate_ha_DBTables(c_ha, conn_ha)
-setupSettingTable(c, conn)
+generateDBTables(c, conn, lock)
+generate_ha_DBTables(c_ha, conn_ha, lock)
+setupSettingTable(c, conn, lock)
+
+
 
 class dash(Resource):
     def get(self):
         start_time = time.time()
         args = parser.parse_args()
         try:
-            pageTheme = fetchSettingParamFromDB(c, "Theme")
-            activityList = fetchSettingParamFromDB(c, "activityList").replace(" ", "").split(",")
+            pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
+            activityList = fetchSettingParamFromDB(c, "activityList", lock).replace(" ", "").split(",")
         except:
             pageTheme = "Dark"
             logger.info("could not fetch page theme! replacing with default values")
@@ -66,7 +72,7 @@ class dash(Resource):
             pageYear = str(datetime.date.today().year)
 
         headers      = {'Content-Type': 'text/html'}
-        pageTitle    = "DashBoard "
+        pageTitle    = "DashBoard"
 
         titleDate    = monthsOfTheYear[int(pageMonth)-1]+"-"+pageYear
         numberOfDays = numberOfDaysInMonth(int(pageMonth), int(pageYear))
@@ -75,10 +81,10 @@ class dash(Resource):
         # previous month. this is used for the moodtracker in order to add the empty spaces in the beginning of the month.
         moodTrackerDays = [None for i in range(0, monthsBeginningWeekDay)] + list(range(1, numberOfDays+1))
         # list of current month's moods and activities.
-        monthsActivities, monthsActivitiesPlanned, monthsMoods = collectMonthsData(int(pageMonth), int(pageYear), c)
+        monthsActivities, monthsActivitiesPlanned, monthsMoods = collectMonthsData(int(pageMonth), int(pageYear), c, lock)
         # highlights the current day in the activity tracker page!
         highlight    = shouldHighlight(pageYear, pageMonth)
-        counterValue = fetchSettingParamFromDB(c, "counter")
+        counterValue = fetchSettingParamFromDB(c, "counter", lock)
 
         ChartData = getChartData(pageMonth, pageYear, numberOfDays, c)
 
@@ -88,18 +94,17 @@ class dash(Resource):
                                              today = datetime.date.today().day, moods = monthsMoods,
                                              # charts info
                                              ChartMonthDays = ChartData["ChartMonthDays"], ChartYearMonths = monthsOfTheYear,
-                                             ChartData = ChartData,
-                                             HideLine = "false",
+                                             ChartData = ChartData, HideLine = "false",
                                              # ----------------------
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
                                              activityList = activityList, days=moodTrackerDays, highlight = highlight,
                                              pageTheme = pageTheme, counterValue = counterValue),200,headers)
 
     def post(self):
-        activityList = fetchSettingParamFromDB(c, "activityList").replace(" ", "").split(",")
+        activityList = fetchSettingParamFromDB(c, "activityList", lock).replace(" ", "").split(",")
         args = parser.parse_args()
         if args['type'] == "password":
-            password = fetchSettingParamFromDB(c, "password")
+            password = fetchSettingParamFromDB(c, "password", lock)
             if password == "None":
                 return "success", 200
             else:
@@ -110,36 +115,36 @@ class dash(Resource):
 
         if args['type'] == "counter":
             if args['value'] == "countup":
-                counterVal = int(fetchSettingParamFromDB(c, "counter")) + 1
+                counterVal = int(fetchSettingParamFromDB(c, "counter", lock)) + 1
             elif args['value'] == "reset":    # reset the counter
                 counterVal = 0
-            updateSettingParam(c, conn, "counter", counterVal)
+            updateSettingParam(c, conn, "counter", counterVal, lock)
 
         todaysDate = parseDate(args['date'])
         deleteDay = False
         if (len(args['value'].strip()) == 0) :
             deleteDay = True
         if args['tracker_type'] in ['sleep', 'running', 'pace', 'step', 'weight', 'work', 'hydration']:
-            return addTrackerItemToTable(args['value'].lower(), "", [], args['tracker_type']+"Tracker", todaysDate, deleteDay, True, c, conn)
+            return addTrackerItemToTable(args['value'].lower(), "", [], args['tracker_type']+"Tracker", todaysDate, deleteDay, True, c, conn, lock)
         if args['tracker_type'] in ['HR', 'BP']:
-            return addTrackerItemToTable(args['value'].split(","), "", [], args['tracker_type']+"Tracker", todaysDate, deleteDay, True, c, conn)
+            return addTrackerItemToTable(args['value'].split(","), "", [], args['tracker_type']+"Tracker", todaysDate, deleteDay, True, c, conn, lock)
         if args['tracker_type'] == 'blood oxygen':
-            return addTrackerItemToTable(args['value'].lower(), "", [], "oxygenTracker", todaysDate, deleteDay, True, c, conn)
+            return addTrackerItemToTable(args['value'].lower(), "", [], "oxygenTracker", todaysDate, deleteDay, True, c, conn, lock)
         if args['tracker_type'] == 'saving':
-            return addsSavingItemToTable(args['value'].lower(), todaysDate, c, conn)
+            return addsSavingItemToTable(args['value'].lower(), todaysDate, c, conn, lock)
         if args['tracker_type'] == 'mortgage':
-            return addsMortgageItemToTable(args['value'].lower(), todaysDate, c, conn)
+            return addsMortgageItemToTable(args['value'].lower(), todaysDate, c, conn, lock)
         if args['tracker_type'] == 'mood':
-            return addTrackerItemToTable(args['value'].lower(), "mood_name", moodList, "moodTracker", todaysDate, False, False, c, conn)
+            return addTrackerItemToTable(args['value'].lower(), "mood_name", moodList, "moodTracker", todaysDate, False, False, c, conn, lock)
         if args['tracker_type'] == "activity":
             delete = True if args['action']=="delete" else False
             if args['planner'] == "True":
-                return addTrackerItemToTable(args['value'].lower(), "activity_name", activityList, "activityPlanner", todaysDate, delete, False, c, conn)
+                return addTrackerItemToTable(args['value'].lower(), "activity_name", activityList, "activityPlanner", todaysDate, delete, False, c, conn, lock)
             else:
-                return addTrackerItemToTable(args['value'].lower(), "activity_name", activityList, "activityTracker", todaysDate, delete, False, c, conn)
+                return addTrackerItemToTable(args['value'].lower(), "activity_name", activityList, "activityTracker", todaysDate, delete, False, c, conn, lock)
         if args['tracker_type'] == "travel":
             values = args['value'].split(",")
-            addTravelItem(values[0], values[1], values[2], c, conn)
+            addTravelItem(values[0], values[1], values[2], c, conn, lock)
         return "Done", 200
 
 
@@ -147,7 +152,7 @@ class journal(Resource):
     def get(self):
         start_time = time.time()
         args = parser.parse_args()
-        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
         headers = {'Content-Type': 'text/html'}
         todaysDate = parseDate(args['date'])
         day, month, year = sparateDayMonthYear(todaysDate)
@@ -155,11 +160,15 @@ class journal(Resource):
         photoDir2=os.getcwd()+"/static/photos/"+str(year)
         daysWithPhotos = allDaysWithPhotos(photoDir2, year, month)
         todayPhotos =  allPotosInDir(photoDir, year, todaysDate)
-        todaysLog, todaysLogText = getTodaysLogs(c, todaysDate)
+        todaysLog, todaysLogText = getTodaysLogs(c, todaysDate, lock)
         numberOfDays = numberOfDaysInMonth(int(month), int(year))
         monthsBeginning = getMonthsBeginning(month, year).weekday()
+
+        lock.acquire(True)
         c.execute("""SELECT * FROM logTracker WHERE date >= ? and date <= ? """, (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(), ))
         logged_days = [int(x[1].split("-")[2]) for x in c.fetchall()]
+        lock.release()
+
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('journal.html', numberOfDays = numberOfDays,
                              day = day, month = month, year=year, monthsBeginning=monthsBeginning,
@@ -172,11 +181,15 @@ class journal(Resource):
         if args['type'] == 'log':
             todaysDate = parseDate(args['date'])
             log = args['value'].lower()
+
+            lock.acquire(True)
             c.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate, ))
             if len(c.fetchall()) > 0:
                 c.execute("""DELETE from logTracker where date = ?""", (todaysDate, ))
             c.execute("""INSERT INTO logTracker VALUES(?, ?)""", (log, todaysDate))
             conn.commit()
+            lock.release()
+
             logger.info(f"added log for date: {todaysDate}")
         if args['type'] == "photo":
             if args['action'] == "delete":
@@ -208,7 +221,7 @@ class journal(Resource):
 class org(Resource):
     def get(self):
         start_time = time.time()
-        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
 
         headers = {'Content-Type': 'text/html'}
         args = parser.parse_args()
@@ -219,11 +232,11 @@ class org(Resource):
         numberOfDays = numberOfDaysInMonth(int(month), int(year))
         monthsBeginningWeekDay = monthsBeginning.weekday()
 
-        all_due_events, thisMonthsEvents, todayTodos =  getTodos (todaysDate, c)
-        scrumBoardLists, ChartDoneTasks, ChartMonthDays, ChartthisMonthTasks = getScrumTasks (todaysDate, c)
+        all_due_events, thisMonthsEvents, todayTodos =  getTodos(todaysDate, c, lock)
+        scrumBoardLists, ChartDoneTasks, ChartMonthDays, ChartthisMonthTasks = getScrumTasks(todaysDate, c, lock)
 
-        calDate = getCalEvents(todaysDate, c)
-        calMonth = getCalEventsMonth(todaysDate, c)
+        calDate = getCalEvents(todaysDate, c, lock)
+        calMonth = getCalEventsMonth(todaysDate, c, lock)
         #---------------------------
         headerDates = []
         dayVal= datetime.datetime.strptime(todaysDate, '%Y-%m-%d')-datetime.timedelta(days=weekDay) # weekstart
@@ -249,12 +262,15 @@ class org(Resource):
                 search_term = value_dict["search_term"].strip().lower()
                 if search_term  != "":
                     search_term = "%"+search_term+"%"
+                    lock.acquire(True)
                     c.execute("""SELECT * FROM todoList WHERE task like ? """, (search_term,))
                     search_result = sorted(c.fetchall(), key=lambda tup: tup[1], reverse = True)
+                    lock.release()
                 return search_result, 200
             else:
                 dateVal = parseDate(args['date'])
                 value_dict = eval((args['value']))
+                lock.acquire(True)
                 c.execute("""DELETE from todoList where date = ? and task = ?""", (dateVal, value_dict['value'].lower()))
                 if args['action'] == "delete":
                     logger.info(f"removed todo {value_dict['value'].lower()} from todoList for date: {dateVal}")
@@ -262,25 +278,32 @@ class org(Resource):
                     c.execute("""INSERT INTO todoList VALUES(?, ?, ?, ?)""", (value_dict['value'].lower(), dateVal, value_dict['done'], value_dict['color']))
                     logger.info(f"added todo {value_dict['value'].lower()} to todoList for date: {dateVal} as {value_dict['done']}")
                 conn.commit()
+                lock.release()
 
         elif args['type'] == 'calendar':
             if args["action"] == "create":
                 date = args['date']
                 values = json.loads(args['value'])
+                lock.acquire(True)
                 c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (date, values["startTime"], values["stopTime"], values["name"], values["color"], values["details"]))
                 conn.commit()
+                lock.release()
             elif args["action"] == "delete":
                 date = args['date']
                 values = json.loads(args['value'])
+                lock.acquire(True)
                 c.execute("""DELETE from calendar where date = ? and startTime = ? and endTime = ?  and eventName = ? """, (date, values["startTime"], values["stopTime"], values["name"]))
                 conn.commit()
+                lock.release()
             elif args["action"] == "edit":
                 date = args['date']
+                lock.acquire(True)
                 values = json.loads(args['oldValue'])
                 c.execute("""DELETE from calendar where date = ? and startTime = ? and endTime = ?  and eventName = ? """, (values["date"], values["startTime"], values["stopTime"], values["name"]))
                 values = json.loads(args['value'])
                 c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (values["date"], values["startTime"], values["stopTime"], values["name"], values["color"], values["details"]))
                 conn.commit()
+                lock.release()
 
         elif args['type'] == "scrum":
             scrum_dict = eval((args['value']))
@@ -289,45 +312,49 @@ class org(Resource):
             if scrum_dict.get('currentList', None) is not None:
                 currentList = scrum_dict['currentList']
                 if scrum_dict.get('action', "") == "delete":
-                    deleteScrumTask(proj, task, c, conn)
+                    deleteScrumTask(proj, task, c, conn, lock)
                 else:
                     destList = scrum_dict.get('destList', "")
+                    lock.acquire(True)
                     c.execute("""SELECT * FROM scrumBoard WHERE project = ? and task = ? and stage = ? """, (proj, task, currentList))
                     tasks = c.fetchall()
+                    lock.release()
                     if len(tasks)>0:
                         priority = tasks[0][-2]
                     else:
                         priority = scrum_dict.get('priority', "")
                     if destList == "done":
-                        deleteScrumTask(proj, task, c, conn)
-                        addScrumTask(proj, task, destList, priority, str(datetime.date.today()), c, conn)
+                        deleteScrumTask(proj, task, c, conn, lock)
+                        addScrumTask(proj, task, destList, priority, str(datetime.date.today()), c, conn, lock)
                     elif destList == "archive":
+                        lock.acquire(True)
                         c.execute("""SELECT * FROM scrumBoard WHERE project = ? and task = ? """, (proj, task))
                         date = c.fetchall()[0][-1]
-                        deleteScrumTask(proj, task, c, conn)
-                        addScrumTask(proj, task, destList, priority, str(date), c, conn)
+                        lock.release()
+                        deleteScrumTask(proj, task, c, conn, lock)
+                        addScrumTask(proj, task, destList, priority, str(date), c, conn, lock)
                     else:
-                        deleteScrumTask(proj, task, c, conn)
-                        addScrumTask(proj, task, destList, priority, " ", c, conn)
+                        deleteScrumTask(proj, task, c, conn, lock)
+                        addScrumTask(proj, task, destList, priority, " ", c, conn, lock)
                     conn.commit()
             else:   # its a new card!
                 priority = scrum_dict['priority']
-                addScrumTask(proj, task, "backlog", priority, " ", c, conn)
+                addScrumTask(proj, task, "backlog", priority, " ", c, conn, lock)
         return "Done", 200
 
 
 class settings(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
-        pageTheme = fetchSettingParamFromDB(c, "Theme")
-        activityList = fetchSettingParamFromDB(c, "activityList")
+        pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
+        activityList = fetchSettingParamFromDB(c, "activityList", lock)
 
-        mailUsername = fetchSettingParamFromDB(c, "MAIL_USERNAME")
-        mailpass = len(fetchSettingParamFromDB(c, "MAIL_PASSWORD"))*"*"
-        mailServer = fetchSettingParamFromDB(c, "MAIL_SERVER")
-        mailPort = fetchSettingParamFromDB(c, "MAIL_PORT")
-        mailSSL = fetchSettingParamFromDB(c, "MAIL_USE_SSL")
-        recipientEmail = fetchSettingParamFromDB(c, "MAIL_RECIPIENT")
+        mailUsername = fetchSettingParamFromDB(c, "MAIL_USERNAME", lock)
+        mailpass = len(fetchSettingParamFromDB(c, "MAIL_PASSWORD", lock))*"*"
+        mailServer = fetchSettingParamFromDB(c, "MAIL_SERVER", lock)
+        mailPort = fetchSettingParamFromDB(c, "MAIL_PORT", lock)
+        mailSSL = fetchSettingParamFromDB(c, "MAIL_USE_SSL", lock)
+        recipientEmail = fetchSettingParamFromDB(c, "MAIL_RECIPIENT", lock)
         email_setting = {"MAIL_USERNAME": mailUsername,
                          "MAIL_SERVER": mailServer,
                          "MAIL_PORT": mailPort,
@@ -342,25 +369,25 @@ class settings(Resource):
         args = parser.parse_args()
         if args['type'] == "Theme":
             pageTheme = args['value']
-            updateSettingParam(c, conn, "Theme", pageTheme)
+            updateSettingParam(c, conn, "Theme", pageTheme, lock)
         if args['type'] == "activityList":
             activityList = args['value']
-            updateSettingParam(c, conn, "activityList", activityList)
+            updateSettingParam(c, conn, "activityList", activityList, lock)
         if args['type'] == "password":
             pass_dict = eval((args['value']))
             hashed_password = fetchSettingParamFromDB(c, "password")
             if (hashed_password == "None") or verifyPassword(hashed_password, pass_dict["currntpwd"]):
-                updateSettingParam(c, conn, "password", hashPassword(pass_dict["newpwd"]))
+                updateSettingParam(c, conn, "password", hashPassword(pass_dict["newpwd"], lock))
                 return "succeded", 200
             return "failed", 200
         if args['type'] == "mailSetting":
             value_dict = eval((args['value']))
             for item in value_dict:
                 if item != "MAIL_PASSWORD":
-                    updateSettingParam(c, conn, item, value_dict[item])
+                    updateSettingParam(c, conn, item, value_dict[item], lock)
                 else:
                     if value_dict[item] != "mailpass":
-                        updateSettingParam(c, conn, item, value_dict[item])
+                        updateSettingParam(c, conn, item, value_dict[item], lock)
             return "succeded", 200
         return "Done", 200
 
@@ -370,7 +397,7 @@ class gallery(Resource):
         start_time = time.time()
         args = parser.parse_args()
         headers = {'Content-Type': 'text/html'}
-        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
         todaysDate = parseDate(args['date'])
         day, month, year = sparateDayMonthYear(todaysDate)
         numberOfDays = numberOfDaysInMonth(int(month), int(year))
@@ -395,7 +422,7 @@ class lists(Resource):
     def get(self):
         start_time = time.time()
         headers = {'Content-Type': 'text/html'}
-        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
         lists = {}
         for listName in ["book", "movie", "anime", "bucketList", "toLearnList"]:
             c.execute("""SELECT * FROM lists WHERE type = ? """, (listName, ))
@@ -409,6 +436,7 @@ class lists(Resource):
 
     def post(self):
         args = parser.parse_args()
+        lock.acquire(True)
         if args['action'] == "delete":
             value_dict = eval((args['value']))
             logger.info(f"deleted {value_dict['name'].lower()} from {value_dict['type']}")
@@ -419,6 +447,7 @@ class lists(Resource):
             c.execute("""DELETE from lists where name = ? and type = ? """, (value_dict["name"].lower(), value_dict["type"]))
             c.execute("""INSERT INTO lists VALUES(?, ?, ?, ?)""", (value_dict["name"].lower(), value_dict["done"], value_dict["type"], value_dict["notes"]))
         conn.commit()
+        lock.release()
         return "Done", 200
 
 
@@ -426,8 +455,8 @@ class notes(Resource):
     def get(self):
         start_time = time.time()
         headers = {'Content-Type': 'text/html'}
-        pageTheme = fetchSettingParamFromDB(c, "Theme")
-        Notebooks = fetchNotebooks(c)
+        pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
+        Notebooks = fetchNotebooks(c, lock)
         photoDir=os.getcwd()+"/static/photos/notebookPhotos"
         photos = {}
         for root, dirs, files in os.walk(photoDir):
@@ -443,6 +472,7 @@ class notes(Resource):
         args = parser.parse_args()
         value_dict = eval((args['value']))
         if  args['action'] == "delete":
+            lock.acquire(True)
             if value_dict.get("chapter", None) != None:
                 logger.info(f"deleting the chapter {value_dict['chapter']} from notebook: {value_dict['notebook']}")
                 c.execute("""DELETE from Notes where Notebook = ? and  Chapter = ? """, (value_dict["notebook"],value_dict["chapter"],))
@@ -450,11 +480,16 @@ class notes(Resource):
                 logger.info(f"deleting the notebook: {value_dict['notebook']}")
                 c.execute("""DELETE from Notes where Notebook = ? """, (value_dict["notebook"],))
             conn.commit()
+            lock.release()
         elif args['action'] == "rename":
             parsjson = json.loads(args['value'])
             if (parsjson["type"] == "noteBookName") and(parsjson["oldName"] != parsjson["newName"]):
+                lock.acquire(True)
                 c.execute("""SELECT * FROM Notes WHERE Notebook = ?""", (parsjson["oldName"],))
                 allNotes = c.fetchall()
+                lock.release()
+
+                lock.acquire(True)
                 for x in allNotes:
                     content = x[2]
                     # rename the folder that holds the files inside the references of it...
@@ -462,33 +497,43 @@ class notes(Resource):
                         content = content.replace("static/photos/notebookPhotos/"+parsjson["oldName"]+"/", "static/photos/notebookPhotos/"+parsjson["newName"]+"/")
                     c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (parsjson["newName"], x[1], content))
                 conn.commit()
+                lock.release()
+
+                lock.acquire(True)
                 for x in allNotes:
                     c.execute("""DELETE from Notes where Notebook = ? and Chapter = ? and content = ? """, (parsjson["oldName"], x[1], x[2]))
                 conn.commit()
+                lock.release()
+
                 # rename the folder that holds the files
                 if os.path.isdir("./static/photos/notebookPhotos/"+parsjson["oldName"]):
                     os.rename("./static/photos/notebookPhotos/"+parsjson["oldName"], "./static/photos/notebookPhotos/"+parsjson["newName"])
                 return "all good!", 200
+
             if (parsjson["type"] == "chapterName") and(parsjson["oldName"] != parsjson["newName"]):
+                lock.acquire(True)
                 c.execute("""SELECT * FROM Notes WHERE Notebook = ? and Chapter = ? """, (parsjson["noteBookName"], parsjson["oldName"],))
                 allNotes = c.fetchall()
                 for x in allNotes:
                     c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (x[0], parsjson["newName"], x[2]))
                     c.execute("""DELETE from Notes where Notebook = ? and Chapter = ? and content = ? """, (x[0], parsjson["oldName"], x[2]))
                 conn.commit()
+                lock.release()
                 return "all good!", 200
         else:
+            lock.acquire(True)
             c.execute("""DELETE from Notes where Notebook = ? and Chapter = ?  """, (value_dict["notebook"], value_dict["chapter"]))
             c.execute("""INSERT into Notes VALUES(?, ?, ?)  """, (value_dict["notebook"], value_dict["chapter"], value_dict['entry']))
             conn.commit()
+            lock.release()
         return "nothing here!", 200
 
 
 class learning(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
-        pageTheme = fetchSettingParamFromDB(c, "Theme")
-        setNames, maxDaysNumbers, cnts, flashCards = getFlashCards(c)
+        pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
+        setNames, maxDaysNumbers, cnts, flashCards = getFlashCards(c, lock)
         maxDaysNumbers = list(range(1,maxDaysNumbers+1))
         countes = []
         for i in maxDaysNumbers:
@@ -508,13 +553,13 @@ class learning(Resource):
                 side1 = values["side1"]
                 side2 = values["side2"]
                 lastTimeReviewed =  str(datetime.date.today())
-                addFlashCards(setName, side1, side2, lastTimeReviewed, c, conn)
+                addFlashCards(setName, side1, side2, lastTimeReviewed, c, conn, lock)
             elif args["action"] == "delete":
                 values =  json.loads(args['value'])
                 setName = values["setName"]
                 side1 = values["side1"]
                 side2 = values["side2"]
-                deleteFlashCards(setName, side1, side2, c, conn)
+                deleteFlashCards(setName, side1, side2, c, conn, lock)
             else:
                 values =  json.loads(args['value'])
                 setName = values["setName"]
@@ -522,9 +567,9 @@ class learning(Resource):
                 side2 = values["side2"]
                 lastTimeReviewed =  str(datetime.date.today())
                 if args["action"] == "true":
-                    changeFlashCards(setName, side1, side2, lastTimeReviewed, True, c, conn)
+                    changeFlashCards(setName, side1, side2, lastTimeReviewed, True, c, conn, lock)
                 else:
-                    changeFlashCards(setName, side1, side2, lastTimeReviewed, False, c, conn)
+                    changeFlashCards(setName, side1, side2, lastTimeReviewed, False, c, conn, lock)
         return "Done", 200
 
 
@@ -541,7 +586,7 @@ class server(Resource):
             todaysDate = today.strftime('%d-%m-%y')
 
         headers = {'Content-Type': 'text/html'}
-        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
 
         cpuTemps, cpuTempsTimes, cpuUsage, cpuUsageTimes, discSpace, upTime = generate_cpu_stat(todaysDate, year)
         cpuTempsYearly, cpuUsageYearly = generate_cpu_stat_monthly(year)
@@ -571,7 +616,7 @@ class audiobooks(Resource):
             todaysDate = today.strftime('%d-%m-%y')
 
         headers = {'Content-Type': 'text/html'}
-        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
 
         path = "static/audiobooks/"
         try:
@@ -608,10 +653,10 @@ class homeAutomation(Resource):
             day, month, year = today.day, today.month, today.year
             todaysDate = today.strftime('%Y-%m-%d')
         headers = {'Content-Type': 'text/html'}
-        pageTheme = fetchSettingParamFromDB(c, "Theme")
+        pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
 
         ha_directory="homeAutomation"
-        monthly_data = generate_weather_monthly(c_ha, year)
+        monthly_data = generate_weather_monthly(c_ha, int(year))
         daily_data = genenrate_weather_daily(c_ha, todaysDate)
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('homeAutomation.html', daily_data=daily_data,
@@ -638,7 +683,7 @@ class homeAutomation(Resource):
             f.write(", \""+ item + "\": \""+ value[item] + "\"")
         f.write("}\n")
         f.close()
-        add_data_to_ha_DB(c_ha, conn_ha, value['room'], value['date'], value['hour'], value["temp"], value["humidity"], value["pressure"])
+        add_data_to_ha_DB(c_ha, conn_ha, value['room'], value['date'], value['hour'], value["temp"], value["humidity"], value["pressure"], lock)
         return "Done", 200
 
 
@@ -685,7 +730,7 @@ def upload_file_notes():
 def shutdown_server():
     if request.method == 'POST':
         logger.info("shutdown request recieved...")
-        send_mail("Server:: shutting down", "shut down command received.", app, mail, c)
+        send_mail("Server:: shutting down", "shut down command received.", app, mail, c, lock)
         shutdownReq = request.environ.get('werkzeug.server.shutdown')
         if shutdownReq is None:
             raise RuntimeError('Not running with the Werkzeug Server')
@@ -701,10 +746,12 @@ def sendCalNotification():
     with app.app_context():
         todaysDate = str(datetime.date.today())
         day, month, year = sparateDayMonthYear(todaysDate)
+        lock.acquire(True)
         c.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
                   (getMonthsBeginning(month, year).date(),
                    getMonthsEnd(month, year).date(),))
         calEvents = c.fetchall()
+        lock.release()
         notificationsToBeSent = []
         for item in calEvents:
             if item[0]==todaysDate:
@@ -727,12 +774,14 @@ def sendDailyDigest():
     with app.app_context():
         todaysDate = str(datetime.date.today())
         day, month, year = sparateDayMonthYear(todaysDate)
+        lock.acquire(True)
         c.execute("""SELECT * FROM calendar WHERE date = ? """,
                   (todaysDate,))
         calEvents = c.fetchall()
         c.execute("""SELECT * FROM todoList WHERE date = ? """,
                   (todaysDate,))
         todos = c.fetchall()
+        lock.release()
         body = "Here is your daily digest for:   "+ todaysDate + "\n"
         body += "\n\nCalendar events:\n"
         for item in calEvents:

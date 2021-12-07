@@ -17,7 +17,7 @@ in your console run:
 
 then go to the following tab for the main page:
 
-     http://localhost:5000/home
+     http://localhost:5000/
 
 ### How to Use
 * CTL + l : locks the screen

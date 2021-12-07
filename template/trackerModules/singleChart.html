@@ -59,7 +59,6 @@ return  datasets;
 }
 
 function renderTrackerChart(){
-  console.log(window.location.href)
   var ctx = document.getElementById("{{trackerName}}Tracker").getContext('2d');
   new Chart(ctx, {
      type: "{{chartType}}",

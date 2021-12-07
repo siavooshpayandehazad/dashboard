@@ -60,9 +60,11 @@ def getAudiobooks(path):
     return audiobooks, metadata
 
 
-def getFlashCards(dbCursur):
+def getFlashCards(dbCursur, lock):
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM flashcards""")
     flashCards = dbCursur.fetchall()
+    lock.release()
     toReview = []
     setNames = set()
     maxDaysNumbers = 0
@@ -79,20 +81,25 @@ def getFlashCards(dbCursur):
     return setNames, maxDaysNumbers, cnts, toReview
 
 
-def addFlashCards(setName, side1, side2, lastTimeReviewed, dbCursur, dbConnection):
+def addFlashCards(setName, side1, side2, lastTimeReviewed, dbCursur, dbConnection, lock):
+    lock.acquire(True)
     dbCursur.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""", (setName, side1, side2, 1, lastTimeReviewed))
     dbConnection.commit()
+    lock.release()
 
-
-def deleteFlashCards(setName, side1, side2, dbCursur, dbConnection):
+def deleteFlashCards(setName, side1, side2, dbCursur, dbConnection, lock):
     logger.info(f"deleting card {side1} and {side2} from set {setName}")
+    lock.acquire(True)
     dbCursur.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
     dbConnection.commit()
+    lock.release()
 
 
-def changeFlashCards(setName, side1, side2, lastTimeReviewed, increament, dbCursur, dbConnection):
+def changeFlashCards(setName, side1, side2, lastTimeReviewed, increament, dbCursur, dbConnection, lock):
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM flashcards WHERE setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
     val = dbCursur.fetchall()
+    lock.release()
     value = int(val[0][3])
     if increament:
         value += 1
@@ -102,25 +109,30 @@ def changeFlashCards(setName, side1, side2, lastTimeReviewed, increament, dbCurs
             return
         value -= 1
         logger.info("increase the reviewInDays to" + str(value))
+    lock.acquire(True)
     dbCursur.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
     dbCursur.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""", (setName, side1, side2, value, lastTimeReviewed))
     dbConnection.commit()
+    lock.release()
 
 
-
-def addTravelItem(name, latitude, longitude, dbCursur, dbConnection):
+def addTravelItem(name, latitude, longitude, dbCursur, dbConnection, lock):
+    lock.acquire(True)
     dbCursur.execute("""INSERT INTO travelTracker VALUES(?, ?, ?)""", (name, latitude, longitude))
     dbConnection.commit()
+    lock.release()
 
 
-def getCalEvents(todaysDate, dbCursur):
+def getCalEvents(todaysDate, dbCursur, lock):
     dt = datetime.datetime.strptime(todaysDate, '%Y-%m-%d')
     weeksBeginning = dt - datetime.timedelta(days=dt.weekday())
     weeksEnd = weeksBeginning + datetime.timedelta(days=6)
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
               (str(weeksBeginning.date()),
                str(weeksEnd.date()),))
     weeklyCalEvents = dbCursur.fetchall()
+    lock.release()
     calList = []
     for item in weeklyCalEvents:
         try:
@@ -132,12 +144,14 @@ def getCalEvents(todaysDate, dbCursur):
     return calList
 
 
-def getCalEventsMonth(todaysDate, dbCursur):
+def getCalEventsMonth(todaysDate, dbCursur, lock):
     day, month, year = sparateDayMonthYear(todaysDate)
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
               (getMonthsBeginning(month, year).date(),
                getMonthsEnd(month, year).date(),))
     weeklyCalEvents = dbCursur.fetchall()
+    lock.release()
     calList = []
     for item in weeklyCalEvents:
         try:
@@ -147,9 +161,11 @@ def getCalEventsMonth(todaysDate, dbCursur):
     return calList
 
 
-def getTodaysLogs(dbCursur, todaysDate):
+def getTodaysLogs(dbCursur, todaysDate, lock):
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate,))
     logValue = dbCursur.fetchall()
+    lock.release()
     if len(logValue)>0:
         todaysLog = logValue[0][0].replace("\n","<br>")
         todaysLogText = logValue[0][0]
@@ -190,10 +206,11 @@ def allDaysWithPhotos(photoDir, year, month):
 
 def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
                           date: str, delete: bool, deleteDay: bool, dbCursur,
-                          dbConnection):
+                          dbConnection, lock):
     if itemList and (item not in itemList):
         return item + " not found", 400
 
+    lock.acquire(True)
     dbCursur.execute("SELECT * FROM " + tableName + " WHERE date = ?", (date,))
     fetchedData = dbCursur.fetchall()
 
@@ -221,10 +238,11 @@ def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
     else:
         logger.info(f"{tableName}:: removed {item} from date: {date}")
     dbConnection.commit()
+    lock.release()
     return "Done", 200
 
 
-def addsSavingItemToTable(item: str, date: str, dbCursur, dbConnection):
+def addsSavingItemToTable(item: str, date: str, dbCursur, dbConnection, lock):
     month = "-".join(date.split("-")[0:2])
     dbCursur.execute("SELECT * FROM savingTracker WHERE month = ?", (month,))
     fetchedData = dbCursur.fetchall()
@@ -258,18 +276,20 @@ def addsSavingItemToTable(item: str, date: str, dbCursur, dbConnection):
         else:
             lastMonthVal = 0
         item = float(lastMonthVal)+float(item)
-
+    lock.acquire(True)
     dbCursur.execute("DELETE from savingTracker where month = ?", (month,))
     dbCursur.execute("INSERT INTO savingTracker VALUES(?, ?)", (item, month))
     dbConnection.commit()
+    lock.release()
     return "Done", 200
 
 
-def addsMortgageItemToTable(item: str, date: str, dbCursur, dbConnection):
+def addsMortgageItemToTable(item: str, date: str, dbCursur, dbConnection, lock):
     month = "-".join(date.split("-")[0:2])
+    lock.acquire(True)
     dbCursur.execute("SELECT * FROM mortgageTracker WHERE month = ?", (month,))
     fetchedData = dbCursur.fetchall()
-
+    lock.release()
     if len(fetchedData)>0:
         item = float(fetchedData[0][0])+float(item)
     else:
@@ -287,8 +307,10 @@ def addsMortgageItemToTable(item: str, date: str, dbCursur, dbConnection):
                 YearVal = currentYear -1
 
             lastMonthVal = str(YearVal)+"-"+str(MonthVal).zfill(2)
+            lock.acquire(True)
             dbCursur.execute("SELECT * FROM mortgageTracker WHERE month = ?", (lastMonthVal,))
             lastMonthFetch = dbCursur.fetchall()
+            lock.release()
             currentMonth = MonthVal
             currentYear = YearVal
             counter -= 1
@@ -299,17 +321,19 @@ def addsMortgageItemToTable(item: str, date: str, dbCursur, dbConnection):
         else:
             lastMonthVal = 0
         item = float(lastMonthVal)+float(item)
-
+    lock.acquire(True)
     dbCursur.execute("DELETE from mortgageTracker where month = ?", (month,))
     dbCursur.execute("INSERT INTO mortgageTracker VALUES(?, ?)", (item, month))
     dbConnection.commit()
+    lock.release()
     return "Done", 200
 
 
-def collectMonthsData(pageMonth: int, pageYear: int, dbCursur):
+def collectMonthsData(pageMonth: int, pageYear: int, dbCursur, lock):
     activities = []
     activitiesPlannes = []
     moods = []
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
               (getMonthsBeginning(pageMonth, pageYear).date(),
                getMonthsEnd(pageMonth, pageYear).date(),))
@@ -322,6 +346,7 @@ def collectMonthsData(pageMonth: int, pageYear: int, dbCursur):
               (getMonthsBeginning(pageMonth, pageYear).date(),
                getMonthsEnd(pageMonth, pageYear).date(),))
     moods += dbCursur.fetchall()
+    lock.release()
     return activities, activitiesPlannes, moods
 
 
@@ -331,7 +356,8 @@ def createDB(DBName):
     return DBConnection, DBCursor
 
 
-def generateDBTables(DBCursor, dbConnection):
+def generateDBTables(DBCursor, dbConnection, lock):
+    lock.acquire(True)
     DBCursor.execute("""CREATE TABLE if not exists calendar (
              date text, startTime text, endTime text, eventName text, color text, details text)""")
     DBCursor.execute("""CREATE TABLE if not exists flashcards (
@@ -381,10 +407,11 @@ def generateDBTables(DBCursor, dbConnection):
     DBCursor.execute("""CREATE TABLE if not exists Notes (
              Notebook text, Chapter text, Content text)""")
     dbConnection.commit()
+    lock.release()
 
 
-def setupSettingTable(dbCursur, dbConnection):
-
+def setupSettingTable(dbCursur, dbConnection, lock):
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("Theme",))
     try:
         parameter = dbCursur.fetchall()[0][1]
@@ -406,6 +433,7 @@ def setupSettingTable(dbCursur, dbConnection):
             dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "None"))
 
     dbConnection.commit()
+    lock.release()
 
 
 def shouldHighlight(pageYear:str, pageMonth:str) -> bool:
@@ -437,18 +465,22 @@ def backupDatabase(conn):
             backupCon.close()
 
 
-def fetchSettingParamFromDB(DBCursor, param):
+def fetchSettingParamFromDB(DBCursor, param, lock):
+    lock.acquire(True)
     DBCursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, (param,))
     try:
         parameter = DBCursor.fetchall()[0][1]
     except:
         raise ValueError(f"parameter {param} is missing in DB!")
+    lock.release()
     return parameter
 
 
-def fetchNotebooks(dbCursur):
+def fetchNotebooks(dbCursur, lock):
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM Notes """)
     noteBooksContent = dbCursur.fetchall()
+    lock.release()
     noteBooks = {}
     for item in noteBooksContent:
         chapters = noteBooks.get(item[0], {})
@@ -457,11 +489,17 @@ def fetchNotebooks(dbCursur):
     return noteBooks
 
 
-def updateSettingParam(DBCursor, DBConnection, param, value):
-    DBCursor.execute("""DELETE from settings where parameter = ? """, (param, ))
-    DBCursor.execute("""INSERT INTO settings VALUES(?, ?)""", (param, value))
-    DBConnection.commit()
-    return None
+def updateSettingParam(DBCursor, DBConnection, param, value, lock):
+    try:
+        lock.acquire(True)
+        DBCursor.execute("""DELETE from settings where parameter = ? """, (param, ))
+        DBCursor.execute("""INSERT INTO settings VALUES(?, ?)""", (param, value))
+        DBConnection.commit()
+        lock.release()
+        return True
+    except Exception as err:
+        print(err)
+        return False
 
 
 def hashPassword(password:str) -> any:
@@ -483,10 +521,10 @@ def verifyPassword(stored_password: str, provided_password: str) -> bool:
     return pwdhash == stored_password
 
 
-def getTodos (todaysDate, dbCursur):
+def getTodos(todaysDate, dbCursur, lock):
     day, month, year = sparateDayMonthYear(todaysDate)
     monthsBeginning = getMonthsBeginning(month, year)
-
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (todaysDate,))
     all_due_events = sorted(dbCursur.fetchall(), key=lambda tup: tup[1])
 
@@ -498,11 +536,11 @@ def getTodos (todaysDate, dbCursur):
 
     dbCursur.execute("""SELECT * FROM todoList WHERE date = ? """, (todaysDate,))
     todayTodos = dbCursur.fetchall()
-
+    lock.release()
     return all_due_events, thisMonthsEvents, todayTodos
 
 
-def getScrumTasks (todaysDate, dbCursur):
+def getScrumTasks(todaysDate, dbCursur, lock):
     day, month, year = sparateDayMonthYear(todaysDate)
     monthsBeginning = getMonthsBeginning(month, year)
     numberOfDays = numberOfDaysInMonth(int(month), int(year))
@@ -510,14 +548,17 @@ def getScrumTasks (todaysDate, dbCursur):
 
     scrumBoardLists = {}
     for stage in ["backlog", "todo", "in progress", "done"]:
+        lock.acquire(True)
         dbCursur.execute("""SELECT * FROM scrumBoard WHERE stage = ? """, (stage, ))
         # sort based on priority
         scrumBoardLists[stage] = sorted([(task, proj, priority) for task, proj, stage, priority, done_date in dbCursur.fetchall()], key = lambda x: x[2])
+        lock.release()
 
     # find all the tasks done during this month's period!
-
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM scrumBoard WHERE done_date >= ? and done_date <= ? """, (monthsBeginning.date(),  monthsEnd.date()))
     doneTasks = sorted([int(done_date.split("-")[2]) for proj, task,  stage, priority, done_date in dbCursur.fetchall()])
+    lock.release()
     current_done = 0
     ChartDoneTasks=[]
     for i in range(1, numberOfDays+1):
@@ -532,26 +573,38 @@ def getScrumTasks (todaysDate, dbCursur):
     return scrumBoardLists, ChartDoneTasks, ChartMonthDays, ChartthisMonthTasks
 
 
-def deleteScrumTask(proj, task, dbCursur, dbConnection):
-    logger.info("deleting card:" + str(task))
-    dbCursur.execute("""DELETE from scrumBoard where project = ? and task = ?""", (proj, task))
-    dbConnection.commit()
-    return None
+def deleteScrumTask(proj, task, dbCursur, dbConnection, lock):
+    try:
+        logger.info("deleting card:" + str(task))
+        lock.acquire(True)
+        dbCursur.execute("""DELETE from scrumBoard where project = ? and task = ?""", (proj, task))
+        dbConnection.commit()
+        lock.release()
+        return True
+    except Exception as err:
+        print(err)
+        return False
 
 
-def addScrumTask(proj, task, list, priority, date, dbCursur, dbConnection):
-    dbCursur.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, list, priority, date))
-    dbConnection.commit()
-    return None
+def addScrumTask(proj, task, list, priority, date, dbCursur, dbConnection, lock):
+    try:
+        lock.acquire(True)
+        dbCursur.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, list, priority, date))
+        dbConnection.commit()
+        lock.release()
+        return True
+    except Exception as err:
+        print(err)
+        return False
 
 
-def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur):
-    serverEmail = fetchSettingParamFromDB(dbCursur, "MAIL_USERNAME")
-    appPassword = fetchSettingParamFromDB(dbCursur, "MAIL_PASSWORD")
-    mailServer = fetchSettingParamFromDB(dbCursur, "MAIL_SERVER")
-    mailPort = fetchSettingParamFromDB(dbCursur, "MAIL_PORT")
-    mailSSL = fetchSettingParamFromDB(dbCursur, "MAIL_USE_SSL")
-    recipientEmail = fetchSettingParamFromDB(dbCursur, "MAIL_RECIPIENT")
+def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur, lock):
+    serverEmail = fetchSettingParamFromDB(dbCursur, "MAIL_USERNAME", lock)
+    appPassword = fetchSettingParamFromDB(dbCursur, "MAIL_PASSWORD", lock)
+    mailServer = fetchSettingParamFromDB(dbCursur, "MAIL_SERVER", lock)
+    mailPort = fetchSettingParamFromDB(dbCursur, "MAIL_PORT", lock)
+    mailSSL = fetchSettingParamFromDB(dbCursur, "MAIL_USE_SSL", lock)
+    recipientEmail = fetchSettingParamFromDB(dbCursur, "MAIL_RECIPIENT", lock)
     logger.info("sending email to: " + recipientEmail)
     if (serverEmail != "None") and (appPassword != "None") and (recipientEmail != "None"):
         flask_app.config.update(
@@ -608,15 +661,25 @@ def remove_tag_from_picture(filename, tag):
     return True
 
 
-def generate_ha_DBTables(DBCursor, dbConnection):
-    DBCursor.execute("""CREATE TABLE if not exists weatherStation (
-             room text, date text, time text,  temp text, humidity text, pressure text)""")
-    dbConnection.commit()
-
-def add_data_to_ha_DB(DBCursor, dbConnection, room, date, time, temp, humidity, pressure):
+def generate_ha_DBTables(DBCursor, dbConnection, lock):
     try:
+        lock.acquire(True)
+        DBCursor.execute("""CREATE TABLE if not exists weatherStation (
+                 room text, date text, time text,  temp text, humidity text, pressure text)""")
+        dbConnection.commit()
+        lock.release()
+        return True
+    except Exception as err:
+        print(err)
+        return False
+
+
+def add_data_to_ha_DB(DBCursor, dbConnection, room, date, time, temp, humidity, pressure, lock):
+    try:
+        lock.acquire(True)
         DBCursor.execute("""INSERT INTO weatherStation VALUES(?, ?, ?, ?, ?, ?)""", (room, date, time, temp, humidity, pressure))
         dbConnection.commit()
+        lock.release()
         return True
     except Exception as err:
         print(err)

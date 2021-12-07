@@ -127,10 +127,10 @@
     <form action="javascript:;" onsubmit="return updateMailSetting()">
 
         <span style="float: left; min-width: 140px;"> MAIL_SERVER: </span>
-        <textarea id="MAIL_SERVER" type="text" rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None">{{email_setting["MAIL_SERVER"]}}</textarea><br>
+        <textarea id="MAIL_SERVER" type="text" rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None" placeholder="{{email_setting["MAIL_SERVER"]}}"></textarea><br>
 
         <span style="float: left; min-width: 140px;"> MAIL_PORT: </span>
-        <textarea id="MAIL_PORT" type="text"  rows="1" style="margin-top: 5px;margin-left: 1%; width:60px; outline:None; resize:None">{{email_setting["MAIL_PORT"]}}</textarea><br>
+        <textarea id="MAIL_PORT" type="text"  rows="1" style="margin-top: 5px;margin-left: 1%; width:60px; outline:None; resize:None" placeholder="{{email_setting["MAIL_PORT"]}}"></textarea><br>
 
         <span style="float: left; min-width: 153px;"> MAIL_USE_SSL: </span>
         <select id="MAIL_USE_SSL" style="float:left;">
@@ -147,13 +147,13 @@
         </select><br>
 
         <span style="float: left; min-width: 140px;"> MAIL_USERNAME: </span>
-        <textarea id="MAIL_USERNAME" type="text"  rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None">{{email_setting["MAIL_USERNAME"]}}</textarea><br>
+        <textarea id="MAIL_USERNAME" type="text"  rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None" placeholder="{{email_setting["MAIL_USERNAME"]}}"></textarea><br>
 
         <span style="float: left; min-width: 140px;"> MAIL_PASSWORD: </span>
-        <input id="MAIL_PASSWORD" type="password" value = "{{email_setting["MAIL_PASSWORD"]}}" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None"><br>
+        <input id="MAIL_PASSWORD" type="password" placeholder = "{{email_setting["MAIL_PASSWORD"]}}" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None"><br>
 
         <span style="float: left; min-width: 140px;"> MAIL_RECIPIENT: </span>
-        <textarea id="MAIL_RECIPIENT" type="text" rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None">{{email_setting["MAIL_RECIPIENT"]}}</textarea><br>
+        <textarea id="MAIL_RECIPIENT" type="text" rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None" placeholder="{{email_setting["MAIL_RECIPIENT"]}}"></textarea><br>
 
         <input type="submit" style="margin-left: 23%;margin-top: 5px;">
     </form>

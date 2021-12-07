@@ -66,11 +66,10 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
 
   ValDiv = document.createElement("div")
   ValDiv.style.color     = "rgb("+r+","+g+","+b+")";
-  ValDiv.style.width     = "100%";
   ValDiv.style.left      = "10px";
-  ValDiv.style.bottom    = "20px";
+  ValDiv.style.bottom    = "5px";
   ValDiv.style.position  = "absolute";
-  ValDiv.style.fontSize  = "40px";
+  ValDiv.style.fontSize  = "30px";
   Val = document.createElement("span")
   Val.textContent = lastVal + unit;
   ValDiv.appendChild(Val)
@@ -78,11 +77,10 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
 
   minValDiv = document.createElement("div")
   minValDiv.style.color     = "rgb("+r+","+g+","+b+")";
-  minValDiv.style.width     = "100%";
-  minValDiv.style.left      = "150px";
-  minValDiv.style.bottom    = "65px";
+  minValDiv.style.left      = "10px";
+  minValDiv.style.bottom    = "40px";
   minValDiv.style.position  = "absolute";
-  minValDiv.style.fontSize  = "23px";
+  minValDiv.style.fontSize  = "20px";
   minVal = document.createElement("span")
   minVal.textContent = '⇂ ' + minOfDay + unit;
   minValDiv.appendChild(minVal)
@@ -90,18 +88,25 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
 
   maxValDiv = document.createElement("div")
   maxValDiv.style.color     = "rgb("+r+","+g+","+b+")";
-  maxValDiv.style.width     = "100%";
-  maxValDiv.style.left      = "150px";
-  maxValDiv.style.bottom    = "100px";
+  maxValDiv.style.left      = "10px";
+  maxValDiv.style.bottom    = "60px";
   maxValDiv.style.position  = "absolute";
-  maxValDiv.style.fontSize  = "23px";
+  maxValDiv.style.fontSize  = "20px";
   maxVal = document.createElement("span")
   maxVal.innerHTML = '↿ ' + maxOfDay + unit;
   maxValDiv.appendChild(maxVal)
   gauge.appendChild(maxValDiv)
 
 }
-
+function viewroom(item){
+  console.log("room_"+item.getAttribute("number"))
+  weatherCards = document.getElementsByClassName("weatherCard")
+  for (i = 0; i < weatherCards.length; i++) {
+    weatherCards[i].style.display="none"
+  }
+  document.getElementById("room_"+item.getAttribute("number")).style.display="block";
+  //document.getElementByClassName("weatherCard");
+}
 </script>
 
 {%if pageTheme=="Dark"%}
@@ -110,38 +115,26 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
   <body>
 {% endif %}
 
-<div class="container-fluid" style="background-color:black">
+<div class="container-fluid" style="height:100vh; background-color:black">
 
-{% include "trackerModules/graphFuncs.html" %}
+  {% include "trackerModules/graphFuncs.html" %}
 
-{% with page="homeAutomation" %}
-    {% include "generic_modules/header.html" %}
-{% endwith %}
+  {% with page="homeAutomation" %}
+      {% include "generic_modules/header.html" %}
+  {% endwith %}
 
-<div class="row">
-  <div class="col">
-    <div style="float:left; width:100%;">
-      <h2 class="title journal" style="margin-left:40%">
-        <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
-        {{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}
-        <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
-      </h2>
-    </div>
+  <div class="row">
+      <div class="col-sm-1">
+        {% for item in daily_data %}
+          <button type="button" class="btn btn-primary" style="margin-top: 5px; width:100%" number="{{loop.index}}" onclick="viewroom(this)">room {{loop.index}}</button>
+        {%endfor%}
+      </div>
+      {% for item in daily_data %}
+          {% with room=loop.index%}
+            {% include "homeAutomation_modules/roomGauge.html" %}
+          {% endwith %}
+      {%endfor%}
   </div>
-</div>
-
-  {% for item in daily_data %}
-      <h3 style="margin-left: 3%; color:white;">Room {{loop.index}}</h3>
-
-      {% with room=loop.index%}
-        {% include "homeAutomation_modules/roomGauge.html" %}
-      {% endwith %}
-
-      {% with dir="left" %}
-        {% include "generic_modules/divider.html" %}
-      {% endwith %}
-  {%endfor%}
-
 </div>
 
 
@@ -151,25 +144,17 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
 </body>
 
 <script type="text/javascript">
-gauge_1_1 = document.getElementById("tempGauge_1")
-gauge_1_2 = document.getElementById("humidityGauge_1")
-gauge_1_3 = document.getElementById("pressureGauge_1")
-drawGauge(gauge_1_1, tempData[1]["temp"], "°C", 0, 100, [231,225,239], [152,0,67], [236, 231, 242], [4, 90, 141]);
-drawGauge(gauge_1_2, tempData[1]["humidity"], "%", 0, 100, [198,219,239], [8,81,156], [240,240,240], [240,240,240]);
-drawGauge(gauge_1_3, tempData[1]["pressure"], "bar", 0, 2, [0,0,0], [217,217,217], [240,240,240], [240,240,240]);
+var data = {{daily_data|safe}}
+for (i = 1; i <= Object.keys(data).length; i++) {
+  var gauge_1_1 = document.getElementById("tempGauge_"+i.toString())
+  var gauge_1_2 = document.getElementById("humidityGauge_"+i.toString())
+  var gauge_1_3 = document.getElementById("pressureGauge_"+i.toString())
+  console.log(i, gauge_1_1, gauge_1_2, gauge_1_3)
+  drawGauge(gauge_1_1, tempData[i]["temp"], "°C", 0, 100, [231,225,239], [152,0,67], [236, 231, 242], [4, 90, 141]);
+  drawGauge(gauge_1_2, tempData[i]["humidity"], "%", 0, 100, [198,219,239], [8,81,156], [240,240,240], [240,240,240]);
+  drawGauge(gauge_1_3, tempData[i]["pressure"], "bar", 0, 2, [0,0,0], [217,217,217], [240,240,240], [240,240,240]);
+}
 
-gauge_2_1 = document.getElementById("tempGauge_2")
-gauge_2_2 = document.getElementById("humidityGauge_2")
-gauge_2_3 = document.getElementById("pressureGauge_2")
-drawGauge(gauge_2_1, tempData[2]["temp"], "°C", 0, 100, [231,225,239], [152,0,67], [236, 231, 242], [4, 90, 141]);
-drawGauge(gauge_2_2, tempData[2]["humidity"], "%", 0, 100, [198,219,239], [8,81,156], [240,240,240], [240,240,240]);
-drawGauge(gauge_2_3, tempData[2]["pressure"], "bar", 0, 2, [0,0,0], [217,217,217], [240,240,240], [240,240,240]);
-
-gauge_3_1 = document.getElementById("tempGauge_3")
-gauge_3_2 = document.getElementById("humidityGauge_3")
-gauge_3_3 = document.getElementById("pressureGauge_3")
-drawGauge(gauge_3_1, tempData[3]["temp"], "°C", 0, 100, [231,225,239], [152,0,67], [236, 231, 242], [4, 90, 141]);
-drawGauge(gauge_3_2, tempData[3]["humidity"], "%", 0, 100, [198,219,239], [8,81,156], [240,240,240], [240,240,240]);
-drawGauge(gauge_3_3, tempData[3]["pressure"], "bar", 0, 2, [0,0,0], [217,217,217], [240,240,240], [240,240,240]);
+document.getElementById("room_1").style.display="block";
 </script>
 </html>

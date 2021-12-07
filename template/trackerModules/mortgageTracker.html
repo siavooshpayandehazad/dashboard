@@ -35,7 +35,7 @@ function renderMortgageTrackerChart(){
                  // submit new value
                  $.ajax({
                      type: "POST",
-                     url: "http://"+window.location.hostname+":5000/home",
+                     url: "http://"+window.location.hostname+":5000/",
                      data: {"tracker_type":"mortgage", "value": newVal, "date": date},
                  });
                  // update the step value

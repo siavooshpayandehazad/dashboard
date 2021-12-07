@@ -18,9 +18,9 @@
 
   function moveYear(dir){
     if (dir=="1"){
-      window.location.href =  "/home?date={{PageYear+1}}-01-01&yearlyView="+window['yearlyView'];
+      window.location.href =  "/?date={{PageYear+1}}-01-01&yearlyView="+window['yearlyView'];
     }else{
-      window.location.href =  "/home?date={{PageYear-1}}-01-01&yearlyView="+window['yearlyView'];
+      window.location.href =  "/?date={{PageYear-1}}-01-01&yearlyView="+window['yearlyView'];
     }
   }
 </script>

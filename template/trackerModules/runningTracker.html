@@ -84,12 +84,12 @@ function renderRunningTrackerChart(){
                   var date = {{PageYear}}+"-"+zeroPad({{'%02d'%PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
                   $.ajax({
                       type: "POST",
-                      url: "http://"+window.location.hostname+":5000/home",
+                      url: "http://"+window.location.hostname+":5000/",
                       data: {"tracker_type":"running", "value": distance, "date": date},
                   }).success(function(){
                             $.ajax({
                                 type: "POST",
-                                url: "http://"+window.location.hostname+":5000/home",
+                                url: "http://"+window.location.hostname+":5000/",
                                 data: {"tracker_type":"pace", "value": pace, "date": date},
                             });
                     }

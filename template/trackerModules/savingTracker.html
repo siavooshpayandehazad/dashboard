@@ -35,7 +35,7 @@ function renderSavingTrackerChart(){
                  // submit new value
                  $.ajax({
                      type: "POST",
-                     url: "http://"+window.location.hostname+":5000/home",
+                     url: "http://"+window.location.hostname+":5000/",
                      data: {"tracker_type":"saving", "value": newVal, "date": date},
                  });
                  // update the step value

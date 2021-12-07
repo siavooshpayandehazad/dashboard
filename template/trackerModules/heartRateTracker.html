@@ -62,7 +62,7 @@ function renderHeartRateChart(hrMin, hrMax){
                   }
                   $.ajax({
                       type: "POST",
-                      url: "http://"+window.location.hostname+":5000/home",
+                      url: "http://"+window.location.hostname+":5000/",
                       data: {"tracker_type":"HR", "value" : value, "date": date},
                   });
                   hr_Max[selectedDay-1] = maxHR;

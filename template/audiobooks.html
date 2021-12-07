@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <title>My Journal</title>
 </head>
 
@@ -234,34 +235,40 @@ function updateAuthors(){
   <body>
 {% endif %}
 
-{% with page="audiobooks" %}
-    {% include "generic_modules/header.html" %}
-{% endwith %}
+<div class="container-fluid" style="min-height:100vh; background-color:black">
+  {% with page="audiobooks" %}
+      {% include "generic_modules/header.html" %}
+  {% endwith %}
+  <div class="row">
+      <div class="col-sm-12" id="authors" style="padding-left: 5%; margin-top:40px; float: left; display:inline">
+      </div>
 
-<div id="authors" style="width:100%; padding-left: 5%; margin-top:40px; float: left; display:inline">
-</div>
+      <div class="col-sm-12" id="books" style="margin-top:20px; float: left; display:none;">
+        <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToAuthors()"></i>
+      </div>
 
-<div id="books" style="width:100%; margin-top:20px; float: left; display:none;">
-  <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToAuthors()"></i>
-</div>
+      <div class="col-sm-12" id="chapters" style="margin-top:20px; float: left; display:none;">
+        <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToBooks()"></i>
+      </div>
 
-<div id="chapters" style="width:100%; margin-top:20px; float: left; display:none;">
-  <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToBooks()"></i>
-</div>
-
-<div id="player" style="width:100%; margin-top:20px; float: left; display:none;">
-  <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToChapters()"></i>
-  <div  style="margin-left:30%; width:40%; float: left;">
-    <img id = "playerCover" style="margin-left: 10%; width:80%;" >
-    <div style="margin-left: 10%; width: 90%; margin-bottom:10px;">
-      <span style="color:white"><b>Title:  </b> <b id="title">   </b> </span><br>
-      <span style="color:white"><b>Chapter:</b> <b id="chapter"> </b> </span><br>
-    </div>
-    <audio id="audio" controls style="width:100%;" onpause="updateTheTime()" >
-       <source id="mp3Source" type="audio/mpeg"></source>
-    </audio>
+      <div class="col-sm-12" id="player" style="margin-top:20px; float: left; display:none;">
+        <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToChapters()"></i>
+        <div  style="margin-left:30%; width:40%; float: left;">
+          <img id = "playerCover" style="margin-left: 10%; height:75vh;" >
+          <div style="margin-left: 10%; width: 90%; margin-bottom:10px;">
+            <span style="color:white"><b>Title:  </b> <b id="title">   </b> </span><br>
+            <span style="color:white"><b>Chapter:</b> <b id="chapter"> </b> </span><br>
+          </div>
+          <audio id="audio" controls style="width:100%;" onpause="updateTheTime()" >
+             <source id="mp3Source" type="audio/mpeg"></source>
+          </audio>
+        </div>
+      </div>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
 </body>
 
