@@ -91,7 +91,7 @@ function renderTrackerChart(){
                       // submit new value
                       $.ajax({
                           type: "POST",
-                          url: "http://"+window.location.hostname+":5000/",
+                          url: "{{url}}",
                           data: {"tracker_type":"{{trackerName}}", "value": newVal, "date": date},
                           error: function(data) {
                             window.alert("{{trackerName}} tracker failed to submit the value...")

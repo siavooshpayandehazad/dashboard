@@ -1,0 +1,24 @@
+<div class="col-sm-11 weatherCard" id="weather_overview" style="display:none">
+  <div class="row">
+    {% for room in daily_data|sort() %}
+      <div class="col-sm-2">
+        <h4 style="color:white;"  ondblclick="editRoomName(this, {{room}})"> {{description[room|string]}} </h4>
+        <div id="OV_tempGauge_{{room}}" style="float: left; margin-top: 5px; position:relative; width:130px; height:120px; border-radius:20px;">
+          <h5 style="float: left; margin-left: 10px; margin-top:5px;">Temperature</h5>
+        </div>
+        <div id="OV_humidityGauge_{{room}}" style="float: left; margin-top: 5px; position:relative; width:130px; height:120px; border-radius:20px;">
+          <h5 style="float: left; margin-left: 10px; margin-top:5px;">Humidty</h5>
+        </div>
+        <div id="OV_pressureGauge_{{room}}" style="float: left; margin-top: 5px; position:relative; width:130px; height:120px; border-radius:20px;">
+          <h5 style="float: left; margin-left: 10px; margin-top:5px; color:white;">Pressure</h5>
+        </div>
+      </div>
+    {%endfor%}
+    <div class="col-sm-5" style="margin-top: 20px;"">
+      {% with myAnnualConsumption = myAnnualConsumption, ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+              PageYear = PageYear, PageMonth = PageMonth%}
+          {% include "homeAutomation_modules/eConsumptionTracker.html" %}
+      {% endwith %}
+    </div>
+  </div>
+</div>

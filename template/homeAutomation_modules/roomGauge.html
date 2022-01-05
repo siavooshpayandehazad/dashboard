@@ -2,20 +2,13 @@
 
         <div class="col-sm-11 weatherCard" id="room_{{room}}" style="display:none">
           <div class="row">
-            <div class="col-sm-2">
-              <h3 style="color:white;">Room {{loop.index}}</h3>
-            </div>
-            <div class="col-sm-9">
-              <h2 class="title journal text-center" >
-                <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
-                {{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}
-                <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
-              </h2>
+            <div class="col-sm-12">
+              <h4 style="color:white;" ondblclick="editRoomName(this, {{room}})">{{description[room|string]}} </h4>
             </div>
           </div>
 
           <div class="row">
-            <div class="col-sm-1">
+            <div class="col-sm-2">
               <div id="tempGauge_{{room}}" style="float: left; margin-left: 4%; margin-top: 5px; position:relative; width:130px; height:120px; border-radius:20px;">
                 <h5 style="float: left; margin-left: 10px; margin-top:5px;">Temperature</h5>
               </div>
@@ -30,7 +23,7 @@
               {% with dataset = daily_data[room]["temp"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
                     thresholds = [], trackerName = "Temperature_"+room|string, unit="(°C)", addAvg="true", tcf="false",
                     pointStyle = 'circle', showTotalVal = false, suggestedMin = 10, yearMonth = "", clickable="false",
-                    accumulate = "false", width = "100%", height = "112px",
+                    accumulate = "false", width = "100%", height = "140px",
                     bgColors = ['rgba(203,24,29, 0.5)'],
                     bColors = ['rgba(203,24,29, 1)']%}
                 {% include "trackerModules/singleChart.html" %}
@@ -38,7 +31,7 @@
               {% with dataset = daily_data[room]["humidity"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
                     thresholds = [], trackerName = "Humidty_"+room|string, unit="(%)", addAvg="true", tcf="false",
                     pointStyle = 'circle', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
-                    accumulate = "false", width = "100%", height = "112px",
+                    accumulate = "false", width = "100%", height = "140px",
                     bgColors = ['rgba(29,145,192, 0.5)'],
                     bColors = ['rgba(29,145,192, 1)']%}
                 {% include "trackerModules/singleChart.html" %}
@@ -46,7 +39,7 @@
               {% with dataset = daily_data[room]["pressure"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
                     thresholds = [], trackerName = "Pressure_"+room|string, unit="(bar)", addAvg="true", tcf="false",
                     pointStyle = 'circle', showTotalVal = false, suggestedMin = 0.9, yearMonth = "", clickable="false",
-                    accumulate = "false", width = "100%", height = "112px",
+                    accumulate = "false", width = "100%", height = "140px",
                     bgColors = [ 'rgba(106,81,163, 0.5)'],
                     bColors = ['rgba(106,81,163, 1)']%}
                 {% include "trackerModules/singleChart.html" %}
@@ -57,21 +50,21 @@
                     thresholds = [25], trackerName = "Temperature_"+room|string+" Yearly", unit="(°C)",
                     pointStyle = 'circle',  suggestedMin = 10, suggestedMax = 20, yearMonth = "year",
                     bgcolor='rgba(0,0,0, 0)', color=['rgba(252,146,114,1)', 'rgba(203,24,29, 1)'],
-                    width = "100%", height = "118px" %}
+                    width = "100%" %}
                 {% include "homeAutomation_modules/minMaxChart.html" %}
               {% endwith %}
               {% with dataset = monthly_Data[room]["humidity"], ChartMonthDays = chart_months, chartType = "line",
                     thresholds = [25], trackerName = "Humidity_"+room|string+" Yearly", unit="(%)",
                     pointStyle = 'circle',  suggestedMin = 0, suggestedMax = 100, yearMonth = "year",
                     bgcolor='rgba(0,0,0, 0)', color=['rgba(65,182,196, 1)', 'rgba(37,52,148, 1)'],
-                    width = "100%", height = "118px" %}
+                    width = "100%" %}
                 {% include "homeAutomation_modules/minMaxChart.html" %}
               {% endwith %}
               {% with dataset = monthly_Data[room]["pressure"], ChartMonthDays = chart_months, chartType = "line",
                     thresholds = [25], trackerName = "Pressure_"+room|string+" Yearly", unit="(bar)",
                     pointStyle = 'circle',  suggestedMin = 0.9, suggestedMax = 1.1, yearMonth = "year",
                     bgcolor='rgba(0,0,0, 0)', color=['rgba(158,154,200,1)', 'rgba(106,81,163, 1)'],
-                    width = "100%", height = "118px" %}
+                    width = "100%" %}
                 {% include "homeAutomation_modules/minMaxChart.html" %}
               {% endwith %}
             </div>

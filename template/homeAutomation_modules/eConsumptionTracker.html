@@ -1,0 +1,66 @@
+<script type="text/javascript">
+var myAnnualConsumption = {{myAnnualConsumption|safe}}
+function renderEConsumptionTrackerChart(){
+  var ctx = document.getElementById("eConsumptionTracker").getContext('2d');
+
+  var SavingLineChart = new Chart(ctx, {
+     type: 'line',
+     data: {
+        labels: {{ChartYearMonths|safe}},
+        datasets: [{
+           label: "Electrical Consumption (kWh)",
+           data: myAnnualConsumption,
+           backgroundColor: ['rgba(239,59,44, 0.3)'],
+           borderColor: ['rgba(239,59,44, 1)'],
+           borderWidth: 2,
+           spanGaps: true,
+           tension: 0,
+           pointStyle: 'circle',
+        }
+      ]
+     },
+     options: { legend: {labels: {usePointStyle: true}},
+               scales: { yAxes: [{ ticks:{ beginAtZero: true }}]},
+               onClick: function(event, array){
+                 if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
+                    (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
+                   return;
+                 }
+                 var selectedMonth = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
+                 var selectedVal =  parseInt(myAnnualConsumption[selectedMonth-1])
+                 var date = {{PageYear}}+"-"+zeroPad(selectedMonth, 2)+"-01";
+                 var newVal = window.prompt("Add eConsumption for the month " + selectedMonth + "?", 0);
+                 if (isNaN(newVal) || (newVal===null)){return;}
+
+                 // submit new value
+                 $.ajax({
+                     type: "POST",
+                     url: "/homeAutomation",
+                     data: {"tracker_type":"eConsumption", "value": newVal, "date": date},
+                 });
+                 // update the step value
+                 if (isNaN(selectedVal)){
+                   // here we need to find the last valid value and add the current thing to that!
+                   myAnnualConsumption[selectedMonth-1] = parseInt(newVal);
+                 }else{
+                   myAnnualConsumption[selectedMonth-1] = parseInt(myAnnualConsumption[selectedMonth-1]) + parseInt(newVal);
+                 }
+                 this.update();
+               }
+            }
+  });
+}
+</script>
+
+
+<div class="graphCard" style = "width:100%;">
+  <h4  class="title lightbg"  style="float:left; margin-left: 10px;">Yearly Electrical Consumption Tracker</h4>
+  <div style="float:left; width:90%; margin-left:5%">
+    <canvas  height="100px" id="eConsumptionTracker"></canvas>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+  renderEConsumptionTrackerChart();
+</script>

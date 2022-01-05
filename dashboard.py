@@ -86,7 +86,7 @@ class dash(Resource):
         highlight    = shouldHighlight(pageYear, pageMonth)
         counterValue = fetchSettingParamFromDB(c, "counter", lock)
 
-        ChartData = getChartData(pageMonth, pageYear, numberOfDays, c)
+        ChartData = getChartData(pageMonth, pageYear, numberOfDays, c, lock)
 
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('index.html', name= pageTitle , titleDate = titleDate,
@@ -656,35 +656,43 @@ class homeAutomation(Resource):
         pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
 
         ha_directory="homeAutomation"
-        monthly_data = generate_weather_monthly(c_ha, int(year))
-        daily_data = genenrate_weather_daily(c_ha, todaysDate)
+        myAnnualConsumption = generateEConsumptionTrackerChartData(str(year), c_ha, lock)
+        monthly_data = generate_weather_monthly(c_ha, int(year), lock)
+        daily_data, description = genenrate_weather_daily(c_ha, todaysDate, lock)
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('homeAutomation.html', daily_data=daily_data,
                              monthly_Data = monthly_data, chart_months=chart_months,
+                             myAnnualConsumption=myAnnualConsumption, description = description,
                              pageTheme=pageTheme, HideLine = "true",
                              PageYear=int(year), PageMonth=int(month), day=int(day),),200,headers)
 
     def post(self):
         args = parser.parse_args()
         value = json.loads(args['value'])
-        directory="homeAutomation"
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        directory="homeAutomation/room_"+value['room']
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        year = value['date'].split("-")[0]
-        directory="homeAutomation/room_"+value['room']+"/"+year
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        f = open("homeAutomation/room_"+value['room']+"/"+year+"/"+value['date']+".txt", "a")
-        f.write("{\"time\": \"" + value['hour'] + "\"")
-        for item in ["temp", "humidity", "pressure"]:
-            f.write(", \""+ item + "\": \""+ value[item] + "\"")
-        f.write("}\n")
-        f.close()
-        add_data_to_ha_DB(c_ha, conn_ha, value['room'], value['date'], value['hour'], value["temp"], value["humidity"], value["pressure"], lock)
-        return "Done", 200
+        if args['action'] == "rename":
+            lock.acquire(True)
+            c_ha.execute("""DELETE FROM settings WHERE room = ? """, (str(value['roomNumber'])))
+            c_ha.execute("""INSERT INTO settings VALUES(?, ?)""", (str(value['roomNumber']), str(value['newValue'])))
+            conn_ha.commit()
+            lock.release()
+            return "Done", 200
+
+        if args['tracker_type'] == "eConsumption":
+            lock.acquire(True)
+            c_ha.execute("""INSERT INTO econsumption VALUES(?, ?)""", (args['date'], args['value']))
+            conn_ha.commit()
+            lock.release()
+            return "Done", 200
+        else:
+            directory="homeAutomation"
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            directory="homeAutomation/room_"+value['room']
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            year = value['date'].split("-")[0]
+            add_data_to_ha_DB(c_ha, conn_ha, value['room'], value['date'], value['hour'], value["temp"], value["humidity"], value["pressure"], lock)
+            return "Done", 200
 
 
 @app.route("/downloadDB/")

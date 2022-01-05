@@ -666,6 +666,10 @@ def generate_ha_DBTables(DBCursor, dbConnection, lock):
         lock.acquire(True)
         DBCursor.execute("""CREATE TABLE if not exists weatherStation (
                  room text, date text, time text,  temp text, humidity text, pressure text)""")
+        DBCursor.execute("""CREATE TABLE if not exists econsumption (
+                 date text, consumption text)""")
+        DBCursor.execute("""CREATE TABLE if not exists settings (
+                 room text, description text)""")
         dbConnection.commit()
         lock.release()
         return True

@@ -9,8 +9,8 @@ async function isLoggedIn () {
 async function autoRedirect () {
   const validLogin = await isLoggedIn()
   if (!validLogin)
-    if(window.location.pathname !== '/home')
-      window.location.replace('/home')
+    if(window.location.pathname !== '/')
+      window.location.replace('/')
 }
 
 function logout(){
@@ -34,7 +34,7 @@ function login(){
    document.getElementById("password").value = "";
   $.ajax({
       type: "POST",
-      url: "/home",
+      url: "/",
       data: {"type":"password", "value": password},
   }).success(function(result){
     if (result == "success"){

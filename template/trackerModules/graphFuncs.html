@@ -73,7 +73,11 @@
       date =  new Date();
       if (({{PageYear}} == date.getFullYear()) && ({{PageMonth}}-1 == date.getMonth())){
         if (YearMonth == "year"){
-          return [4*(date.getMonth())+parseInt((date.getDate()-1)/7)]
+          var start = new Date(date.getFullYear(), 0, 0);
+          var diff = date - start;
+          var oneDay = 1000 * 60 * 60 * 24;
+          var day = Math.floor(diff / oneDay);
+          return [Math.floor((day-1)/7)]
         }else{
           return [{{today}}-1]
         }

@@ -45,7 +45,7 @@
   {% with dataset = ChartData["monthsWorkHours"], ChartMonthDays = ChartMonthDays, chartType = "bar",
         thresholds = [4, 6, 8], trackerName = "work", unit="(hrs)", addAvg="true", tcf="true",
         pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
-        accumulate = "true", height = "140px",  width = "95%",
+        accumulate = "true", height = "140px",  width = "95%", url="/",
         bgColors = ['rgba(252,146,114, 1)', 'rgba(254,196,79, 1)', 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)'],
         bColors = ['rgba(203,24,29, 1)', 'rgba(236,112,20, 1)', 'rgba(33,113,181, 1)', 'rgba(53,151,143, 1)']%}
     {% include "trackerModules/singleChart.html" %}
@@ -62,7 +62,7 @@
   {% with dataset = ChartData["monthsWeights"], ChartMonthDays = ChartMonthDays, chartType = "line",
         thresholds = [], trackerName = "weight", unit="(kg)", addAvg="true", tcf="true",
         pointStyle = 'cicle', showTotalVal = False, suggestedMin = 65, yearMonth = "month", clickable="true",
-        accumulate = "false", height = "140px", width = "95%",
+        accumulate = "false", height = "140px", width = "95%", url="/",
         bgColors = ['rgba(128,205,193, 0.3)'],
         bColors = ['rgba(53,151,143, 1)']%}
     {% include "trackerModules/singleChart.html" %}
@@ -85,7 +85,7 @@
   {% with dataset = ChartData["BO"], ChartMonthDays = ChartMonthDays, chartType = "line",
         thresholds = [], trackerName = "blood oxygen", unit="(%)", addAvg="true", tcf="true",
         pointStyle = 'cicle', showTotalVal = False, suggestedMin = 90, yearMonth = "month", clickable="true",
-        accumulate = "false", height = "140px", width = "95%",
+        accumulate = "false", height = "140px", width = "95%", url="/",
         bgColors = ['rgba(252,197,192, 0.3)'],
         bColors = ['rgba(221,52,151, 1)']%}
     {% include "trackerModules/singleChart.html" %}
@@ -95,7 +95,7 @@
   {% with dataset = ChartData["monthsSleepTimes"], ChartMonthDays = ChartMonthDays, chartType = "bar",
         thresholds = [8], trackerName = "sleep", unit="(hrs)", addAvg="true", tcf="true",
         pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
-        accumulate = "false", height = "140px", width = "95%",
+        accumulate = "false", height = "140px", width = "95%", url="/",
         bgColors = ['rgba(188,189,220, 1)', 'rgba(106,81,163, 1)'],
         bColors = ['rgba(158,154,200, 1)', 'rgba(106,81,163, 1)']%}
     {% include "trackerModules/singleChart.html" %}
@@ -105,7 +105,7 @@
   {% with dataset = ChartData["monthsSteps"], ChartMonthDays = ChartMonthDays, chartType = "bar",
         thresholds = [8000], trackerName = "step", unit="", addAvg="true", tcf="false",
         pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
-        accumulate = "false", height = "140px", width = "95%",
+        accumulate = "false", height = "140px", width = "95%", url="/",
         bgColors = ['rgba(173,221,142, 1)', 'rgba(0,109,44, 1)'],
         bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
     {% include "trackerModules/singleChart.html" %}
@@ -115,7 +115,7 @@
   {% with dataset = ChartData["monthsHydration"], ChartMonthDays = ChartMonthDays, chartType = "bar",
         thresholds = [2], trackerName = "hydration", unit="(l)", addAvg="true", tcf="false",
         pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
-        accumulate = "false", height = "140px", width = "95%",
+        accumulate = "false", height = "140px", width = "95%", url="/",
         bgColors = ['rgba(158,202,225, 1)', 'rgba(33,113,181, 1)'],
         bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
     {% include "trackerModules/singleChart.html" %}

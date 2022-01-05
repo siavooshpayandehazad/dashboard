@@ -4,7 +4,7 @@ from functionPackages.misc import getMonthsBeginning, getMonthsEnd, numberOfDays
 import os
 import json
 from package import temporary_data
-
+import time
 from flask import current_app as app
 import logging
 
@@ -18,28 +18,37 @@ def is_number(s):
         return False
 
 
-def getTravelDests(dbCursur):
+def getTravelDests(dbCursur, lock):
+
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM travelTracker""")
     travels = dbCursur.fetchall()
+    lock.release()
+
     allTravels = []
     for item in travels:
         allTravels.append({'name': item[0], 'coords': [item[1], item[2]],})
     return allTravels
 
 
-def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur, lock):
     lastMonthsBeginning = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-relativedelta(months=+1)
     lastMonthsEnd = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-datetime.timedelta(days=1)
 
     lastMonthsWeights = []
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
               (lastMonthsBeginning.date(), lastMonthsEnd.date(),))
     lastMonthsWeights += dbCursur.fetchall()
+    lock.release()
 
     monthsWeights = []
+
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
               (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
     monthsWeights += dbCursur.fetchall()
+    lock.release()
 
     start_weight = "nan"
     if len(lastMonthsWeights)>0:
@@ -123,38 +132,52 @@ def runFunc(res, yearRuns):
     return yearRuns
 
 
-def genYearChartData(pageYear: int, tableName: str, calcFunc, dbCursur):
+def genYearChartData(pageYear: int, pageMonth: int, tableName: str, calcFunc, dbCursur, lock):
+    startTime = time.time()
     retList = []
+    global temporary_data
     temporary_data["chart_year_data"] = temporary_data.get("chart_year_data", {})
     temporary_data["chart_year_data"][tableName] = temporary_data["chart_year_data"].get(tableName, {pageYear: []})
     now = datetime.datetime.now()
-    for i in range(1, 13):
-        monthsBeginning = str(getMonthsBeginning(i, pageYear).date())
 
+    i = 0
+    while (i+7<364):
         try:
-            recorded_data = temporary_data["chart_year_data"][tableName][pageYear][4*(i-1): 4*(i-1)+4]
-            if ((now.month == i) and str(now.year)== str(pageYear)) or len(recorded_data) == 0:
-                raise ValueError("re-calculate current month")
-            retList += recorded_data[:]
-        except:
-            for j in range(0, 3):
-                weekBeginning = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=7*j)
-                weekEnd = weekBeginning+datetime.timedelta(days=7)
-                dbCursur.execute("SELECT * FROM " + tableName + " WHERE date >= ? and date < ?  ",
-                                 (weekBeginning.date(), weekEnd.date(),))
-                retList = calcFunc(dbCursur.fetchall(), retList)
+            recorded_data = temporary_data["chart_year_data"][tableName][pageYear][(i/7)+1]
+            if len(recorded_data) == 0:
+                raise ValueError("re-calculate...")
+            retList += recorded_data[len(retList): len(retList)+6]
+        except Exception as err:
+            weekBeg = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i)
+            weekEnd = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i+6)
+            lock.acquire(True)
             dbCursur.execute("SELECT * FROM " + tableName + " WHERE date >= ? and date <= ?  ",
-                             (weekEnd.date(), getMonthsEnd(i, pageYear).date(),))
+                             (weekBeg.date(), weekEnd.date(),))
             retList = calcFunc(dbCursur.fetchall(), retList)
+            lock.release()
+        i += 7
+
+    weekBeg = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i)
+    weekEnd = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=364)
+    lock.acquire(True)
+    dbCursur.execute("SELECT * FROM " + tableName + " WHERE date >= ? and date <= ?  ",
+                     (weekEnd.date(), getMonthsEnd(i, pageYear).date(),))
+    retList = calcFunc(dbCursur.fetchall(), retList)
+    lock.release()
     temporary_data["chart_year_data"][tableName][pageYear] = retList[:]
+    executionTime = (time.time() - startTime)
+    logger.info('{0: <20}'.format(tableName)+ " time: " + str(executionTime))
     return retList
 
 
-def generateHRChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+def generateHRChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur, lock):
     monthsHR = []
+
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM HRTracker WHERE date >= ? and date <= ?  """,
               (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
     monthsHR += dbCursur.fetchall()
+    lock.release()
 
     chartHR_Min=[]
     chartHR_Max=[]
@@ -169,48 +192,16 @@ def generateHRChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCurs
     return chartHR_Min, chartHR_Max
 
 
-def generateYearHRChartData(pageYear: int, numberOfDays: int, dbCursur):
-    HR_Min_Avg = []
-    HR_Max_Avg = []
-    for i in range(1, 13):
-        monthsBeginning = str(getMonthsBeginning(i, pageYear).date())
-        for j in range(0, 3):
-            weekBeginning = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=7*j)
-            weekEnd = weekBeginning+datetime.timedelta(days=7)
-            dbCursur.execute("""SELECT * FROM HRTracker WHERE date >= ? and date < ?  """,
-                (weekBeginning.date(), weekEnd.date(),))
-            res = dbCursur.fetchall()
-            HR_Min = [float(x[0]) for x in res if is_number(x[0])]
-            HR_Max = [float(x[1]) for x in res if is_number(x[1])]
-            if len(HR_Min)>0:
-                HR_Min_Avg.append(float(sum(HR_Min))/len(HR_Min))
-            else:
-                HR_Min_Avg.append("nan")
-            if len(HR_Max)>0:
-                HR_Max_Avg.append(float(sum(HR_Max))/len(HR_Max))
-            else:
-                HR_Max_Avg.append("nan")
-        dbCursur.execute("""SELECT * FROM HRTracker WHERE date >= ? and date <= ?  """,
-            (weekEnd.date(), getMonthsEnd(i, pageYear).date(),))
-        res = dbCursur.fetchall()
-        HR_Min = [float(x[0]) for x in res if is_number(x[0])]
-        HR_Max = [float(x[1]) for x in res if is_number(x[1])]
-        if len(HR_Min)>0:
-            HR_Min_Avg.append(float(sum(HR_Min))/len(HR_Min))
-        else:
-            HR_Min_Avg.append("nan")
-        if len(HR_Max)>0:
-            HR_Max_Avg.append(float(sum(HR_Max))/len(HR_Max))
-        else:
-            HR_Max_Avg.append("nan")
-    return HR_Min_Avg, HR_Max_Avg
 
-
-def generateBPChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur):
+def generateBPChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur, lock):
     monthsBP = []
+
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM BPTracker WHERE date >= ? and date <= ?  """,
               (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
     monthsBP += dbCursur.fetchall()
+    lock.release()
+
     chartBP_Min=[]
     chartBP_Max=[]
     for i in range(1, numberOfDays+1):
@@ -224,49 +215,63 @@ def generateBPChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCurs
     return chartBP_Min, chartBP_Max
 
 
-def generateYearBPChartData(pageYear: int, numberOfDays: int, dbCursur):
-    BP_Min_Avg = []
-    BP_Max_Avg = []
-    for i in range(1, 13):
-        monthsBeginning = str(getMonthsBeginning(i, pageYear).date())
-        aggregateDays = round(numberOfDaysInMonth(int(i), int(pageYear))/4)
-        for j in range(0, 3):
-            weekBeginning = datetime.datetime.strptime(monthsBeginning, '%Y-%m-%d')+datetime.timedelta(days=7*j)
-            weekEnd = weekBeginning+datetime.timedelta(days=7)
-            dbCursur.execute("""SELECT * FROM BPTracker WHERE date >= ? and date < ?  """,
-                (weekBeginning.date(), weekEnd.date(),))
-            res = dbCursur.fetchall()
-            BP_Min = [float(x[0]) for x in res if is_number(x[0])]
-            BP_Max = [float(x[1]) for x in res if is_number(x[1])]
-            if len(BP_Min)>0:
-                BP_Min_Avg.append(float(sum(BP_Min))/len(BP_Min))
-            else:
-                BP_Min_Avg.append("nan")
-            if len(BP_Max)>0:
-                BP_Max_Avg.append(float(sum(BP_Max))/len(BP_Max))
-            else:
-                BP_Max_Avg.append("nan")
-        dbCursur.execute("""SELECT * FROM BPTracker WHERE date >= ? and date <= ?  """,
-            (weekEnd.date(), getMonthsEnd(i, pageYear).date(),))
+def generateYearDoubleChartData(pageYear: int, numberOfDays: int, trackerName: str,  dbCursur, lock):
+    startTime = time.time()
+    TD_Min_Avg = [] # Table Data average Min
+    TD_Max_Avg = [] # Table Data average Max
+    i = 0
+    while (i+7<364):
+        weekBeg = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i)
+        weekEnd = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i+6)
+        lock.acquire(True)
+        dbCursur.execute("SELECT * FROM "+trackerName+" WHERE date >= ? and date <= ?  ",
+            (weekBeg.date(), weekEnd.date(),))
         res = dbCursur.fetchall()
-        BP_Min = [float(x[0]) for x in res if is_number(x[0])]
-        BP_Max = [float(x[1]) for x in res if is_number(x[1])]
-        if len(BP_Min)>0:
-            BP_Min_Avg.append(float(sum(BP_Min))/len(BP_Min))
+        lock.release()
+
+        TD_Min = [float(x[0]) for x in res if is_number(x[0])]
+        TD_Max = [float(x[1]) for x in res if is_number(x[1])]
+        if len(TD_Min)>0:
+            TD_Min_Avg.append(float(sum(TD_Min))/len(TD_Min))
         else:
-            BP_Min_Avg.append("nan")
-        if len(BP_Max)>0:
-            BP_Max_Avg.append(float(sum(BP_Max))/len(BP_Max))
+            TD_Min_Avg.append("nan")
+        if len(TD_Max)>0:
+            TD_Max_Avg.append(float(sum(TD_Max))/len(TD_Max))
         else:
-            BP_Max_Avg.append("nan")
-    return BP_Min_Avg, BP_Max_Avg
+            TD_Max_Avg.append("nan")
+        i += 7
+
+    weekBeg = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i)
+    weekEnd = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=364)
+    lock.acquire(True)
+    dbCursur.execute("SELECT * FROM "+trackerName+" WHERE date >= ? and date <= ?  ",
+        (weekBeg.date(), weekEnd.date(),))
+    res = dbCursur.fetchall()
+    lock.release()
+
+    TD_Min = [float(x[0]) for x in res if is_number(x[0])]
+    TD_Max = [float(x[1]) for x in res if is_number(x[1])]
+    if len(TD_Min)>0:
+        TD_Min_Avg.append(float(sum(TD_Min))/len(TD_Min))
+    else:
+        TD_Min_Avg.append("nan")
+    if len(TD_Max)>0:
+        TD_Max_Avg.append(float(sum(TD_Max))/len(TD_Max))
+    else:
+        TD_Max_Avg.append("nan")
+
+    executionTime = (time.time() - startTime)
+    logger.info('{0: <20}'.format(trackerName)+ " time: " + str(executionTime))
+    return TD_Min_Avg, TD_Max_Avg
 
 
-def generateSavingTrackerChartData(pageYear: int, dbCursur):
+def generateSavingTrackerChartData(pageYear: int, dbCursur, lock):
     yearsSavings = []
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM savingTracker WHERE month >= ? and month <= ?  """,
               (pageYear+"-"+"01", pageYear+"-"+"12"))
     yearsSavings += dbCursur.fetchall()
+    lock.release()
 
     savingTrackerData=[]
     for i in range(1, 13):
@@ -279,11 +284,24 @@ def generateSavingTrackerChartData(pageYear: int, dbCursur):
 
 
 
-def generateMortgageTrackerChartData(pageYear: int, dbCursur):
+def generateMortgageTrackerChartData(pageYear: int, dbCursur, lock):
     yearsSavings = []
+    lock.acquire(True)
     dbCursur.execute("""SELECT * FROM mortgageTracker WHERE month >= ? and month <= ?  """,
               (pageYear+"-"+"01", pageYear+"-"+"12"))
     yearsSavings += dbCursur.fetchall()
+    lock.release()
+
+    lock.acquire(True)
+    dbCursur.execute("""SELECT * FROM mortgageTracker """)
+    data = dbCursur.fetchall()
+    try:
+        maxVal = max([float(x[0]) for x in data])
+        minVal = min([float(x[0]) for x in data])
+        paid = maxVal - minVal
+    except Exception as err:
+        paid = 0
+    lock.release()
 
     mortgageTrackerData=[]
     for i in range(1, 13):
@@ -292,15 +310,19 @@ def generateMortgageTrackerChartData(pageYear: int, dbCursur):
             if int(item[1].split("-")[1]) == i:
                 mortgageVal = float(item[0])
         mortgageTrackerData.append(mortgageVal)
-    return mortgageTrackerData
+
+    return mortgageTrackerData, paid
 
 
 
-def generateMonthlyChartData(pageMonth: int, pageYear: int, tabelName:str, numberOfDays: int, dbCursur):
+def generateMonthlyChartData(pageMonth: int, pageYear: int, tabelName:str, numberOfDays: int, dbCursur, lock):
     monthsVals = []
+    lock.acquire(True)
     dbCursur.execute("SELECT * FROM "+tabelName+" WHERE date >= ? and date <= ?  ",
               (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
     monthsVals += dbCursur.fetchall()
+    lock.release()
+
     monthsData=[]
     for i in range(1, numberOfDays+1):
         _value = "nan"
@@ -314,13 +336,15 @@ def generateMonthlyChartData(pageMonth: int, pageYear: int, tabelName:str, numbe
     return monthsData
 
 
-def generate_weather_monthly(dbCursur, year: int):
+def generate_weather_monthly(dbCursur, year: int, lock):
     # extract the year data
     returnData = {}
     for month in range(1, 13):
+        lock.acquire(True)
         dbCursur.execute("SELECT * FROM weatherStation WHERE date >= ? and date <= ?  ",
                 (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(),))
         monthly_Data = dbCursur.fetchall()
+        lock.release()
         tempData = {}
         for item in monthly_Data:
             room = int(item[0])
@@ -351,11 +375,12 @@ def generate_weather_monthly(dbCursur, year: int):
     return returnData
 
 
-def genenrate_weather_daily(dbCursur, todaysDate):
+def genenrate_weather_daily(dbCursur, todaysDate, lock):
     daily_data = {}
+    lock.acquire(True)
     dbCursur.execute("SELECT * FROM weatherStation WHERE date = ? ", (todaysDate,))
     todayVals = dbCursur.fetchall()
-
+    lock.release()
     for item in todayVals:
         room = int(item[0])
         daily_data[room] = daily_data.get(room, {"time": [], "temp":[], "pressure":[], "humidity": []})
@@ -363,7 +388,20 @@ def genenrate_weather_daily(dbCursur, todaysDate):
         daily_data[room]["temp"].append(item[3].strip())
         daily_data[room]["humidity"].append(item[4].strip())
         daily_data[room]["pressure"].append(float(item[5].strip())/1000)
-    return daily_data
+
+    lock.acquire(True)
+    dbCursur.execute("SELECT * FROM settings")
+    res = dbCursur.fetchall()
+    description = {}
+    for item in res:
+        description[str(item[0])] = item[1]
+    for item in todayVals:
+        room = str(item[0])
+        if room not in description.keys():
+            description[room] = "room_"+room
+    lock.release()
+
+    return daily_data, description
 
 
 def generate_cpu_stat(todaysDate, year):
@@ -496,33 +534,53 @@ def generate_cpu_stat_monthly(year: str):
     return cpuTempsYearly, cpuUsageYearly
 
 
-def getChartData(pageMonth, pageYear, numberOfDays, c):
+
+def generateEConsumptionTrackerChartData(pageYear: str, dbCursur, lock):
+    yearsConsumption = []
+    lock.acquire(True)
+    dbCursur.execute("""SELECT * FROM econsumption WHERE date >= ? and date <= ?  """,
+              (pageYear+"-"+"01"+"-"+"01", pageYear+"-"+"12"+"-"+"30"))
+    yearsConsumption += dbCursur.fetchall()
+    lock.release()
+
+    ConsumptionTrackerData=[]
+    for i in range(1, 13):
+        ConsumptionVal = "nan"
+        for item in yearsConsumption:
+            if int(item[0].split("-")[1]) == i:
+                ConsumptionVal = float(item[1])
+        ConsumptionTrackerData.append(ConsumptionVal)
+    return ConsumptionTrackerData
+
+
+
+def getChartData(pageMonth, pageYear, numberOfDays, c, lock):
     # gather chart information ----------------------
     ChartData = {}
-    ChartData["monthsWeights"]    = generateWeightChartData(int(pageMonth),      int(pageYear), numberOfDays, c)
-    ChartData["monthsPaces"]      = generateMonthlyChartData(int(pageMonth), int(pageYear), "paceTracker", numberOfDays, c)
-    ChartData["BO"]               = generateMonthlyChartData(int(pageMonth), int(pageYear), "oxygenTracker", numberOfDays, c)
-    ChartData["monthsWorkHours"]  = generateMonthlyChartData(int(pageMonth), int(pageYear), "workTracker", numberOfDays, c)
-    ChartData["monthsSleepTimes"] = generateMonthlyChartData(int(pageMonth), int(pageYear), "sleepTracker", numberOfDays, c)
-    ChartData["monthsSteps"]      = generateMonthlyChartData(int(pageMonth), int(pageYear), "stepTracker", numberOfDays, c)
-    ChartData["monthsHydration"]  = generateMonthlyChartData(int(pageMonth), int(pageYear), "hydrationTracker", numberOfDays, c)
-    ChartData["monthsRuns"]       = generateMonthlyChartData(int(pageMonth), int(pageYear), "runningTracker",numberOfDays, c)
-    ChartData["YearsSavings"]     = generateSavingTrackerChartData(pageYear, c)
-    ChartData["YearsMortgages"]   = generateMortgageTrackerChartData(pageYear, c)
+    ChartData["monthsWeights"]    = generateWeightChartData(int(pageMonth),      int(pageYear), numberOfDays, c, lock)
+    ChartData["monthsPaces"]      = generateMonthlyChartData(int(pageMonth), int(pageYear), "paceTracker", numberOfDays, c, lock)
+    ChartData["BO"]               = generateMonthlyChartData(int(pageMonth), int(pageYear), "oxygenTracker", numberOfDays, c, lock)
+    ChartData["monthsWorkHours"]  = generateMonthlyChartData(int(pageMonth), int(pageYear), "workTracker", numberOfDays, c, lock)
+    ChartData["monthsSleepTimes"] = generateMonthlyChartData(int(pageMonth), int(pageYear), "sleepTracker", numberOfDays, c, lock)
+    ChartData["monthsSteps"]      = generateMonthlyChartData(int(pageMonth), int(pageYear), "stepTracker", numberOfDays, c, lock)
+    ChartData["monthsHydration"]  = generateMonthlyChartData(int(pageMonth), int(pageYear), "hydrationTracker", numberOfDays, c, lock)
+    ChartData["monthsRuns"]       = generateMonthlyChartData(int(pageMonth), int(pageYear), "runningTracker",numberOfDays, c, lock)
+    ChartData["YearsSavings"]     = generateSavingTrackerChartData(pageYear, c, lock)
+    ChartData["YearsMortgages"], ChartData["MortgagePaid"]   = generateMortgageTrackerChartData(pageYear, c, lock)
     ChartData["ChartMonthDays"]   = [str(i) for i in range(1, numberOfDays+1)]
-    ChartData["travels"]          = getTravelDests(c)
-    ChartData["HR_Min"], ChartData["HR_Max"] = generateHRChartData(int(pageMonth),          int(pageYear), numberOfDays, c)
-    ChartData["BP_Min"], ChartData["BP_Max"] = generateBPChartData(int(pageMonth),          int(pageYear), numberOfDays, c)
+    ChartData["travels"]          = getTravelDests(c, lock)
+    ChartData["HR_Min"], ChartData["HR_Max"] = generateHRChartData(int(pageMonth),          int(pageYear), numberOfDays, c, lock)
+    ChartData["BP_Min"], ChartData["BP_Max"] = generateBPChartData(int(pageMonth),          int(pageYear), numberOfDays, c, lock)
     # ----------------------------------------------
-    ChartData["yearRuns"]   = genYearChartData(int(pageYear), "runningTracker",  runFunc,    c)
-    ChartData["yearSteps"]  = genYearChartData(int(pageYear), "stepTracker",     stepFunc,   c)
-    ChartData["yearSleep"]  = genYearChartData(int(pageYear), "sleepTracker",    sleepFunc,  c)
-    ChartData["yearHydr"]   = genYearChartData(int(pageYear), "hydrationTracker",hydrationFunc,  c)
-    ChartData["yearWeight"] = genYearChartData(int(pageYear), "weightTracker",   weightFunc, c)
-    ChartData["yearBO"]     = genYearChartData(int(pageYear), "oxygenTracker",   BOFunc,     c)
-    ChartData["yearWH"]     = genYearChartData(int(pageYear), "workTracker",     WHFunc,     c)
-    ChartData["yearMood"]   = genYearChartData(int(pageYear), "moodTracker",     moodFunc,   c)
-    ChartData["yearHR_Min"], ChartData["yearHR_Max"] = generateYearHRChartData(int(pageYear), numberOfDays, c)
-    ChartData["yearBP_Min"], ChartData["yearBP_Max"] = generateYearBPChartData(int(pageYear), numberOfDays, c)
+    ChartData["yearRuns"]   = genYearChartData(int(pageYear), int(pageMonth), "runningTracker",  runFunc,    c, lock)
+    ChartData["yearSteps"]  = genYearChartData(int(pageYear), int(pageMonth), "stepTracker",     stepFunc,   c, lock)
+    ChartData["yearSleep"]  = genYearChartData(int(pageYear), int(pageMonth), "sleepTracker",    sleepFunc,  c, lock)
+    ChartData["yearHydr"]   = genYearChartData(int(pageYear), int(pageMonth), "hydrationTracker",hydrationFunc,  c, lock)
+    ChartData["yearWeight"] = genYearChartData(int(pageYear), int(pageMonth), "weightTracker",   weightFunc, c, lock)
+    ChartData["yearBO"]     = genYearChartData(int(pageYear), int(pageMonth), "oxygenTracker",   BOFunc,     c, lock)
+    ChartData["yearWH"]     = genYearChartData(int(pageYear), int(pageMonth), "workTracker",     WHFunc,     c, lock)
+    ChartData["yearMood"]   = genYearChartData(int(pageYear), int(pageMonth), "moodTracker",     moodFunc,   c, lock)
+    ChartData["yearHR_Min"], ChartData["yearHR_Max"] = generateYearDoubleChartData(int(pageYear), numberOfDays, "HRTracker",  c, lock)
+    ChartData["yearBP_Min"], ChartData["yearBP_Max"] = generateYearDoubleChartData(int(pageYear), numberOfDays, "BPTracker",  c, lock)
 
     return ChartData

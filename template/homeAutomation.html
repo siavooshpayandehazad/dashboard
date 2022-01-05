@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="{{url_for('static', filename='styles.css') }}">
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/homeAutomation.css') }}">
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
@@ -67,7 +67,7 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
   ValDiv = document.createElement("div")
   ValDiv.style.color     = "rgb("+r+","+g+","+b+")";
   ValDiv.style.left      = "10px";
-  ValDiv.style.bottom    = "5px";
+  ValDiv.style.bottom    = "0px";
   ValDiv.style.position  = "absolute";
   ValDiv.style.fontSize  = "30px";
   Val = document.createElement("span")
@@ -99,13 +99,39 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
 
 }
 function viewroom(item){
-  console.log("room_"+item.getAttribute("number"))
+
   weatherCards = document.getElementsByClassName("weatherCard")
   for (i = 0; i < weatherCards.length; i++) {
     weatherCards[i].style.display="none"
   }
-  document.getElementById("room_"+item.getAttribute("number")).style.display="block";
+  if (item.getAttribute("number") != 0){
+    document.getElementById("room_"+item.getAttribute("number")).style.display="block";
+  }else{
+    document.getElementById("weather_overview").style.display="block";
+  }
+
   //document.getElementByClassName("weatherCard");
+
+
+}
+
+function editRoomName(item, roomNumber){
+
+  oldValue = item.textContent.trim();
+  newName = window.prompt("rename room \"" + oldValue + "\"?",  oldValue).trim();
+  $.ajax({
+      type: "POST",
+      url: "/homeAutomation",
+      data: {"action": "rename", "value": JSON.stringify({"roomNumber": roomNumber, "oldValue": oldValue,  "newValue": newName})},
+      error: function(data) {
+        window.alert("failed to update the room name")
+      },
+      success: function(data) {
+        item.textContent = newName;
+      }
+  });
+
+
 }
 </script>
 
@@ -115,7 +141,7 @@ function viewroom(item){
   <body>
 {% endif %}
 
-<div class="container-fluid" style="height:100vh; background-color:black">
+<div class="container-fluid" style="min-height:100vh; background-color:black">
 
   {% include "trackerModules/graphFuncs.html" %}
 
@@ -124,17 +150,36 @@ function viewroom(item){
   {% endwith %}
 
   <div class="row">
-      <div class="col-sm-1">
-        {% for item in daily_data %}
-          <button type="button" class="btn btn-primary" style="margin-top: 5px; width:100%" number="{{loop.index}}" onclick="viewroom(this)">room {{loop.index}}</button>
+    <div class="col-sm-12 text-justify">
+      <h2 class="title journal" style="margin-left:40%">
+        <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
+        {{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}
+        <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
+      </h2>
+    </div>
+  </div>
+
+  <div class="row">
+      <div class="col-sm-1" style="padding-top:20px;">
+         <button type="button" class="btn btn-primary" style="font-size: 10px; margin-top: 5px; width:100%" number="0" onclick="viewroom(this)">overview</button>
+        {% for item in daily_data|sort() %}
+          <button type="button" class="btn btn-primary" style="font-size: 10px; margin-top: 5px; width:100%" number="{{item}}" onclick="viewroom(this)">{{description[item|string]}}</button>
         {%endfor%}
       </div>
+
+      {% include "homeAutomation_modules/overview.html" %}
+
       {% for item in daily_data %}
-          {% with room=loop.index%}
+          {% with room=item, description=description%}
             {% include "homeAutomation_modules/roomGauge.html" %}
           {% endwith %}
       {%endfor%}
   </div>
+
+  {% with dir="left" %}
+    {% include "generic_modules/divider.html" %}
+  {% endwith %}
+
 </div>
 
 
@@ -145,16 +190,24 @@ function viewroom(item){
 
 <script type="text/javascript">
 var data = {{daily_data|safe}}
-for (i = 1; i <= Object.keys(data).length; i++) {
-  var gauge_1_1 = document.getElementById("tempGauge_"+i.toString())
-  var gauge_1_2 = document.getElementById("humidityGauge_"+i.toString())
-  var gauge_1_3 = document.getElementById("pressureGauge_"+i.toString())
-  console.log(i, gauge_1_1, gauge_1_2, gauge_1_3)
-  drawGauge(gauge_1_1, tempData[i]["temp"], "°C", 0, 100, [231,225,239], [152,0,67], [236, 231, 242], [4, 90, 141]);
-  drawGauge(gauge_1_2, tempData[i]["humidity"], "%", 0, 100, [198,219,239], [8,81,156], [240,240,240], [240,240,240]);
-  drawGauge(gauge_1_3, tempData[i]["pressure"], "bar", 0, 2, [0,0,0], [217,217,217], [240,240,240], [240,240,240]);
+
+for (item in Object.keys(data)) {
+  i = Object.keys(data)[item]
+  var gauge_1 = document.getElementById("tempGauge_"+i.toString())
+  var gauge_2 = document.getElementById("humidityGauge_"+i.toString())
+  var gauge_3 = document.getElementById("pressureGauge_"+i.toString())
+  drawGauge(gauge_1, tempData[i]["temp"],      "°C", 10, 50, [231,225,239], [152,0,67],    [236, 231, 242], [4, 90, 141]);
+  drawGauge(gauge_2, tempData[i]["humidity"],   "%", 0, 70, [198,219,239], [8,81,156],    [240,240,240],   [240,240,240]);
+  drawGauge(gauge_3, tempData[i]["pressure"], "bar", 0, 2,   [0,0,0],       [217,217,217], [240,240,240],   [240,240,240]);
+
+  var gauge_4 = document.getElementById("OV_tempGauge_"+i.toString())
+  var gauge_5 = document.getElementById("OV_humidityGauge_"+i.toString())
+  var gauge_6 = document.getElementById("OV_pressureGauge_"+i.toString())
+  drawGauge(gauge_4, tempData[i]["temp"],      "°C", 10, 50, [231,225,239], [152,0,67],    [236, 231, 242], [4, 90, 141]);
+  drawGauge(gauge_5, tempData[i]["humidity"],   "%", 0, 70, [198,219,239], [8,81,156],    [240,240,240],   [240,240,240]);
+  drawGauge(gauge_6, tempData[i]["pressure"], "bar", 0, 2,   [0,0,0],       [217,217,217], [240,240,240],   [240,240,240]);
 }
 
-document.getElementById("room_1").style.display="block";
+document.getElementById("weather_overview").style.display="block";
 </script>
 </html>

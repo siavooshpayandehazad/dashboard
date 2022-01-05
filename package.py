@@ -5,6 +5,8 @@ monthsOfTheYear = ['Jan', "", "", "", 'Feb', "", "", "", 'Mar', "", "", "",
                    'Jul', "", "", "", 'Aug', "", "", "", 'Sep', "", "", "",
                    'Oct', "", "", "", 'Nov', "", "", "", 'Dec', "", "", ""]
 
+monthsOfTheYear = [str(x) for x in range(1, 53)]
+
 chart_months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
 
