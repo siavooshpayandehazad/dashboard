@@ -174,24 +174,40 @@ function listSettings(item){
   popupDiv.appendChild(closeBtn)
   item.parentElement.appendChild(popupDiv)
 }
+function deleteList(item){
+  listName = item.getAttribute("name")
+  userResponse = confirm("are you sure you want to delete list: " + listName);
+  if (userResponse){
+    $.ajax({ type: "POST",
+        url: "/lists",
+        data: {"action" : "delete list",
+               "value"  : JSON.stringify({"listName": listName}),
+              },
+        success: function(){
+          item.parentElement.parentElement.remove()
+        }
+    });
+  }
+}
 </script>
 
-<div>
-  <div style="margin-top: 40px; margin-left: 1%; width:100%; float:left;">
+
+<div style="margin-top: 40px; margin-left: 1%; width:100%; float:left;">
     <div style = "width:100%;">
-      <b class="titleNewTask">Add new item:</b> <input name={{Type}} type="text" onkeypress="submitonEnter(event)"><br>
+      <b class="titleNewTask">Add new item:</b> <input name={{listName}} type="text" onkeypress="submitonEnter(event)"><br>
     </div><br>
     {% set ns = namespace(done_numbers = 0) %}
     <div class = "todoTasks" style="width:95%;">
       <i id = "{{listName}}", class="fa fa-cog hover-red" style="float:right; margin-top:5px; margin-right:5px;" onclick="listSettings(this)"></i>
+      <i name = "{{listName}}" class="fa fa-trash-o hover-red" style="float:right; margin-top:5px; margin-right:5px;" onclick="deleteList(this)"></i>
       <h2 class="title lightbg">&nbsp;{{listName}}</h2>
       <div class ="todoTasksScorlable">
-        <ul id = {{Type}} class="todoList">
+        <ul id = "{{listName}}_List" class="todoList">
           {%for item, done, note in listContent%}
             {%if done == 'false'%}
               <li>
                 <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
-                <span class="task" type={{Type}} ondblclick="itemdblclick(this)">{{item}}</span>
+                <span class="task" type={{listName}} ondblclick="itemdblclick(this)">{{item}}</span>
                 <span class="note" style="display:none">{{note|safe}}</span>
                 <span style="float:right; margin-right:10px;" onclick="deleteItem(event)" onmouseover = "highlightItem(this)" onmouseout="removeItemHighlight(this)"><i class="fa fa-trash-o hover-red"></i> </span>
               </li>
@@ -199,7 +215,7 @@ function listSettings(item){
             {% set ns.done_numbers = ns.done_numbers + 1 %}
               <li>
                 <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
-                <span class="task" type={{Type}} ondblclick="itemdblclick(this)">{{item}}</span>
+                <span class="task" type={{listName}} ondblclick="itemdblclick(this)">{{item}}</span>
                 <span class="note" style="display:none">{{note|safe}}</span>
                 <span style="float:right; margin-right:10px;" onclick="deleteItem(event)" onmouseover = "highlightItem(this)" onmouseout="removeItemHighlight(this)"><i class="fa fa-trash-o hover-red"></i> </span>
               </li>
@@ -208,9 +224,9 @@ function listSettings(item){
         </ul>
       </div>
     </div>
-    <font style="color:white">Finished {{listName}} items: <b id="countDone {{Type|safe}}">{{ns.done_numbers}}</b> / <b id="countAll {{Type|safe}}">{{listContent|length}}</b></font>
-    </div>
-  </div>
+    <font style="color:white">Finished {{listName}} items: <b id="countDone {{listName|safe}}">{{ns.done_numbers}}</b> / <b id="countAll {{listName|safe}}">{{listContent|length}}</b></font>
+</div>
+
 
   <script type="text/javascript">
 
@@ -326,7 +342,7 @@ function listSettings(item){
             span2.appendChild(i);
             li.innerHTML += "&nbsp";
             li.appendChild(span2);
-            var ul = document.getElementById(event.srcElement.name);
+            var ul = document.getElementById(event.srcElement.name+"_List");
             ul.appendChild(li);
             // clear the text in the input line!
             event.srcElement.value = "";

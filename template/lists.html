@@ -15,6 +15,21 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
 
+  <script type="text/javascript">
+  function createNewList(){
+    listName = window.prompt("Select a name for your new list:", "");
+    $.ajax({ type: "POST",
+        url: "/lists",
+        data: {"action" : "create list",
+               "value"  : JSON.stringify({"listName": listName}),
+              },
+        success: function(){
+          location.reload();
+        }
+    });
+  }
+  </script>
+
 </head>
 
 {%if pageTheme=="Dark"%}
@@ -34,13 +49,15 @@
 </div>
 
 <div class="row">
-  {%for listName, listContent, Type in [("Book List", readList, "book"),
-                                        ("Anime List", animeList, "anime"),
-                                        ("Movie/Series List", movieList, "movie"),
-                                        ("Bucket List", bucketList, "bucketList"),
-                                        ("To-Learn List", toLearnList, "toLearnList")]%}
+    <div class="col-sm-12 col-lg-12 text-right">
+      <button type="button" class="btn btn-outline-primary mt-2" onclick="createNewList()">Add new List</button>
+    </div>
+</div>
+
+<div class="row">
+  {%for listName, listContent in lists.items()%}
       <div class="col-sm-6 col-lg-4">
-        {% with listName = listName, listContent = listContent, Type = Type %}
+        {% with listName = listName, listContent = listContent %}
             {% include "lists_modules/lists.html" %}
         {% endwith %}
       </div>

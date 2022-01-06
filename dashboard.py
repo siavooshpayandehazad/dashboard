@@ -424,18 +424,52 @@ class lists(Resource):
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
         lists = {}
-        for listName in ["book", "movie", "anime", "bucketList", "toLearnList"]:
+
+        lock.acquire(True)
+        c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("lists",))
+        listNmes = [x.strip() for x in c.fetchall()[0][1].split(",")]
+        lock.release()
+
+        lock.acquire(True)
+        for listName in listNmes:
             c.execute("""SELECT * FROM lists WHERE type = ? """, (listName, ))
-            lists[listName] = sorted(sorted([(name, done, note) for name, done, type, note in c.fetchall()]), key=lambda x: x[1])
+            data =  c.fetchall()
+            lists[listName] = sorted(sorted([(name, done, note) for name, done, type, note in data]), key=lambda x: x[1])
+        lock.release()
+
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
-        return make_response(render_template('lists.html', readList = lists["book"],
+        return make_response(render_template('lists.html', lists = lists, readList = lists["book"],
                                              animeList=lists["anime"], movieList = lists["movie"],
                                              bucketList=lists["bucketList"],
-                                             toLearnList=lists["toLearnList"],
+                                             toLearnList=lists["toLearn"],
                                              pageTheme=pageTheme),200,headers)
 
     def post(self):
         args = parser.parse_args()
+        if args['action'] == "create list":
+            listName = eval(args['value'])["listName"]
+            lock.acquire(True)
+            c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("lists",))
+            listNames = [x.strip() for x in c.fetchall()[0][1].split(",")] + [listName]
+            c.execute("""DELETE from settings where parameter = ? """, ("lists", ))
+            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("lists", ",".join(listNames)))
+            conn.commit()
+            lock.release()
+            return "Done", 200
+
+        if args['action'] == "delete list":
+            listName = eval(args['value'])["listName"]
+            lock.acquire(True)
+            c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("lists",))
+            listNames = [x.strip() for x in c.fetchall()[0][1].split(",")]
+            listNames.remove(listName)
+            c.execute("""DELETE from settings where parameter = ? """, ("lists", ))
+            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("lists", ",".join(listNames)))
+            c.execute("""DELETE from lists where type = ? """, (listName, ))
+            conn.commit()
+            lock.release()
+            return "Done", 200
+
         lock.acquire(True)
         if args['action'] == "delete":
             value_dict = eval((args['value']))

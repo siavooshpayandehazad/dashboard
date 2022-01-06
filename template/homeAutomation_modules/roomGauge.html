@@ -19,11 +19,11 @@
                 <h5 style="float: left; margin-left: 10px; margin-top:5px; color:white;">Pressure</h5>
               </div>
             </div>
-            <div class="col-sm-4 ml-4">
+            <div class="col-sm-5">
               {% with dataset = daily_data[room]["temp"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
                     thresholds = [], trackerName = "Temperature_"+room|string, unit="(°C)", addAvg="true", tcf="false",
                     pointStyle = 'circle', showTotalVal = false, suggestedMin = 10, yearMonth = "", clickable="false",
-                    accumulate = "false", width = "100%", height = "140px",
+                    accumulate = "false", width = "100%", height = "160px",
                     bgColors = ['rgba(203,24,29, 0.5)'],
                     bColors = ['rgba(203,24,29, 1)']%}
                 {% include "trackerModules/singleChart.html" %}
@@ -31,7 +31,7 @@
               {% with dataset = daily_data[room]["humidity"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
                     thresholds = [], trackerName = "Humidty_"+room|string, unit="(%)", addAvg="true", tcf="false",
                     pointStyle = 'circle', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
-                    accumulate = "false", width = "100%", height = "140px",
+                    accumulate = "false", width = "100%", height = "160px",
                     bgColors = ['rgba(29,145,192, 0.5)'],
                     bColors = ['rgba(29,145,192, 1)']%}
                 {% include "trackerModules/singleChart.html" %}
@@ -39,7 +39,7 @@
               {% with dataset = daily_data[room]["pressure"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
                     thresholds = [], trackerName = "Pressure_"+room|string, unit="(bar)", addAvg="true", tcf="false",
                     pointStyle = 'circle', showTotalVal = false, suggestedMin = 0.9, yearMonth = "", clickable="false",
-                    accumulate = "false", width = "100%", height = "140px",
+                    accumulate = "false", width = "100%", height = "160px",
                     bgColors = [ 'rgba(106,81,163, 0.5)'],
                     bColors = ['rgba(106,81,163, 1)']%}
                 {% include "trackerModules/singleChart.html" %}
