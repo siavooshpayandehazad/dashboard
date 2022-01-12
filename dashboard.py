@@ -743,7 +743,7 @@ def upload_file():
         while os.path.isfile("./static/photos/"+year+"/"+folderName+"/"+fileName):
             fileName = str(randint(1, 100000)) + "_" + f.filename
         f.save(os.path.join("./static/photos/"+year+"/"+folderName, secure_filename(fileName)))
-        return redirect(url_for('journal'), 200)
+        return redirect(url_for('journal')+"?date="+date, 200)
 
 
 @app.route('/notesUploader', methods = ['GET', 'POST'])
