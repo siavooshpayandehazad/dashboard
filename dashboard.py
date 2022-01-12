@@ -704,18 +704,11 @@ class homeAutomation(Resource):
         args = parser.parse_args()
         value = json.loads(args['value'])
         if args['action'] == "rename":
-            lock.acquire(True)
-            c_ha.execute("""DELETE FROM settings WHERE room = ? """, (str(value['roomNumber'])))
-            c_ha.execute("""INSERT INTO settings VALUES(?, ?)""", (str(value['roomNumber']), str(value['newValue'])))
-            conn_ha.commit()
-            lock.release()
+            rename_room(str(value['roomNumber']), str(value['newValue']), c_ha, conn_ha, lock)
             return "Done", 200
 
         if args['tracker_type'] == "eConsumption":
-            lock.acquire(True)
-            c_ha.execute("""INSERT INTO econsumption VALUES(?, ?)""", (args['date'], args['value']))
-            conn_ha.commit()
-            lock.release()
+            add_econsumption_data(args['date'], args['value'], c_ha, conn_ha, lock)
             return "Done", 200
         else:
             directory="homeAutomation"
