@@ -1,3 +1,4 @@
+from functionPackages.ha_package import *
 from functionPackages.misc import *
 from functionPackages.charts import *
 from functionPackages.dateTime import *
