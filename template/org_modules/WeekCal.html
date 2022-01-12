@@ -112,22 +112,24 @@ function drawCell(calDate, idVal){
   };
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
   scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  scrollTop = 0
   startPx = 42*parseInt(calDate[1].slice(3,5))/60
   div.classList.add("weekEvent");
   if (calDate[1]!=="None"){
-    div.style.top  = (cell.getBoundingClientRect().y+scrollTop+startPx+2)+"px";
+    div.style.top  = (cell.getBoundingClientRect().y+scrollTop+startPx+32)-tableElement.getBoundingClientRect().y+"px";
     div.style.left = (cell.getBoundingClientRect().x+scrollLeft+(127/calDate[4])*(calDate[5]-1))+"px";
     hoursDiff = parseInt(calDate[2].slice(0,2))-parseInt(calDate[1].slice(0,2))
     minsDiff = (parseInt(calDate[2].slice(3,5))-parseInt(calDate[1].slice(3,5)))*42/60
     div.style.height = ((hoursDiff)*cell.offsetHeight+minsDiff-6)+"px";
     div.style.position= "absolute";
+    div.style.marginLeft = "0.5%";
   }else{
     div.style.marginBottom="2px";
     div.style.height = "50px;"
+    div.style.marginLeft = "3%";
   }
+  div.style.width = ((cell.getBoundingClientRect().width*0.96)/calDate[4]-10)+"px";
 
-  div.style.width = (127/calDate[4]-10)+"px";
-  div.style.marginLeft = "5px";
   div.textContent = calDate[3];
   div.style.backgroundColor = calDate[6];
 
@@ -216,9 +218,8 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   div.style.border="3px solid #9ecae1";
   div.style.borderRadius="10px 10px 10px 10px";
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
-  scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   div.style.left = event.clientX+scrollLeft+"px";
-  div.style.top  = event.clientY+scrollTop+"px";
+  div.style.top  = event.target.getBoundingClientRect().y-item.getBoundingClientRect().y+40+"px";
   div.classList.add("calendarPopUp");
 
   var eventNameContainer = document.createElement("div");
@@ -505,40 +506,41 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   return;
 }
 </script>
+
 <div class= "classContainer" id="WeekCal" style="display: none;">
-  <table id="calTab" border="0" style="border-spacing: 0px;" onclick="calendarClick(event, this, 'week')">
+  <table id="calTab" border="0" style="width: 100%; border-spacing: 0px;" onclick="calendarClick(event, this, 'week')">
     <thead class="calendarth">
       <tr>
         <th class="calendarLabel" onclick="showWeekMonth('Month')">WEEK</th>
-        <th style="border-left: 1px solid #9ecae1;  border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white);"> {{headerDates [0]}} Monday </th>
-        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [1]}} Tuesday </th>
-        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [2]}} Wednesday </th>
-        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [3]}} Thursday </th>
-        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [4]}} Friday </th>
-        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [5]}} Saturday </th>
-        <th style="border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">{{headerDates [6]}} Sunday </th>
+        <th class = "calHeader" style="background-image: linear-gradient(to bottom, #c6dbef, white); text-align: center;"> {{headerDates [0]}} Monday </th>
+        <th class = "calHeader" >{{headerDates [1]}} Tuesday </th>
+        <th class = "calHeader" >{{headerDates [2]}} Wednesday </th>
+        <th class = "calHeader" >{{headerDates [3]}} Thursday </th>
+        <th class = "calHeader" >{{headerDates [4]}} Friday </th>
+        <th class = "calHeader" >{{headerDates [5]}} Saturday </th>
+        <th class = "calHeader" >{{headerDates [6]}} Sunday </th>
       </tr>
     </thead>
     <tbody class="calendartb" style="max-height:350px;">
       <tr>
-        <td id= "weekNumber" style="height:70px; border-bottom: 1px solid #9ecae1; border-right: 0px solid #9ecae1; vertical-align:top; font-size:30px;">
+        <td id= "weekNumber" style="width: 12.5%; height:70px; border-bottom: 1px solid #9ecae1; border-right: 0px solid #9ecae1; vertical-align:top; font-size:30px;">
         </td>
         {%for j in range(1, 8)%}
           {%if j == 1%}
-              <td style = "border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)"> </td>
+              <td style = "width: 12.5%; border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)"> </td>
           {%else%}
-              <td style = "border-bottom: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+              <td style = "width: 12.5%; border-bottom: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
           {%endif%}
         {%endfor%}
       </tr>
     {%for i in range(daysBeginning, daysEnd)%}
       <tr>
-        <td style="border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff; vertical-align:top"> {{'%02d' %(i)}}:00 </td>
+        <td style="width: 12.5%;  border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff; vertical-align:top"> {{'%02d' %(i)}}:00 </td>
         {%for j in range(1, 8)%}
           {%if j == 1%}
-              <td style = "border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+              <td style = "width: 12.5%; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
           {%else%}
-              <td ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+              <td style="width: 12.5%;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
           {%endif%}
         {%endfor%}
       </tr>
@@ -598,16 +600,15 @@ function drawCurrentTime(){
     todayColl = 7;
   }
   var cell = table.rows[hours-parseInt({{daysBeginning}})+calOffsetRows].cells.item(todayColl);
-  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
-  scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  div.style.top  = (cell.getBoundingClientRect().y+ scrollTop)+(mins/60*40)+"px";
+  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+  div.style.top  =  (hours-parseInt({{daysBeginning}})+calOffsetRows)*38 + 77 + (parseFloat(mins/60)*40) + "px";
   div.style.left = (cell.getBoundingClientRect().x+scrollLeft)+"px";
-  cell.appendChild(div)
+  table.appendChild(div)
 }
 
 window.setInterval(function(){
   drawCurrentTime();
-}, 300000);
+}, 30000);
 
 window.addEventListener('resize', function resizeWindow() {
   drawCurrentTime();

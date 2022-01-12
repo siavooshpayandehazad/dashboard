@@ -1,20 +1,19 @@
 
 <div class= "classContainer" id="MonthCal" style="display: none;">
-  <table id="calTabMonth" border="0" style="border-spacing: 0px;">
+  <table id="calTabMonth" border="0">
     <thead class="calendarth">
       <tr>
         <th class="calendarLabel" style="border-bottom: 1px solid #9ecae1;" onclick="showWeekMonth('Week')">MONTH</th>
-        <th style="border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;  border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white);">  Sunday </th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">  Monday</th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">  Tuesday</th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">  Wednesday</th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">  Thursday</th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">  Friday</th>
-        <th style="border-bottom: 1px solid #9ecae1; border-right: 1px solid #9ecae1; border-radius:10px 10px 0px 0px; background-image: linear-gradient(to bottom, #c6dbef, white); ">  Saturday </th>
+        <th class = "calHeader"  style="background-image: linear-gradient(to bottom, #c6dbef, white);">  Sunday </th>
+        <th class = "calHeader" >  Monday</th>
+        <th class = "calHeader" >  Tuesday</th>
+        <th class = "calHeader" >  Wednesday</th>
+        <th class = "calHeader" >  Thursday</th>
+        <th class = "calHeader" >  Friday</th>
+        <th class = "calHeader" >  Saturday </th>
       </tr>
     </thead>
     <tbody id="calendartbMonth" class="calendartb" style="max-height:350px;">
-
     </tbody>
   </table>
 </div>
@@ -106,7 +105,7 @@ function drawMonthEvents(){
         }
         div = document.createElement("div")
         div.classList.add("monthEvent")
-        div.style="margin-left:5%; width:112px; height:16; padding-left:2px; margin-bottom:5px;text-overflow: ellipsis; overflow: hidden; white-space: nowrap; border-radius: 5px; font-size:13px;";
+        div.style="margin-left:2.5%; width:95%; height:16; padding-left:2px; margin-bottom:5px;text-overflow: ellipsis; overflow: hidden; white-space: nowrap; border-radius: 5px; font-size:13px;";
         div.textContent=((calMonths[j][1]=="None")?"":calMonths[j][1]) + " " + calMonths[j][3];
         div.style.backgroundColor=calMonths[j][6];
         scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,

@@ -74,16 +74,16 @@
      var rowLabel = $(item).parent().children()[0];
      var colNum = $(item).parent().children().index($(item));
      var colLabel = $(item).parent().parent().children()[0].cells[colNum]
-     rowLabel.style.borderColor = "#fdbf6f";
-     colLabel.style.borderColor = "#fdbf6f";
+     rowLabel.style.border = "1px solid #fdbf6f";
+     colLabel.style.border = "1px solid #fdbf6f";
    }
 
    function mouseOutTracker(item){
      var rowLabel = $(item).parent().children()[0];
      var colNum = $(item).parent().children().index($(item));
      var colLabel = $(item).parent().parent().children()[0].cells[colNum]
-     rowLabel.style.borderColor = "white";
-     colLabel.style.borderColor = "white";
+     rowLabel.style.border = "1px solid white";
+     colLabel.style.border = "1px solid white";
    }
 </script>
 

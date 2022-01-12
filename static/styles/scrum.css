@@ -6,8 +6,10 @@ div.ScrumCard{
   margin-left:2.5%;
   margin-bottom:5px;
   margin-top:7px;
+  color:black;
 }
 div.NewScrumCardContainer{
+  color:black;
   margin-left:10%;
   background-color: white;
   height:35px;

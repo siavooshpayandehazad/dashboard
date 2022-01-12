@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <title>My Journal</title>
 
   <script type="text/javascript">
@@ -71,97 +72,125 @@
 <body>
 {% endif %}
 
+<div class="container-fluid bg">
+
 {% with page="settings" %}
     {% include "generic_modules/header.html" %}
 {% endwith %}
 
-  <div class="settingpage">
+  <div class="row justify-content-md-center">
+    <div class="col-sm-3 col-lg-3">
+      <div class="row">
+        <div class="col-sm-12 col-lg-12">
+          <h4>Database management</h4>
+        </div>
+        <div class="col-sm-12 col-lg-12">
+          To download your DB, click <a href="/downloadDB/" target = "blank" style="color:orange">here</a>.
+        </div>
+      </div>
+    </div>
 
-  <div style="width: 30%;float:left;margin-right: 5%;">
-    <h4>Database management</h4>
-     Upload your database here: (TO DO...) <br><br>
-     To download your DB, click <a href="/downloadDB/" target = "blank" style="color:orange">here</a>.
-  </div>
-  <div style="width: 30%;float:left; margin-right: 5%;">
-    <h4>Change password</h4>
-    <div style="width: 90%;">Current password:  <input style= "width:40%; float:right;" type="password" id="currentpwd" name="currentpwd"></input></div>
-    <br>
-    <div style="width: 90%;margin-top:-10px;"> New password:  <input  style= "width:40%; float:right;" type="password" id="newpwd" name="newpwd"></input></div>
-    <br>
-    <div style="float: right;margin-top:-10px;"> <input type="submit" onclick="resetPass()"></input></div>
-  </div>
-  <div style="width: 30%;float:left">
-    <h4>Themes</h4>
-    choose the color theme:
-    <select id="ThemeSelector" onchange="selected()" >
-      {%if pageTheme=="Dark"%}
-        <option selected="selected">Light Blue</option>
-      {% else %}
-        <option>Light Blue</option>
-      {% endif %}
-      {%if pageTheme=="Dark"%}
-        <option selected="selected">Dark</option>
-      {% else %}
-        <option>Dark</option>
-      {% endif %}
-    </select>
-  </div>
+    <div class="col-sm-4 col-lg-4">
+      <h4>Change password</h4>
+      <div class="row">
+        <div class="col-sm-4 col-lg-4"> Current password: </div>
+        <div class="col-sm-8 col-lg-8"> <input style= "width:100%; float:right;" type="password" id="currentpwd" name="currentpwd"></input></div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 col-lg-4"> New password: </div>
+        <div class="col-sm-8 col-lg-8"> <input  style= "width:100%; float:right;" type="password" id="newpwd" name="newpwd"></input></div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-sm-12 col-lg-12"> <input style="float:right;" type="submit" onclick="resetPass()"></input></div>
+      </div>
+    </div>
 
+    <div class="col-sm-4 col-lg-4">
+      <div class="row">
+        <div class="col-sm-12 col-lg-12">
+          <h4>Themes</h4>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6 col-lg-6">
+          choose the color theme:
+        </div>
+        <div class="col-sm-6 col-lg-6">
+          <select id="ThemeSelector" onchange="selected()" >
+            {%if pageTheme=="Dark"%}
+              <option selected="selected">Light Blue</option>
+            {% else %}
+              <option>Light Blue</option>
+            {% endif %}
+            {%if pageTheme=="Dark"%}
+              <option selected="selected">Dark</option>
+            {% else %}
+              <option>Dark</option>
+            {% endif %}
+          </select>
+        </div>
+    </div>
+    </div>
+</div>
 
   <div class="divider" style="width:100%;height:2px;margin-top:20px;"></div>
 
-  <div style="width: 100%;float:left">
-    <h4>Activity Tracker Setting</h4>
-    you can enter the activities you are interested in the field <br>
-    bellow (comma separated):
-    <form action="javascript:;" onsubmit="return activityList();">
-       <textarea id="activities" type="text" cols="40" rows="5" style="margin-top: 5px;margin-left: 1%; min-height:100px;width:28%; outline:None; resize:None">{{activityList|string()}}</textarea><br>
-       <input type="submit" style="margin-left: 23%;margin-top: 5px;">
-    </form>
-    * the activities will appear in the same order that you define here!
+  <div class="row">
+    <div class="col-sm-5 col-lg-5">
+      <h4>Activity Tracker Setting</h4>
+      <p>you can enter the activities you are interested in the field bellow (comma separated):</p>
+      <form action="javascript:;" style="margin-bottom:10px;" onsubmit="return activityList();">
+         <textarea id="activities" type="text" cols="40" rows="5" style="margin-top: 5px; min-height:100px;width:100%; outline:None; resize:None">{{activityList|string()}}</textarea><br>
+         <input type="submit" style="float: right; margin-top: 5px;">
+      </form>
+      <p>* the activities will appear in the same order that you define here!</p>
+    </div>
   </div>
 
   <div class="divider" style="width:100%;height:2px;margin-top:20px;"></div>
-  <div style="width: 100%;float:left">
-    <h4>Mail server setup</h4>
-    <form action="javascript:;" onsubmit="return updateMailSetting()">
 
-        <span style="float: left; min-width: 140px;"> MAIL_SERVER: </span>
-        <textarea id="MAIL_SERVER" type="text" rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None" placeholder="{{email_setting["MAIL_SERVER"]}}"></textarea><br>
+  <div class="row">
+    <div class="col-sm-5 col-lg-5">
+      <h4>Mail server setup</h4>
+      <form action="javascript:;" onsubmit="return updateMailSetting()">
 
-        <span style="float: left; min-width: 140px;"> MAIL_PORT: </span>
-        <textarea id="MAIL_PORT" type="text"  rows="1" style="margin-top: 5px;margin-left: 1%; width:60px; outline:None; resize:None" placeholder="{{email_setting["MAIL_PORT"]}}"></textarea><br>
+          <span style="float: left; min-width: 40%;"> MAIL_SERVER: </span>
+          <textarea id="MAIL_SERVER" type="text" rows="1" style="width:60%; outline:None; resize:None" placeholder="{{email_setting["MAIL_SERVER"]}}"></textarea><br>
 
-        <span style="float: left; min-width: 153px;"> MAIL_USE_SSL: </span>
-        <select id="MAIL_USE_SSL" style="float:left;">
-          {%if email_setting["MAIL_USE_SSL"]=="True"%}
-            <option selected="selected">True</option>
-          {% else %}
-            <option>True</option>
-          {% endif %}
-          {%if email_setting["MAIL_USE_SSL"]=="False"%}
-            <option selected="selected">False</option>
-          {% else %}
-            <option>False</option>
-          {% endif %}
-        </select><br>
+          <span style="float: left; min-width: 40%;"> MAIL_PORT: </span>
+          <textarea id="MAIL_PORT" type="text"  rows="1" style="width:60px; outline:None; resize:None" placeholder="{{email_setting["MAIL_PORT"]}}"></textarea><br>
 
-        <span style="float: left; min-width: 140px;"> MAIL_USERNAME: </span>
-        <textarea id="MAIL_USERNAME" type="text"  rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None" placeholder="{{email_setting["MAIL_USERNAME"]}}"></textarea><br>
+          <span style="float: left; min-width: 40%;"> MAIL_USE_SSL: </span>
+          <select id="MAIL_USE_SSL" style="float:left;">
+            {%if email_setting["MAIL_USE_SSL"]=="True"%}
+              <option selected="selected">True</option>
+            {% else %}
+              <option>True</option>
+            {% endif %}
+            {%if email_setting["MAIL_USE_SSL"]=="False"%}
+              <option selected="selected">False</option>
+            {% else %}
+              <option>False</option>
+            {% endif %}
+          </select><br>
 
-        <span style="float: left; min-width: 140px;"> MAIL_PASSWORD: </span>
-        <input id="MAIL_PASSWORD" type="password" placeholder = "{{email_setting["MAIL_PASSWORD"]}}" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None"><br>
+          <span style="float: left; width: 40%;"> MAIL_USERNAME: </span>
+          <textarea id="MAIL_USERNAME" type="text"  rows="1" style=" width:60%; outline:None; resize:None" placeholder="{{email_setting["MAIL_USERNAME"]}}"></textarea><br>
 
-        <span style="float: left; min-width: 140px;"> MAIL_RECIPIENT: </span>
-        <textarea id="MAIL_RECIPIENT" type="text" rows="1" style="margin-top: 5px;margin-left: 1%;  width:28%; outline:None; resize:None" placeholder="{{email_setting["MAIL_RECIPIENT"]}}"></textarea><br>
+          <span style="float: left; width: 40%;"> MAIL_PASSWORD: </span>
+          <input id="MAIL_PASSWORD" type="password" placeholder = "{{email_setting["MAIL_PASSWORD"]}}" style="margin-top: 5px; width:60%; outline:None; resize:None"><br>
 
-        <input type="submit" style="margin-left: 23%;margin-top: 5px;">
-    </form>
+          <span style="float: left; width: 40%;"> MAIL_RECIPIENT: </span>
+          <textarea id="MAIL_RECIPIENT" type="text" rows="1" style="width:60%; outline:None; resize:None" placeholder="{{email_setting["MAIL_RECIPIENT"]}}"></textarea><br>
+
+          <input type="submit" style="float:right; margin-right: 0%;margin-top: 5px;">
+      </form>
+    </div>
   </div>
-  <div class="divider" style="width:100%;height:2px;margin-top:20px;"></div>
-
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 </body>
 
 <script type="text/javascript">

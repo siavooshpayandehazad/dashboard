@@ -302,7 +302,9 @@ function chapterMouseIn(item){
   cross.classList.add("fa")
   cross.classList.add("fa-times")
   cross.style.color="white";
-  cross.style.marginLeft = "10px";
+  cross.style.marginLeft = "5px";
+  cross.style.paddingTop = "3px";
+  cross.style.float = "left";
   cross.classList.add("chapterCloseButton");
   cross.onclick=function deleteChapter(){
     chapterName=item.textContent;

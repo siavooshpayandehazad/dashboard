@@ -26,7 +26,6 @@
   --submit-bg-hvr-clr:#4292c6;
   --newTodo-brdr-clr:#08519c;
   --titleNewTask-clr:black;
-  --settingpage-txt-color: black;
   --todayMarker-bg-clr:#fddbc7;
 }
 
@@ -59,7 +58,6 @@
   --submit-bg-hvr-clr:#969696;
   --newTodo-brdr-clr:#737373;
   --titleNewTask-clr:white;
-  --settingpage-txt-color:white;
   --todayMarker-bg-clr:#d9d9d9;
 }
 
@@ -67,10 +65,12 @@ html{
     min-height:100%;
 }
 
-body{
+.bg{
   background-color: var(--bckgrnd-clr);
-  min-height:100vh;
+  color: var(--logText-clr);
+  min-height: 100vh;
 }
+
 body.journal{
   background-repeat:no-repeat; background-position: 120% 380px;
 }
@@ -88,6 +88,9 @@ h2.title {
 }
 h2.lightbg {
   color: var(--title-lightbg-clr);
+}
+h4.lightbg {
+  color: black;
 }
 h2.journal{
   text-decoration: none;
@@ -142,7 +145,7 @@ div.todoTasks{
 }
 div.todoTasksScorlable{
   overflow-y: scroll;
-  height: 300px;
+  height: 290px;
 }
 div.taskColorLabel{
   float:right;
@@ -158,11 +161,10 @@ div.taskColorLabel:hover{
 }
 div.todoColorPopup{
   position:relative;
-  padding-left: 5px;
   top: 4px;
   left:4px;
-  width:25px;
-  height:75px;
+  width:20px;
+  height:60px;
   background-color: white;
   border:1px solid black;
   border-radius: 10px;
@@ -227,9 +229,6 @@ div.divider{
   height:10px;
   float:left;
   background-color: var(--divider-clr);
-}
-div.settingpage{
-  color: var(--settingpage-txt-color);
 }
 
 
@@ -306,13 +305,18 @@ span.date{
   float:right;
   margin-right:10px;
   margin-top:5px;
+  width:60px;
+  line-height: 15px;
 }
 span.task{
-      display: inline-block;
-      width: calc(90% - 100px);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+  display: inline-block;
+  width: calc(90% - 118px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color:black;
+  font-size: 15px;
+  line-height: 15px;
 }
 .toDoHoverText {
   position: fixed;
@@ -542,6 +546,7 @@ div.monthTab{
   border-radius: 10px 0px 0px 10px;
   background-color:gray;
   margin-top:3px;
+  color:black;
 }
 div.selected{
   background-color:white;

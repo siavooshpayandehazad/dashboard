@@ -1,7 +1,7 @@
 div.NoteBookCloseButton{
   width: 17px;
   height: 17px;
-  line-height: 17px;
+  line-height: 100%;
   background-color: white;
   border: 0px solid white;
   border-radius: 20px;
@@ -17,14 +17,15 @@ div.NoteBookCloseButton:hover{
   height:30px;
   background-color:#252525;
   border: 3px solid white;
-  padding-top: 10px;
+  line-height: 90%;
+  padding-top: 2%;
   border-radius:15px 0px 0px 15px;
   text-align:center;
-  color:white
+  color:white;
 }
 .notebookLabel.selected {
   background-color: #cc4c02;
-  line-height: 30px;
+  line-height: 100%;
 }
 .notebookLabel:hover{
   cursor: pointer;
@@ -32,11 +33,12 @@ div.NoteBookCloseButton:hover{
 }
 .ToC{
   list-style: none;
-  padding-left: 25px;
+  padding-left: 10px;
+  width: 100%;
+  float:left;
 }
 .ToCLabel{
   width: 100%;
-  margin-left: -20px;
 }
 .ToCLabel.selected{
   color: #fd8d3c;
@@ -44,14 +46,17 @@ div.NoteBookCloseButton:hover{
 .ToCLabelText{
   display: inline-block;
   overflow: hidden;
-  width: calc(100% - 25px);
+  width: calc(100% - 20px);
   text-overflow: ellipsis;
   white-space: nowrap;
+  float:left;
 }
 .addToC{
-  margin-left: -15px;
   margin-top:-15px;
   list-style-type: none;
+  width: 100%;
+  padding-left: 10px;
+  float:left;
 }
 #notebookLabels{
   width:12%;
@@ -63,7 +68,7 @@ div.NoteBookCloseButton:hover{
 }
 #chapterContent{
   overflow-y: auto;
-  height:calc(75vh - 60px);
+  height:calc(100% - 120px);
   width:96%;
   margin-left:15px;
   margin-top: 15px;

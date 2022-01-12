@@ -28,22 +28,22 @@
 <div class="row">
   <div class="col-sm-6">
     {% if request.args.get('yearlyView') == "true" %}
-      <h3 id="titleLabelMonthly" style= "color:white; margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
+      <h3 class="title" id="titleLabelMonthly" style= " margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
     {%else%}
-      <h3 id="titleLabelMonthly" style= "color:white; margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
+      <h3 class="title" id="titleLabelMonthly" style= "margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
     {%endif%}
     </h3>
 
     {% if request.args.get('yearlyView') == "true" %}
-      <h3 id="titleLabelYearly"  style= "color:white; margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
+      <h3 class="title" id="titleLabelYearly"  style= "margin-bottom: 0px; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
     {%else%}
-      <h3 id="titleLabelYearly"  style= "color:white;  margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
+      <h3 class="title" id="titleLabelYearly"  style= "margin-bottom: 0px; display: none; font-family:Impact;"> <font style="text-decoration: underline;"> {{ name }}</font>
     {%endif%}
     </h3>
   </div>
   <div class="col-sm-5">
     <!-- Header! -->
-    <h3 style= "color:white;">
+    <h3 class="title">
         <a  class= "arrow hover-red"  onclick="moveYear(-1)">&#9668;</a>
         {{PageYear}}
         <a class= "arrow hover-red" onclick="moveYear(1)">&#9658;</a>

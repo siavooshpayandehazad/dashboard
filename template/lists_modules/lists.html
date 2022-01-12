@@ -198,8 +198,8 @@ function deleteList(item){
     </div><br>
     {% set ns = namespace(done_numbers = 0) %}
     <div class = "todoTasks" style="width:95%;">
-      <i id = "{{listName}}", class="fa fa-cog hover-red" style="float:right; margin-top:5px; margin-right:5px;" onclick="listSettings(this)"></i>
-      <i name = "{{listName}}" class="fa fa-trash-o hover-red" style="float:right; margin-top:5px; margin-right:5px;" onclick="deleteList(this)"></i>
+      <i id = "{{listName}}", class="fa fa-cog hover-red" style="float:right; margin-top:5px; margin-right:5px; color: black;" onclick="listSettings(this)"></i>
+      <i name = "{{listName}}" class="fa fa-trash-o hover-red" style="float:right; margin-top:5px; margin-right:5px; color: black;" onclick="deleteList(this)"></i>
       <h2 class="title lightbg">&nbsp;{{listName}}</h2>
       <div class ="todoTasksScorlable">
         <ul id = "{{listName}}_List" class="todoList">
@@ -209,7 +209,7 @@ function deleteList(item){
                 <input type="checkbox"; onchange="boxchange(event)"; style="margin-right:5px">
                 <span class="task" type={{listName}} ondblclick="itemdblclick(this)">{{item}}</span>
                 <span class="note" style="display:none">{{note|safe}}</span>
-                <span style="float:right; margin-right:10px;" onclick="deleteItem(event)" onmouseover = "highlightItem(this)" onmouseout="removeItemHighlight(this)"><i class="fa fa-trash-o hover-red"></i> </span>
+                <span style="float:right; margin-right:10px; color: black;" onclick="deleteItem(event)" onmouseover = "highlightItem(this)" onmouseout="removeItemHighlight(this)"><i class="fa fa-trash-o hover-red"></i> </span>
               </li>
             {%else%}
             {% set ns.done_numbers = ns.done_numbers + 1 %}
@@ -217,7 +217,7 @@ function deleteList(item){
                 <input type="checkbox"; onchange="boxchange(event)"; checked style="margin-right:5px">
                 <span class="task" type={{listName}} ondblclick="itemdblclick(this)">{{item}}</span>
                 <span class="note" style="display:none">{{note|safe}}</span>
-                <span style="float:right; margin-right:10px;" onclick="deleteItem(event)" onmouseover = "highlightItem(this)" onmouseout="removeItemHighlight(this)"><i class="fa fa-trash-o hover-red"></i> </span>
+                <span style="float:right; margin-right:10px; color: black;" onclick="deleteItem(event)" onmouseover = "highlightItem(this)" onmouseout="removeItemHighlight(this)"><i class="fa fa-trash-o hover-red"></i> </span>
               </li>
             {%endif%}
           {%endfor%}

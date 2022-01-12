@@ -13,21 +13,24 @@ td.planned {
  background-color:   var(--tracker-plnd-hvr-clr);
 }
 td.trackerLabel{
-  border-radius: 3px;
+  height: 15px;
   border: 1px solid white;
   font-size: 12px;
+  color: black;
+  margin-top: 2px;
 }
 td.trackerHeader{
-  border-radius: 3px;
   border: 1px solid white;
   text-align: center;
   font-size: 12px;
+  color:black;
 }
 td.todayMarker{
   background-color: var(--todayMarker-bg-clr);
-  border-radius:10px;
+  border: 1px solid white;
   text-align: center;
   font-size: 15px;
+  color:black;
 }
 div.activityTracker {
   border-radius:12px;

@@ -1,5 +1,5 @@
 tbody.calendartb td, thead.calendarth th{
-  width: 125px;
+  width: 12.5%;
   user-select: none;
 }
 thead.calendarth th{
@@ -30,7 +30,7 @@ tbody.calendartb td{
   opacity: 1;
 }
 .timeCurser{
-  width: 127px;
+  width: 12%;
   height: 3px;
   background-color: red;
   position: absolute;
@@ -39,11 +39,14 @@ tbody.calendartb td{
 .calendarLabel{
   border-right: 1px solid white;
   border-left: 1px solid white;
+  width:12.5%;
+  text-align: center;
 }
 .calendarLabel:hover{
   color:rgb(236, 112, 20);
 }
 .classContainer{
+  width: 100%;
   border-radius:10px;
   float:right;
   background-color:white;
@@ -68,4 +71,15 @@ tbody.calendartb td{
   margin-left: 1px;
   position: absolute;
   background-color: #c6dbef;
+}
+th.calHeader{
+  width: 12.5%;
+  text-align: center;
+  border-right: 1px solid #9ecae1;
+  border-radius:10px 10px 0px 0px;
+  background-image: linear-gradient(to bottom, #c6dbef, white);
+}
+#calTabMonth{
+  width: 100%;
+  border-spacing: 0px;
 }

@@ -43,6 +43,7 @@ function editTaskColor(item, event){
     var color = document.createElement("div");
     color.setAttribute("class", "taskColorLabel");
     color.style.backgroundColor = bgcolors[i];
+    color.style.marginRight = "3px";
     color.onclick = function () {
       var date = item.parentElement.getElementsByClassName("date")[0].textContent;
       var textVlue = item.parentElement.getElementsByClassName("task")[0].textContent;
@@ -118,6 +119,7 @@ function AddItemToList(name, date, list, color){
 
   var i = document.createElement("i");
   i.setAttribute('class',"fa fa-trash-o hover-red");
+  i.style.color="black"
   span2.appendChild(i);
   li.appendChild(span2);
   li.appendChild(colorDiv);
@@ -305,7 +307,6 @@ function toggleOverlay(displayStatus){
     <i class="fa fa-search todoSearch" style="margin-left:10px; margin-top:10px;" onclick="search()"></i>
   </div>
   <div id="todoSearchResult">
-
   </div>
 </div>
 
@@ -338,22 +339,19 @@ function toggleOverlay(displayStatus){
 
 <!--Over due tasks-->
 <div class = "todoTasks">
-<h2 class="title" style="color:#bd0026">Over Due</h2>
-<div class ="todoTasksScorlable" id= "overDueTasks">
-</div>
+  <h2 class="title" style="color:#bd0026">Over Due</h2>
+  <div class ="todoTasksScorlable" id= "overDueTasks"></div>
 </div>
 <!--Today's tasks-->
 <div class = "todoTasks">
-<h2 class="title lightbg" style="color:#2171b5">Todays tasks</h2>
-<div class ="todoTasksScorlable" id= "todaysTasks">
-</div>
+  <h2 class="title lightbg" style="color:#2171b5">Todays tasks</h2>
+  <div class ="todoTasksScorlable" id= "todaysTasks"></div>
 </div>
 <!--next Month's tasks-->
 <div class = "todoTasks">
    <h2  class="title lightbg">Next month at a glance</h2>
-   <div class ="todoTasksScorlable" id= "nextMonthsTasks">
-  </div>
- </div>
+   <div class ="todoTasksScorlable" id= "nextMonthsTasks"></div>
+</div>
 
 <script type="text/javascript">
   function cleanTodos(DivID){
@@ -404,7 +402,7 @@ function toggleOverlay(displayStatus){
 
          deleteIcon.setAttribute("class", "fa fa-trash-o hover-red");
          span2.classList.add("deleteSpan");
-         span2.style="float:right;margin-right:10px;";
+         span2.style="float:right;margin-right:10px;color:black";
          deleteIcon.onmouseover = function (){highlightToDoText(this)}
          deleteIcon.onmouseleave = function (){removeToDoHighlight(this)}
          deleteIcon.onclick = function (){deleteTodo(this.parentElement)}
