@@ -63,6 +63,14 @@
       }
       );
     }
+    function audiobooksPath(){
+      var audiobooksPath = document.getElementById("audiobooks").value;
+      $.ajax({
+          type: "POST",
+          url: "http://"+window.location.hostname+":5000/settings",
+          data: {"type": "audiobooksPath", "value": audiobooksPath},
+      });
+    }
   </script>
 </head>
 
@@ -144,6 +152,14 @@
          <input type="submit" style="float: right; margin-top: 5px;">
       </form>
       <p>* the activities will appear in the same order that you define here!</p>
+    </div>
+    <div class="col-sm-5 col-lg-5">
+      <h4>Setup audiobooks folder</h4>
+      <p>add the path to your audiobooks folder:</p>
+      <form action="javascript:;" style="margin-bottom:10px;" onsubmit="return audiobooksPath();">
+         <textarea id="audiobooks" type="text" cols="40" rows="1" style="margin-top: 5px; width:100%; outline:None; resize:None">{{audiobooksPath|string()}}</textarea><br>
+         <input type="submit" style="float: right; margin-top: 5px;">
+      </form>
     </div>
   </div>
 

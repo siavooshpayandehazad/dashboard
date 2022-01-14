@@ -426,7 +426,7 @@ def setupSettingTable(dbCursur, dbConnection, lock):
         dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
 
     for item in ["activityList", "activityList", "MAIL_SERVER", "MAIL_PORT", "MAIL_USE_SSL",
-                 "MAIL_USERNAME", "MAIL_PASSWORD", "MAIL_RECIPIENT"]:
+                 "MAIL_USERNAME", "MAIL_PASSWORD", "MAIL_RECIPIENT", "audiobooksPath"]:
         dbCursur.execute("""SELECT * FROM settings WHERE parameter = ?  """, (item,))
         try:
             parameter = dbCursur.fetchall()[0][1]

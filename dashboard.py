@@ -3,6 +3,8 @@ from functionPackages.misc import *
 from functionPackages.charts import *
 from functionPackages.dateTime import *
 
+from pathlib import Path
+import shutil
 import sqlite3
 import datetime
 import sys
@@ -349,6 +351,7 @@ class settings(Resource):
         headers = {'Content-Type': 'text/html'}
         pageTheme = fetchSettingParamFromDB(c, "Theme", lock)
         activityList = fetchSettingParamFromDB(c, "activityList", lock)
+        audiobooksPath = fetchSettingParamFromDB(c, "audiobooksPath", lock)
 
         mailUsername = fetchSettingParamFromDB(c, "MAIL_USERNAME", lock)
         mailpass = len(fetchSettingParamFromDB(c, "MAIL_PASSWORD", lock))*"*"
@@ -363,7 +366,7 @@ class settings(Resource):
                          "MAIL_PASSWORD": "mailpass",
                          "MAIL_RECIPIENT": recipientEmail
                          }
-        return make_response(render_template('settings.html', activityList=activityList,
+        return make_response(render_template('settings.html', activityList=activityList, audiobooksPath=audiobooksPath,
                                              pageTheme=pageTheme, email_setting=email_setting),200,headers)
 
     def post(self):
@@ -376,11 +379,17 @@ class settings(Resource):
             updateSettingParam(c, conn, "activityList", activityList, lock)
         if args['type'] == "password":
             pass_dict = eval((args['value']))
-            hashed_password = fetchSettingParamFromDB(c, "password")
+            hashed_password = fetchSettingParamFromDB(c, "password", lock)
             if (hashed_password == "None") or verifyPassword(hashed_password, pass_dict["currntpwd"]):
-                updateSettingParam(c, conn, "password", hashPassword(pass_dict["newpwd"], lock))
+                updateSettingParam(c, conn, "password", hashPassword(pass_dict["newpwd"]), lock)
                 return "succeded", 200
             return "failed", 200
+        if args['type'] == "audiobooksPath":
+            updateSettingParam(c, conn, "audiobooksPath", args['value'], lock)
+            source = Path(args['value'])
+            destination = Path("./static/audiobooks/").resolve()
+            os.symlink(source, destination)
+            return "succeded", 200
         if args['type'] == "mailSetting":
             value_dict = eval((args['value']))
             for item in value_dict:
