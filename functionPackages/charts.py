@@ -384,7 +384,7 @@ def genenrate_weather_daily(dbCursur, todaysDate, lock):
     for item in todayVals:
         room = int(item[0])
         daily_data[room] = daily_data.get(room, {"time": [], "temp":[], "pressure":[], "humidity": []})
-        daily_data[room]["time"].append(item[2].strip())
+        daily_data[room]["time"].append(item[2].strip()[:-3])
         daily_data[room]["temp"].append(item[3].strip())
         daily_data[room]["humidity"].append(item[4].strip())
         daily_data[room]["pressure"].append(float(item[5].strip())/1000)
