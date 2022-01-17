@@ -493,8 +493,7 @@ def fetchNotebooks(dbCursur, lock):
 def updateSettingParam(DBCursor, DBConnection, param, value, lock):
     try:
         lock.acquire(True)
-        DBCursor.execute("""DELETE from settings where parameter = ? """, (param, ))
-        DBCursor.execute("""INSERT INTO settings VALUES(?, ?)""", (param, value))
+        DBCursor.execute("UPDATE settings SET value = ? WHERE parameter = ?", (value, param,))
         DBConnection.commit()
         lock.release()
         return True

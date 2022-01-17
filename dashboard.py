@@ -302,9 +302,9 @@ class org(Resource):
                 date = args['date']
                 lock.acquire(True)
                 values = json.loads(args['oldValue'])
+                newValues = json.loads(args['value'])
                 c.execute("""DELETE from calendar where date = ? and startTime = ? and endTime = ?  and eventName = ? """, (values["date"], values["startTime"], values["stopTime"], values["name"]))
-                values = json.loads(args['value'])
-                c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (values["date"], values["startTime"], values["stopTime"], values["name"], values["color"], values["details"]))
+                c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (newValues["date"], newValues["startTime"], newValues["stopTime"], newValues["name"], newValues["color"], newValues["details"]))
                 conn.commit()
                 lock.release()
 
@@ -461,8 +461,7 @@ class lists(Resource):
             lock.acquire(True)
             c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("lists",))
             listNames = [x.strip() for x in c.fetchall()[0][1].split(",")] + [listName]
-            c.execute("""DELETE from settings where parameter = ? """, ("lists", ))
-            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("lists", ",".join(listNames)))
+            c.execute("UPDATE settings SET value = ? WHERE parameter = ?", (",".join(listNames), "lists", ))
             conn.commit()
             lock.release()
             return "Done", 200
@@ -473,8 +472,7 @@ class lists(Resource):
             c.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("lists",))
             listNames = [x.strip() for x in c.fetchall()[0][1].split(",")]
             listNames.remove(listName)
-            c.execute("""DELETE from settings where parameter = ? """, ("lists", ))
-            c.execute("""INSERT INTO settings VALUES(?, ?)""", ("lists", ",".join(listNames)))
+            c.execute("UPDATE settings SET value = ? WHERE parameter = ?", (",".join(listNames), 'lists', ))
             c.execute("""DELETE from lists where type = ? """, (listName, ))
             conn.commit()
             lock.release()
