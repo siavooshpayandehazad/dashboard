@@ -193,9 +193,9 @@ function deleteList(item){
 
 
 <div style="margin-top: 40px; margin-left: 1%; width:100%; float:left;">
-    <div style = "width:100%;">
-      <b class="titleNewTask">Add new item:</b> <input name={{listName}} type="text" onkeypress="submitonEnter(event)"><br>
-    </div><br>
+    <div style = "width:100%;margin-bottom:10px;">
+      <b class="titleNewTask">Add new item:</b> <input name={{listName}} type="text" style="width: calc(100% - 150px);" onkeypress="submitonEnter(event)">
+    </div>
     {% set ns = namespace(done_numbers = 0) %}
     <div class = "todoTasks" style="width:95%;">
       <i id = "{{listName}}", class="fa fa-cog hover-red" style="float:right; margin-top:5px; margin-right:5px; color: black;" onclick="listSettings(this)"></i>

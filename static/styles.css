@@ -375,7 +375,7 @@ i.fa-sign-out{
   color: var(--icon-clr);
 }
 b.titleNewTask{
-  margin-left:20%;
+  margin-left:10px;
   color:var(--titleNewTask-clr);
 }
 #overlay {
