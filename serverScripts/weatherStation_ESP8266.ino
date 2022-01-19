@@ -12,6 +12,7 @@
 
 ESP8266WiFiMulti WiFiMulti;
 
+#include <AHT10.h>
 
 /*
  * To setup NTPClient Download this: https://github.com/taranais/NTPClient/archive/master.zip
@@ -65,7 +66,10 @@ int bootCount = 0;
 
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BMP280.h>
+// #include <Adafruit_BMP280.h>
+#include <AHT10.h>
+
+uint8_t readStatus = 0;
 
 
 #define I2C_SDA 21
@@ -73,28 +77,17 @@ int bootCount = 0;
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
-Adafruit_BMP280 bmp; // I2C
+// Adafruit_BMP280 bmp; // I2C
+
+AHT10 myAHT10(AHT10_ADDRESS_0X38);
 
 unsigned long delayTime;
 
-void setup() {
-
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, HIGH);
-
-  ESP.wdtEnable(WDT_TIMEOUT);
-
-  ++bootCount;
-  Serial.begin(115200);
-  Serial.println("----------------------------");
-  Serial.println("waking up...");
-  Serial.println("Boot number: " + String(bootCount));
-
-  Serial.println(F("BME280 test"));
-
+/*
+void BMP280Test () {
   Serial.println(F("BMP280 test"));
   unsigned status;
-  //status = bmp.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID);
+
   status = bmp.begin(0x76);
   if (!status) {
     Serial.println(F("Could not find a valid BMP280 sensor, check wiring or "
@@ -107,12 +100,50 @@ void setup() {
     while (1) delay(10);
   }
 
-  /* Default settings from datasheet. */
-  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
-                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
-                  Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
-                  Adafruit_BMP280::FILTER_X16,      /* Filtering. */
-                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+  // Default settings from datasheet.
+  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     // Operating Mode. //
+                  Adafruit_BMP280::SAMPLING_X2,     // Temp. oversampling //
+                  Adafruit_BMP280::SAMPLING_X16,    // Pressure oversampling //
+                  Adafruit_BMP280::FILTER_X16,      // Filtering. //
+                  Adafruit_BMP280::STANDBY_MS_500); // Standby time. //
+}
+*/
+
+void AH10Test (){
+  Serial.println(F("AHT10 test"));
+
+  while (myAHT10.begin() != true)
+  {
+    Serial.println(F("AHT10 not connected or fail to load calibration coefficient")); //(F()) save string to flash & keeps dynamic memory free
+    delay(5000);
+  }
+  Serial.println(F("AHT10 OK"));
+  readStatus = myAHT10.readRawData(); //read 6 bytes from AHT10 over I2C
+
+  if (readStatus != AHT10_ERROR)
+  {
+    Serial.print(F("Temperature: ")); Serial.print(myAHT10.readTemperature(AHT10_USE_READ_DATA)); Serial.println(F(" +-0.3C"));
+    Serial.print(F("Humidity...: ")); Serial.print(myAHT10.readHumidity(AHT10_USE_READ_DATA));    Serial.println(F(" +-2%"));
+  }
+}
+
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, HIGH);
+
+  ESP.wdtEnable(WDT_TIMEOUT);
+
+  ++bootCount;
+  Serial.begin(115200);
+  Serial.println("----------------------------");
+  Serial.println("waking up...");
+  Serial.println("Boot number: " + String(bootCount));
+
+
+  AH10Test();
+
+  //BMP280Test();
 
   Serial.println();
 
@@ -160,7 +191,7 @@ void setup() {
   Serial.print("   HOUR: ");
   Serial.println(timeStamp);
 
-  printValues();
+  //printValues();
   HTTPClient http;
 
   // Your Domain name with URL path or IP address with path
@@ -173,9 +204,9 @@ void setup() {
   String httpRequestData;
 
   httpRequestData = "value={\"room\": \"" + roomNumber                      + "\", " +
-                           "\"temp\": \"" + bmp.readTemperature()           + "\", " +
-                           "\"humidity\": \"" +  0             + "\", " +
-                           "\"pressure\": \"" + (bmp.readPressure() / 100.0F )  + "\", " +
+                           "\"temp\": \"" + myAHT10.readTemperature(AHT10_USE_READ_DATA)           + "\", " +
+                           "\"humidity\": \"" +  myAHT10.readHumidity(AHT10_USE_READ_DATA)    + "\", " +
+                           "\"pressure\": \"" + 0  + "\", " +
                            "\"date\": \"" + dayStamp                        + "\", " +
                            "\"hour\": \"" + timeStamp                       + "\" "  +
                             "}";
@@ -224,6 +255,7 @@ void loop() {
   //setup();
 }
 
+/*
 void printValues() {
   Serial.print("Temperature = ");
   Serial.print(bmp.readTemperature());
@@ -243,3 +275,4 @@ void printValues() {
 
   Serial.println();
 }
+*/
