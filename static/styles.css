@@ -355,7 +355,7 @@ input[type=submit]:hover {
     background:var(--submit-bg-hvr-clr);
 }
 input.newTodo{
-  width:600px;
+  width:calc(100% - 140px);;
   height:30px;
   box-sizing: border-box;
   border: 2px solid var(--newTodo-brdr-clr);

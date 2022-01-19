@@ -73,7 +73,7 @@ tbody.calendartb td{
   background-color: #c6dbef;
 }
 th.calHeader{
-  width: 12.5%;
+  max-width: 12.5%;
   text-align: center;
   border-right: 1px solid #9ecae1;
   border-radius:10px 10px 0px 0px;
