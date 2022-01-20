@@ -147,6 +147,11 @@
       var cardProj = event.target.parentElement.parentElement.querySelector("#projectName").innerHTML;
       var cardTask =  event.target.parentElement.parentElement.querySelector("#taskName").innerHTML;
       var currentList = event.target.parentElement.parentElement.id.split("_")[0];
+
+      decision = confirm("you are permenently deleting "+cardTask+" card from "+cardProj+" project! are you sure?");
+      if(decision == false){
+        return;
+      }
       $.ajax({ type: "POST",
           url: "/org",
           data: {"type" : "scrum", "value" : JSON.stringify({"cardProj": cardProj, "cardTask": cardTask,
