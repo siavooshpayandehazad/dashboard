@@ -810,7 +810,7 @@ def sendCalNotification():
             body = "Event time: "+item[1]+" - "+item[2]+"\n"+ \
                    "Event: "+item[3]+"\n"+ \
                    "Description: "+item[5]+"\n"
-            send_mail("Upcomming event: "+item[3], body, app, mail, c)
+            send_mail("Upcomming event: "+item[3], body, app, mail, c, lock)
 
 
 def sendDailyDigest():
@@ -835,7 +835,7 @@ def sendDailyDigest():
         for item in todos:
             body += "\t* Todo: " + item[0] + "\n"
             body += "\t       Status: "+ ("Done" if item[2] == "true" else "Not Done") + "\n"
-        send_mail("Daily Digest for: "+todaysDate, body, app, mail, c)
+        send_mail("Daily Digest for: "+todaysDate, body, app, mail, c, lock)
 
 
 scheduler = BackgroundScheduler()
