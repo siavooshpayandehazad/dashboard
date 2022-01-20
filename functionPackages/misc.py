@@ -433,6 +433,13 @@ def setupSettingTable(dbCursur, dbConnection, lock):
         except:
             dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "None"))
 
+    for item in ["EnableDailyDigest", "EnableEventNotifications"]:
+        dbCursur.execute("""SELECT * FROM settings WHERE parameter = ?  """, (item,))
+        try:
+            parameter = dbCursur.fetchall()[0][1]
+        except:
+            dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "false"))
+
     dbConnection.commit()
     lock.release()
 

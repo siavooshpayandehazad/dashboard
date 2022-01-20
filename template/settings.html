@@ -71,6 +71,20 @@
           data: {"type": "audiobooksPath", "value": audiobooksPath},
       });
     }
+    function enableDailyDigest(item){
+      $.ajax({
+          type: "POST",
+          url: "http://"+window.location.hostname+":5000/settings",
+          data: {"type": "EnableDailyDigest", "value": item.checked},
+      });
+    }
+    function enableEventNotifications(item){
+      $.ajax({
+          type: "POST",
+          url: "http://"+window.location.hostname+":5000/settings",
+          data: {"type": "EnableEventNotifications", "value": item.checked},
+      });
+    }
   </script>
 </head>
 
@@ -166,10 +180,11 @@
   <div class="divider" style="width:100%;height:2px;margin-top:20px;"></div>
 
   <div class="row">
-    <div class="col-sm-5 col-lg-5">
+    <div class="col-sm-12 col-lg-12">
       <h4>Mail server setup</h4>
+    </div>
+    <div class="col-sm-5 col-lg-5">
       <form action="javascript:;" onsubmit="return updateMailSetting()">
-
           <span style="float: left; min-width: 40%;"> MAIL_SERVER: </span>
           <textarea id="MAIL_SERVER" type="text" rows="1" style="width:60%; outline:None; resize:None" placeholder="{{email_setting["MAIL_SERVER"]}}"></textarea><br>
 
@@ -201,6 +216,33 @@
 
           <input type="submit" style="float:right; margin-right: 0%;margin-top: 5px;">
       </form>
+    </div>
+    <div class="col-sm-5 col-lg-5">
+      <div class="row">
+        <div class="col-sm-12 col-lg-12 ">
+          Enable Daily Digest Emails
+          <label class="switch" style="float:left; margin-right: 10px;">
+            {%if email_setting["EnableDailyDigest"]=="false"%}
+              <input type="checkbox" id= "sendDailyDigest" onclick="enableDailyDigest(this)" unchecked>
+            {% else %}
+              <input type="checkbox" id= "sendDailyDigest" onclick="enableDailyDigest(this)" checked>
+            {% endif %}
+            <span class="slider round"></span>
+          </label>
+        </div>
+
+        <div class="col-sm-12 col-lg-12 ">
+          Enable Event Notifications
+          <label class="switch" style="float:left; margin-right: 10px;">
+            {%if email_setting["EnableEventNotifications"]=="false"%}
+              <input type="checkbox" id= "sendEventNotifications" onclick="enableEventNotifications(this)" unchecked>
+            {% else %}
+              <input type="checkbox" id= "sendEventNotifications" onclick="enableEventNotifications(this)" checked>
+            {% endif %}
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -359,12 +359,16 @@ class settings(Resource):
         mailPort = fetchSettingParamFromDB(c, "MAIL_PORT", lock)
         mailSSL = fetchSettingParamFromDB(c, "MAIL_USE_SSL", lock)
         recipientEmail = fetchSettingParamFromDB(c, "MAIL_RECIPIENT", lock)
+        EnableDailyDigest = fetchSettingParamFromDB(c, "EnableDailyDigest", lock)
+        EnableEventNotifications = fetchSettingParamFromDB(c, "EnableEventNotifications", lock)
         email_setting = {"MAIL_USERNAME": mailUsername,
                          "MAIL_SERVER": mailServer,
                          "MAIL_PORT": mailPort,
                          "MAIL_USE_SSL": mailSSL,
                          "MAIL_PASSWORD": "mailpass",
-                         "MAIL_RECIPIENT": recipientEmail
+                         "MAIL_RECIPIENT": recipientEmail,
+                         "EnableEventNotifications": EnableEventNotifications,
+                         "EnableDailyDigest": EnableDailyDigest
                          }
         return make_response(render_template('settings.html', activityList=activityList, audiobooksPath=audiobooksPath,
                                              pageTheme=pageTheme, email_setting=email_setting),200,headers)
@@ -398,6 +402,12 @@ class settings(Resource):
                 else:
                     if value_dict[item] != "mailpass":
                         updateSettingParam(c, conn, item, value_dict[item], lock)
+            return "succeded", 200
+        if args['type'] == "EnableDailyDigest":
+            updateSettingParam(c, conn, "EnableDailyDigest", args['value'], lock)
+            return "succeded", 200
+        if args['type'] == "EnableEventNotifications":
+            updateSettingParam(c, conn, "EnableEventNotifications", args['value'], lock)
             return "succeded", 200
         return "Done", 200
 
@@ -786,6 +796,8 @@ def shutdown_server():
 
 
 def sendCalNotification():
+    if fetchSettingParamFromDB(c, "EnableEventNotifications", lock) == "false":
+        return;
     with app.app_context():
         todaysDate = str(datetime.date.today())
         day, month, year = sparateDayMonthYear(todaysDate)
@@ -814,6 +826,8 @@ def sendCalNotification():
 
 
 def sendDailyDigest():
+    if fetchSettingParamFromDB(c, "EnableDailyDigest", lock) == "false":
+        return;
     with app.app_context():
         todaysDate = str(datetime.date.today())
         day, month, year = sparateDayMonthYear(todaysDate)
