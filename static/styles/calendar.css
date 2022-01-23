@@ -14,7 +14,7 @@ tbody.calendartb td{
 }
 .calendarPopUp{
   z-index: 10;
-  width: 200px;
+  width: 230px;
   position: absolute;
   background-color: #c6dbef;
 }
@@ -66,9 +66,9 @@ tbody.calendartb td{
 }
 #calendarDrag{
   z-index: 10;
-  width: 125px;
+  width: 12%;
   opacity: 0.5;
-  margin-left: 1px;
+  margin-left: 0px;
   position: absolute;
   background-color: #c6dbef;
 }

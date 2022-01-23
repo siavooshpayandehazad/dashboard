@@ -111,12 +111,10 @@ function drawCell(calDate, idVal){
     event.dataTransfer.setData("text", event.target.id);
   };
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
-  scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  scrollTop = 0
   startPx = 42*parseInt(calDate[1].slice(3,5))/60
   div.classList.add("weekEvent");
   if (calDate[1]!=="None"){
-    div.style.top  = (cell.getBoundingClientRect().y+scrollTop+startPx+32)-tableElement.getBoundingClientRect().y+"px";
+    div.style.top  = (cell.getBoundingClientRect().y+startPx+32)-tableElement.getBoundingClientRect().y+"px";
     div.style.left = (cell.getBoundingClientRect().x+scrollLeft+(127/calDate[4])*(calDate[5]-1))+"px";
     hoursDiff = parseInt(calDate[2].slice(0,2))-parseInt(calDate[1].slice(0,2))
     minsDiff = (parseInt(calDate[2].slice(3,5))-parseInt(calDate[1].slice(3,5)))*42/60
@@ -732,10 +730,10 @@ document.getElementById("calTab").addEventListener("mousemove", function(event){
     calendarDrag = document.createElement("div");
     calendarDrag.id = "calendarDrag";
 
-    scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
-    scrollTop  = window.pageYOffset || document.documentElement.scrollTop;
+    scrollLeft = window.pageXOffset || document.documentElement.scrollLeft
+
     calendarDrag.style.left = cell.getBoundingClientRect().x;
-    calendarDrag.style.top = event.clientY+scrollTop+"px";
+    calendarDrag.style.top = (cell.getBoundingClientRect().y+32)-table.getBoundingClientRect().y+"px";
 
     cellHeight = cell.getBoundingClientRect().bottom - cell.getBoundingClientRect().top
     eventTop = event.clientY- cell.getBoundingClientRect().top
@@ -748,9 +746,8 @@ document.getElementById("calTab").addEventListener("mousemove", function(event){
   }else if(event.buttons===1 && draggin===true){ // still dragging
     calendarDrag = document.getElementById("calendarDrag");
     if(calendarDrag!==null){
-      scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      newY = event.clientY+scrollTop-2;
-      calendarDrag.style.height = (newY-parseInt(calendarDrag.style.top.replace("px", "")))+"px";
+      newY = event.clientY+32-5; // to make sure that the event target is a TD
+      calendarDrag.style.height = (newY-parseInt(calendarDrag.style.top.replace("px", ""))-table.getBoundingClientRect().y)+"px";
     }else{
       draggin=false
     }
@@ -760,23 +757,16 @@ document.getElementById("calTab").addEventListener("mousemove", function(event){
 
 document.getElementById("calTab").addEventListener("mouseup", function(event){
   var table = document.getElementById("calTab");
-  var cell = event.path[0];
-  if (cell.tagName==="DIV" && cell.className === "weekEvent"){
-    if(document.getElementById("calendarDrag")!==null){
-      document.getElementById("calendarDrag").remove()
-    };
-    return;
-  }
   if((draggin===true) && (document.getElementById("calendarDrag")!==null)){ // released!
     draggin = false
     calendarDrag = document.getElementById("calendarDrag");
-    cellRow = cell.parentElement.rowIndex;
-    cellHeight = cell.getBoundingClientRect().bottom - cell.getBoundingClientRect().top
-    eventTop = event.clientY- cell.getBoundingClientRect().top
-    mins = parseInt((eventTop/cellHeight)*4)*15
-    endTime = table.rows[cellRow].cells.item(0).textContent
-    endTime = (endTime.split(":")[0]+":"+ zeroPad(mins,2)).trim()
+    cellHeight = 40
+    mins = (parseInt(calendarDrag.style.height)/cellHeight)*60
     startTime = calendarDrag.getAttribute("startTime")
+    date = new Date();
+    date.setHours(startTime.split(":")[0], startTime.split(":")[1], 00);
+    date.setMinutes(date.getMinutes()+mins)
+    endTime = date.getHours() + ":" + zeroPad(date.getMinutes(), 2)
     calendarClick(event, table, 'week', startTime, endTime)
   }
 });
