@@ -1,5 +1,5 @@
-<div class="row no-gutters justify-content-center">
-  <div class="col-sm-12 col-lg-5">
+<div class="row">
+  <div class="col-sm-12 col-lg-6">
     {% with dataset = ChartData["yearMood"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [1,2,3,4], trackerName = "yearly mood tracker", unit="", addAvg="true", tcf="true",
             pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
@@ -10,7 +10,7 @@
     {% endwith %}
   </div>
 
-  <div class="col-sm-12 col-lg-5">
+  <div class="col-sm-12 col-lg-6">
     {% with dataset = ChartData["yearWH"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [10, 20, 30, 100], trackerName = "yearly work hour", unit="(hr)", addAvg="true", tcf="true",
             pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
@@ -20,13 +20,13 @@
         {% include "trackerModules/singleChart.html" %}
     {% endwith %}
   </div>
-  <div class="col-sm-12 col-lg-5">
+  <div class="col-sm-12 col-lg-6">
     {% with YearsSavings = ChartData["YearsSavings"], ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
             PageYear = PageYear, PageMonth = PageMonth%}
         {% include "trackerModules/savingTracker.html" %}
     {% endwith %}
   </div>
-  <div class="col-sm-12 col-lg-5">
+  <div class="col-sm-12 col-lg-6">
     {% with YearsMortgages = ChartData["YearsMortgages"], MortgagePaid = ChartData["MortgagePaid"], ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
             PageYear = PageYear, PageMonth = PageMonth, suggestedMax=1120000%}
         {% include "trackerModules/mortgageTracker.html" %}
@@ -38,8 +38,8 @@
   {% include "generic_modules/divider.html" %}
 {% endwith %}
 
-<div class="row no-gutters justify-content-center">
-  <div class="col-sm-12 col-lg-5">
+<div class="row">
+  <div class="col-sm-12 col-lg-6">
     {% with dataset = ChartData["yearRuns"], ChartMonthDays = ChartYearMonths, chartType = "bar",
           thresholds = [10], trackerName = "yearly running", unit="(km)", addAvg="true", tcf="true",
           pointStyle = 'cicle', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
@@ -49,19 +49,19 @@
       {% include "trackerModules/singleChart.html" %}
     {% endwith %}
   </div>
-  <div class="col-sm-12 col-lg-5">
+  <div class="col-sm-12 col-lg-6">
     {% with HR_Max = ChartData["yearHR_Max"], HR_Min = ChartData["yearHR_Min"], ChartMonthDays = ChartYearMonths, PageYear = PageYear, PageMonth = PageMonth, yearMonth = "year"%}
         {% include "trackerModules/heartRateTrackerYear.html" %}
     {% endwith %}
   </div>
 
-  <div class="col-sm-12 col-lg-5">
+  <div class="col-sm-12 col-lg-6">
     {% with BP_Max = ChartData["yearBP_Max"], BP_Min = ChartData["yearBP_Min"], ChartMonthDays = ChartYearMonths, PageYear = PageYear, PageMonth = PageMonth, yearMonth = "year"%}
         {% include "trackerModules/bloodPressureTrackerYear.html" %}
     {% endwith %}
   </div>
 
-  <div class="col-sm-12 col-lg-5">
+  <div class="col-sm-12 col-lg-6">
     {% with dataset = ChartData["yearBO"], ChartMonthDays = ChartYearMonths, chartType = "line",
           thresholds = [], trackerName = "yearly blood oxygen", unit="(%)", addAvg="false", tcf="true",
           pointStyle = 'cicle', showTotalVal = False, suggestedMin = 90, yearMonth = "year", clickable="false",
@@ -72,7 +72,7 @@
     {% endwith %}
   </div>
 
-  <div class="col-sm-12 col-lg-5">
+  <div class="col-sm-12 col-lg-6">
     {% with dataset = ChartData["yearSleep"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [49], trackerName = "yearly sleep", unit="(hr)", addAvg="true", tcf="true",
             pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
@@ -82,7 +82,7 @@
         {% include "trackerModules/singleChart.html" %}
     {% endwith %}
   </div>
-  <div class="col-sm-12 col-lg-5">
+  <div class="col-sm-12 col-lg-6">
     {% with dataset = ChartData["yearSteps"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [75000], trackerName = "yearly steps", unit="", addAvg="true", tcf="true",
             pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
@@ -93,7 +93,7 @@
     {% endwith %}
   </div>
 
-  <div class="col-sm-12 col-lg-5">
+  <div class="col-sm-12 col-lg-6">
     {% with dataset = ChartData["yearWeight"], ChartMonthDays = ChartYearMonths, chartType = "line",
           thresholds = [], trackerName = "yearly weight", unit="(kg)", addAvg="true", tcf="true",
           pointStyle = 'cicle', showTotalVal = False, suggestedMin = 60, yearMonth = "year", clickable="false",
@@ -105,7 +105,7 @@
   </div>
 
 
-  <div class="col-sm-12 col-lg-5">
+  <div class="col-sm-12 col-lg-6">
     {% with dataset = ChartData["yearHydr"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [14], trackerName = "yearly hydration", unit="", addAvg="true", tcf="true",
             pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
