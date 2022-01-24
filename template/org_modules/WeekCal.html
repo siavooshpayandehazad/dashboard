@@ -733,11 +733,11 @@ document.getElementById("calTab").addEventListener("mousemove", function(event){
     scrollLeft = window.pageXOffset || document.documentElement.scrollLeft
 
     calendarDrag.style.left = cell.getBoundingClientRect().x;
-    calendarDrag.style.top = (cell.getBoundingClientRect().y+32)-table.getBoundingClientRect().y+"px";
+    calendarDrag.style.top = (event.clientY+32)-table.getBoundingClientRect().y+"px";
 
-    cellHeight = cell.getBoundingClientRect().bottom - cell.getBoundingClientRect().top
+    cellHeight = 40
     eventTop = event.clientY- cell.getBoundingClientRect().top
-    mins = parseInt((eventTop/cellHeight)*4)*15
+    mins = parseInt((parseInt(eventTop)/cellHeight)*60)
     startTime = table.rows[cellRow].cells.item(0).textContent
     startTime = (startTime.split(":")[0]+":"+zeroPad(mins,2)).trim()
     calendarDrag.setAttribute("startTime",startTime)
