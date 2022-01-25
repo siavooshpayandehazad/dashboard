@@ -42,13 +42,7 @@
     for (i = 0; i < tags.length; i++) {
       div2 =  document.createElement('div');
       div2.textContent = tags[i];
-      div2.style.backgroundColor = "white";
-      div2.style.minWidth = "70px";
-      div2.style.height = "20px";
-      div2.style.float = "left";
-      div2.style.marginLeft = "5px";
-      div2.style.float = "center";
-      div2.style.borderRadius = "10px";
+      div2.classList.add("tag")
       closeIcon =  document.createElement('i');
       closeIcon.classList.add("fa");
       closeIcon.classList.add("fa-times");
@@ -72,6 +66,7 @@
     addIcon.classList.add("fa");
     addIcon.classList.add("fa-plus");
     addIcon.classList.add("hover-red");
+    addIcon.style.color ="black";
     addIcon.style.marginLeft ="5px";
     addIcon.style.marginRight="5px";
 
@@ -81,6 +76,7 @@
     div3.style.marginLeft ="5px";
     div3.style.backgroundColor="#d9d9d9";
     div3.textContent="add tags";
+    div3.style.color="black";
     div3.appendChild(addIcon)
     div.appendChild(div3)
 
@@ -94,15 +90,9 @@
                url: "http://"+window.location.hostname+":5000/journal",
                data: {"type": "tag", "value": JSON.stringify({"tag": tag, "fileName": mediaKey})},
       });
-      div2 =  document.createElement('div');
+      div2 = document.createElement('div');
       div2.textContent = tag;
-      div2.style.backgroundColor = "white";
-      div2.style.minWidth = "70px";
-      div2.style.height = "20px";
-      div2.style.float = "left";
-      div2.style.marginLeft = "5px";
-      div2.style.float = "center";
-      div2.style.borderRadius = "10px";
+      div2.classList.add("tag")
       closeIcon =  document.createElement('i');
       closeIcon.classList.add("fa");
       closeIcon.classList.add("fa-times");

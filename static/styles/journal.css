@@ -67,3 +67,14 @@ div.dailyEntry{
   border-radius: 10px;
   color:black;
 }
+div.tag{
+  background-color: white;
+  min-width: 70px;
+  line-height: 20px;
+  height: 20px;
+  float: left;
+  margin-left: 5px;
+  color: black;
+  border-radius: 10px;
+  padding: 0px 5px 0px 5px;
+}
