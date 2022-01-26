@@ -1,4 +1,26 @@
 <script type="text/javascript">
+
+  //------------------------------
+  //preparation for generalizing trackers
+  // dataset      :  list     :
+  // accumulate   :  boolean  : if true, the input from user would be added to the
+  //                            current value of the day. otherwise it would be absolute
+  // thresholds   :  list     : a list of int where each value is threshold for changing color
+  // chartType    :  string   : chart type, can be bar or line
+  // unit         :  string   : unit of the values, to be shown in the caption
+  // suggestedMin :  float    : suggested minimum valye of Y-axis
+  // yearMonth    :  string   : "year" or "month" changes display of today line in chart
+  // clickable    :  boolean  : if false, user can not enter values (via clicking)
+  // height       :  string   : height of the canvas
+  // width        :  string   : width of the graphCard
+  // url          :  string   : url of the page for requestes to be posted to
+  // bgColors     :  list     : list of tuples of rgb colors, for background for each threshold
+  // bColors      :  list     : list of tuples of rgb colors, for border color for each threshold
+  // showTotalVal :  boolean  : shows total sum Value on top right corner
+  // tcf          :  boolean  : total counter value is float
+  // addAvg       :  boolean  : adds average line
+  // trackerName  :  string   : name of the tracker
+
 window['accumulate_{{trackerName}}'] = {{accumulate | safe}};
 window['dataset_{{trackerName}}'] = {{dataset | safe}};
 window['xaxis_{{trackerName}}'] = {{ChartMonthDays | safe}};
@@ -8,9 +30,8 @@ window['bColors_{{trackerName}}'] = {{bColors | safe}};
 if ({{addAvg}}){
   window['avg_{{trackerName}}'] = calculateAvg(window['dataset_{{trackerName}}']);
 }
-//------------------------------
-//preparation for generalizing trackers
-// tcf:  total counter value is float
+
+
 function generateDataSets(){
   var datasets = []
   var BG_Colors = []
