@@ -115,7 +115,8 @@ function drawCell(calDate, idVal){
   div.classList.add("weekEvent");
   if (calDate[1]!=="None"){
     div.style.top  = (cell.getBoundingClientRect().y+startPx+32)-tableElement.getBoundingClientRect().y+"px";
-    div.style.left = (cell.getBoundingClientRect().x+scrollLeft+(127/calDate[4])*(calDate[5]-1))+"px";
+    cellwidth = cell.getBoundingClientRect().width
+    div.style.left = (cell.getBoundingClientRect().x+scrollLeft+(cellwidth/calDate[4])*(calDate[5]-1))+"px";
     hoursDiff = parseInt(calDate[2].slice(0,2))-parseInt(calDate[1].slice(0,2))
     minsDiff = (parseInt(calDate[2].slice(3,5))-parseInt(calDate[1].slice(3,5)))*42/60
     div.style.height = ((hoursDiff)*cell.offsetHeight+minsDiff-6)+"px";
@@ -126,7 +127,7 @@ function drawCell(calDate, idVal){
     div.style.height = "50px;"
     div.style.marginLeft = "3%";
   }
-  div.style.width = ((cell.getBoundingClientRect().width*0.96)/calDate[4]-10)+"px";
+  div.style.width = ((cell.getBoundingClientRect().width)/calDate[4]-10)+"px";
 
   div.textContent = calDate[3];
   div.style.backgroundColor = calDate[6];
