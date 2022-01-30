@@ -211,13 +211,13 @@ div.searchedTodoItem:hover{
   padding:10px 10px 10px 10px;
   border-radius:5px;
   overflow-y:auto;
-  width:80%;
-  margin-left:10%;
+  width:90%;
+  margin-left:5%;
   float:left;
   background-color:white;
   margin-bottom:10px;
   color: black;
-  height:300px;
+  height:calc(100% - 60px);
 }
 .todoSearch{
   color:white;
