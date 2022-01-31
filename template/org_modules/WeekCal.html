@@ -220,25 +220,30 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   div.style.left = event.clientX+scrollLeft+"px";
   div.style.top  = event.target.getBoundingClientRect().y-item.getBoundingClientRect().y+40+"px";
   div.classList.add("calendarPopUp");
+  div.style.textAlign = "left";
 
   var eventNameContainer = document.createElement("div");
   eventNameContainer.style.marginLeft="10px";
   var eventName = document.createElement("textarea");
   eventName.setAttribute('id', 'eventName');
   eventName.style.resize="none";
+  eventName.style.width="95%";
+  eventName.style.marginTop="5px";
+  eventName.style.marginBottom="5px";
   eventName.rows = 1;
-  eventName.cols = 20;
   eventName.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("name") : "";
   var text0 = document.createElement("span");
-  text0.textContent= "event:";
+  text0.textContent= "Event Title:";
 
   var eventDescription = document.createElement("textarea");
   eventDescription.style.resize="none";
+  eventDescription.style.width="95%";
+  eventDescription.style.marginTop="5px";
+  eventDescription.style.marginBottom="5px";
   eventDescription.rows = 4;
-  eventDescription.cols = 20;
   eventDescription.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("details") : "none";
   var detailText = document.createElement("span");
-  detailText.textContent= "details:";
+  detailText.textContent= "Details:";
 
   eventNameContainer.appendChild(text0);
   eventNameContainer.appendChild(eventName);
@@ -278,7 +283,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   var timeContainer = document.createElement("div");
   timeContainer.style.marginLeft="5px";
   var text1 = document.createElement("span");
-  text1.textContent= "date: ";
+  text1.textContent= "Date: ";
   var daySelector = document.createElement("textarea");
   daySelector.style.resize="none";
   daySelector.rows = 1;
@@ -298,7 +303,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   };
   var allDayText = document.createElement("span");
   allDayText.textContent = "all day";
-  allDayText.style.width="200px";
+  allDayText.style.marginLeft="5px";
   alldayContainer.appendChild(allDayCheckBox);
   alldayContainer.appendChild(allDayText);
 
@@ -310,8 +315,8 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   stopTime.style.resize="none";
   startTime.rows = 1;
   stopTime.rows = 1;
-  startTime.cols = 4;
-  stopTime.cols = 4;
+  startTime.cols = 5;
+  stopTime.cols = 5;
 
   if (inStartTime === null){
     startTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("startTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows),2)+":00";
@@ -330,8 +335,8 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
 
   var text2 = document.createElement("span");
   var text3 = document.createElement("span");
-  text2.textContent= "from: ";
-  text3.textContent= "  to: ";
+  text2.textContent= "From: ";
+  text3.textContent= "  To: ";
   timeContainer.appendChild(text1);
   timeContainer.appendChild(daySelector);
   timeContainer.appendChild(alldayContainer);
@@ -350,7 +355,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   }
 
   var colorContainer = document.createElement("div");
-  colorContainer.style.marginLeft="5px";
+  colorContainer.style.margin="5px 0px 5px 5px";
   var color = document.createElement("select");
 
   colors = ["pink", "gold", "powderblue", "tomato", "skyBlue", "teal"]
@@ -362,7 +367,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   }
 
   var text4 = document.createElement("span");
-  text4.textContent= "color: ";
+  text4.textContent= "Color: ";
   color.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("color") : "powderblue";
   colorContainer.appendChild(text4);
   colorContainer.appendChild(color);
