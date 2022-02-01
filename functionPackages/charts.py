@@ -361,9 +361,15 @@ def generate_weather_monthly(dbCursur, year: int, lock):
                                                     "humidity":{"min": [], "max": [],"avg": []}})
             returnData[room]["months"].append(month)
             for parameter in ["temp", "pressure", "humidity"]:
-                returnData[room][parameter]["min"].append(min(tempData[room][parameter]))
-                returnData[room][parameter]["max"].append(max(tempData[room][parameter]))
-                returnData[room][parameter]["avg"].append(sum(tempData[room][parameter])/len(tempData[room][parameter]))
+                tempDataCleanList = [x for x in tempData[room][parameter] if x != 0]
+                if len(tempDataCleanList)>0:
+                    returnData[room][parameter]["min"].append(min(tempDataCleanList))
+                    returnData[room][parameter]["max"].append(max(tempDataCleanList))
+                    returnData[room][parameter]["avg"].append(sum(tempDataCleanList)/len(tempDataCleanList))
+                else:
+                    returnData[room][parameter]["min"].append("nan")
+                    returnData[room][parameter]["max"].append("nan")
+                    returnData[room][parameter]["avg"].append("nan")
     for month in range(1, 13):
         for room in returnData.keys():
             if month not in returnData[room]["months"]:
