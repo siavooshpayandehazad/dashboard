@@ -1,8 +1,9 @@
 <script>
 var yearsActivityList = {{yearsActivities|safe}}
 function updateActivityTable(){
-  activitySelect = document.getElementById("activitySelect")
-  yearlyActivityTable = document.getElementById("yearlyActivityTable")
+  var activitySelect = document.getElementById("activitySelect")
+  window['activity_select'] = activitySelect.value
+  var yearlyActivityTable = document.getElementById("yearlyActivityTable")
   while(yearlyActivityTable.rows.length>0){
     yearlyActivityTable.rows[0].remove()
   }
@@ -39,7 +40,7 @@ function updateActivityTable(){
 }
 </script>
 
-<div class = "activityTracker" style="width:95%; margin-left:2.5%">
+<div class = "activityTracker" style="width:95%; margin-left:2.5%; margin-bottom: 10px;">
   <h4  class="title lightbg" style="margin-left:10px; float:left;">yearly activity tracker</h4>
   <select style="margin-right:10px; margin-top:10px; float:right;" onchange="updateActivityTable()" id = "activitySelect">
     {% for key, value in yearsActivities.items() %}
@@ -51,5 +52,11 @@ function updateActivityTable(){
 </div>
 
 <script type="text/javascript">
+  if("{{request.args.get('activity_select')|safe}}" == "None"){
+    document.getElementById('activitySelect').getElementsByTagName('option')[0].selected = 'selected'
+  }else{
+    document.getElementById("activitySelect").value = "{{request.args.get('activity_select')|safe}}"
+  }
+
   updateActivityTable()
 </script>
