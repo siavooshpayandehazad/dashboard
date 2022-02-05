@@ -351,6 +351,29 @@ def collectMonthsData(pageMonth: int, pageYear: int, dbCursur, lock):
     return activities, activitiesPlannes, moods
 
 
+def collect_yearly_activities(pageYear: int, dbCursur, lock):
+    activities = []
+    lock.acquire(True)
+    dbCursur.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
+              (getMonthsBeginning(1, pageYear).date(),
+               getMonthsEnd(12, pageYear).date(),))
+    activities += dbCursur.fetchall()
+    lock.release()
+
+    activityList = [x.replace(" ", "") for x in fetchSettingParamFromDB(dbCursur, "activityList", lock).split(",")]
+    return_dict = {}
+    for month in range(1, 13):
+        for day in range(1, numberOfDaysInMonth(month, pageYear)+1):
+            for activity in activityList:
+                date = str(datetime.datetime.strptime(f"{pageYear}-{month}-{day}", '%Y-%m-%d').date())
+                return_dict[activity] = return_dict.get(activity, [])
+                if (activity, date) in activities:
+                    return_dict[activity].append(1)
+                else:
+                    return_dict[activity].append(0)
+    return return_dict
+
+
 def createDB(DBName):
     DBConnection  =  sqlite3.connect(DBName,  check_same_thread=False)
     DBCursor = DBConnection.cursor()

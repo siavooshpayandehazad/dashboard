@@ -85,6 +85,7 @@ class dash(Resource):
         moodTrackerDays = [None for i in range(0, monthsBeginningWeekDay)] + list(range(1, numberOfDays+1))
         # list of current month's moods and activities.
         monthsActivities, monthsActivitiesPlanned, monthsMoods = collectMonthsData(int(pageMonth), int(pageYear), c, lock)
+        yearsActivities = collect_yearly_activities(int(pageYear), c, lock)
         # highlights the current day in the activity tracker page!
         highlight    = shouldHighlight(pageYear, pageMonth)
         counterValue = fetchSettingParamFromDB(c, "counter", lock)
@@ -101,6 +102,7 @@ class dash(Resource):
                                              # ----------------------
                                              activities = monthsActivities, monthsActivitiesPlanned = monthsActivitiesPlanned,
                                              activityList = activityList, days=moodTrackerDays, highlight = highlight,
+                                             yearsActivities = yearsActivities,
                                              pageTheme = pageTheme, counterValue = counterValue),200,headers)
 
     def post(self):

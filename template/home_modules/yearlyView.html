@@ -1,3 +1,15 @@
+
+<div class="row">
+  <div class="col-sm-12 col-lg-12">
+    {% with dyearsActivitiesir=yearsActivities %}
+      {% include "trackerModules/yearlyActivityTracker.html" %}
+    {% endwith %}
+  </div>
+</div>
+{% with dir="left" %}
+  {% include "generic_modules/divider.html" %}
+{% endwith %}
+
 <div class="row">
   <div class="col-sm-12 col-lg-6">
     {% with dataset = ChartData["yearMood"], ChartMonthDays = ChartYearMonths, chartType = "bar",

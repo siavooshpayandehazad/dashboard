@@ -1,0 +1,55 @@
+<script>
+var yearsActivityList = {{yearsActivities|safe}}
+function updateActivityTable(){
+  activitySelect = document.getElementById("activitySelect")
+  yearlyActivityTable = document.getElementById("yearlyActivityTable")
+  while(yearlyActivityTable.rows.length>0){
+    yearlyActivityTable.rows[0].remove()
+  }
+  firstRow = document.createElement("tr")
+  col = document.createElement("td")
+  col.style = "border:1px solid white; border-radius: 5px; width:1.5%; font-size:11px;"
+  firstRow.appendChild(col)
+  for(var i = 0; i<52; i++){
+     col = document.createElement("td")
+     col.style = "border:1px solid white; border-radius: 5px; width:1.5%; font-size:11px;"
+     col.textContent = i+1
+     firstRow.appendChild(col)
+  }
+  yearlyActivityTable.appendChild(firstRow)
+
+  for(var i = 0; i<7; i++){
+    row = document.createElement("tr")
+    col = document.createElement("td")
+    col.style = "border:1px solid white; border-radius: 5px; width:1.5%; font-size:11px;"
+    col.textContent = i+1
+    row.appendChild(col)
+    for(var j = 0; j<52; j++){
+       col = document.createElement("td")
+       col.style = "border:1px solid white; width:1.5%;"
+       if (yearsActivityList[activitySelect.value][i + j*7] == 1){
+         col.style.backgroundColor = "#006d2c"
+       }else{
+         col.style.backgroundColor = "#f0f0f0"
+       }
+       row.appendChild(col)
+    }
+    yearlyActivityTable.appendChild(row)
+  }
+}
+</script>
+
+<div class = "activityTracker" style="width:95%; margin-left:2.5%">
+  <h4  class="title lightbg" style="margin-left:10px; float:left;">yearly activity tracker</h4>
+  <select style="margin-right:10px; margin-top:10px; float:right;" onchange="updateActivityTable()" id = "activitySelect">
+    {% for key, value in yearsActivities.items() %}
+    <option>{{key|string}}</option>
+    {%endfor%}
+  </select>
+  <table border="0" id ="yearlyActivityTable" style="margin-bottom:20px; margin-top:10px; margin-left:2.5%; color:black; width:95%">
+  </table>
+</div>
+
+<script type="text/javascript">
+  updateActivityTable()
+</script>
