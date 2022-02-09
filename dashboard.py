@@ -723,7 +723,6 @@ class homeAutomation(Resource):
     def post(self):
         args = parser.parse_args()
         value = json.loads(args['value'])
-        print(args)
         if args['action'] == "rename":
             rename_room(str(value['roomNumber']), str(value['newValue']), c_ha, conn_ha, lock)
             return "Done", 200
