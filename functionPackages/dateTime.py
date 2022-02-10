@@ -1,6 +1,22 @@
 import datetime
 import re
 
+def convertTimeTo24(time12:str) -> str:
+    """
+    takes 'hh:MM:SS AM' or 'hh:MM:SS PM' and returns
+    'HH:MM:SS' in 24 hour format.
+    convertTimeTo24('12:XX:XX AM') will return 00:XX:XX
+    convertTimeTo24('12:XX:XX AM') will return 12:XX:XX
+    """
+    if time12[-2:] == "AM" and time12[:2] == "12":
+        return "00" + time12[2:-2]
+    elif time12[-2:] == "AM":
+        return time12[:-2]
+    elif time12[-2:] == "PM" and time12[:2] == "12":
+        return time12[:-2]
+    else:
+        return str(int(time12[:2]) + 12) + time12[2:8]
+
 
 def sparateDayMonthYear(todaysDate:str) -> tuple:
     if not checkIfDateValid(todaysDate):

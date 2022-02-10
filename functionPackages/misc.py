@@ -13,6 +13,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
 def getAudiobooks(path):
     audiobooks = {}
     for a in os.scandir(path):

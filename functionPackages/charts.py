@@ -1,21 +1,16 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-from functionPackages.misc import getMonthsBeginning, getMonthsEnd, numberOfDaysInMonth
+from functionPackages.misc import getMonthsBeginning, getMonthsEnd, numberOfDaysInMonth, is_number
 import os
 import json
 from package import temporary_data
 import time
 from flask import current_app as app
 import logging
+from functionPackages.dateTime import convertTimeTo24
+
 
 logger = logging.getLogger(__name__)
-
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
 
 
 def getTravelDests(dbCursur, lock):
@@ -422,6 +417,10 @@ def generate_cpu_stat(todaysDate, year):
             line2 = reader2.readline()
             while (line2 != ""):
                 lineSplit = line2.split(" ")
+                # convert to 24hr format if its 12hr format
+                if ("PM" in lineSplit) or ("AM" in lineSplit):
+                    lineSplit[0] = convertTimeTo24(lineSplit[0]+" "+lineSplit[1])
+                    del lineSplit[1]
                 cpuUsage.append(float(lineSplit[2]))
                 cpuUsageTimes.append(lineSplit[0])
                 line2 = reader2.readline()
@@ -509,6 +508,10 @@ def generate_cpu_stat_monthly(year: str):
                         while (line2 != ""):
                             lineSplit = line2.strip().split(" ")
                             if "cpuUsageData" in file:
+                                # convert to 24hr format if its 12hr format
+                                if ("PM" in lineSplit) or ("AM" in lineSplit):
+                                    lineSplit[0] = convertTimeTo24(lineSplit[0]+" "+lineSplit[1])
+                                    del lineSplit[1]
                                 cpuUsage[file_month] = cpuUsage.get(file_month, [])
                                 cpuUsage[file_month].append(float(lineSplit[2]))
                             else:
