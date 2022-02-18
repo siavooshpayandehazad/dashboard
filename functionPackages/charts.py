@@ -1,6 +1,6 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-from functionPackages.misc import getMonthsBeginning, getMonthsEnd, is_number
+from functionPackages.misc import get_months_beginning, get_months_end, is_number
 import os
 import time
 import logging
@@ -41,7 +41,8 @@ def generate_weight_chart_data(page_month: int, page_year: int, number_of_days: 
 
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
-                      (getMonthsBeginning(page_month, page_year).date(), getMonthsEnd(page_month, page_year).date(),))
+                      (get_months_beginning(page_month, page_year).date(),
+                       get_months_end(page_month, page_year).date(),))
     months_weights += db_cursor.fetchall()
     lock.release()
 
@@ -154,7 +155,7 @@ def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, l
     week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=364)
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM " + table_name + " WHERE date >= ? and date <= ?  ",
-                      (week_end.date(), getMonthsEnd(i, page_year).date(),))
+                      (week_end.date(), get_months_end(i, page_year).date(),))
     ret_list = calc_func(db_cursor.fetchall(), ret_list)
     lock.release()
     temporary_data["chart_year_data"][table_name][page_year] = ret_list[:]
@@ -168,7 +169,8 @@ def generate_hr_chart_data(page_month: int, page_year: int, number_of_days: int,
 
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM HRTracker WHERE date >= ? and date <= ?  """,
-                      (getMonthsBeginning(page_month, page_year).date(), getMonthsEnd(page_month, page_year).date(),))
+                      (get_months_beginning(page_month, page_year).date(),
+                       get_months_end(page_month, page_year).date(),))
     months_hr += db_cursor.fetchall()
     lock.release()
 
@@ -190,7 +192,8 @@ def generate_bp_chart_data(page_month: int, page_year: int, number_of_days: int,
 
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM BPTracker WHERE date >= ? and date <= ?  """,
-                      (getMonthsBeginning(page_month, page_year).date(), getMonthsEnd(page_month, page_year).date(),))
+                      (get_months_beginning(page_month, page_year).date(),
+                       get_months_end(page_month, page_year).date(),))
     months_bp += db_cursor.fetchall()
     lock.release()
 
@@ -310,7 +313,8 @@ def generate_monthly_chart_data(page_month: int, page_year: int, tabel_name: str
     months_vals = []
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM " + tabel_name + " WHERE date >= ? and date <= ?  ",
-                      (getMonthsBeginning(page_month, page_year).date(), getMonthsEnd(page_month, page_year).date(),))
+                      (get_months_beginning(page_month, page_year).date(),
+                       get_months_end(page_month, page_year).date(),))
     months_vals += db_cursor.fetchall()
     lock.release()
 
@@ -334,7 +338,7 @@ def generate_weather_monthly(db_cursor, year: int, lock):
     for month in range(1, 13):
         lock.acquire(True)
         db_cursor.execute("SELECT * FROM weatherStation WHERE date >= ? and date <= ?  ",
-                          (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(),))
+                          (get_months_beginning(month, year).date(), get_months_end(month, year).date(),))
         monthly_data = db_cursor.fetchall()
         lock.release()
         temp_data = {}

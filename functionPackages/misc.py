@@ -154,11 +154,11 @@ def getCalEvents(todaysDate, dbCursur, lock):
 
 
 def getCalEventsMonth(todaysDate, dbCursur, lock):
-    day, month, year = sparateDayMonthYear(todaysDate)
+    day, month, year = separate_day_month_year(todaysDate)
     lock.acquire(True)
     dbCursur.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
-              (getMonthsBeginning(month, year).date(),
-               getMonthsEnd(month, year).date(),))
+                     (get_months_beginning(month, year).date(),
+                      get_months_end(month, year).date(),))
     weeklyCalEvents = dbCursur.fetchall()
     lock.release()
     calList = []
@@ -344,16 +344,16 @@ def collectMonthsData(pageMonth: int, pageYear: int, dbCursur, lock):
     moods = []
     lock.acquire(True)
     dbCursur.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
-              (getMonthsBeginning(pageMonth, pageYear).date(),
-               getMonthsEnd(pageMonth, pageYear).date(),))
+                     (get_months_beginning(pageMonth, pageYear).date(),
+                      get_months_end(pageMonth, pageYear).date(),))
     activities += dbCursur.fetchall()
     dbCursur.execute("""SELECT * FROM activityPlanner WHERE date >= ? and date <= ?  """,
-              (getMonthsBeginning(pageMonth, pageYear).date(),
-               getMonthsEnd(pageMonth, pageYear).date(),))
+                     (get_months_beginning(pageMonth, pageYear).date(),
+                      get_months_end(pageMonth, pageYear).date(),))
     activitiesPlannes += dbCursur.fetchall()
     dbCursur.execute("""SELECT * FROM moodTracker WHERE date >= ? and date <= ?  """,
-              (getMonthsBeginning(pageMonth, pageYear).date(),
-               getMonthsEnd(pageMonth, pageYear).date(),))
+                     (get_months_beginning(pageMonth, pageYear).date(),
+                      get_months_end(pageMonth, pageYear).date(),))
     moods += dbCursur.fetchall()
     lock.release()
     return activities, activitiesPlannes, moods
@@ -363,15 +363,15 @@ def collect_yearly_activities(pageYear: int, dbCursur, lock):
     activities = []
     lock.acquire(True)
     dbCursur.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
-              (getMonthsBeginning(1, pageYear).date(),
-               getMonthsEnd(12, pageYear).date(),))
+                     (get_months_beginning(1, pageYear).date(),
+                      get_months_end(12, pageYear).date(),))
     activities += dbCursur.fetchall()
     lock.release()
 
     activityList = [x.replace(" ", "") for x in fetchSettingParamFromDB(dbCursur, "activityList", lock).split(",")]
     return_dict = {}
     for month in range(1, 13):
-        for day in range(1, numberOfDaysInMonth(month, pageYear)+1):
+        for day in range(1, number_of_days_in_month(month, pageYear) + 1):
             for activity in activityList:
                 date = str(datetime.datetime.strptime(f"{pageYear}-{month}-{day}", '%Y-%m-%d').date())
                 return_dict[activity] = return_dict.get(activity, [])
@@ -560,8 +560,8 @@ def verifyPassword(stored_password: str, provided_password: str) -> bool:
 
 
 def getTodos(todaysDate, dbCursur, lock):
-    day, month, year = sparateDayMonthYear(todaysDate)
-    monthsBeginning = getMonthsBeginning(month, year)
+    day, month, year = separate_day_month_year(todaysDate)
+    monthsBeginning = get_months_beginning(month, year)
     lock.acquire(True)
     dbCursur.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (todaysDate,))
     all_due_events = sorted(dbCursur.fetchall(), key=lambda tup: tup[1])
@@ -569,7 +569,7 @@ def getTodos(todaysDate, dbCursur, lock):
     dbCursur.execute("""SELECT * FROM todoList WHERE date < ? and date >= ? and done = 'true'""", (todaysDate, monthsBeginning.date()))
     all_due_events += sorted(dbCursur.fetchall(), key=lambda tup: tup[1])
 
-    dbCursur.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? """, (getNextDay(todaysDate), getThirtyDaysFromNow(day, month, year)))
+    dbCursur.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? """, (get_next_day(todaysDate), get_thirty_days_from_now(day, month, year)))
     thisMonthsEvents = sorted(dbCursur.fetchall(), key=lambda tup: tup[1])
 
     dbCursur.execute("""SELECT * FROM todoList WHERE date = ? """, (todaysDate,))
@@ -579,10 +579,10 @@ def getTodos(todaysDate, dbCursur, lock):
 
 
 def getScrumTasks(todaysDate, dbCursur, lock):
-    day, month, year = sparateDayMonthYear(todaysDate)
-    monthsBeginning = getMonthsBeginning(month, year)
-    numberOfDays = numberOfDaysInMonth(int(month), int(year))
-    monthsEnd = getMonthsEnd(month, year)
+    day, month, year = separate_day_month_year(todaysDate)
+    monthsBeginning = get_months_beginning(month, year)
+    numberOfDays = number_of_days_in_month(int(month), int(year))
+    monthsEnd = get_months_end(month, year)
 
     scrumBoardLists = {}
     for stage in ["backlog", "todo", "in progress", "done"]:

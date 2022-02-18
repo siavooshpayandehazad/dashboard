@@ -55,24 +55,24 @@ def test_shouldHighlight():
                           ])
 def test_sparateDayMonthYear(date, result):
     # check basic functionality
-    assert type(sparateDayMonthYear(date)) is tuple
-    assert sparateDayMonthYear(date) == result
+    assert type(separate_day_month_year(date)) is tuple
+    assert separate_day_month_year(date) == result
 
 
 def test_sparateDayMonthYear_exception():
     with pytest.raises(ValueError):
-        sparateDayMonthYear("2020-m0-02")
-        sparateDayMonthYear("2020_10-02")
+        separate_day_month_year("2020-m0-02")
+        separate_day_month_year("2020_10-02")
 
 
 def test_checkIfDateValid():
-    assert checkIfDateValid("2020-m0-02") is False
-    assert checkIfDateValid("2020-10-02") is True
+    assert check_if_date_valid("2020-m0-02") is False
+    assert check_if_date_valid("2020-10-02") is True
 
 
 def test_getThirtyDaysFromNow():
-    assert type(getThirtyDaysFromNow(2,10,2020)) is datetime.datetime
-    assert getThirtyDaysFromNow(2,10,2020) == datetime.datetime.strptime("2020-11-01", '%Y-%m-%d')
+    assert type(get_thirty_days_from_now(2, 10, 2020)) is datetime.datetime
+    assert get_thirty_days_from_now(2, 10, 2020) == datetime.datetime.strptime("2020-11-01", '%Y-%m-%d')
 
 
 def test_hashPassword():

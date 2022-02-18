@@ -75,7 +75,7 @@ class Dash(Resource):
         page_title = "DashBoard"
 
         title_date = weeks_of_the_year[int(page_month) - 1] + "-" + page_year
-        number_of_days = numberOfDaysInMonth(int(page_month), int(page_year))
+        number_of_days = number_of_days_in_month(int(page_month), int(page_year))
         months_beginning_week_day = datetime.datetime.strptime(f"{page_year}-{page_month}-01", '%Y-%m-%d').weekday()
         # moodTrackerDays is a list that contains a bunch of Nones for the days of the week that are in the
         # previous month. this is used for the mood-tracker in order to add the empty spaces in the beginning of the
@@ -128,7 +128,7 @@ class Dash(Resource):
                 counter_value = 0
             updateSettingParam(c, conn, "counter", counter_value, lock)
 
-        today_date = parseDate(args['date'])
+        today_date = parse_date(args['date'])
         delete_day = False
         if len(args['value'].strip()) == 0:
             delete_day = True
@@ -169,19 +169,19 @@ class Journal(Resource):
         args = parser.parse_args()
         page_theme = fetchSettingParamFromDB(c, "Theme", lock)
         headers = {'Content-Type': 'text/html'}
-        today_date = parseDate(args['date'])
-        day, month, year = sparateDayMonthYear(today_date)
+        today_date = parse_date(args['date'])
+        day, month, year = separate_day_month_year(today_date)
         photo_dir = os.getcwd() + "/static/photos/" + str(year) + "/" + today_date
         photo_dir2 = os.getcwd() + "/static/photos/" + str(year)
         days_with_photos = allDaysWithPhotos(photo_dir2, year, month)
         today_photos = allPotosInDir(photo_dir, year, today_date)
         today_log, today_log_text = getTodaysLogs(c, today_date, lock)
-        number_of_days = numberOfDaysInMonth(int(month), int(year))
-        months_beginning = getMonthsBeginning(month, year).weekday()
+        number_of_days = number_of_days_in_month(int(month), int(year))
+        months_beginning = get_months_beginning(month, year).weekday()
 
         lock.acquire(True)
         c.execute("""SELECT * FROM logTracker WHERE date >= ? and date <= ? """,
-                  (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(),))
+                  (get_months_beginning(month, year).date(), get_months_end(month, year).date(),))
         logged_days = [int(x[1].split("-")[2]) for x in c.fetchall()]
         lock.release()
 
@@ -197,7 +197,7 @@ class Journal(Resource):
     def post():
         args = parser.parse_args()
         if args['type'] == 'log':
-            today_date = parseDate(args['date'])
+            today_date = parse_date(args['date'])
             log_entry = args['value'].lower()
 
             lock.acquire(True)
@@ -244,11 +244,11 @@ class Org(Resource):
 
         headers = {'Content-Type': 'text/html'}
         args = parser.parse_args()
-        today_date = parseDate(args['date'])
-        day, month, year = sparateDayMonthYear(today_date)
-        months_beginning = getMonthsBeginning(month, year)
+        today_date = parse_date(args['date'])
+        day, month, year = separate_day_month_year(today_date)
+        months_beginning = get_months_beginning(month, year)
         week_day = datetime.datetime.strptime(f"{year}-{month}-{day}", '%Y-%m-%d').weekday()
-        number_of_days = numberOfDaysInMonth(int(month), int(year))
+        number_of_days = number_of_days_in_month(int(month), int(year))
         months_beginning_week_day = months_beginning.weekday()
 
         all_due_events, this_months_events, today_todos = getTodos(today_date, c, lock)
@@ -290,7 +290,7 @@ class Org(Resource):
                     lock.release()
                 return search_result, 200
             else:
-                date_val = parseDate(args['date'])
+                date_val = parse_date(args['date'])
                 value_dict = eval((args['value']))
                 lock.acquire(True)
                 c.execute("""DELETE from todoList where date = ? and task = ?""",
@@ -451,10 +451,10 @@ class Gallery(Resource):
         args = parser.parse_args()
         headers = {'Content-Type': 'text/html'}
         page_theme = fetchSettingParamFromDB(c, "Theme", lock)
-        today_date = parseDate(args['date'])
-        day, month, year = sparateDayMonthYear(today_date)
-        number_of_days = numberOfDaysInMonth(int(month), int(year))
-        months_beginning = getMonthsBeginning(month, year).weekday()
+        today_date = parse_date(args['date'])
+        day, month, year = separate_day_month_year(today_date)
+        number_of_days = number_of_days_in_month(int(month), int(year))
+        months_beginning = get_months_beginning(month, year).weekday()
         months_photos = []
         for day_number in range(1, number_of_days + 1):
             date_value = str(year) + "-" + str(month).zfill(2) + "-" + str(day_number).zfill(2)
@@ -854,11 +854,11 @@ def send_cal_notification():
         return
     with app.app_context():
         today_date = str(datetime.date.today())
-        day, month, year = sparateDayMonthYear(today_date)
+        day, month, year = separate_day_month_year(today_date)
         lock.acquire(True)
         c.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
-                  (getMonthsBeginning(month, year).date(),
-                   getMonthsEnd(month, year).date(),))
+                  (get_months_beginning(month, year).date(),
+                   get_months_end(month, year).date(),))
         cal_events = c.fetchall()
         lock.release()
         notifications_to_be_sent = []
