@@ -1,7 +1,7 @@
 import datetime
 import re
 
-def convertTimeTo24(time12:str) -> str:
+def convert_time_to24(time12:str) -> str:
     """
     takes 'hh:MM:SS AM' or 'hh:MM:SS PM' and returns
     'HH:MM:SS' in 24 hour format.

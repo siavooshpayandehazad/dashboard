@@ -1,63 +1,62 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-from functionPackages.misc import getMonthsBeginning, getMonthsEnd, numberOfDaysInMonth, is_number
+from functionPackages.misc import getMonthsBeginning, getMonthsEnd, is_number
 import os
-import json
-from package import temporary_data
 import time
-from flask import current_app as app
 import logging
-from functionPackages.dateTime import convertTimeTo24
+from functionPackages.dateTime import convert_time_to24
 
 
 logger = logging.getLogger(__name__)
+temporary_data = {}
 
 
-def getTravelDests(dbCursur, lock):
+def get_travel_destinations(db_cursor, lock):
 
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM travelTracker""")
-    travels = dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM travelTracker""")
+    travels = db_cursor.fetchall()
     lock.release()
 
-    allTravels = []
+    all_travels = []
     for item in travels:
-        allTravels.append({'name': item[0], 'coords': [item[1], item[2]],})
-    return allTravels
+        all_travels.append({'name': item[0], 'coords': [item[1], item[2]], })
+    return all_travels
 
 
-def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur, lock):
-    lastMonthsBeginning = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-relativedelta(months=+1)
-    lastMonthsEnd = datetime.datetime.strptime(f"{pageYear}-{pageMonth}-01", '%Y-%m-%d')-datetime.timedelta(days=1)
+def generate_weight_chart_data(page_month: int, page_year: int, number_of_days: int, db_cursor, lock):
+    last_months_beginning = datetime.datetime.strptime(f"{page_year}-{page_month}-01", '%Y-%m-%d') - \
+                            relativedelta(months=+1)
+    last_months_end = datetime.datetime.strptime(f"{page_year}-{page_month}-01", '%Y-%m-%d') - \
+                      datetime.timedelta(days=1)
 
-    lastMonthsWeights = []
+    last_months_weights = []
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
-              (lastMonthsBeginning.date(), lastMonthsEnd.date(),))
-    lastMonthsWeights += dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
+                      (last_months_beginning.date(), last_months_end.date(),))
+    last_months_weights += db_cursor.fetchall()
     lock.release()
 
-    monthsWeights = []
+    months_weights = []
 
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
-              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
-    monthsWeights += dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
+                      (getMonthsBeginning(page_month, page_year).date(), getMonthsEnd(page_month, page_year).date(),))
+    months_weights += db_cursor.fetchall()
     lock.release()
 
     start_weight = "nan"
-    if len(lastMonthsWeights)>0:
-        start_weight = float(sorted(lastMonthsWeights, key = lambda x: int(x[1].split("-")[2]))[0][0])
+    if len(last_months_weights) > 0:
+        start_weight = float(sorted(last_months_weights, key=lambda x: int(x[1].split("-")[2]))[0][0])
     else:
-        if len(monthsWeights)>0:
-            start_weight = float(sorted(monthsWeights, key = lambda x: int(x[1].split("-")[2]))[0][0])
+        if len(months_weights) > 0:
+            start_weight = float(sorted(months_weights, key=lambda x: int(x[1].split("-")[2]))[0][0])
 
-
-    chartWeights=[]
-    for i in range(1, numberOfDays+1):
-        currentMonth = int(str(datetime.date.today()).split("-")[1])
+    chart_weights = []
+    for i in range(1, number_of_days + 1):
+        current_month = int(str(datetime.date.today()).split("-")[1])
         weight = "nan"
-        for item in monthsWeights:
+        for item in months_weights:
             if int(item[1].split("-")[2]) == i:
                 weight = float(item[0])
         # fix the beginning of the month by extending the first value to beginning
@@ -65,338 +64,339 @@ def generateWeightChartData(pageMonth: int, pageYear: int, numberOfDays: int, db
             weight = start_weight
         # fix the end of the month by extending the last value to the end...
         # do not do it for current month
-        if (i == numberOfDays) and (weight == 'nan') and currentMonth != pageMonth:
-            recordedDays = [x for x in chartWeights if (x != 'nan') ]
-            if len(recordedDays)>0:
-                weight = recordedDays[-1]
-        chartWeights.append(weight)
-    return chartWeights
+        if (i == number_of_days) and (weight == 'nan') and current_month != page_month:
+            recorded_days = [x for x in chart_weights if (x != 'nan')]
+            if len(recorded_days) > 0:
+                weight = recorded_days[-1]
+        chart_weights.append(weight)
+    return chart_weights
 
 
-def weightFunc(res, weight):
-    weightList = [float(x[0]) for x in res if is_number(x[0])]
-    if len(weightList)>0:
-        weight.append(float(sum(weightList))/len(weightList))
+def weight_func(res, weight):
+    weight_list = [float(x[0]) for x in res if is_number(x[0])]
+    if len(weight_list) > 0:
+        weight.append(float(sum(weight_list))/len(weight_list))
     else:
         weight.append("nan")
     return weight
 
 
-def BOFunc(res, BO):
-    BOList = [float(x[0]) for x in res if is_number(x[0])]
-    if len(BOList)>0:
-        BO.append(float(sum(BOList))/len(BOList))
+def bo_func(res, bo):
+    bo_list = [float(x[0]) for x in res if is_number(x[0])]
+    if len(bo_list) > 0:
+        bo.append(float(sum(bo_list)) / len(bo_list))
     else:
-        BO.append("nan")
-    return BO
+        bo.append("nan")
+    return bo
 
 
-def WHFunc(res, yearWH):
-    yearWH.append(sum([float(x[0]) for x in res if is_number(x[0])]))
-    return yearWH
+def wh_func(res, year_wh):
+    year_wh.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+    return year_wh
 
 
-def sleepFunc(res, yearSleep):
-    yearSleep.append(sum([float(x[0]) for x in res if is_number(x[0])]))
-    return yearSleep
+def sleep_func(res, year_sleep):
+    year_sleep.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+    return year_sleep
 
 
-def stepFunc(res, yearStep):
-    yearStep.append(sum([float(x[0]) for x in res if is_number(x[0])]))
-    return yearStep
+def step_func(res, year_step):
+    year_step.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+    return year_step
 
 
-def hydrationFunc(res, yearHydration):
-    yearHydration.append(sum([float(x[0]) for x in res if is_number(x[0])]))
-    return yearHydration
+def hydration_func(res, year_hydration):
+    year_hydration.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+    return year_hydration
 
 
-def moodFunc(res, yearMoods):
+def mood_func(res, year_moods):
     res = [x[0] for x in res]
-    MonthVal = res.count("great")*4.5 + res.count("good")*3.5 + res.count("ok")*2.5 + res.count("bad")*1.5 + res.count("awful")*0.5
+    month_val = res.count("great")*4.5 + res.count("good")*3.5 + res.count("ok")*2.5 + res.count("bad")*1.5 + \
+                res.count("awful")*0.5
     if len(res) > 0:
-        moodVal = MonthVal/float(len(res))
-        yearMoods.append(moodVal)
+        mood_val = month_val/float(len(res))
+        year_moods.append(mood_val)
     else:
-        yearMoods.append("nan")
-    return yearMoods
+        year_moods.append("nan")
+    return year_moods
 
 
-def runFunc(res, yearRuns):
-    yearRuns.append(sum([float(x[0]) for x in res if is_number(x[0])]))
-    return yearRuns
+def run_func(res, year_runs):
+    year_runs.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+    return year_runs
 
 
-def genYearChartData(pageYear: int, pageMonth: int, tableName: str, calcFunc, dbCursur, lock):
-    startTime = time.time()
-    retList = []
+def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, lock):
+    start_time = time.time()
+    ret_list = []
     global temporary_data
     temporary_data["chart_year_data"] = temporary_data.get("chart_year_data", {})
-    temporary_data["chart_year_data"][tableName] = temporary_data["chart_year_data"].get(tableName, {pageYear: []})
-    now = datetime.datetime.now()
-
+    temporary_data["chart_year_data"][table_name] = temporary_data["chart_year_data"].get(table_name, {page_year: []})
     i = 0
-    while (i+7<364):
+    while (i+7) < 364:
         try:
-            recorded_data = temporary_data["chart_year_data"][tableName][pageYear][(i/7)+1]
+            recorded_data = temporary_data["chart_year_data"][table_name][page_year][(i / 7) + 1]
             if len(recorded_data) == 0:
                 raise ValueError("re-calculate...")
-            retList += recorded_data[len(retList): len(retList)+6]
+            ret_list += recorded_data[len(ret_list): len(ret_list)+6]
         except Exception as err:
-            weekBeg = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i)
-            weekEnd = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i+6)
+            logger.error(err)
+            week_beg = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i)
+            week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i + 6)
             lock.acquire(True)
-            dbCursur.execute("SELECT * FROM " + tableName + " WHERE date >= ? and date <= ?  ",
-                             (weekBeg.date(), weekEnd.date(),))
-            retList = calcFunc(dbCursur.fetchall(), retList)
+            db_cursor.execute("SELECT * FROM " + table_name + " WHERE date >= ? and date <= ?  ",
+                              (week_beg.date(), week_end.date(),))
+            ret_list = calc_func(db_cursor.fetchall(), ret_list)
             lock.release()
         i += 7
 
-    weekBeg = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i)
-    weekEnd = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=364)
+    week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=364)
     lock.acquire(True)
-    dbCursur.execute("SELECT * FROM " + tableName + " WHERE date >= ? and date <= ?  ",
-                     (weekEnd.date(), getMonthsEnd(i, pageYear).date(),))
-    retList = calcFunc(dbCursur.fetchall(), retList)
+    db_cursor.execute("SELECT * FROM " + table_name + " WHERE date >= ? and date <= ?  ",
+                      (week_end.date(), getMonthsEnd(i, page_year).date(),))
+    ret_list = calc_func(db_cursor.fetchall(), ret_list)
     lock.release()
-    temporary_data["chart_year_data"][tableName][pageYear] = retList[:]
-    executionTime = (time.time() - startTime)
-    logger.info('{0: <20}'.format(tableName)+ " time: " + str(executionTime))
-    return retList
+    temporary_data["chart_year_data"][table_name][page_year] = ret_list[:]
+    execution_time = (time.time() - start_time)
+    logger.info('{0: <20}'.format(table_name) + " time: " + str(execution_time))
+    return ret_list
 
 
-def generateHRChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur, lock):
-    monthsHR = []
+def generate_hr_chart_data(page_month: int, page_year: int, number_of_days: int, db_cursor, lock):
+    months_hr = []
 
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM HRTracker WHERE date >= ? and date <= ?  """,
-              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
-    monthsHR += dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM HRTracker WHERE date >= ? and date <= ?  """,
+                      (getMonthsBeginning(page_month, page_year).date(), getMonthsEnd(page_month, page_year).date(),))
+    months_hr += db_cursor.fetchall()
     lock.release()
 
-    chartHR_Min=[]
-    chartHR_Max=[]
-    for i in range(1, numberOfDays+1):
+    chart_hr_min = []
+    chart_hr_max = []
+    for i in range(1, number_of_days + 1):
         hr_min = "nan"
         hr_max = "nan"
-        for item in monthsHR:
+        for item in months_hr:
             if int(item[2].split("-")[2]) == i:
                 hr_min, hr_max = float(item[0]), float(item[1])
-        chartHR_Min.append(hr_min)
-        chartHR_Max.append(hr_max)
-    return chartHR_Min, chartHR_Max
+        chart_hr_min.append(hr_min)
+        chart_hr_max.append(hr_max)
+    return chart_hr_min, chart_hr_max
 
 
-
-def generateBPChartData(pageMonth: int, pageYear: int, numberOfDays: int, dbCursur, lock):
-    monthsBP = []
+def generate_bp_chart_data(page_month: int, page_year: int, number_of_days: int, db_cursor, lock):
+    months_bp = []
 
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM BPTracker WHERE date >= ? and date <= ?  """,
-              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
-    monthsBP += dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM BPTracker WHERE date >= ? and date <= ?  """,
+                      (getMonthsBeginning(page_month, page_year).date(), getMonthsEnd(page_month, page_year).date(),))
+    months_bp += db_cursor.fetchall()
     lock.release()
 
-    chartBP_Min=[]
-    chartBP_Max=[]
-    for i in range(1, numberOfDays+1):
+    chart_bp_min = []
+    chart_bp_max = []
+    for i in range(1, number_of_days + 1):
         bp_min = "nan"
         bp_max = "nan"
-        for item in monthsBP:
+        for item in months_bp:
             if int(item[2].split("-")[2]) == i:
                 bp_min, bp_max = float(item[0]), float(item[1])
-        chartBP_Min.append(bp_min)
-        chartBP_Max.append(bp_max)
-    return chartBP_Min, chartBP_Max
+        chart_bp_min.append(bp_min)
+        chart_bp_max.append(bp_max)
+    return chart_bp_min, chart_bp_max
 
 
-def generateYearDoubleChartData(pageYear: int, numberOfDays: int, trackerName: str,  dbCursur, lock):
-    startTime = time.time()
-    TD_Min_Avg = [] # Table Data average Min
-    TD_Max_Avg = [] # Table Data average Max
+def generate_year_double_chart_data(page_year: int, tracker_name: str, db_cursor, lock):
+    start_time = time.time()
+    td_min_avg = []     # Table Data average Min
+    td_max_avg = []     # Table Data average Max
     i = 0
-    while (i+7<364):
-        weekBeg = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i)
-        weekEnd = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i+6)
+    while (i+7) < 364:
+        week_beg = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i)
+        week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i + 6)
         lock.acquire(True)
-        dbCursur.execute("SELECT * FROM "+trackerName+" WHERE date >= ? and date <= ?  ",
-            (weekBeg.date(), weekEnd.date(),))
-        res = dbCursur.fetchall()
+        db_cursor.execute("SELECT * FROM " + tracker_name + " WHERE date >= ? and date <= ?  ",
+                          (week_beg.date(), week_end.date(),))
+        res = db_cursor.fetchall()
         lock.release()
 
-        TD_Min = [float(x[0]) for x in res if is_number(x[0])]
-        TD_Max = [float(x[1]) for x in res if is_number(x[1])]
-        if len(TD_Min)>0:
-            TD_Min_Avg.append(float(sum(TD_Min))/len(TD_Min))
+        td_min = [float(x[0]) for x in res if is_number(x[0])]
+        td_max = [float(x[1]) for x in res if is_number(x[1])]
+        if len(td_min) > 0:
+            td_min_avg.append(float(sum(td_min))/len(td_min))
         else:
-            TD_Min_Avg.append("nan")
-        if len(TD_Max)>0:
-            TD_Max_Avg.append(float(sum(TD_Max))/len(TD_Max))
+            td_min_avg.append("nan")
+        if len(td_max) > 0:
+            td_max_avg.append(float(sum(td_max))/len(td_max))
         else:
-            TD_Max_Avg.append("nan")
+            td_max_avg.append("nan")
         i += 7
 
-    weekBeg = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=i)
-    weekEnd = datetime.datetime.strptime(f"{pageYear}-01-01", '%Y-%m-%d')+datetime.timedelta(days=364)
+    week_beg = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i)
+    week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=364)
     lock.acquire(True)
-    dbCursur.execute("SELECT * FROM "+trackerName+" WHERE date >= ? and date <= ?  ",
-        (weekBeg.date(), weekEnd.date(),))
-    res = dbCursur.fetchall()
+    db_cursor.execute("SELECT * FROM " + tracker_name + " WHERE date >= ? and date <= ?  ",
+                      (week_beg.date(), week_end.date(),))
+    res = db_cursor.fetchall()
     lock.release()
 
-    TD_Min = [float(x[0]) for x in res if is_number(x[0])]
-    TD_Max = [float(x[1]) for x in res if is_number(x[1])]
-    if len(TD_Min)>0:
-        TD_Min_Avg.append(float(sum(TD_Min))/len(TD_Min))
+    td_min = [float(x[0]) for x in res if is_number(x[0])]
+    td_max = [float(x[1]) for x in res if is_number(x[1])]
+    if len(td_min) > 0:
+        td_min_avg.append(float(sum(td_min))/len(td_min))
     else:
-        TD_Min_Avg.append("nan")
-    if len(TD_Max)>0:
-        TD_Max_Avg.append(float(sum(TD_Max))/len(TD_Max))
+        td_min_avg.append("nan")
+    if len(td_max) > 0:
+        td_max_avg.append(float(sum(td_max))/len(td_max))
     else:
-        TD_Max_Avg.append("nan")
+        td_max_avg.append("nan")
 
-    executionTime = (time.time() - startTime)
-    logger.info('{0: <20}'.format(trackerName)+ " time: " + str(executionTime))
-    return TD_Min_Avg, TD_Max_Avg
+    execution_time = (time.time() - start_time)
+    logger.info('{0: <20}'.format(tracker_name) + " time: " + str(execution_time))
+    return td_min_avg, td_max_avg
 
 
-def generateSavingTrackerChartData(pageYear: int, dbCursur, lock):
-    yearsSavings = []
+def generate_saving_tracker_chart_data(page_year: int, db_cursor, lock):
+    years_savings = []
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM savingTracker WHERE month >= ? and month <= ?  """,
-              (pageYear+"-"+"01", pageYear+"-"+"12"))
-    yearsSavings += dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM savingTracker WHERE month >= ? and month <= ?  """,
+                      (str(page_year) + "-" + "01", str(page_year) + "-" + "12"))
+    years_savings += db_cursor.fetchall()
     lock.release()
 
-    savingTrackerData=[]
+    saving_tracker_data = []
     for i in range(1, 13):
-        savingsVal = "nan"
-        for item in yearsSavings:
+        savings_val = "nan"
+        for item in years_savings:
             if int(item[1].split("-")[1]) == i:
-                savingsVal = float(item[0])
-        savingTrackerData.append(savingsVal)
-    return savingTrackerData
+                savings_val = float(item[0])
+        saving_tracker_data.append(savings_val)
+    return saving_tracker_data
 
 
-
-def generateMortgageTrackerChartData(pageYear: int, dbCursur, lock):
-    yearsSavings = []
+def generate_mortgage_tracker_chart_data(page_year: int, db_cursor, lock):
+    years_savings = []
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM mortgageTracker WHERE month >= ? and month <= ?  """,
-              (pageYear+"-"+"01", pageYear+"-"+"12"))
-    yearsSavings += dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM mortgageTracker WHERE month >= ? and month <= ?  """,
+                      (str(page_year) + "-" + "01", str(page_year) + "-" + "12"))
+    years_savings += db_cursor.fetchall()
     lock.release()
 
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM mortgageTracker """)
-    data = dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM mortgageTracker """)
+    data = db_cursor.fetchall()
     try:
-        maxVal = max([float(x[0]) for x in data])
-        minVal = min([float(x[0]) for x in data])
-        paid = maxVal - minVal
+        max_val = max([float(x[0]) for x in data])
+        min_val = min([float(x[0]) for x in data])
+        paid = max_val - min_val
     except Exception as err:
+        logger.error(err)
         paid = 0
     lock.release()
 
-    mortgageTrackerData=[]
+    mortgage_tracker_data = []
     for i in range(1, 13):
-        mortgageVal = "nan"
-        for item in yearsSavings:
+        mortgage_val = "nan"
+        for item in years_savings:
             if int(item[1].split("-")[1]) == i:
-                mortgageVal = float(item[0])
-        mortgageTrackerData.append(mortgageVal)
+                mortgage_val = float(item[0])
+        mortgage_tracker_data.append(mortgage_val)
 
-    return mortgageTrackerData, paid
+    return mortgage_tracker_data, paid
 
 
-
-def generateMonthlyChartData(pageMonth: int, pageYear: int, tabelName:str, numberOfDays: int, dbCursur, lock):
-    monthsVals = []
+def generate_monthly_chart_data(page_month: int, page_year: int, tabel_name: str, number_of_days: int, db_cursor, lock):
+    months_vals = []
     lock.acquire(True)
-    dbCursur.execute("SELECT * FROM "+tabelName+" WHERE date >= ? and date <= ?  ",
-              (getMonthsBeginning(pageMonth, pageYear).date(), getMonthsEnd(pageMonth, pageYear).date(),))
-    monthsVals += dbCursur.fetchall()
+    db_cursor.execute("SELECT * FROM " + tabel_name + " WHERE date >= ? and date <= ?  ",
+                      (getMonthsBeginning(page_month, page_year).date(), getMonthsEnd(page_month, page_year).date(),))
+    months_vals += db_cursor.fetchall()
     lock.release()
 
-    monthsData=[]
-    for i in range(1, numberOfDays+1):
+    months_data = []
+    for i in range(1, number_of_days + 1):
         _value = "nan"
-        for item in monthsVals:
+        for item in months_vals:
             if int(item[1].split("-")[2]) == i:
                 try:
                     _value = float(item[0])
-                except:
+                except Exception as err:
+                    logger.error(err)
                     _value = "nan"
-        monthsData.append(_value)
-    return monthsData
+        months_data.append(_value)
+    return months_data
 
 
-def generate_weather_monthly(dbCursur, year: int, lock):
+def generate_weather_monthly(db_cursor, year: int, lock):
     # extract the year data
-    returnData = {}
+    return_data = {}
     for month in range(1, 13):
         lock.acquire(True)
-        dbCursur.execute("SELECT * FROM weatherStation WHERE date >= ? and date <= ?  ",
-                (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(),))
-        monthly_Data = dbCursur.fetchall()
+        db_cursor.execute("SELECT * FROM weatherStation WHERE date >= ? and date <= ?  ",
+                          (getMonthsBeginning(month, year).date(), getMonthsEnd(month, year).date(),))
+        monthly_data = db_cursor.fetchall()
         lock.release()
-        tempData = {}
-        for item in monthly_Data:
+        temp_data = {}
+        for item in monthly_data:
             room = int(item[0])
-            tempData[room] = tempData.get(room, {"temp":[], "pressure":[], "humidity": []})
-            tempData[room]["temp"].append(float(item[3].strip()))
-            tempData[room]["humidity"].append(float(item[4].strip()))
-            tempData[room]["pressure"].append(float(item[5].strip())/1000)
+            temp_data[room] = temp_data.get(room, {"temp": [], "pressure": [], "humidity": []})
+            temp_data[room]["temp"].append(float(item[3].strip()))
+            temp_data[room]["humidity"].append(float(item[4].strip()))
+            temp_data[room]["pressure"].append(float(item[5].strip())/1000)
 
-        for item in tempData.keys():
+        for item in temp_data.keys():
             room = item
-            returnData[room] = returnData.get(room,{"months": [],
-                                                    "temp":{"min": [], "max": [],"avg": []},
-                                                    "pressure":{"min": [], "max": [],"avg": []},
-                                                    "humidity":{"min": [], "max": [],"avg": []}})
-            returnData[room]["months"].append(month)
+            return_data[room] = return_data.get(room, {"months": [],
+                                                       "temp": {"min": [], "max": [], "avg": []},
+                                                       "pressure": {"min": [], "max": [], "avg": []},
+                                                       "humidity": {"min": [], "max": [], "avg": []}})
+            return_data[room]["months"].append(month)
             for parameter in ["temp", "pressure", "humidity"]:
-                tempDataCleanList = [x for x in tempData[room][parameter] if x != 0]
-                if len(tempDataCleanList)>0:
-                    returnData[room][parameter]["min"].append(min(tempDataCleanList))
-                    returnData[room][parameter]["max"].append(max(tempDataCleanList))
-                    returnData[room][parameter]["avg"].append(sum(tempDataCleanList)/len(tempDataCleanList))
+                temp_data_clean_list = [x for x in temp_data[room][parameter] if x != 0]
+                if len(temp_data_clean_list) > 0:
+                    return_data[room][parameter]["min"].append(min(temp_data_clean_list))
+                    return_data[room][parameter]["max"].append(max(temp_data_clean_list))
+                    return_data[room][parameter]["avg"].append(sum(temp_data_clean_list)/len(temp_data_clean_list))
                 else:
-                    returnData[room][parameter]["min"].append("nan")
-                    returnData[room][parameter]["max"].append("nan")
-                    returnData[room][parameter]["avg"].append("nan")
+                    return_data[room][parameter]["min"].append("nan")
+                    return_data[room][parameter]["max"].append("nan")
+                    return_data[room][parameter]["avg"].append("nan")
     for month in range(1, 13):
-        for room in returnData.keys():
-            if month not in returnData[room]["months"]:
+        for room in return_data.keys():
+            if month not in return_data[room]["months"]:
                 for parameter in ["temp", "pressure", "humidity"]:
-                    returnData[room][parameter]["min"] = returnData[room][parameter]["min"][:month-1] + ["nan"] + returnData[room][parameter]["min"][month-1:]
-                    returnData[room][parameter]["max"] = returnData[room][parameter]["max"][:month-1] + ["nan"] + returnData[room][parameter]["max"][month-1:]
-                    returnData[room][parameter]["avg"] = returnData[room][parameter]["avg"][:month-1] + ["nan"] + returnData[room][parameter]["avg"][month-1:]
+                    return_data[room][parameter]["min"] = return_data[room][parameter]["min"][:month-1] + ["nan"] + \
+                                                          return_data[room][parameter]["min"][month-1:]
+                    return_data[room][parameter]["max"] = return_data[room][parameter]["max"][:month-1] + ["nan"] + \
+                                                          return_data[room][parameter]["max"][month-1:]
+                    return_data[room][parameter]["avg"] = return_data[room][parameter]["avg"][:month-1] + ["nan"] + \
+                                                          return_data[room][parameter]["avg"][month-1:]
 
-    return returnData
+    return return_data
 
 
-def genenrate_weather_daily(dbCursur, todaysDate, lock):
+def generate_weather_daily(db_cursor, today_date, lock):
     daily_data = {}
     lock.acquire(True)
-    dbCursur.execute("SELECT * FROM weatherStation WHERE date = ? ", (todaysDate,))
-    todayVals = dbCursur.fetchall()
+    db_cursor.execute("SELECT * FROM weatherStation WHERE date = ? ", (today_date,))
+    today_vals = db_cursor.fetchall()
     lock.release()
-    for item in todayVals:
+    for item in today_vals:
         room = int(item[0])
-        daily_data[room] = daily_data.get(room, {"time": [], "temp":[], "pressure":[], "humidity": []})
+        daily_data[room] = daily_data.get(room, {"time": [], "temp": [], "pressure": [], "humidity": []})
         daily_data[room]["time"].append(item[2].strip()[:-3])
         daily_data[room]["temp"].append(item[3].strip())
         daily_data[room]["humidity"].append(item[4].strip())
         daily_data[room]["pressure"].append(float(item[5].strip())/1000)
 
     lock.acquire(True)
-    dbCursur.execute("SELECT * FROM settings")
-    res = dbCursur.fetchall()
+    db_cursor.execute("SELECT * FROM settings")
+    res = db_cursor.fetchall()
     description = {}
     for item in res:
         description[str(item[0])] = item[1]
-    for item in todayVals:
+    for item in today_vals:
         room = str(item[0])
         if room not in description.keys():
             description[room] = "room_"+room
@@ -405,118 +405,122 @@ def genenrate_weather_daily(dbCursur, todaysDate, lock):
     return daily_data, description
 
 
-def generate_cpu_stat(todaysDate, year):
-    server_report_dir='serverScripts/reports/cpuReports/'+str(year)
-    cpuTemps = []
-    cpuTempsTimes = []
+def generate_cpu_stat(today_date, year):
+    server_report_dir = 'serverScripts/reports/cpuReports/'+str(year)
+    cpu_temps = []
+    cpu_temps_times = []
 
-    cpuUsage = []
-    cpuUsageTimes = []
+    cpu_usage = []
+    cpu_usage_times = []
     try:
-        with open(server_report_dir+'/cpuUsageData_'+str(todaysDate)+'.txt', 'r') as reader2:
+        with open(server_report_dir + '/cpuUsageData_' + str(today_date) + '.txt', 'r') as reader2:
             line2 = reader2.readline()
-            while (line2 != ""):
-                lineSplit = line2.split(" ")
+            while line2 != "":
+                line_split = line2.split(" ")
                 # convert to 24hr format if its 12hr format
-                if ("PM" in lineSplit) or ("AM" in lineSplit):
-                    lineSplit[0] = convertTimeTo24(lineSplit[0]+" "+lineSplit[1])
-                    del lineSplit[1]
-                cpuUsage.append(float(lineSplit[2]))
-                cpuUsageTimes.append(lineSplit[0])
+                if ("PM" in line_split) or ("AM" in line_split):
+                    line_split[0] = convert_time_to24(line_split[0] + " " + line_split[1])
+                    del line_split[1]
+                cpu_usage.append(float(line_split[2]))
+                cpu_usage_times.append(line_split[0])
                 line2 = reader2.readline()
         reader2.close()
     except Exception as e:
         logger.error(e)
         try:
             reader2.close()
-        except:
+        except Exception as err:
+            logger.error(err)
             pass
     try:
-        with open(server_report_dir+'/cpuTempData_'+str(todaysDate)+'.txt', 'r') as reader2:
+        with open(server_report_dir + '/cpuTempData_' + str(today_date) + '.txt', 'r') as reader2:
             line2 = reader2.readline()
-            while (line2 != ""):
-                lineSplit = line2.split(" ")
-                cpuTemps.append(float(lineSplit[0])/1000)
-                cpuTempsTimes.append(lineSplit[2])
+            while line2 != "":
+                line_split = line2.split(" ")
+                cpu_temps.append(float(line_split[0])/1000)
+                cpu_temps_times.append(line_split[2])
                 line2 = reader2.readline()
         reader2.close()
     except Exception as e:
         logger.error(e)
         try:
             reader2.close()
-        except:
-            pass
+        except Exception as err:
+            logger.error(err)
+    try:
+        disc_space1 = int(os.popen('df -h | grep "/dev/root"').read().split()[4][:-1])
+    except Exception as err:
+        logger.error(err)
+        disc_space1 = 0
 
     try:
-        discSpace1 = int(os.popen('df -h | grep "/dev/root"').read().split()[4][:-1])
-    except:
-        discSpace1 = 0
+        disc_space2 = int(os.popen('df -h | grep "/dev/sda1"').read().split()[4][:-1])
+    except Exception as err:
+        logger.error(err)
+        disc_space2 = 0
 
     try:
-        discSpace2 = int(os.popen('df -h | grep "/dev/sda1"').read().split()[4][:-1])
-    except:
-        discSpace2 = 0
+        disc_space3_temp = os.popen('free -m | grep "Mem"').read().split()
+        disc_space3 = (float(disc_space3_temp[2])/float(disc_space3_temp[1]))*100
+    except Exception as err:
+        logger.error(err)
+        disc_space3 = 0
 
     try:
-        discSpace3Temp = os.popen('free -m | grep "Mem"').read().split()
-        discSpace3 = (float(discSpace3Temp[2])/float(discSpace3Temp[1]))*100
-    except:
-        discSpace3 = 0
+        disc_space4_temp = os.popen('free -m | grep "Swap"').read().split()
+        disc_space4 = (float(disc_space4_temp[2])/float(disc_space4_temp[1]))*100
+    except Exception as err:
+        logger.error(err)
+        disc_space4 = 0
 
     try:
-        discSpace4Temp = os.popen('free -m | grep "Swap"').read().split()
-        discSpace4 = (float(discSpace4Temp[2])/float(discSpace4Temp[1]))*100
-    except:
-        discSpace4 = 0
+        up_time_string = " ".join(os.popen('uptime -s').read().split())
+        boot_time = datetime.datetime.strptime(up_time_string, '%Y-%m-%d %H:%M:%S')
+        up_time = datetime.datetime.now() - boot_time
+        up_time = int(up_time.total_seconds()/3600)
+    except Exception as err:
+        logger.error(err)
+        up_time = 0
 
-    try:
-        upTimeString = " ".join(os.popen('uptime -s').read().split())
-        bootTime = datetime.datetime.strptime(upTimeString, '%Y-%m-%d %H:%M:%S')
-        upTime = datetime.datetime.now() - bootTime
-        upTime = int(upTime.total_seconds()/3600)
-    except Exception as e:
-        upTime = 0
-
-    discSpace = {"/dev/root" : [discSpace1, 100-discSpace1],
-                 "/dev/sda1": [discSpace2, 100-discSpace2],
-                 "Mem": [discSpace3, 100-discSpace3],
-                 "Swap": [discSpace4, 100-discSpace4]}
-    return cpuTemps, cpuTempsTimes, cpuUsage, cpuUsageTimes, discSpace, upTime
+    disc_space = {"/dev/root": [disc_space1, 100-disc_space1],
+                  "/dev/sda1": [disc_space2, 100-disc_space2],
+                  "Mem": [disc_space3, 100-disc_space3],
+                  "Swap": [disc_space4, 100-disc_space4]}
+    return cpu_temps, cpu_temps_times, cpu_usage, cpu_usage_times, disc_space, up_time
 
 
 def generate_cpu_stat_monthly(year: str):
-    server_report_dir='serverScripts/reports/cpuReports/'+str(year)
-    cpuTemps = {}
-    cpuUsage = {}
+    server_report_dir = 'serverScripts/reports/cpuReports/'+str(year)
+    cpu_temps = {}
+    cpu_usage = {}
 
     now = datetime.datetime.now()
     temporary_data["yearly_cpu_usage"] = temporary_data.get("yearly_cpu_usage", {})
     temporary_data["yearly_cpu_temp"] = temporary_data.get("yearly_cpu_temp", {})
-    temporary_data["yearly_cpu_usage"][year] = temporary_data["yearly_cpu_usage"].get(year, {"min":["nan" for _ in range(1, 13)], "max":["nan" for _ in range(1, 13)]})
-    temporary_data["yearly_cpu_temp"][year] = temporary_data["yearly_cpu_temp"].get(year, {"min":["nan" for _ in range(1, 13)], "max":["nan" for _ in range(1, 13)]})
+    temporary_data["yearly_cpu_usage"][year] = temporary_data["yearly_cpu_usage"].get(year, {"min": ["nan" for _ in range(1, 13)], "max": ["nan" for _ in range(1, 13)]})
+    temporary_data["yearly_cpu_temp"][year] = temporary_data["yearly_cpu_temp"].get(year, {"min": ["nan" for _ in range(1, 13)], "max": ["nan" for _ in range(1, 13)]})
 
-    file_month_counter_cpu=[0 for _ in range(1, 13)]
-    file_month_counter_temp=[0 for _ in range(1, 13)]
     for file in os.listdir(server_report_dir):
         file_year = file.split(".")[0].split("-")[2]
         file_month = int(file.split(".")[0].split("-")[1])
         if file_year == str(year)[2:]:
-            if(temporary_data["yearly_cpu_usage"][year]["min"][file_month-1]=="nan") or (int(file_month) == int(now.month)):
+            if(temporary_data["yearly_cpu_usage"][year]["min"][file_month-1] == "nan") or \
+                    (int(file_month) == int(now.month)):
                 try:
                     with open(server_report_dir+"/"+file, 'r') as reader2:
                         line2 = reader2.readline()
-                        while (line2 != ""):
-                            lineSplit = line2.strip().split(" ")
+                        while line2 != "":
+                            line_split = line2.strip().split(" ")
                             if "cpuUsageData" in file:
                                 # convert to 24hr format if its 12hr format
-                                if ("PM" in lineSplit) or ("AM" in lineSplit):
-                                    lineSplit[0] = convertTimeTo24(lineSplit[0]+" "+lineSplit[1])
-                                    del lineSplit[1]
-                                cpuUsage[file_month] = cpuUsage.get(file_month, [])
-                                cpuUsage[file_month].append(float(lineSplit[2]))
+                                if ("PM" in line_split) or ("AM" in line_split):
+                                    line_split[0] = convert_time_to24(line_split[0] + " " + line_split[1])
+                                    del line_split[1]
+                                cpu_usage[file_month] = cpu_usage.get(file_month, [])
+                                cpu_usage[file_month].append(float(line_split[2]))
                             else:
-                                cpuTemps[file_month] = cpuTemps.get(file_month, [])
-                                cpuTemps[file_month].append(float(lineSplit[0])/1000)
+                                cpu_temps[file_month] = cpu_temps.get(file_month, [])
+                                cpu_temps[file_month].append(float(line_split[0])/1000)
                             line2 = reader2.readline()
                     reader2.close()
                 except Exception as e:
@@ -524,72 +528,82 @@ def generate_cpu_stat_monthly(year: str):
                     logger.error("line:", line2)
                     try:
                         reader2.close()
-                    except:
-                        pass
-    cpuUsageYearly={"min":["nan" for _ in range(1, 13)], "max":["nan" for _ in range(1, 13)]}
-    cpuTempsYearly={"min":["nan" for _ in range(1, 13)], "max":["nan" for _ in range(1, 13)]}
+                    except Exception as err:
+                        logger.error(err)
+    cpu_usage_yearly = {"min": ["nan" for _ in range(1, 13)], "max": ["nan" for _ in range(1, 13)]}
+    cpu_temps_yearly = {"min": ["nan" for _ in range(1, 13)], "max": ["nan" for _ in range(1, 13)]}
     for i in range(1, 13):
-        if(temporary_data["yearly_cpu_usage"][year]["min"][i-1]=="nan") or (i == now.month):
-            if i in cpuUsage:
-                temporary_data["yearly_cpu_usage"][year]["min"][i-1] = min(cpuUsage[i])
-                temporary_data["yearly_cpu_usage"][year]["max"][i-1] = max(cpuUsage[i])
-            if i in cpuTemps:
-                temporary_data["yearly_cpu_temp"][year]["min"][i-1] = min(cpuTemps[i])
-                temporary_data["yearly_cpu_temp"][year]["max"][i-1] = max(cpuTemps[i])
-    cpuUsageYearly["min"] = temporary_data["yearly_cpu_usage"][year]["min"][:]
-    cpuUsageYearly["max"] = temporary_data["yearly_cpu_usage"][year]["max"][:]
-    cpuTempsYearly["min"] = temporary_data["yearly_cpu_temp"][year]["min"][:]
-    cpuTempsYearly["max"] = temporary_data["yearly_cpu_temp"][year]["max"][:]
-    return cpuTempsYearly, cpuUsageYearly
+        if(temporary_data["yearly_cpu_usage"][year]["min"][i-1] == "nan") or (i == now.month):
+            if i in cpu_usage:
+                temporary_data["yearly_cpu_usage"][year]["min"][i-1] = min(cpu_usage[i])
+                temporary_data["yearly_cpu_usage"][year]["max"][i-1] = max(cpu_usage[i])
+            if i in cpu_temps:
+                temporary_data["yearly_cpu_temp"][year]["min"][i-1] = min(cpu_temps[i])
+                temporary_data["yearly_cpu_temp"][year]["max"][i-1] = max(cpu_temps[i])
+    cpu_usage_yearly["min"] = temporary_data["yearly_cpu_usage"][year]["min"][:]
+    cpu_usage_yearly["max"] = temporary_data["yearly_cpu_usage"][year]["max"][:]
+    cpu_temps_yearly["min"] = temporary_data["yearly_cpu_temp"][year]["min"][:]
+    cpu_temps_yearly["max"] = temporary_data["yearly_cpu_temp"][year]["max"][:]
+    return cpu_temps_yearly, cpu_usage_yearly
 
 
-
-def generateEConsumptionTrackerChartData(pageYear: str, dbCursur, lock):
-    yearsConsumption = []
+def generate_e_consumption_tracker_chart_data(page_year: str, db_cursor, lock):
+    years_consumption = []
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM econsumption WHERE date >= ? and date <= ?  """,
-              (pageYear+"-"+"01"+"-"+"01", pageYear+"-"+"12"+"-"+"30"))
-    yearsConsumption += dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM econsumption WHERE date >= ? and date <= ?  """,
+                      (page_year + "-" + "01" + "-" + "01", page_year + "-" + "12" + "-" + "30"))
+    years_consumption += db_cursor.fetchall()
     lock.release()
 
-    ConsumptionTrackerData=[]
+    consumption_tracker_data = []
     for i in range(1, 13):
-        ConsumptionVal = "nan"
-        for item in yearsConsumption:
+        consumption_val = "nan"
+        for item in years_consumption:
             if int(item[0].split("-")[1]) == i:
-                ConsumptionVal = float(item[1])
-        ConsumptionTrackerData.append(ConsumptionVal)
-    return ConsumptionTrackerData
+                consumption_val = float(item[1])
+        consumption_tracker_data.append(consumption_val)
+    return consumption_tracker_data
 
 
-
-def getChartData(pageMonth, pageYear, numberOfDays, c, lock):
+def get_chart_data(page_month, page_year, number_of_days, c, lock):
     # gather chart information ----------------------
-    ChartData = {}
-    ChartData["monthsWeights"]    = generateWeightChartData(int(pageMonth),      int(pageYear), numberOfDays, c, lock)
-    ChartData["monthsPaces"]      = generateMonthlyChartData(int(pageMonth), int(pageYear), "paceTracker", numberOfDays, c, lock)
-    ChartData["BO"]               = generateMonthlyChartData(int(pageMonth), int(pageYear), "oxygenTracker", numberOfDays, c, lock)
-    ChartData["monthsWorkHours"]  = generateMonthlyChartData(int(pageMonth), int(pageYear), "workTracker", numberOfDays, c, lock)
-    ChartData["monthsSleepTimes"] = generateMonthlyChartData(int(pageMonth), int(pageYear), "sleepTracker", numberOfDays, c, lock)
-    ChartData["monthsSteps"]      = generateMonthlyChartData(int(pageMonth), int(pageYear), "stepTracker", numberOfDays, c, lock)
-    ChartData["monthsHydration"]  = generateMonthlyChartData(int(pageMonth), int(pageYear), "hydrationTracker", numberOfDays, c, lock)
-    ChartData["monthsRuns"]       = generateMonthlyChartData(int(pageMonth), int(pageYear), "runningTracker",numberOfDays, c, lock)
-    ChartData["YearsSavings"]     = generateSavingTrackerChartData(pageYear, c, lock)
-    ChartData["YearsMortgages"], ChartData["MortgagePaid"]   = generateMortgageTrackerChartData(pageYear, c, lock)
-    ChartData["ChartMonthDays"]   = [str(i) for i in range(1, numberOfDays+1)]
-    ChartData["travels"]          = getTravelDests(c, lock)
-    ChartData["HR_Min"], ChartData["HR_Max"] = generateHRChartData(int(pageMonth),          int(pageYear), numberOfDays, c, lock)
-    ChartData["BP_Min"], ChartData["BP_Max"] = generateBPChartData(int(pageMonth),          int(pageYear), numberOfDays, c, lock)
+    chart_data = dict()
+    chart_data["monthsWeights"] = \
+        generate_weight_chart_data(int(page_month), int(page_year), number_of_days, c, lock)
+    chart_data["monthsPaces"] = \
+        generate_monthly_chart_data(int(page_month), int(page_year), "paceTracker", number_of_days, c, lock)
+    chart_data["BO"] = \
+        generate_monthly_chart_data(int(page_month), int(page_year), "oxygenTracker", number_of_days, c, lock)
+    chart_data["monthsWorkHours"] = \
+        generate_monthly_chart_data(int(page_month), int(page_year), "workTracker", number_of_days, c, lock)
+    chart_data["monthsSleepTimes"] = \
+        generate_monthly_chart_data(int(page_month), int(page_year), "sleepTracker", number_of_days, c, lock)
+    chart_data["monthsSteps"] = \
+        generate_monthly_chart_data(int(page_month), int(page_year), "stepTracker", number_of_days, c, lock)
+    chart_data["monthsHydration"] = \
+        generate_monthly_chart_data(int(page_month), int(page_year), "hydrationTracker", number_of_days, c, lock)
+    chart_data["monthsRuns"] = \
+        generate_monthly_chart_data(int(page_month), int(page_year), "runningTracker", number_of_days, c, lock)
+    chart_data["YearsSavings"] = generate_saving_tracker_chart_data(page_year, c, lock)
+    chart_data["YearsMortgages"], chart_data["MortgagePaid"] = generate_mortgage_tracker_chart_data(page_year, c, lock)
+    chart_data["ChartMonthDays"] = [str(i) for i in range(1, number_of_days + 1)]
+    chart_data["travels"] = get_travel_destinations(c, lock)
+    chart_data["HR_Min"], chart_data["HR_Max"] = \
+        generate_hr_chart_data(int(page_month), int(page_year), number_of_days, c, lock)
+    chart_data["BP_Min"], chart_data["BP_Max"] = \
+        generate_bp_chart_data(int(page_month), int(page_year), number_of_days, c, lock)
     # ----------------------------------------------
-    ChartData["yearRuns"]   = genYearChartData(int(pageYear), int(pageMonth), "runningTracker",  runFunc,    c, lock)
-    ChartData["yearSteps"]  = genYearChartData(int(pageYear), int(pageMonth), "stepTracker",     stepFunc,   c, lock)
-    ChartData["yearSleep"]  = genYearChartData(int(pageYear), int(pageMonth), "sleepTracker",    sleepFunc,  c, lock)
-    ChartData["yearHydr"]   = genYearChartData(int(pageYear), int(pageMonth), "hydrationTracker",hydrationFunc,  c, lock)
-    ChartData["yearWeight"] = genYearChartData(int(pageYear), int(pageMonth), "weightTracker",   weightFunc, c, lock)
-    ChartData["yearBO"]     = genYearChartData(int(pageYear), int(pageMonth), "oxygenTracker",   BOFunc,     c, lock)
-    ChartData["yearWH"]     = genYearChartData(int(pageYear), int(pageMonth), "workTracker",     WHFunc,     c, lock)
-    ChartData["yearMood"]   = genYearChartData(int(pageYear), int(pageMonth), "moodTracker",     moodFunc,   c, lock)
-    ChartData["yearHR_Min"], ChartData["yearHR_Max"] = generateYearDoubleChartData(int(pageYear), numberOfDays, "HRTracker",  c, lock)
-    ChartData["yearBP_Min"], ChartData["yearBP_Max"] = generateYearDoubleChartData(int(pageYear), numberOfDays, "BPTracker",  c, lock)
+    chart_data["yearRuns"] = gen_year_chart_data(int(page_year), "runningTracker", run_func, c, lock)
+    chart_data["yearSteps"] = gen_year_chart_data(int(page_year), "stepTracker", step_func, c, lock)
+    chart_data["yearSleep"] = gen_year_chart_data(int(page_year), "sleepTracker", sleep_func, c, lock)
+    chart_data["yearHydr"] = gen_year_chart_data(int(page_year), "hydrationTracker", hydration_func, c, lock)
+    chart_data["yearWeight"] = gen_year_chart_data(int(page_year), "weightTracker", weight_func, c, lock)
+    chart_data["yearBO"] = gen_year_chart_data(int(page_year), "oxygenTracker", bo_func, c, lock)
+    chart_data["yearWH"] = gen_year_chart_data(int(page_year), "workTracker", wh_func, c, lock)
+    chart_data["yearMood"] = gen_year_chart_data(int(page_year), "moodTracker", mood_func, c, lock)
+    chart_data["yearHR_Min"], chart_data["yearHR_Max"] = \
+        generate_year_double_chart_data(int(page_year), "HRTracker", c, lock)
+    chart_data["yearBP_Min"], chart_data["yearBP_Max"] = \
+        generate_year_double_chart_data(int(page_year), "BPTracker", c, lock)
 
-    return ChartData
+    return chart_data

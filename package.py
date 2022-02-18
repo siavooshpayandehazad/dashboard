@@ -1,16 +1,11 @@
 moodList = ["awful", "bad", "ok", "good", "great"]
 
-monthsOfTheYear = ['Jan', "", "", "", 'Feb', "", "", "", 'Mar', "", "", "",
-                   'Apr', "", "", "", 'May', "", "", "", 'Jun', "", "", "",
-                   'Jul', "", "", "", 'Aug', "", "", "", 'Sep', "", "", "",
-                   'Oct', "", "", "", 'Nov', "", "", "", 'Dec', "", "", ""]
-
-monthsOfTheYear = [str(x) for x in range(1, 53)]
+weeks_of_the_year = [str(x) for x in range(1, 53)]
 
 chart_months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
 
-daysOfTheWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+days_of_the_week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 HEADER = '\033[95m'
 BLUE = '\033[94m'

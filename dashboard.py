@@ -74,7 +74,7 @@ class Dash(Resource):
         headers = {'Content-Type': 'text/html'}
         page_title = "DashBoard"
 
-        title_date = monthsOfTheYear[int(page_month) - 1] + "-" + page_year
+        title_date = weeks_of_the_year[int(page_month) - 1] + "-" + page_year
         number_of_days = numberOfDaysInMonth(int(page_month), int(page_year))
         months_beginning_week_day = datetime.datetime.strptime(f"{page_year}-{page_month}-01", '%Y-%m-%d').weekday()
         # moodTrackerDays is a list that contains a bunch of Nones for the days of the week that are in the
@@ -89,7 +89,7 @@ class Dash(Resource):
         highlight = shouldHighlight(page_year, page_month)
         counter_value = fetchSettingParamFromDB(c, "counter", lock)
 
-        chart_data = getChartData(page_month, page_year, number_of_days, c, lock)
+        chart_data = get_chart_data(page_month, page_year, number_of_days, c, lock)
 
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('index.html', name=page_title, titleDate=title_date,
@@ -97,7 +97,7 @@ class Dash(Resource):
                                              today=datetime.date.today().day, moods=months_moods,
                                              # charts info
                                              ChartMonthDays=chart_data["ChartMonthDays"],
-                                             ChartYearMonths=monthsOfTheYear,
+                                             ChartYearMonths=weeks_of_the_year,
                                              ChartData=chart_data, HideLine="false",
                                              # ----------------------
                                              activities=months_activities,
@@ -265,7 +265,7 @@ class Org(Resource):
             day_val = datetime.datetime.strptime(str(day_val.date()), '%Y-%m-%d') + datetime.timedelta(days=1)
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(
-            render_template('org.html', day=day, month=month, year=year, weekDay=daysOfTheWeek[week_day],
+            render_template('org.html', day=day, month=month, year=year, weekDay=days_of_the_week[week_day],
                             monthsBeginning=months_beginning_week_day, todayTodos=today_todos, overDue=all_due_events,
                             numberOfDays=number_of_days, thisMonthsEvents=this_months_events, calDate=cal_date,
                             calMonth=cal_month, headerDates=header_dates,
@@ -760,9 +760,9 @@ class HomeAutomation(Resource):
         headers = {'Content-Type': 'text/html'}
         page_theme = fetchSettingParamFromDB(c, "Theme", lock)
 
-        my_annual_consumption = generateEConsumptionTrackerChartData(str(year), c_ha, lock)
+        my_annual_consumption = generate_e_consumption_tracker_chart_data(str(year), c_ha, lock)
         monthly_data = generate_weather_monthly(c_ha, int(year), lock)
-        daily_data, description = genenrate_weather_daily(c_ha, today_date, lock)
+        daily_data, description = generate_weather_daily(c_ha, today_date, lock)
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('homeAutomation.html', daily_data=daily_data,
                                              monthly_Data=monthly_data, chart_months=chart_months,
