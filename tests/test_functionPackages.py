@@ -15,7 +15,7 @@ activityList = None
 
 def setup_module(module):
     global db_connection, db_cursor
-    db_connection, db_cursor =  createDB("test.db")
+    db_connection, db_cursor =  create_db("test.db")
 
 
 def teardown_module(module):
@@ -24,7 +24,7 @@ def teardown_module(module):
 
 
 def test_generateDBTables():
-    generateDBTables(db_cursor, db_connection)
+    generate_db_tables(db_cursor, db_connection)
     #check if tables exist
     for tableName in ["activityTracker", "moodTracker", "logTracker", "todoList", "scrumBoard", "settings", "lists"]:
         db_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (tableName, ))
@@ -36,7 +36,7 @@ def test_generateDBTables():
                          ("bad", "mood_name", "moodTracker", str(datetime.date.today()), moodList, False, False)
 ])
 def test_addTrackerItemToTable(activity, colName, tableName, date, list, delete, deleteDay):
-    addTrackerItemToTable(activity, colName, list, tableName, date, delete, deleteDay, db_cursor, db_connection)
+    add_tracker_item_to_table(activity, colName, list, tableName, date, delete, deleteDay, db_cursor, db_connection)
     db_cursor.execute("SELECT * FROM "+tableName+" WHERE date = ?", (date,))
     assert (activity, date) in db_cursor.fetchall()
 
@@ -44,9 +44,9 @@ def test_addTrackerItemToTable(activity, colName, tableName, date, list, delete,
 def test_shouldHighlight():
     thisYear = datetime.date.today().year
     thisMonth = datetime.date.today().month
-    assert shouldHighlight(str(thisYear), str(thisMonth).zfill(2)) == True
-    assert shouldHighlight(str(thisYear-1), str(thisMonth).zfill(2)) == False
-    assert shouldHighlight(str(thisYear+1), str(thisMonth).zfill(2)) == False
+    assert should_highlight(str(thisYear), str(thisMonth).zfill(2)) == True
+    assert should_highlight(str(thisYear - 1), str(thisMonth).zfill(2)) == False
+    assert should_highlight(str(thisYear + 1), str(thisMonth).zfill(2)) == False
 
 
 @pytest.mark.parametrize('date, result',
@@ -76,11 +76,11 @@ def test_getThirtyDaysFromNow():
 
 
 def test_hashPassword():
-    assert type(hashPassword("password")) is str
-    assert len(hashPassword("password"))==(64+128)
+    assert type(hash_password("password")) is str
+    assert len(hash_password("password")) == (64 + 128)
 
 
 def test_verifyPassword():
-    assert type(verifyPassword(hashPassword("password"), "password")) is bool
-    assert verifyPassword(hashPassword("password"), "password") == True
-    assert verifyPassword(hashPassword("password"), "not password") == False
+    assert type(verify_password(hash_password("password"), "password")) is bool
+    assert verify_password(hash_password("password"), "password") == True
+    assert verify_password(hash_password("password"), "not password") == False

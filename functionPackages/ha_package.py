@@ -1,14 +1,14 @@
 
-def generate_ha_DBTables(DBCursor, dbConnection, lock):
+def generate_ha_db_tables(db_cursor, db_connection, lock):
     try:
         lock.acquire(True)
-        DBCursor.execute("""CREATE TABLE if not exists weatherStation (
+        db_cursor.execute("""CREATE TABLE if not exists weatherStation (
                  room text, date text, time text,  temp text, humidity text, pressure text)""")
-        DBCursor.execute("""CREATE TABLE if not exists econsumption (
+        db_cursor.execute("""CREATE TABLE if not exists econsumption (
                  date text, consumption text)""")
-        DBCursor.execute("""CREATE TABLE if not exists settings (
+        db_cursor.execute("""CREATE TABLE if not exists settings (
                  room text, description text)""")
-        dbConnection.commit()
+        db_connection.commit()
         lock.release()
         return True
     except Exception as err:
@@ -16,11 +16,12 @@ def generate_ha_DBTables(DBCursor, dbConnection, lock):
         return False
 
 
-def add_data_to_ha_DB(DBCursor, dbConnection, room, date, time, temp, humidity, pressure, lock):
+def add_data_to_ha_db(db_cursor, db_connection, room, date, time, temp, humidity, pressure, lock):
     try:
         lock.acquire(True)
-        DBCursor.execute("""INSERT INTO weatherStation VALUES(?, ?, ?, ?, ?, ?)""", (room, date, time, temp, humidity, pressure))
-        dbConnection.commit()
+        db_cursor.execute("""INSERT INTO weatherStation VALUES(?, ?, ?, ?, ?, ?)""", (room, date, time, temp,
+                                                                                      humidity, pressure))
+        db_connection.commit()
         lock.release()
         return True
     except Exception as err:
@@ -28,11 +29,11 @@ def add_data_to_ha_DB(DBCursor, dbConnection, room, date, time, temp, humidity, 
         return False
 
 
-def add_econsumption_data(date, value, DBCursor, dbConnection, lock):
+def add_econsumption_data(date, value, db_cursor, db_connection, lock):
     try:
         lock.acquire(True)
-        DBCursor.execute("""INSERT INTO econsumption VALUES(?, ?)""", (date, value))
-        dbConnection.commit()
+        db_cursor.execute("""INSERT INTO econsumption VALUES(?, ?)""", (date, value))
+        db_connection.commit()
         lock.release()
         return True
     except Exception as err:
@@ -40,12 +41,12 @@ def add_econsumption_data(date, value, DBCursor, dbConnection, lock):
         return False
 
 
-def rename_room(roomNumber: str, newName: str, DBCursor, dbConnection, lock):
+def rename_room(room_number: str, new_name: str, db_cursor, db_connection, lock):
     try:
         lock.acquire(True)
-        DBCursor.execute("""DELETE FROM settings WHERE room = ? """, (roomNumber))
-        DBCursor.execute("""INSERT INTO settings VALUES(?, ?)""", (roomNumber, newName))
-        dbConnection.commit()
+        db_cursor.execute("""DELETE FROM settings WHERE room = ? """, (room_number,))
+        db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", (room_number, new_name))
+        db_connection.commit()
         lock.release()
         return True
     except Exception as err:

@@ -45,12 +45,12 @@ for item in ['tracker_type', 'value', 'oldValue', 'date', 'action', 'type', 'pla
 
 lock = Lock()
 
-conn, c = createDB("journal.db")
-conn_ha, c_ha = createDB("ha.db")
-backupDatabase(conn)
-generateDBTables(c, conn, lock)
-generate_ha_DBTables(c_ha, conn_ha, lock)
-setupSettingTable(c, conn, lock)
+conn, c = create_db("journal.db")
+conn_ha, c_ha = create_db("ha.db")
+backup_database(conn)
+generate_db_tables(c, conn, lock)
+generate_ha_db_tables(c_ha, conn_ha, lock)
+setup_setting_table(c, conn, lock)
 
 
 class Dash(Resource):
@@ -59,12 +59,12 @@ class Dash(Resource):
         start_time = time.time()
         args = parser.parse_args()
         try:
-            page_theme = fetchSettingParamFromDB(c, "Theme", lock)
+            page_theme = fetch_setting_param_from_db(c, "Theme", lock)
         except Exception as err:
             log.error(err)
             page_theme = "Dark"
             logger.info("could not fetch page theme! replacing with default values")
-        activity_list = fetchSettingParamFromDB(c, "activityList", lock).replace(" ", "").split(",")
+        activity_list = fetch_setting_param_from_db(c, "activityList", lock).replace(" ", "").split(",")
         if args['date'] is not None:
             page_year, page_month, page_day = args['date'].split("-")
         else:
@@ -82,12 +82,12 @@ class Dash(Resource):
         # month.
         mood_tracker_days = [None for _ in range(0, months_beginning_week_day)] + list(range(1, number_of_days + 1))
         # list of current month's moods and activities.
-        months_activities, months_activities_planned, months_moods = collectMonthsData(int(page_month), int(page_year),
-                                                                                       c, lock)
+        months_activities, months_activities_planned, months_moods = collect_months_data(int(page_month),
+                                                                                         int(page_year), c, lock)
         years_activities = collect_yearly_activities(int(page_year), c, lock)
         # highlights the current day in the activity tracker page!
-        highlight = shouldHighlight(page_year, page_month)
-        counter_value = fetchSettingParamFromDB(c, "counter", lock)
+        highlight = should_highlight(page_year, page_month)
+        counter_value = fetch_setting_param_from_db(c, "counter", lock)
 
         chart_data = get_chart_data(page_month, page_year, number_of_days, c, lock)
 
@@ -108,57 +108,57 @@ class Dash(Resource):
 
     @staticmethod
     def post():
-        activity_list = fetchSettingParamFromDB(c, "activityList", lock).replace(" ", "").split(",")
+        activity_list = fetch_setting_param_from_db(c, "activityList", lock).replace(" ", "").split(",")
         args = parser.parse_args()
         if args['type'] == "password":
-            password = fetchSettingParamFromDB(c, "password", lock)
+            password = fetch_setting_param_from_db(c, "password", lock)
             if password == "None":
                 return "success", 200
             else:
-                if not verifyPassword(password, args['value']):
+                if not verify_password(password, args['value']):
                     return "failed", 200
                 else:
                     return "success", 200
 
         if args['type'] == "counter":
-            counter_value = int(fetchSettingParamFromDB(c, "counter", lock))
+            counter_value = int(fetch_setting_param_from_db(c, "counter", lock))
             if args['value'] == "countup":
                 counter_value += 1
             elif args['value'] == "reset":  # reset the counter
                 counter_value = 0
-            updateSettingParam(c, conn, "counter", counter_value, lock)
+            update_setting_param(c, conn, "counter", counter_value, lock)
 
         today_date = parse_date(args['date'])
         delete_day = False
         if len(args['value'].strip()) == 0:
             delete_day = True
         if args['tracker_type'] in ['sleep', 'running', 'pace', 'step', 'weight', 'work', 'hydration']:
-            return addTrackerItemToTable(args['value'].lower(), "", [], args['tracker_type'] + "Tracker", today_date,
-                                         delete_day, True, c, conn, lock)
+            return add_tracker_item_to_table(args['value'].lower(), "", [], args['tracker_type'] + "Tracker",
+                                             today_date, delete_day, True, c, conn, lock)
         if args['tracker_type'] in ['HR', 'BP']:
-            return addTrackerItemToTable(args['value'].split(","), "", [], args['tracker_type'] + "Tracker", today_date,
-                                         delete_day, True, c, conn, lock)
+            return add_tracker_item_to_table(args['value'].split(","), "", [], args['tracker_type'] + "Tracker",
+                                             today_date, delete_day, True, c, conn, lock)
         if args['tracker_type'] == 'blood oxygen':
-            return addTrackerItemToTable(args['value'].lower(), "", [], "oxygenTracker", today_date, delete_day, True,
-                                         c, conn, lock)
+            return add_tracker_item_to_table(args['value'].lower(), "", [], "oxygenTracker", today_date,
+                                             delete_day, True, c, conn, lock)
         if args['tracker_type'] == 'saving':
-            return addsSavingItemToTable(args['value'].lower(), today_date, c, conn, lock)
+            return add_saving_item_to_table(args['value'].lower(), today_date, c, conn, lock)
         if args['tracker_type'] == 'mortgage':
-            return addsMortgageItemToTable(args['value'].lower(), today_date, c, conn, lock)
+            return add_mortgage_item_to_table(args['value'].lower(), today_date, c, conn, lock)
         if args['tracker_type'] == 'mood':
-            return addTrackerItemToTable(args['value'].lower(), "mood_name", moodList, "moodTracker", today_date, False,
-                                         False, c, conn, lock)
+            return add_tracker_item_to_table(args['value'].lower(), "mood_name", moodList, "moodTracker",
+                                             today_date, False, False, c, conn, lock)
         if args['tracker_type'] == "activity":
             delete = True if args['action'] == "delete" else False
             if args['planner'] == "True":
-                return addTrackerItemToTable(args['value'].lower(), "activity_name", activity_list, "activityPlanner",
-                                             today_date, delete, False, c, conn, lock)
+                return add_tracker_item_to_table(args['value'].lower(), "activity_name", activity_list,
+                                                 "activityPlanner", today_date, delete, False, c, conn, lock)
             else:
-                return addTrackerItemToTable(args['value'].lower(), "activity_name", activity_list, "activityTracker",
-                                             today_date, delete, False, c, conn, lock)
+                return add_tracker_item_to_table(args['value'].lower(), "activity_name", activity_list,
+                                                 "activityTracker", today_date, delete, False, c, conn, lock)
         if args['tracker_type'] == "travel":
             values = args['value'].split(",")
-            addTravelItem(values[0], values[1], values[2], c, conn, lock)
+            add_travel_item(values[0], values[1], values[2], c, conn, lock)
         return "Done", 200
 
 
@@ -167,15 +167,15 @@ class Journal(Resource):
     def get():
         start_time = time.time()
         args = parser.parse_args()
-        page_theme = fetchSettingParamFromDB(c, "Theme", lock)
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
         headers = {'Content-Type': 'text/html'}
         today_date = parse_date(args['date'])
         day, month, year = separate_day_month_year(today_date)
         photo_dir = os.getcwd() + "/static/photos/" + str(year) + "/" + today_date
         photo_dir2 = os.getcwd() + "/static/photos/" + str(year)
-        days_with_photos = allDaysWithPhotos(photo_dir2, year, month)
-        today_photos = allPotosInDir(photo_dir, year, today_date)
-        today_log, today_log_text = getTodaysLogs(c, today_date, lock)
+        days_with_photos = all_days_with_photos(photo_dir2, year, month)
+        today_photos = all_photos_in_dir(photo_dir, year, today_date)
+        today_log, today_log_text = get_today_logs(c, today_date, lock)
         number_of_days = number_of_days_in_month(int(month), int(year))
         months_beginning = get_months_beginning(month, year).weekday()
 
@@ -240,7 +240,7 @@ class Org(Resource):
     @staticmethod
     def get():
         start_time = time.time()
-        page_theme = fetchSettingParamFromDB(c, "Theme", lock)
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
 
         headers = {'Content-Type': 'text/html'}
         args = parser.parse_args()
@@ -251,12 +251,12 @@ class Org(Resource):
         number_of_days = number_of_days_in_month(int(month), int(year))
         months_beginning_week_day = months_beginning.weekday()
 
-        all_due_events, this_months_events, today_todos = getTodos(today_date, c, lock)
+        all_due_events, this_months_events, today_todos = get_todos(today_date, c, lock)
         scrum_board_lists, chart_done_tasks, chart_month_days, chart_this_month_tasks = \
-            getScrumTasks(today_date, c, lock)
+            get_scrum_tasks(today_date, c, lock)
 
-        cal_date = getCalEvents(today_date, c, lock)
-        cal_month = getCalEventsMonth(today_date, c, lock)
+        cal_date = get_cal_events(today_date, c, lock)
+        cal_month = get_cal_events_month(today_date, c, lock)
         # ---------------------------
         header_dates = []
         day_val = datetime.datetime.strptime(today_date, '%Y-%m-%d') - datetime.timedelta(days=week_day)  # week's start
@@ -344,7 +344,7 @@ class Org(Resource):
             if scrum_dict.get('currentList', None) is not None:
                 current_list = scrum_dict['currentList']
                 if scrum_dict.get('action', "") == "delete":
-                    deleteScrumTask(proj, task, c, conn, lock)
+                    delete_scrum_task(proj, task, c, conn, lock)
                 else:
                     destination_list = scrum_dict.get('destList', "")
                     lock.acquire(True)
@@ -357,22 +357,23 @@ class Org(Resource):
                     else:
                         priority = scrum_dict.get('priority', "")
                     if destination_list == "done":
-                        deleteScrumTask(proj, task, c, conn, lock)
-                        addScrumTask(proj, task, destination_list, priority, str(datetime.date.today()), c, conn, lock)
+                        delete_scrum_task(proj, task, c, conn, lock)
+                        add_scrum_task(proj, task, destination_list, priority, str(datetime.date.today()),
+                                       c, conn, lock)
                     elif destination_list == "archive":
                         lock.acquire(True)
                         c.execute("""SELECT * FROM scrumBoard WHERE project = ? and task = ? """, (proj, task))
                         date_value = c.fetchall()[0][-1]
                         lock.release()
-                        deleteScrumTask(proj, task, c, conn, lock)
-                        addScrumTask(proj, task, destination_list, priority, str(date_value), c, conn, lock)
+                        delete_scrum_task(proj, task, c, conn, lock)
+                        add_scrum_task(proj, task, destination_list, priority, str(date_value), c, conn, lock)
                     else:
-                        deleteScrumTask(proj, task, c, conn, lock)
-                        addScrumTask(proj, task, destination_list, priority, " ", c, conn, lock)
+                        delete_scrum_task(proj, task, c, conn, lock)
+                        add_scrum_task(proj, task, destination_list, priority, " ", c, conn, lock)
                     conn.commit()
             else:  # it is a new card!
                 priority = scrum_dict['priority']
-                addScrumTask(proj, task, "backlog", priority, " ", c, conn, lock)
+                add_scrum_task(proj, task, "backlog", priority, " ", c, conn, lock)
         return "Done", 200
 
 
@@ -380,17 +381,17 @@ class Settings(Resource):
     @staticmethod
     def get():
         headers = {'Content-Type': 'text/html'}
-        page_theme = fetchSettingParamFromDB(c, "Theme", lock)
-        activity_list = fetchSettingParamFromDB(c, "activityList", lock)
-        audiobooks_path = fetchSettingParamFromDB(c, "audiobooksPath", lock)
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
+        activity_list = fetch_setting_param_from_db(c, "activityList", lock)
+        audiobooks_path = fetch_setting_param_from_db(c, "audiobooksPath", lock)
 
-        mail_username = fetchSettingParamFromDB(c, "MAIL_USERNAME", lock)
-        mail_server = fetchSettingParamFromDB(c, "MAIL_SERVER", lock)
-        mail_port = fetchSettingParamFromDB(c, "MAIL_PORT", lock)
-        mail_ssl = fetchSettingParamFromDB(c, "MAIL_USE_SSL", lock)
-        recipient_email = fetchSettingParamFromDB(c, "MAIL_RECIPIENT", lock)
-        enable_daily_digest = fetchSettingParamFromDB(c, "EnableDailyDigest", lock)
-        enable_event_notifications = fetchSettingParamFromDB(c, "EnableEventNotifications", lock)
+        mail_username = fetch_setting_param_from_db(c, "MAIL_USERNAME", lock)
+        mail_server = fetch_setting_param_from_db(c, "MAIL_SERVER", lock)
+        mail_port = fetch_setting_param_from_db(c, "MAIL_PORT", lock)
+        mail_ssl = fetch_setting_param_from_db(c, "MAIL_USE_SSL", lock)
+        recipient_email = fetch_setting_param_from_db(c, "MAIL_RECIPIENT", lock)
+        enable_daily_digest = fetch_setting_param_from_db(c, "EnableDailyDigest", lock)
+        enable_event_notifications = fetch_setting_param_from_db(c, "EnableEventNotifications", lock)
         email_setting = {"MAIL_USERNAME": mail_username,
                          "MAIL_SERVER": mail_server,
                          "MAIL_PORT": mail_port,
@@ -409,19 +410,19 @@ class Settings(Resource):
         args = parser.parse_args()
         if args['type'] == "Theme":
             page_theme = args['value']
-            updateSettingParam(c, conn, "Theme", page_theme, lock)
+            update_setting_param(c, conn, "Theme", page_theme, lock)
         if args['type'] == "activityList":
             activity_list = args['value']
-            updateSettingParam(c, conn, "activityList", activity_list, lock)
+            update_setting_param(c, conn, "activityList", activity_list, lock)
         if args['type'] == "password":
             pass_dict = eval((args['value']))
-            hashed_password = fetchSettingParamFromDB(c, "password", lock)
-            if (hashed_password == "None") or verifyPassword(hashed_password, pass_dict["currntpwd"]):
-                updateSettingParam(c, conn, "password", hashPassword(pass_dict["newpwd"]), lock)
+            hashed_password = fetch_setting_param_from_db(c, "password", lock)
+            if (hashed_password == "None") or verify_password(hashed_password, pass_dict["currntpwd"]):
+                update_setting_param(c, conn, "password", hash_password(pass_dict["newpwd"]), lock)
                 return "succeeded", 200
             return "failed", 200
         if args['type'] == "audiobooksPath":
-            updateSettingParam(c, conn, "audiobooksPath", args['value'], lock)
+            update_setting_param(c, conn, "audiobooksPath", args['value'], lock)
             source = Path(args['value'])
             destination = Path("./static/audiobooks/").resolve()
             os.symlink(source, destination)
@@ -430,16 +431,16 @@ class Settings(Resource):
             value_dict = eval((args['value']))
             for setting_item in value_dict:
                 if setting_item != "MAIL_PASSWORD":
-                    updateSettingParam(c, conn, setting_item, value_dict[setting_item], lock)
+                    update_setting_param(c, conn, setting_item, value_dict[setting_item], lock)
                 else:
                     if value_dict[setting_item] != "mailpass":
-                        updateSettingParam(c, conn, setting_item, value_dict[setting_item], lock)
+                        update_setting_param(c, conn, setting_item, value_dict[setting_item], lock)
             return "succeeded", 200
         if args['type'] == "EnableDailyDigest":
-            updateSettingParam(c, conn, "EnableDailyDigest", args['value'], lock)
+            update_setting_param(c, conn, "EnableDailyDigest", args['value'], lock)
             return "succeeded", 200
         if args['type'] == "EnableEventNotifications":
-            updateSettingParam(c, conn, "EnableEventNotifications", args['value'], lock)
+            update_setting_param(c, conn, "EnableEventNotifications", args['value'], lock)
             return "succeeded", 200
         return "Done", 200
 
@@ -450,7 +451,7 @@ class Gallery(Resource):
         start_time = time.time()
         args = parser.parse_args()
         headers = {'Content-Type': 'text/html'}
-        page_theme = fetchSettingParamFromDB(c, "Theme", lock)
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
         today_date = parse_date(args['date'])
         day, month, year = separate_day_month_year(today_date)
         number_of_days = number_of_days_in_month(int(month), int(year))
@@ -459,7 +460,7 @@ class Gallery(Resource):
         for day_number in range(1, number_of_days + 1):
             date_value = str(year) + "-" + str(month).zfill(2) + "-" + str(day_number).zfill(2)
             photo_dir = os.getcwd() + "/static/photos/" + str(year) + "/" + date_value
-            today_photos = allPotosInDir(photo_dir, year, date_value)
+            today_photos = all_photos_in_dir(photo_dir, year, date_value)
             months_photos.append(today_photos)
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('gallery.html', day=day, month=month, year=year,
@@ -477,7 +478,7 @@ class Lists(Resource):
     def get():
         start_time = time.time()
         headers = {'Content-Type': 'text/html'}
-        page_theme = fetchSettingParamFromDB(c, "Theme", lock)
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
         lists = {}
 
         lock.acquire(True)
@@ -548,8 +549,8 @@ class Notes(Resource):
     def get():
         start_time = time.time()
         headers = {'Content-Type': 'text/html'}
-        page_theme = fetchSettingParamFromDB(c, "Theme", lock)
-        notebooks = fetchNotebooks(c, lock)
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
+        notebooks = fetch_notebooks(c, lock)
         photo_dir = os.getcwd() + "/static/photos/notebookPhotos"
         photos = {}
         for root, dirs, files in os.walk(photo_dir):
@@ -636,8 +637,8 @@ class Learning(Resource):
     @staticmethod
     def get():
         headers = {'Content-Type': 'text/html'}
-        page_theme = fetchSettingParamFromDB(c, "Theme", lock)
-        set_names, max_days_numbers, cnts, flash_cards = getFlashCards(c, lock)
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
+        set_names, max_days_numbers, cnts, flash_cards = get_flash_cards(c, lock)
         max_days_numbers = list(range(1, max_days_numbers + 1))
         counters = []
         for i in max_days_numbers:
@@ -659,13 +660,13 @@ class Learning(Resource):
                 side1 = values["side1"]
                 side2 = values["side2"]
                 last_time_reviewed = str(datetime.date.today())
-                addFlashCards(set_name, side1, side2, last_time_reviewed, c, conn, lock)
+                add_flash_cards(set_name, side1, side2, last_time_reviewed, c, conn, lock)
             elif args["action"] == "delete":
                 values = json.loads(args['value'])
                 set_name = values["setName"]
                 side1 = values["side1"]
                 side2 = values["side2"]
-                deleteFlashCards(set_name, side1, side2, c, conn, lock)
+                delete_flash_cards(set_name, side1, side2, c, conn, lock)
             else:
                 values = json.loads(args['value'])
                 set_name = values["setName"]
@@ -673,9 +674,9 @@ class Learning(Resource):
                 side2 = values["side2"]
                 last_time_reviewed = str(datetime.date.today())
                 if args["action"] == "true":
-                    changeFlashCards(set_name, side1, side2, last_time_reviewed, True, c, conn, lock)
+                    change_flash_cards(set_name, side1, side2, last_time_reviewed, True, c, conn, lock)
                 else:
-                    changeFlashCards(set_name, side1, side2, last_time_reviewed, False, c, conn, lock)
+                    change_flash_cards(set_name, side1, side2, last_time_reviewed, False, c, conn, lock)
         return "Done", 200
 
 
@@ -693,7 +694,7 @@ class Server(Resource):
             today_date = today.strftime('%d-%m-%y')
 
         headers = {'Content-Type': 'text/html'}
-        page_theme = fetchSettingParamFromDB(c, "Theme", lock)
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
 
         cpu_temps, cpu_temps_times, cpu_usage, cpu_usage_times, disc_space, up_time = \
             generate_cpu_stat(today_date, year)
@@ -717,10 +718,10 @@ class Audiobooks(Resource):
     def get():
         start_time = time.time()
         headers = {'Content-Type': 'text/html'}
-        page_theme = fetchSettingParamFromDB(c, "Theme", lock)
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
         path = "static/audiobooks/"
         try:
-            audiobooks, metadata = getAudiobooks(path)
+            audiobooks, metadata = get_audiobooks(path)
         except Exception as err:
             log.error(err)
             audiobooks = metadata = {}
@@ -758,7 +759,7 @@ class HomeAutomation(Resource):
             day, month, year = today.day, today.month, today.year
             today_date = today.strftime('%Y-%m-%d')
         headers = {'Content-Type': 'text/html'}
-        page_theme = fetchSettingParamFromDB(c, "Theme", lock)
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
 
         my_annual_consumption = generate_e_consumption_tracker_chart_data(str(year), c_ha, lock)
         monthly_data = generate_weather_monthly(c_ha, int(year), lock)
@@ -788,7 +789,7 @@ class HomeAutomation(Resource):
             directory = "homeAutomation/room_" + value['room']
             if not os.path.exists(directory):
                 os.makedirs(directory)
-            add_data_to_ha_DB(c_ha, conn_ha, value['room'], value['date'], value['hour'], value["temp"],
+            add_data_to_ha_db(c_ha, conn_ha, value['room'], value['date'], value['hour'], value["temp"],
                               value["humidity"], value["pressure"], lock)
             return "Done", 200
 
@@ -850,7 +851,7 @@ def shutdown_server():
 
 
 def send_cal_notification():
-    if fetchSettingParamFromDB(c, "EnableEventNotifications", lock) == "false":
+    if fetch_setting_param_from_db(c, "EnableEventNotifications", lock) == "false":
         return
     with app.app_context():
         today_date = str(datetime.date.today())
@@ -880,7 +881,7 @@ def send_cal_notification():
 
 
 def send_daily_digest():
-    if fetchSettingParamFromDB(c, "EnableDailyDigest", lock) == "false":
+    if fetch_setting_param_from_db(c, "EnableDailyDigest", lock) == "false":
         return
     with app.app_context():
         today_date = str(datetime.date.today())

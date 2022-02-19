@@ -28,7 +28,7 @@ def generate_weight_chart_data(page_month: int, page_year: int, number_of_days: 
     last_months_beginning = datetime.datetime.strptime(f"{page_year}-{page_month}-01", '%Y-%m-%d') - \
                             relativedelta(months=+1)
     last_months_end = datetime.datetime.strptime(f"{page_year}-{page_month}-01", '%Y-%m-%d') - \
-                      datetime.timedelta(days=1)
+                                                 datetime.timedelta(days=1)
 
     last_months_weights = []
     lock.acquire(True)
@@ -114,7 +114,7 @@ def hydration_func(res, year_hydration):
 def mood_func(res, year_moods):
     res = [x[0] for x in res]
     month_val = res.count("great")*4.5 + res.count("good")*3.5 + res.count("ok")*2.5 + res.count("bad")*1.5 + \
-                res.count("awful")*0.5
+        res.count("awful")*0.5
     if len(res) > 0:
         mood_val = month_val/float(len(res))
         year_moods.append(mood_val)
@@ -501,8 +501,12 @@ def generate_cpu_stat_monthly(year: str):
     now = datetime.datetime.now()
     temporary_data["yearly_cpu_usage"] = temporary_data.get("yearly_cpu_usage", {})
     temporary_data["yearly_cpu_temp"] = temporary_data.get("yearly_cpu_temp", {})
-    temporary_data["yearly_cpu_usage"][year] = temporary_data["yearly_cpu_usage"].get(year, {"min": ["nan" for _ in range(1, 13)], "max": ["nan" for _ in range(1, 13)]})
-    temporary_data["yearly_cpu_temp"][year] = temporary_data["yearly_cpu_temp"].get(year, {"min": ["nan" for _ in range(1, 13)], "max": ["nan" for _ in range(1, 13)]})
+    temporary_data["yearly_cpu_usage"][year] = \
+        temporary_data["yearly_cpu_usage"].get(year, {"min": ["nan" for _ in range(1, 13)],
+                                                      "max": ["nan" for _ in range(1, 13)]})
+    temporary_data["yearly_cpu_temp"][year] = \
+        temporary_data["yearly_cpu_temp"].get(year, {"min": ["nan" for _ in range(1, 13)],
+                                                     "max": ["nan" for _ in range(1, 13)]})
 
     for file in os.listdir(server_report_dir):
         file_year = file.split(".")[0].split("-")[2]

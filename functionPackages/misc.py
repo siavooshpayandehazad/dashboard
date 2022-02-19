@@ -1,11 +1,10 @@
-import os, datetime
+import os
 import sqlite3
-import hashlib, binascii
-from typing import Any
+import hashlib
+import binascii
 from functionPackages.dateTime import *
 from collections import Counter
-from datetime import date
-from pyexiv2 import ImageMetadata, exif
+from pyexiv2 import ImageMetadata
 import json
 
 import logging
@@ -21,7 +20,7 @@ def is_number(s):
         return False
 
 
-def getAudiobooks(path):
+def get_audiobooks(path):
     audiobooks = {}
     for a in os.scandir(path):
         if a.is_dir():
@@ -29,12 +28,12 @@ def getAudiobooks(path):
             books = {}
             for b in os.scandir(a):
                 if b.is_dir():
-                    chapters= []
+                    chapters = []
                     for chapter in os.scandir(b):
                         if ".mp3" in chapter.name:
                             chapters.append(chapter.name)
-                    books[b.name]=sorted(chapters)
-            audiobooks[author]=books
+                    books[b.name] = sorted(chapters)
+            audiobooks[author] = books
     metadata = {}
     for a in os.scandir(path):
         if a.is_dir():
@@ -45,72 +44,75 @@ def getAudiobooks(path):
                     for f in os.scandir(b):
                         if ".json" in f.name:
                             try:
-                                f = open(f,'r')
+                                f = open(f, 'r')
                                 data = json.load(f)
-                                books[b.name]=data
+                                books[b.name] = data
                             except Exception as e:
                                 logger.error(e)
                                 logger.error("something is wrong with" + str(f.name))
                             break
-                    # if book metadate doesnt exist add it
+                    # if book metadate doesn't exist add it
                     if b.name not in books.keys():
                         books[b.name] = {}
                         for i in range(len(audiobooks[author][b.name])):
-                           books[b.name]["chapter "+str(i+1)] = {
-                                  "timestamp": 0,
-                                  "progress": "0.0"
-                                  }
+                            books[b.name]["chapter "+str(i+1)] = {
+                                "timestamp": 0,
+                                "progress": "0.0"
+                            }
                         path = os.path.realpath(b)+"/metadata.json"
                         f = open(path, 'w+')
                         json.dump(books[b.name], f)
                         f.close()
-            metadata[author]=books
+            metadata[author] = books
     return audiobooks, metadata
 
 
-def getFlashCards(dbCursur, lock):
+def get_flash_cards(db_cursor, lock):
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM flashcards""")
-    flashCards = dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM flashcards""")
+    flash_cards = db_cursor.fetchall()
     lock.release()
-    toReview = []
-    setNames = set()
-    maxDaysNumbers = 0
+    to_review = []
+    set_names = set()
+    max_days_numbers = 0
     cnts = Counter()
-    for item in flashCards:
+    for item in flash_cards:
         date = (datetime.datetime.strptime(item[4], '%Y-%m-%d')+datetime.timedelta(days=int(item[3]))).date()
-        todaysDate = datetime.date.today()
-        delta = todaysDate - date
+        today_date = datetime.date.today()
+        delta = today_date - date
         if delta.days >= 0:
-            toReview.append(item)
-        setNames.add(item[0])
-        maxDaysNumbers = max(maxDaysNumbers, int(item[3]))
+            to_review.append(item)
+        set_names.add(item[0])
+        max_days_numbers = max(max_days_numbers, int(item[3]))
         cnts[int(item[3])] += 1
-    return setNames, maxDaysNumbers, cnts, toReview
+    return set_names, max_days_numbers, cnts, to_review
 
 
-def addFlashCards(setName, side1, side2, lastTimeReviewed, dbCursur, dbConnection, lock):
+def add_flash_cards(set_name, side1, side2, last_time_reviewed, db_cursor, db_connection, lock):
     lock.acquire(True)
-    dbCursur.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""", (setName, side1, side2, 1, lastTimeReviewed))
-    dbConnection.commit()
+    db_cursor.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""",
+                      (set_name, side1, side2, 1, last_time_reviewed))
+    db_connection.commit()
     lock.release()
 
 
-def deleteFlashCards(setName, side1, side2, dbCursur, dbConnection, lock):
-    logger.info(f"deleting card {side1} and {side2} from set {setName}")
+def delete_flash_cards(set_name, side1, side2, db_cursor, db_connection, lock):
+    logger.info(f"deleting card {side1} and {side2} from set {set_name}")
     lock.acquire(True)
-    dbCursur.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
-    dbConnection.commit()
+    db_cursor.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""",
+                      (set_name, side1, side2,))
+    db_connection.commit()
     lock.release()
 
 
-def changeFlashCards(setName, side1, side2, lastTimeReviewed, increament, dbCursur, dbConnection, lock):
+def change_flash_cards(set_name, side1, side2, last_time_reviewed, increment, db_cursor, db_connection, lock):
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM flashcards WHERE setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
-    val = dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM flashcards WHERE setName = ? and side1 = ? and side2 = ?""",
+                      (set_name, side1, side2,))
+    val = db_cursor.fetchall()
     lock.release()
     value = int(val[0][3])
-    if increament:
+    if increment:
         value += 1
         logger.info("increase the reviewInDays to" + str(value))
     else:
@@ -119,261 +121,265 @@ def changeFlashCards(setName, side1, side2, lastTimeReviewed, increament, dbCurs
         value -= 1
         logger.info("increase the reviewInDays to" + str(value))
     lock.acquire(True)
-    dbCursur.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""", (setName, side1, side2,))
-    dbCursur.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""", (setName, side1, side2, value, lastTimeReviewed))
-    dbConnection.commit()
+    db_cursor.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""",
+                      (set_name, side1, side2,))
+    db_cursor.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""",
+                      (set_name, side1, side2, value, last_time_reviewed))
+    db_connection.commit()
     lock.release()
 
 
-def addTravelItem(name, latitude, longitude, dbCursur, dbConnection, lock):
+def add_travel_item(name, latitude, longitude, db_cursor, db_connection, lock):
     lock.acquire(True)
-    dbCursur.execute("""INSERT INTO travelTracker VALUES(?, ?, ?)""", (name, latitude, longitude))
-    dbConnection.commit()
+    db_cursor.execute("""INSERT INTO travelTracker VALUES(?, ?, ?)""", (name, latitude, longitude))
+    db_connection.commit()
     lock.release()
 
 
-def getCalEvents(todaysDate, dbCursur, lock):
-    dt = datetime.datetime.strptime(todaysDate, '%Y-%m-%d')
-    weeksBeginning = dt - datetime.timedelta(days=dt.weekday())
-    weeksEnd = weeksBeginning + datetime.timedelta(days=6)
+def get_cal_events(today_date, db_cursor, lock):
+    dt = datetime.datetime.strptime(today_date, '%Y-%m-%d')
+    weeks_beginning = dt - datetime.timedelta(days=dt.weekday())
+    weeks_end = weeks_beginning + datetime.timedelta(days=6)
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
-              (str(weeksBeginning.date()),
-               str(weeksEnd.date()),))
-    weeklyCalEvents = dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
+                      (str(weeks_beginning.date()),
+                       str(weeks_end.date()),))
+    weekly_cal_events = db_cursor.fetchall()
     lock.release()
-    calList = []
-    for item in weeklyCalEvents:
+    cal_list = []
+    for item in weekly_cal_events:
         try:
-            d1 =  datetime.datetime.strptime(item[0], '%Y-%m-%d')
-            delta = d1 - weeksBeginning
-            calList.append([delta.days, item[1], item[2], item[3], 1,1, item[4], item[5]])
+            d1 = datetime.datetime.strptime(item[0], '%Y-%m-%d')
+            delta = d1 - weeks_beginning
+            cal_list.append([delta.days, item[1], item[2], item[3], 1, 1, item[4], item[5]])
         except Exception as e:
             logger.error(e)
-    return calList
+    return cal_list
 
 
-def getCalEventsMonth(todaysDate, dbCursur, lock):
-    day, month, year = separate_day_month_year(todaysDate)
+def get_cal_events_month(today_date, db_cursor, lock):
+    day, month, year = separate_day_month_year(today_date)
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
-                     (get_months_beginning(month, year).date(),
-                      get_months_end(month, year).date(),))
-    weeklyCalEvents = dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
+                      (get_months_beginning(month, year).date(), get_months_end(month, year).date(),))
+    weekly_cal_events = db_cursor.fetchall()
     lock.release()
-    calList = []
-    for item in weeklyCalEvents:
+    cal_list = []
+    for item in weekly_cal_events:
         try:
-            calList.append([item[0], item[1], item[2], item[3], 1,1, item[4], item[5]])
+            cal_list.append([item[0], item[1], item[2], item[3], 1, 1, item[4], item[5]])
         except Exception as e:
             logger.error(e)
-    return calList
+    return cal_list
 
 
-def getTodaysLogs(dbCursur, todaysDate, lock):
+def get_today_logs(db_cursor, today_date, lock):
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM logTracker WHERE date = ? """, (todaysDate,))
-    logValue = dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM logTracker WHERE date = ? """, (today_date,))
+    log_value = db_cursor.fetchall()
     lock.release()
-    if len(logValue)>0:
-        todaysLog = logValue[0][0].replace("\n","<br>")
-        todaysLogText = logValue[0][0]
+    if len(log_value) > 0:
+        today_log = log_value[0][0].replace("\n", "<br>")
+        today_log_text = log_value[0][0]
     else:
-        todaysLog = ""
-        todaysLogText = ""
-    return todaysLog, todaysLogText
+        today_log = ""
+        today_log_text = ""
+    return today_log, today_log_text
 
 
-def allPotosInDir(photoDir, year, date):
-    todayPhotos = {}
-    if os.path.isdir(photoDir):
-        for file in os.listdir(photoDir):
+def all_photos_in_dir(photo_dir, year, date):
+    today_photos = {}
+    if os.path.isdir(photo_dir):
+        for file in os.listdir(photo_dir):
             if file.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
                 tags = []
                 try:
-                    fileName = "./static/photos/"+str(year)+"/"+date+"/"+file
-                    metadata = ImageMetadata(fileName)
+                    file_name = "./static/photos/"+str(year)+"/"+date+"/"+file
+                    metadata = ImageMetadata(file_name)
                     metadata.read()
                     if 'Exif.Photo.UserComment' in metadata:
-                        userdata=json.loads(metadata['Exif.Photo.UserComment'].value)
-                        if userdata["tags"] != None:
+                        userdata = json.loads(metadata['Exif.Photo.UserComment'].value)
+                        if userdata["tags"] is not None:
                             tags = list(userdata["tags"])
                 except Exception as e:
                     logger.error(e)
-                todayPhotos[str(year)+"/"+date+"/"+file] = tags
-            if file.lower().endswith(('.mp4')):
-                todayPhotos[str(year)+"/"+date+"/"+file] = []
-    return todayPhotos
+                today_photos[str(year)+"/"+date+"/"+file] = tags
+            if file.lower().endswith('.mp4'):
+                today_photos[str(year)+"/"+date+"/"+file] = []
+    return today_photos
 
 
-def allDaysWithPhotos(photoDir, year, month):
-    daysWithPhotos = []
-    if os.path.isdir(photoDir):
-        daysWithPhotos = [int(x.split("-")[2]) for x in os.listdir(photoDir) if str(year)+"-"+'%02d' % (month) in x ]
-    return sorted(daysWithPhotos)
+def all_days_with_photos(photo_dir, year, month):
+    days_with_photos = []
+    if os.path.isdir(photo_dir):
+        days_with_photos = [int(x.split("-")[2]) for x in os.listdir(photo_dir) if str(year) + "-" +
+                            '%02d' % (month) in x]
+    return sorted(days_with_photos)
 
 
-def addTrackerItemToTable(item: str, itemName: str, itemList, tableName: str,
-                          date: str, delete: bool, deleteDay: bool, dbCursur,
-                          dbConnection, lock):
-    if itemList and (item not in itemList):
+def add_tracker_item_to_table(item: str, item_name: str, item_list, table_name: str,
+                              date: str, delete: bool, delete_day: bool, db_cursor,
+                              db_connection, lock):
+    if item_list and (item not in item_list):
         return item + " not found", 400
 
     lock.acquire(True)
-    dbCursur.execute("SELECT * FROM " + tableName + " WHERE date = ?", (date,))
-    fetchedData = dbCursur.fetchall()
+    db_cursor.execute("SELECT * FROM " + table_name + " WHERE date = ?", (date,))
+    fetched_data = db_cursor.fetchall()
 
-    if tableName == "workTracker":
-        if (len(fetchedData)>0) and (delete == False):
-            logger.info(f"@{datetime.datetime.now()} :: adding {item} time to todays work hours")
-            item = float(fetchedData[0][0])+float(item)
+    if table_name == "workTracker":
+        if (len(fetched_data) > 0) and (delete is False):
+            logger.info(f"@{datetime.datetime.now()} :: adding {item} time to today's work hours")
+            item = float(fetched_data[0][0])+float(item)
 
-    if tableName == "moodTracker":     # trying to remove old mood from the table
-        for oldItem, todaysDate in fetchedData:
-            dbCursur.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, oldItem))
-            dbConnection.commit()
-    else:   # all other trackers
-        if deleteDay:
-            dbCursur.execute("DELETE from "+tableName+" where date = ?", (date,))
-        else: # try removing the tracker
-            dbCursur.execute("DELETE from "+tableName+" where date = ? and "+itemName+" = ?", (date, item))
+    if table_name == "moodTracker":     # trying to remove old mood from the table
+        for old_item, today_date in fetched_data:
+            db_cursor.execute("DELETE from " + table_name + " where date = ? and " + item_name + " = ?",
+                              (date, old_item))
+            db_connection.commit()
+    else:   # all the other trackers
+        if delete_day:
+            db_cursor.execute("DELETE from " + table_name + " where date = ?", (date,))
+        else:   # try removing the tracker
+            db_cursor.execute("DELETE from " + table_name + " where date = ? and " + item_name + " = ?", (date, item))
 
     if not delete:
-        if tableName in ["HRTracker", "BPTracker"]:
-            dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?, ?)", (item[0], item[1], date))
+        if table_name in ["HRTracker", "BPTracker"]:
+            db_cursor.execute("INSERT INTO " + table_name + " VALUES(?, ?, ?)", (item[0], item[1], date))
         else:
-            dbCursur.execute("INSERT INTO "+tableName+" VALUES(?, ?)", (item, date))
-        logger.info(f"{tableName}:: added {item} for date: {date}")
+            db_cursor.execute("INSERT INTO " + table_name + " VALUES(?, ?)", (item, date))
+        logger.info(f"{table_name}:: added {item} for date: {date}")
     else:
-        logger.info(f"{tableName}:: removed {item} from date: {date}")
-    dbConnection.commit()
+        logger.info(f"{table_name}:: removed {item} from date: {date}")
+    db_connection.commit()
     lock.release()
     return "Done", 200
 
 
-def addsSavingItemToTable(item: str, date: str, dbCursur, dbConnection, lock):
+def add_saving_item_to_table(item: str, date: str, db_cursor, db_connection, lock):
     month = "-".join(date.split("-")[0:2])
-    dbCursur.execute("SELECT * FROM savingTracker WHERE month = ?", (month,))
-    fetchedData = dbCursur.fetchall()
+    db_cursor.execute("SELECT * FROM savingTracker WHERE month = ?", (month,))
+    fetched_data = db_cursor.fetchall()
 
-    if len(fetchedData)>0:
-        item = float(fetchedData[0][0])+float(item)
+    if len(fetched_data) > 0:
+        item = float(fetched_data[0][0])+float(item)
     else:
-        # get last months value
-        currentMonth = int(date.split("-")[1])
-        currentYear = int(date.split("-")[0])
+        # get last month's value
+        current_month = int(date.split("-")[1])
+        current_year = int(date.split("-")[0])
         counter = 12
-        lastMonthFetch = []
-        while((len(lastMonthFetch)==0)):
-            if currentMonth != 1:
-                MonthVal = currentMonth-1
-                YearVal = currentYear
+        last_month_fetch = []
+        while len(last_month_fetch) == 0:
+            if current_month != 1:
+                month_val = current_month - 1
+                year_val = current_year
             else:
-                MonthVal = 12
-                YearVal = currentYear -1
+                month_val = 12
+                year_val = current_year - 1
 
-            lastMonthVal = str(YearVal)+"-"+str(MonthVal).zfill(2)
-            dbCursur.execute("SELECT * FROM savingTracker WHERE month = ?", (lastMonthVal,))
-            lastMonthFetch = dbCursur.fetchall()
-            currentMonth = MonthVal
-            currentYear = YearVal
+            last_month_val = str(year_val)+"-"+str(month_val).zfill(2)
+            db_cursor.execute("SELECT * FROM savingTracker WHERE month = ?", (last_month_val,))
+            last_month_fetch = db_cursor.fetchall()
+            current_month = month_val
+            current_year = year_val
             counter -= 1
             if counter <= 0:
-                break;
-        if len(lastMonthFetch)>0:
-            lastMonthVal = float(lastMonthFetch[0][0])
+                break
+        if len(last_month_fetch) > 0:
+            last_month_val = float(last_month_fetch[0][0])
         else:
-            lastMonthVal = 0
-        item = float(lastMonthVal)+float(item)
+            last_month_val = 0
+        item = float(last_month_val)+float(item)
     lock.acquire(True)
-    dbCursur.execute("DELETE from savingTracker where month = ?", (month,))
-    dbCursur.execute("INSERT INTO savingTracker VALUES(?, ?)", (item, month))
-    dbConnection.commit()
+    db_cursor.execute("DELETE from savingTracker where month = ?", (month,))
+    db_cursor.execute("INSERT INTO savingTracker VALUES(?, ?)", (item, month))
+    db_connection.commit()
     lock.release()
     return "Done", 200
 
 
-def addsMortgageItemToTable(item: str, date: str, dbCursur, dbConnection, lock):
+def add_mortgage_item_to_table(item: str, date: str, db_cursor, db_connection, lock):
     month = "-".join(date.split("-")[0:2])
     lock.acquire(True)
-    dbCursur.execute("SELECT * FROM mortgageTracker WHERE month = ?", (month,))
-    fetchedData = dbCursur.fetchall()
+    db_cursor.execute("SELECT * FROM mortgageTracker WHERE month = ?", (month,))
+    fetched_data = db_cursor.fetchall()
     lock.release()
-    if len(fetchedData)>0:
-        item = float(fetchedData[0][0])+float(item)
+    if len(fetched_data) > 0:
+        item = float(fetched_data[0][0])+float(item)
     else:
-        # get last months value
-        currentMonth = int(date.split("-")[1])
-        currentYear = int(date.split("-")[0])
+        # get last month's value
+        current_month = int(date.split("-")[1])
+        current_year = int(date.split("-")[0])
         counter = 12
-        lastMonthFetch = []
-        while((len(lastMonthFetch)==0)):
-            if currentMonth != 1:
-                MonthVal = currentMonth-1
-                YearVal = currentYear
+        last_month_fetch = []
+        while len(last_month_fetch) == 0:
+            if current_month != 1:
+                month_val = current_month - 1
+                year_val = current_year
             else:
-                MonthVal = 12
-                YearVal = currentYear -1
+                month_val = 12
+                year_val = current_year - 1
 
-            lastMonthVal = str(YearVal)+"-"+str(MonthVal).zfill(2)
+            last_month_val = str(year_val)+"-"+str(month_val).zfill(2)
             lock.acquire(True)
-            dbCursur.execute("SELECT * FROM mortgageTracker WHERE month = ?", (lastMonthVal,))
-            lastMonthFetch = dbCursur.fetchall()
+            db_cursor.execute("SELECT * FROM mortgageTracker WHERE month = ?", (last_month_val,))
+            last_month_fetch = db_cursor.fetchall()
             lock.release()
-            currentMonth = MonthVal
-            currentYear = YearVal
+            current_month = month_val
+            current_year = year_val
             counter -= 1
             if counter <= 0:
-                break;
-        if len(lastMonthFetch)>0:
-            lastMonthVal = float(lastMonthFetch[0][0])
+                break
+        if len(last_month_fetch) > 0:
+            last_month_val = float(last_month_fetch[0][0])
         else:
-            lastMonthVal = 0
-        item = float(lastMonthVal)+float(item)
+            last_month_val = 0
+        item = float(last_month_val)+float(item)
     lock.acquire(True)
-    dbCursur.execute("DELETE from mortgageTracker where month = ?", (month,))
-    dbCursur.execute("INSERT INTO mortgageTracker VALUES(?, ?)", (item, month))
-    dbConnection.commit()
+    db_cursor.execute("DELETE from mortgageTracker where month = ?", (month,))
+    db_cursor.execute("INSERT INTO mortgageTracker VALUES(?, ?)", (item, month))
+    db_connection.commit()
     lock.release()
     return "Done", 200
 
 
-def collectMonthsData(pageMonth: int, pageYear: int, dbCursur, lock):
+def collect_months_data(page_month: int, page_year: int, db_cursor, lock):
     activities = []
-    activitiesPlannes = []
+    activities_plannes = []
     moods = []
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
-                     (get_months_beginning(pageMonth, pageYear).date(),
-                      get_months_end(pageMonth, pageYear).date(),))
-    activities += dbCursur.fetchall()
-    dbCursur.execute("""SELECT * FROM activityPlanner WHERE date >= ? and date <= ?  """,
-                     (get_months_beginning(pageMonth, pageYear).date(),
-                      get_months_end(pageMonth, pageYear).date(),))
-    activitiesPlannes += dbCursur.fetchall()
-    dbCursur.execute("""SELECT * FROM moodTracker WHERE date >= ? and date <= ?  """,
-                     (get_months_beginning(pageMonth, pageYear).date(),
-                      get_months_end(pageMonth, pageYear).date(),))
-    moods += dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
+                      (get_months_beginning(page_month, page_year).date(),
+                       get_months_end(page_month, page_year).date(),))
+    activities += db_cursor.fetchall()
+    db_cursor.execute("""SELECT * FROM activityPlanner WHERE date >= ? and date <= ?  """,
+                      (get_months_beginning(page_month, page_year).date(),
+                       get_months_end(page_month, page_year).date(),))
+    activities_plannes += db_cursor.fetchall()
+    db_cursor.execute("""SELECT * FROM moodTracker WHERE date >= ? and date <= ?  """,
+                      (get_months_beginning(page_month, page_year).date(),
+                       get_months_end(page_month, page_year).date(),))
+    moods += db_cursor.fetchall()
     lock.release()
-    return activities, activitiesPlannes, moods
+    return activities, activities_plannes, moods
 
 
-def collect_yearly_activities(pageYear: int, dbCursur, lock):
+def collect_yearly_activities(page_year: int, db_cursor, lock):
     activities = []
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
-                     (get_months_beginning(1, pageYear).date(),
-                      get_months_end(12, pageYear).date(),))
-    activities += dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
+                      (get_months_beginning(1, page_year).date(),
+                       get_months_end(12, page_year).date(),))
+    activities += db_cursor.fetchall()
     lock.release()
 
-    activityList = [x.replace(" ", "") for x in fetchSettingParamFromDB(dbCursur, "activityList", lock).split(",")]
+    activity_list = [x.replace(" ", "") for x in
+                     fetch_setting_param_from_db(db_cursor, "activityList", lock).split(",")]
     return_dict = {}
     for month in range(1, 13):
-        for day in range(1, number_of_days_in_month(month, pageYear) + 1):
-            for activity in activityList:
-                date = str(datetime.datetime.strptime(f"{pageYear}-{month}-{day}", '%Y-%m-%d').date())
+        for day in range(1, number_of_days_in_month(month, page_year) + 1):
+            for activity in activity_list:
+                date = str(datetime.datetime.strptime(f"{page_year}-{month}-{day}", '%Y-%m-%d').date())
                 return_dict[activity] = return_dict.get(activity, [])
                 if (activity, date) in activities:
                     return_dict[activity].append(1)
@@ -382,105 +388,105 @@ def collect_yearly_activities(pageYear: int, dbCursur, lock):
     return return_dict
 
 
-def createDB(DBName):
-    DBConnection  =  sqlite3.connect(DBName,  check_same_thread=False)
-    DBCursor = DBConnection.cursor()
-    return DBConnection, DBCursor
+def create_db(db_name):
+    db_connection = sqlite3.connect(db_name, check_same_thread=False)
+    db_cursor = db_connection.cursor()
+    return db_connection, db_cursor
 
 
-def generateDBTables(DBCursor, dbConnection, lock):
+def generate_db_tables(db_cursor, db_connection, lock):
     lock.acquire(True)
-    DBCursor.execute("""CREATE TABLE if not exists calendar (
+    db_cursor.execute("""CREATE TABLE if not exists calendar (
              date text, startTime text, endTime text, eventName text, color text, details text)""")
-    DBCursor.execute("""CREATE TABLE if not exists flashcards (
+    db_cursor.execute("""CREATE TABLE if not exists flashcards (
              setName text, side1 text, side2 text, reviewInDays text, lastTimeReviewed text)""")
-    DBCursor.execute("""CREATE TABLE if not exists travelTracker (
+    db_cursor.execute("""CREATE TABLE if not exists travelTracker (
              Destination text, latitude text, longitude text)""")
-    DBCursor.execute("""CREATE TABLE if not exists HRTracker (
+    db_cursor.execute("""CREATE TABLE if not exists HRTracker (
              HR_Min text, HR_Max text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists BPTracker (
+    db_cursor.execute("""CREATE TABLE if not exists BPTracker (
              BP_Min text, BP_Max text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists oxygenTracker (
+    db_cursor.execute("""CREATE TABLE if not exists oxygenTracker (
              BO text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists sleepTracker (
+    db_cursor.execute("""CREATE TABLE if not exists sleepTracker (
              sleepTime text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists savingTracker (
+    db_cursor.execute("""CREATE TABLE if not exists savingTracker (
              saving text, month text)""")
-    DBCursor.execute("""CREATE TABLE if not exists mortgageTracker (
+    db_cursor.execute("""CREATE TABLE if not exists mortgageTracker (
              mortgage text, month text)""")
-    DBCursor.execute("""CREATE TABLE if not exists weightTracker (
+    db_cursor.execute("""CREATE TABLE if not exists weightTracker (
              weight text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists workTracker (
+    db_cursor.execute("""CREATE TABLE if not exists workTracker (
              work_hour text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists stepTracker (
+    db_cursor.execute("""CREATE TABLE if not exists stepTracker (
              steps text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists hydrationTracker (
+    db_cursor.execute("""CREATE TABLE if not exists hydrationTracker (
              hydration text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists runningTracker (
+    db_cursor.execute("""CREATE TABLE if not exists runningTracker (
              run text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists paceTracker (
+    db_cursor.execute("""CREATE TABLE if not exists paceTracker (
              pace text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists activityTracker (
+    db_cursor.execute("""CREATE TABLE if not exists activityTracker (
              activity_name text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists activityPlanner (
+    db_cursor.execute("""CREATE TABLE if not exists activityPlanner (
              activity_name text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists moodTracker (
+    db_cursor.execute("""CREATE TABLE if not exists moodTracker (
              mood_name text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists logTracker (
+    db_cursor.execute("""CREATE TABLE if not exists logTracker (
              log text, date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists todoList (
+    db_cursor.execute("""CREATE TABLE if not exists todoList (
              task text, date text, done text, color, text)""")
-    DBCursor.execute("""CREATE TABLE if not exists scrumBoard (
+    db_cursor.execute("""CREATE TABLE if not exists scrumBoard (
              project text, task text, stage text, priority text, done_date text)""")
-    DBCursor.execute("""CREATE TABLE if not exists settings (
+    db_cursor.execute("""CREATE TABLE if not exists settings (
              parameter text, value text)""")
-    DBCursor.execute("""CREATE TABLE if not exists lists (
+    db_cursor.execute("""CREATE TABLE if not exists lists (
              name text, done text, type text, note text)""")
-    DBCursor.execute("""CREATE TABLE if not exists Notes (
+    db_cursor.execute("""CREATE TABLE if not exists Notes (
              Notebook text, Chapter text, Content text)""")
-    dbConnection.commit()
+    db_connection.commit()
     lock.release()
 
 
-def setupSettingTable(dbCursur, dbConnection, lock):
+def setup_setting_table(db_cursor, db_connection, lock):
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("Theme",))
+    db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("Theme",))
     try:
-        parameter = dbCursur.fetchall()[0][1]
+        db_cursor.fetchall()[0][1]
     except:
-        dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
+        db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
 
-    dbCursur.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("counter",))
+    db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("counter",))
     try:
-        parameter = dbCursur.fetchall()[0][1]
+        db_cursor.fetchall()[0][1]
     except:
-        dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
+        db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
 
     for item in ["activityList", "activityList", "MAIL_SERVER", "MAIL_PORT", "MAIL_USE_SSL",
                  "MAIL_USERNAME", "MAIL_PASSWORD", "MAIL_RECIPIENT", "audiobooksPath"]:
-        dbCursur.execute("""SELECT * FROM settings WHERE parameter = ?  """, (item,))
+        db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, (item,))
         try:
-            parameter = dbCursur.fetchall()[0][1]
+            db_cursor.fetchall()[0][1]
         except:
-            dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "None"))
+            db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "None"))
 
     for item in ["EnableDailyDigest", "EnableEventNotifications"]:
-        dbCursur.execute("""SELECT * FROM settings WHERE parameter = ?  """, (item,))
+        db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, (item,))
         try:
-            parameter = dbCursur.fetchall()[0][1]
+            db_cursor.fetchall()[0][1]
         except:
-            dbCursur.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "false"))
+            db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "false"))
 
-    dbConnection.commit()
+    db_connection.commit()
     lock.release()
 
 
-def shouldHighlight(pageYear:str, pageMonth:str) -> bool:
+def should_highlight(page_year: str, page_month: str) -> bool:
     """
     returns True if the pageYear and pageMonth are the same as the current month
     and year. returns False otherwise.
     """
-    if (pageYear != str(datetime.date.today().year)) or (pageMonth != str(datetime.date.today().month).zfill(2)):
+    if (page_year != str(datetime.date.today().year)) or (page_month != str(datetime.date.today().month).zfill(2)):
         return False
     return True
 
@@ -489,50 +495,51 @@ def progress(status, remaining, total):
     print(f'Copied {total-remaining} of {total} pages...')
 
 
-def backupDatabase(conn):
+def backup_database(conn):
     try:
         if not os.path.exists('backups'):
             os.mkdir('backups')
-        backupCon = sqlite3.connect('backups/journal_backup_'+str(datetime.date.today())+'.db')
-        with backupCon:
-            conn.backup(backupCon, pages=1, progress=progress)
+        backup_con = sqlite3.connect('backups/journal_backup_'+str(datetime.date.today())+'.db')
+        with backup_con:
+            conn.backup(backup_con, pages=1, progress=progress)
         logger.info("backup successful")
     except sqlite3.Error as error:
-        logger.error("Error while taking backup: " +  str(error))
+        logger.error("Error while taking backup: " + str(error))
     finally:
-        if(backupCon):
-            backupCon.close()
+        if backup_con:
+            backup_con.close()
 
 
-def fetchSettingParamFromDB(DBCursor, param, lock):
+def fetch_setting_param_from_db(db_cursor, param, lock):
     lock.acquire(True)
-    DBCursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, (param,))
+    db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, (param,))
     try:
-        parameter = DBCursor.fetchall()[0][1]
-    except:
+        parameter = db_cursor.fetchall()[0][1]
+    except Exception as err:
+        logger.error(err)
         raise ValueError(f"parameter {param} is missing in DB!")
     lock.release()
     return parameter
 
 
-def fetchNotebooks(dbCursur, lock):
+def fetch_notebooks(db_cursor, lock):
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM Notes """)
-    noteBooksContent = dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM Notes """)
+    note_books_content = db_cursor.fetchall()
     lock.release()
-    noteBooks = {}
-    for item in noteBooksContent:
-        chapters = noteBooks.get(item[0], {})
+    note_books = {}
+    for item in note_books_content:
+        chapters = note_books.get(item[0], {})
         chapters[item[1]] = item[2]
-        noteBooks[item[0]] = chapters
-    return noteBooks
+        note_books[item[0]] = chapters
+    return note_books
 
 
-def updateSettingParam(DBCursor, DBConnection, param, value, lock):
+def update_setting_param(db_cursor, db_connection, param, value, lock):
     try:
         lock.acquire(True)
-        DBCursor.execute("UPDATE settings SET value = ? WHERE parameter = ?", (value, param,))
-        DBConnection.commit()
+        db_cursor.execute("UPDATE settings SET value = ? WHERE parameter = ?", (value, param,))
+        db_connection.commit()
         lock.release()
         return True
     except Exception as err:
@@ -540,83 +547,88 @@ def updateSettingParam(DBCursor, DBConnection, param, value, lock):
         return False
 
 
-def hashPassword(password:str) -> any:
+def hash_password(password: str) -> any:
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
-    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
-                                salt, 100000)
-    pwdhash = binascii.hexlify(pwdhash)
-    return (salt + pwdhash).decode('ascii')
+    pwd_hash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
+                                   salt, 100000)
+    pwd_hash = binascii.hexlify(pwd_hash)
+    return (salt + pwd_hash).decode('ascii')
 
 
-def verifyPassword(stored_password: str, provided_password: str) -> bool:
+def verify_password(stored_password: str, provided_password: str) -> bool:
     salt = stored_password[:64]
     stored_password = stored_password[64:]
-    pwdhash = hashlib.pbkdf2_hmac('sha512',
-                                  provided_password.encode('utf-8'),
-                                  salt.encode('ascii'),
-                                  100000)
-    pwdhash = binascii.hexlify(pwdhash).decode('ascii')
-    return pwdhash == stored_password
+    pwd_hash = hashlib.pbkdf2_hmac('sha512',
+                                   provided_password.encode('utf-8'),
+                                   salt.encode('ascii'),
+                                   100000)
+    pwd_hash = binascii.hexlify(pwd_hash).decode('ascii')
+    return pwd_hash == stored_password
 
 
-def getTodos(todaysDate, dbCursur, lock):
-    day, month, year = separate_day_month_year(todaysDate)
-    monthsBeginning = get_months_beginning(month, year)
+def get_todos(today_date, db_cursor, lock):
+    day, month, year = separate_day_month_year(today_date)
+    months_beginning = get_months_beginning(month, year)
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (todaysDate,))
-    all_due_events = sorted(dbCursur.fetchall(), key=lambda tup: tup[1])
+    db_cursor.execute("""SELECT * FROM todoList WHERE date < ? and done = 'false' """, (today_date,))
+    all_due_events = sorted(db_cursor.fetchall(), key=lambda tup: tup[1])
 
-    dbCursur.execute("""SELECT * FROM todoList WHERE date < ? and date >= ? and done = 'true'""", (todaysDate, monthsBeginning.date()))
-    all_due_events += sorted(dbCursur.fetchall(), key=lambda tup: tup[1])
+    db_cursor.execute("""SELECT * FROM todoList WHERE date < ? and date >= ? and done = 'true'""",
+                      (today_date, months_beginning.date()))
+    all_due_events += sorted(db_cursor.fetchall(), key=lambda tup: tup[1])
 
-    dbCursur.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? """, (get_next_day(todaysDate), get_thirty_days_from_now(day, month, year)))
-    thisMonthsEvents = sorted(dbCursur.fetchall(), key=lambda tup: tup[1])
+    db_cursor.execute("""SELECT * FROM todoList WHERE date >= ? and date < ? """,
+                      (get_next_day(today_date), get_thirty_days_from_now(day, month, year)))
+    this_months_events = sorted(db_cursor.fetchall(), key=lambda tup: tup[1])
 
-    dbCursur.execute("""SELECT * FROM todoList WHERE date = ? """, (todaysDate,))
-    todayTodos = dbCursur.fetchall()
+    db_cursor.execute("""SELECT * FROM todoList WHERE date = ? """, (today_date,))
+    today_todos = db_cursor.fetchall()
     lock.release()
-    return all_due_events, thisMonthsEvents, todayTodos
+    return all_due_events, this_months_events, today_todos
 
 
-def getScrumTasks(todaysDate, dbCursur, lock):
-    day, month, year = separate_day_month_year(todaysDate)
-    monthsBeginning = get_months_beginning(month, year)
-    numberOfDays = number_of_days_in_month(int(month), int(year))
-    monthsEnd = get_months_end(month, year)
-
-    scrumBoardLists = {}
+def get_scrum_tasks(today_date, db_cursor, lock):
+    day, month, year = separate_day_month_year(today_date)
+    months_beginning = get_months_beginning(month, year)
+    number_of_days = number_of_days_in_month(int(month), int(year))
+    months_end = get_months_end(month, year)
+    scrum_board_lists = {}
     for stage in ["backlog", "todo", "in progress", "done"]:
         lock.acquire(True)
-        dbCursur.execute("""SELECT * FROM scrumBoard WHERE stage = ? """, (stage, ))
+        db_cursor.execute("""SELECT * FROM scrumBoard WHERE stage = ? """, (stage,))
         # sort based on priority
-        scrumBoardLists[stage] = sorted([(task, proj, priority) for task, proj, stage, priority, done_date in dbCursur.fetchall()], key = lambda x: x[2])
+        scrum_board_lists[stage] = sorted([(task, proj, priority) for task, proj, stage, priority, done_date in
+                                           db_cursor.fetchall()], key=lambda x: x[2])
         lock.release()
 
     # find all the tasks done during this month's period!
     lock.acquire(True)
-    dbCursur.execute("""SELECT * FROM scrumBoard WHERE done_date >= ? and done_date <= ? """, (monthsBeginning.date(),  monthsEnd.date()))
-    doneTasks = sorted([int(done_date.split("-")[2]) for proj, task,  stage, priority, done_date in dbCursur.fetchall()])
+    db_cursor.execute("""SELECT * FROM scrumBoard WHERE done_date >= ? and done_date <= ? """,
+                      (months_beginning.date(), months_end.date()))
+    done_tasks = sorted([int(done_date.split("-")[2]) for proj, task, stage, priority, done_date in
+                         db_cursor.fetchall()])
     lock.release()
     current_done = 0
-    ChartDoneTasks=[]
-    for i in range(1, numberOfDays+1):
-        current_done += doneTasks.count(i)
-        ChartDoneTasks.append(current_done)
-    ChartMonthDays = [str(i) for i in range(1, numberOfDays+1)]
-    if todaysDate == str(datetime.date.today()):
-        thisMonthTasksNum = len(scrumBoardLists["done"])+len(scrumBoardLists["in progress"])+len(scrumBoardLists["todo"])
+    chart_done_tasks = []
+    for i in range(1, number_of_days+1):
+        current_done += done_tasks.count(i)
+        chart_done_tasks.append(current_done)
+    chart_month_days = [str(i) for i in range(1, number_of_days+1)]
+    if today_date == str(datetime.date.today()):
+        this_month_tasks_num = len(scrum_board_lists["done"]) + len(scrum_board_lists["in progress"]) + \
+                               len(scrum_board_lists["todo"])
     else:
-        thisMonthTasksNum = ChartDoneTasks[-1]
-    ChartthisMonthTasks = [thisMonthTasksNum for i in range(numberOfDays)]
-    return scrumBoardLists, ChartDoneTasks, ChartMonthDays, ChartthisMonthTasks
+        this_month_tasks_num = chart_done_tasks[-1]
+    chart_this_month_tasks = [this_month_tasks_num for _ in range(number_of_days)]
+    return scrum_board_lists, chart_done_tasks, chart_month_days, chart_this_month_tasks
 
 
-def deleteScrumTask(proj, task, dbCursur, dbConnection, lock):
+def delete_scrum_task(proj, task, db_cursor, db_connection, lock):
     try:
         logger.info("deleting card:" + str(task))
         lock.acquire(True)
-        dbCursur.execute("""DELETE from scrumBoard where project = ? and task = ?""", (proj, task))
-        dbConnection.commit()
+        db_cursor.execute("""DELETE from scrumBoard where project = ? and task = ?""", (proj, task))
+        db_connection.commit()
         lock.release()
         return True
     except Exception as err:
@@ -624,11 +636,11 @@ def deleteScrumTask(proj, task, dbCursur, dbConnection, lock):
         return False
 
 
-def addScrumTask(proj, task, list, priority, date, dbCursur, dbConnection, lock):
+def add_scrum_task(proj, task, list_name, priority, date, db_cursor, db_connection, lock):
     try:
         lock.acquire(True)
-        dbCursur.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, list, priority, date))
-        dbConnection.commit()
+        db_cursor.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, list_name, priority, date))
+        db_connection.commit()
         lock.release()
         return True
     except Exception as err:
@@ -636,27 +648,27 @@ def addScrumTask(proj, task, list, priority, date, dbCursur, dbConnection, lock)
         return False
 
 
-def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur, lock):
-    serverEmail = fetchSettingParamFromDB(dbCursur, "MAIL_USERNAME", lock)
-    appPassword = fetchSettingParamFromDB(dbCursur, "MAIL_PASSWORD", lock)
-    mailServer = fetchSettingParamFromDB(dbCursur, "MAIL_SERVER", lock)
-    mailPort = fetchSettingParamFromDB(dbCursur, "MAIL_PORT", lock)
-    mailSSL = fetchSettingParamFromDB(dbCursur, "MAIL_USE_SSL", lock)
-    recipientEmail = fetchSettingParamFromDB(dbCursur, "MAIL_RECIPIENT", lock)
-    logger.info("sending email to: " + recipientEmail)
-    if (serverEmail != "None") and (appPassword != "None") and (recipientEmail != "None"):
+def send_mail(msg_subject, msg_content, flask_app, mail_instance, db_cursor, lock):
+    server_email = fetch_setting_param_from_db(db_cursor, "MAIL_USERNAME", lock)
+    app_password = fetch_setting_param_from_db(db_cursor, "MAIL_PASSWORD", lock)
+    mail_server = fetch_setting_param_from_db(db_cursor, "MAIL_SERVER", lock)
+    mail_port = fetch_setting_param_from_db(db_cursor, "MAIL_PORT", lock)
+    mail_ssl = fetch_setting_param_from_db(db_cursor, "MAIL_USE_SSL", lock)
+    recipient_email = fetch_setting_param_from_db(db_cursor, "MAIL_RECIPIENT", lock)
+    logger.info("sending email to: " + recipient_email)
+    if (server_email != "None") and (app_password != "None") and (recipient_email != "None"):
         flask_app.config.update(
-            MAIL_SERVER = str(mailServer),
-            MAIL_PORT = int(mailPort),
-            MAIL_USE_SSL = bool(mailSSL),
-            MAIL_USERNAME = serverEmail,
-            MAIL_PASSWORD = appPassword
+            MAIL_SERVER=str(mail_server),
+            MAIL_PORT=int(mail_port),
+            MAIL_USE_SSL=bool(mail_ssl),
+            MAIL_USERNAME=server_email,
+            MAIL_PASSWORD=app_password
         )
-        mailInstance.init_app(flask_app)
-        msg = mailInstance.send_message(
+        mail_instance.init_app(flask_app)
+        mail_instance.send_message(
             msg_subject,
-            sender=str(serverEmail),
-            recipients=[str(recipientEmail)],
+            sender=str(server_email),
+            recipients=[str(recipient_email)],
             body=msg_content
         )
     logger.info("email sent!")
@@ -666,16 +678,16 @@ def send_mail(msg_subject, msg_content, flask_app, mailInstance, dbCursur, lock)
 def add_tag_to_picture(filename, tag):
     metadata = ImageMetadata(filename)
     metadata.read()
-    currentTags = []
+    current_tags = []
     if 'Exif.Photo.UserComment' in metadata:
-        userdata=json.loads(metadata['Exif.Photo.UserComment'].value)
-        if userdata["tags"] != None:
-            currentTags = list(userdata["tags"])
-    tags = [tag] + currentTags
+        userdata = json.loads(metadata['Exif.Photo.UserComment'].value)
+        if userdata["tags"] is not None:
+            current_tags = list(userdata["tags"])
+    tags = [tag] + current_tags
     metadata = ImageMetadata(filename)
     metadata.read()
-    userdata={'tags':tags}
-    metadata['Exif.Photo.UserComment']=json.dumps(userdata)
+    userdata = {'tags': tags}
+    metadata['Exif.Photo.UserComment'] = json.dumps(userdata)
     metadata.write()
     return True
 
@@ -683,17 +695,16 @@ def add_tag_to_picture(filename, tag):
 def remove_tag_from_picture(filename, tag):
     metadata = ImageMetadata(filename)
     metadata.read()
-    currentTags = []
-    if 'Exif.Photo.UserComment' in metadata:
-        userdata=json.loads(metadata['Exif.Photo.UserComment'].value)
-        if userdata["tags"] != None:
-            currentTags = list(userdata["tags"])
-    currentTags = [] if userdata["tags"] == None else list(userdata["tags"])
-    if len(currentTags)>0:
-        currentTags.remove(tag)
+    if 'Exif.Photo.UserComment' not in metadata:
+        print("Exif.Photo.UserComment does not exist in metadata")
+        return False
+    userdata = json.loads(metadata['Exif.Photo.UserComment'].value)
+    current_tags = [] if userdata["tags"] is not None else list(userdata["tags"])
+    if len(current_tags) > 0:
+        current_tags.remove(tag)
     metadata = ImageMetadata(filename)
     metadata.read()
-    userdata={'tags':currentTags}
-    metadata['Exif.Photo.UserComment']=json.dumps(userdata)
+    userdata = {'tags': current_tags}
+    metadata['Exif.Photo.UserComment'] = json.dumps(userdata)
     metadata.write()
     return True
