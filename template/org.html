@@ -1,74 +1,75 @@
 
 <html lang="en">
 <head>
-  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <style>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
   input[class='todoCheckbox']:checked + span{
     text-decoration:line-through;
   }
   </style>
- <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
- <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
- <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
- <script type="text/javascript">
+    <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+    <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script type="text/javascript">
  var vars = {};
  var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
            vars[key] = value;
  });
  </script>
 
- <title>My Journal</title>
+    <title>My Journal</title>
 </head>
 
 {%if pageTheme=="Dark"%}
-  <body class="featured">
+<body class="featured">
 {% else %}
-  <body>
+<body>
 {% endif %}
 
 <div class="container-fluid bg">
 
-  {% with page="org" %}
-      {% include "generic_modules/header.html" %}
-  {% endwith %}
+    {% with page="org" %}
+    {% include "generic_modules/header.html" %}
+    {% endwith %}
 
-  <div class="row">
-    <div class="col-sm-12 col-lg-12">
-      {% with month = month, year = year, day = day,
-              numberOfDays = numberOfDays, monthsBeginning = monthsBeginning %}
-          {% include "org_modules/org_header.html" %}
-      {% endwith %}
+    <div class="row">
+        <div class="col-sm-12 col-lg-12">
+            {% with month = month, year = year, day = day,
+            numberOfDays = numberOfDays, monthsBeginning = monthsBeginning %}
+            {% include "org_modules/org_header.html" %}
+            {% endwith %}
 
-      {% with month = month, year = year, day = day,
-              numberOfDays = numberOfDays, monthsBeginning = monthsBeginning,
-              todayTodos = todayTodos, overDue = overDue,
-              thisMonthsEvents = thisMonthsEvents %}
-          {% include "org_modules/todoLists.html" %}
-      {% endwith %}
-    <div class="divider"></div>
+            {% with month = month, year = year, day = day,
+            numberOfDays = numberOfDays, monthsBeginning = monthsBeginning,
+            todayTodos = todayTodos, overDue = overDue,
+            thisMonthsEvents = thisMonthsEvents %}
+            {% include "org_modules/todoLists.html" %}
+            {% endwith %}
+            <div class="divider"></div>
+        </div>
+
+
+        {% with  month = month, year = year, day = day,  daysBeginning = 6, daysEnd = 22,
+        headerDates = headerDates, monthsBeginning = monthsBeginning,
+        calDate = calDate, calMonth = calMonth%}
+        {% include "org_modules/calendar.html" %}
+        {% endwith %}
+
+
+        <div class="divider"></div>
+
+        <div class="col-sm-12 col-lg-12">
+            {% with ChartMonthDays = ChartMonthDays, ChartDoneTasks = ChartDoneTasks,
+            ChartthisMonthTasks = ChartthisMonthTasks, day = day%}
+            {% include "org_modules/scrumBoard.html" %}
+            {% endwith %}
+        </div>
     </div>
 
-
-      {% with  month = month, year = year, day = day,  daysBeginning = 6, daysEnd = 22,
-               headerDates = headerDates, monthsBeginning = monthsBeginning,
-               calDate = calDate, calMonth = calMonth%}
-          {% include "org_modules/calendar.html" %}
-      {% endwith %}
-
-
     <div class="divider"></div>
-
-    <div class="col-sm-12 col-lg-12">
-      {% with ChartMonthDays = ChartMonthDays, ChartDoneTasks = ChartDoneTasks,
-              ChartthisMonthTasks = ChartthisMonthTasks, day = day%}
-          {% include "org_modules/scrumBoard.html" %}
-      {% endwith %}
-    </div>
-  </div>
-
-  <div class="divider"></div>
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
