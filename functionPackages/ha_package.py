@@ -3,7 +3,7 @@ def generate_ha_db_tables(db_cursor, db_connection, lock):
     try:
         lock.acquire(True)
         db_cursor.execute("""CREATE TABLE if not exists weatherStation (
-                 room text, date text, time text,  temp text, humidity text, pressure text)""")
+                 room text, date text, time text,  temp text, humidity text, pressure, moisture text)""")
         db_cursor.execute("""CREATE TABLE if not exists econsumption (
                  date text, consumption text)""")
         db_cursor.execute("""CREATE TABLE if not exists settings (
@@ -16,11 +16,11 @@ def generate_ha_db_tables(db_cursor, db_connection, lock):
         return False
 
 
-def add_data_to_ha_db(db_cursor, db_connection, room, date, time, temp, humidity, pressure, lock):
+def add_data_to_ha_db(db_cursor, db_connection, room, date, time, temp, humidity, pressure, moisture, lock):
     try:
         lock.acquire(True)
-        db_cursor.execute("""INSERT INTO weatherStation VALUES(?, ?, ?, ?, ?, ?)""", (room, date, time, temp,
-                                                                                      humidity, pressure))
+        db_cursor.execute("""INSERT INTO weatherStation VALUES(?, ?, ?, ?, ?, ?, ?)""", (room, date, time, temp,
+                                                                                      humidity, pressure, moisture))
         db_connection.commit()
         lock.release()
         return True

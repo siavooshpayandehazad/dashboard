@@ -1,5 +1,6 @@
 - VPN: https://pimylifeup.com/raspberry-pi-wireguard/
 - the power LED is connected to pin RX
-- power button: https://howchoo.com/g/mwnlytk3zmm/how-to-add-a-power-button-to-your-raspberry-pi
+- power button:
+    add 'dtoverlay=gpio-shutdown ,active_low=1' to /boot/config.txt
 - install sysstat for status.sh
 - update crontab!
