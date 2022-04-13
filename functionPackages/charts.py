@@ -12,12 +12,10 @@ temporary_data = {}
 
 
 def get_travel_destinations(db_cursor, lock):
-
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM travelTracker""")
     travels = db_cursor.fetchall()
     lock.release()
-
     all_travels = []
     for item in travels:
         all_travels.append({'name': item[0], 'coords': [item[1], item[2]], })
@@ -131,25 +129,15 @@ def run_func(res, year_runs):
 def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, lock):
     start_time = time.time()
     ret_list = []
-    global temporary_data
-    temporary_data["chart_year_data"] = temporary_data.get("chart_year_data", {})
-    temporary_data["chart_year_data"][table_name] = temporary_data["chart_year_data"].get(table_name, {page_year: []})
     i = 0
     while (i+7) < 364:
-        try:
-            recorded_data = temporary_data["chart_year_data"][table_name][page_year][(i / 7) + 1]
-            if len(recorded_data) == 0:
-                raise ValueError("re-calculate...")
-            ret_list += recorded_data[len(ret_list): len(ret_list)+6]
-        except Exception as err:
-            logger.error(err)
-            week_beg = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i)
-            week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i + 6)
-            lock.acquire(True)
-            db_cursor.execute("SELECT * FROM " + table_name + " WHERE date >= ? and date <= ?  ",
+        week_beg = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i)
+        week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i + 6)
+        lock.acquire(True)
+        db_cursor.execute("SELECT * FROM " + table_name + " WHERE date >= ? and date <= ?  ",
                               (week_beg.date(), week_end.date(),))
-            ret_list = calc_func(db_cursor.fetchall(), ret_list)
-            lock.release()
+        ret_list = calc_func(db_cursor.fetchall(), ret_list)
+        lock.release()
         i += 7
 
     week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=364)
@@ -158,7 +146,6 @@ def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, l
                       (week_end.date(), get_months_end(i, page_year).date(),))
     ret_list = calc_func(db_cursor.fetchall(), ret_list)
     lock.release()
-    temporary_data["chart_year_data"][table_name][page_year] = ret_list[:]
     execution_time = (time.time() - start_time)
     logger.info('{0: <20}'.format(table_name) + " time: " + str(execution_time))
     return ret_list
@@ -344,19 +331,21 @@ def generate_weather_monthly(db_cursor, year: int, lock):
         temp_data = {}
         for item in monthly_data:
             room = int(item[0])
-            temp_data[room] = temp_data.get(room, {"temp": [], "pressure": [], "humidity": []})
-            temp_data[room]["temp"].append(float(item[3].strip()))
-            temp_data[room]["humidity"].append(float(item[4].strip()))
-            temp_data[room]["pressure"].append(float(item[5].strip())/1000)
+            temp_data[room] = temp_data.get(room, {"temp": [], "pressure": [], "humidity": [], "moisture": []})
+            temp_data[room]["temp"].append(float(item[3]))
+            temp_data[room]["humidity"].append(float(item[4]))
+            temp_data[room]["pressure"].append(float(item[5])/1000)
+            temp_data[room]["moisture"].append(float(item[6]))
 
         for item in temp_data.keys():
             room = item
             return_data[room] = return_data.get(room, {"months": [],
                                                        "temp": {"min": [], "max": [], "avg": []},
                                                        "pressure": {"min": [], "max": [], "avg": []},
-                                                       "humidity": {"min": [], "max": [], "avg": []}})
+                                                       "humidity": {"min": [], "max": [], "avg": []},
+                                                       "moisture": {"min": [], "max": [], "avg": []}})
             return_data[room]["months"].append(month)
-            for parameter in ["temp", "pressure", "humidity"]:
+            for parameter in ["temp", "pressure", "humidity", "moisture"]:
                 temp_data_clean_list = [x for x in temp_data[room][parameter] if x != 0]
                 if len(temp_data_clean_list) > 0:
                     return_data[room][parameter]["min"].append(min(temp_data_clean_list))
@@ -369,7 +358,7 @@ def generate_weather_monthly(db_cursor, year: int, lock):
     for month in range(1, 13):
         for room in return_data.keys():
             if month not in return_data[room]["months"]:
-                for parameter in ["temp", "pressure", "humidity"]:
+                for parameter in ["temp", "pressure", "humidity", "moisture"]:
                     return_data[room][parameter]["min"] = return_data[room][parameter]["min"][:month-1] + ["nan"] + \
                                                           return_data[room][parameter]["min"][month-1:]
                     return_data[room][parameter]["max"] = return_data[room][parameter]["max"][:month-1] + ["nan"] + \
@@ -388,11 +377,13 @@ def generate_weather_daily(db_cursor, today_date, lock):
     lock.release()
     for item in today_vals:
         room = int(item[0])
-        daily_data[room] = daily_data.get(room, {"time": [], "temp": [], "pressure": [], "humidity": []})
+        daily_data[room] = daily_data.get(room, {"time": [], "temp": [], "pressure": [], "humidity": [], "moisture": []})
         daily_data[room]["time"].append(item[2].strip()[:-3])
         daily_data[room]["temp"].append(item[3].strip())
         daily_data[room]["humidity"].append(item[4].strip())
-        daily_data[room]["pressure"].append(float(item[5].strip())/1000)
+        daily_data[room]["pressure"].append(float(item[5])/1000)
+        daily_data[room]["moisture"].append(float(item[6]))
+
 
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM settings")

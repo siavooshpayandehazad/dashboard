@@ -45,7 +45,7 @@ function renderHeartBPChart(bpMin, bpMax){
                        console.log(this.scales['y-axis-0'].getValueForPixel(event.layerY))
                     return;
                   }
-                  var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
+                  var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)-2;
                   var selectedVal =  bp_Min[selectedDay-1]+","+bp_Max[selectedDay-1]
                   var newVal = window.prompt("Update Blood Pressure (coma separated format:\"min,max\") for day " + selectedDay + "?", selectedVal);
                   if ((newVal===null)){return;}
