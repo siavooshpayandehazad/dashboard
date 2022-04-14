@@ -50,16 +50,27 @@ function setupMonthCal(){
     cell.style.paddingTop="10px;"
     cell.innerHTML = "week<br>"+(startWeekNum+i-1);
   }
+  
+  // highlight saturdays and sundays
+  for (var i=1; i<table.rows.length; i++){
+    var cell = table.rows[i].cells.item(1);
+    cell.style.backgroundColor="#deebf7"
+    cell = table.rows[i].cells.item(7);
+    cell.style.backgroundColor="#deebf7"
+  }
+
   // highlight the days before start
   startdayNum = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getDay();
   for (var i=1; i<startdayNum+1; i++){
     var cell = table.rows[1].cells.item(i);
     cell.style.backgroundColor="#d9d9d9"
   }
+
   // mark today
   today_col = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getDay();
   today_row = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getWeek()-startWeekNum;
-  table.rows[today_row+1].cells.item(today_col+1).style.backgroundColor="#deebf7";
+  table.rows[today_row+1].cells.item(today_col+1).style.backgroundColor="#e5f5e0";
+
   // highlight the days after end
   lastDay = (new Date(parseInt("{{year}}"), parseInt("{{month}}"), parseInt("0"), 0, 0, 0)).getDay();
   for (var i=lastDay+2; i<8; i++){
