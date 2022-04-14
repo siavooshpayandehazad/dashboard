@@ -544,7 +544,11 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
           {%if j == 1%}
               <td style = "width: 12.5%; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
           {%else%}
-              <td style="width: 12.5%;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+              {%if (j == 6) or (j == 7)%}
+                <td style="width: 12.5%; background-color:#deebf7" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+              {%else%}
+                <td style="width: 12.5%;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+              {%endif%}
           {%endif%}
         {%endfor%}
       </tr>
