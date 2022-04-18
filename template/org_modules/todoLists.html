@@ -415,6 +415,11 @@ function toggleOverlay(displayStatus){
          span2.appendChild(deleteIcon);
          span3.classList.add("date");
          span3.innerHTML=tasks[i][1];
+         span3.style.cursor = "pointer";
+         span3.onclick = function(){
+            date_array = this.innerHTML.split("-")
+            goToDate(date_array[0], date_array[1], date_array[2]);
+            }
          if(showDate==false){
            span3.style.display="none";
          }
