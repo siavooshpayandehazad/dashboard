@@ -241,17 +241,28 @@ def add_tracker_item_to_table(item: str, item_name: str, item_list, table_name: 
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM tracker WHERE date = ?", (date,))
     fetched_data = db_cursor.fetchall()
-
+    print(fetched_data)
     if table_name in ["activityTracker", "activityPlanner"]:
-        print(fetched_data[0][index])
-        lock.release()
-        return "Done", 200
+        if fetched_data[0][index] in ["nan", "None"]:
+            init_set = []
+        else:
+            init_set = eval(fetched_data[0][index])
+        if delete:
+            if (len(init_set) > 0) and (item in init_set):
+                init_set.remove(item)
+                item = str(init_set)
+            else:
+                lock.release()
+                return "Done", 200
+        else:
+            item = str(init_set+[item])
     else:
         if delete:
             item = "nan"
         else:
             if accumulate and (fetched_data[0][index] != "nan"):
                 item = float(fetched_data[0][index]) + float(item)
+
     logger.info(f"@{datetime.datetime.now()} :: adding {item} to {date}'s {label}")
 
     db_cursor.execute("UPDATE tracker SET " + label + " = ? WHERE date = ?", (item, date,))
