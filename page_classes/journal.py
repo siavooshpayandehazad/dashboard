@@ -32,9 +32,10 @@ class Journal(Resource):
         months_beginning = get_months_beginning(month, year).weekday()
 
         self.lock.acquire(True)
-        self.c.execute("""SELECT * FROM logTracker WHERE date >= ? and date <= ? """,
+        self.c.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ? """,
                        (get_months_beginning(month, year).date(), get_months_end(month, year).date(),))
-        logged_days = [int(x[1].split("-")[2]) for x in self.c.fetchall()]
+
+        logged_days = [int(x[0].split("-")[2]) for x in self.c.fetchall() if x[14] != "nan"]
         self.lock.release()
 
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
@@ -53,9 +54,11 @@ class Journal(Resource):
 
             self.lock.acquire(True)
             self.c.execute("""SELECT * FROM logTracker WHERE date = ? """, (today_date,))
-            if len(self.c.fetchall()) > 0:
-                self.c.execute("""DELETE from logTracker where date = ?""", (today_date,))
-            self.c.execute("""INSERT INTO logTracker VALUES(?, ?)""", (log_entry, today_date))
+            if len(self.c.fetchall()) == 0:
+                self.c.execute("INSERT INTO tracker VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                               (today_date, "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan",
+                                "nan", "nan", "nan", "nan", "nan"))
+            self.c.execute("UPDATE tracker SET log = ? WHERE date = ?", (log_entry, today_date,))
             self.conn.commit()
             self.lock.release()
 

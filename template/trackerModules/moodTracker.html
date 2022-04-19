@@ -95,18 +95,20 @@
         {% endif %}
         {% set ns1 = namespace (found = 0)%}
         {% for item in moods%}
-          {%if item[1].split("-")[2]|int == day %}
+          {%if item[0].split("-")[2]|int == day %}
                 {%set ns1.found = 1 %}
-                {% if item[0] == 'awful' %}
+                {% if item[1] == 'awful' %}
                   <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#f4a582" onclick="moodSelector(event, this)">{{ day }}</td>
-                {% elif item[0] == 'bad' %}
+                {% elif item[1] == 'bad' %}
                   <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#fddbc7" onclick="moodSelector(event, this)">{{ day }}</td>
-                {% elif item[0] == 'ok' %}
+                {% elif item[1] == 'ok' %}
                   <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#deebf7" onclick="moodSelector(event, this)">{{ day }}</td>
-                {% elif item[0] == 'good' %}
+                {% elif item[1] == 'good' %}
                   <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#9FDED0" onclick="moodSelector(event, this)">{{ day }}</td>
-                {% elif item[0] == 'great' %}
+                {% elif item[1] == 'great' %}
                   <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#1d91c0" onclick="moodSelector(event, this)">{{ day }}</td>
+                {% else  %}
+                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  onclick="moodSelector(event, this)">{{ day }}</td>
                 {% endif %}
           {% endif %}
         {% endfor %}

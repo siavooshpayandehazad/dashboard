@@ -6,6 +6,7 @@ from functionPackages.dateTime import *
 from collections import Counter
 from pyexiv2 import ImageMetadata
 import json
+from package import tracker_settings
 
 import logging
 
@@ -175,12 +176,12 @@ def get_cal_events_month(today_date, db_cursor, lock):
 
 def get_today_logs(db_cursor, today_date, lock):
     lock.acquire(True)
-    db_cursor.execute("""SELECT * FROM logTracker WHERE date = ? """, (today_date,))
-    log_value = db_cursor.fetchall()
+    db_cursor.execute("""SELECT * FROM tracker WHERE date = ? """, (today_date,))
+    log_value = db_cursor.fetchall()[0][14]
     lock.release()
     if len(log_value) > 0:
-        today_log = log_value[0][0].replace("\n", "<br>")
-        today_log_text = log_value[0][0]
+        today_log = log_value.replace("\n", "<br>")
+        today_log_text = log_value
     else:
         today_log = ""
         today_log_text = ""
@@ -224,33 +225,36 @@ def add_tracker_item_to_table(item: str, item_name: str, item_list, table_name: 
         return item + " not found", 400
 
     lock.acquire(True)
-    db_cursor.execute("SELECT * FROM " + table_name + " WHERE date = ?", (date,))
+    db_cursor.execute("SELECT * FROM tracker WHERE date = ?", (date,))
+    fetched_data = db_cursor.fetchall()
+    if len(fetched_data) == 0:
+        db_cursor.execute("INSERT INTO tracker VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                          (date, "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan",
+                           "nan", "nan", "nan", "nan"))
+        db_connection.commit()
+    lock.release()
+
+    index = tracker_settings[table_name]["index"]
+    label = tracker_settings[table_name]["label"]
+    accumulate = tracker_settings[table_name]["accumulate"]
+
+    lock.acquire(True)
+    db_cursor.execute("SELECT * FROM tracker WHERE date = ?", (date,))
     fetched_data = db_cursor.fetchall()
 
-    if table_name == "workTracker":
-        if (len(fetched_data) > 0) and (delete is False):
-            logger.info(f"@{datetime.datetime.now()} :: adding {item} time to today's work hours")
-            item = float(fetched_data[0][0])+float(item)
-
-    if table_name == "moodTracker":     # trying to remove old mood from the table
-        for old_item, today_date in fetched_data:
-            db_cursor.execute("DELETE from " + table_name + " where date = ? and " + item_name + " = ?",
-                              (date, old_item))
-            db_connection.commit()
-    else:   # all the other trackers
-        if delete_day:
-            db_cursor.execute("DELETE from " + table_name + " where date = ?", (date,))
-        else:   # try removing the tracker
-            db_cursor.execute("DELETE from " + table_name + " where date = ? and " + item_name + " = ?", (date, item))
-
-    if not delete:
-        if table_name in ["HRTracker", "BPTracker"]:
-            db_cursor.execute("INSERT INTO " + table_name + " VALUES(?, ?, ?)", (item[0], item[1], date))
-        else:
-            db_cursor.execute("INSERT INTO " + table_name + " VALUES(?, ?)", (item, date))
-        logger.info(f"{table_name}:: added {item} for date: {date}")
+    if table_name in ["activityTracker", "activityPlanner"]:
+        print(fetched_data[0][index])
+        lock.release()
+        return "Done", 200
     else:
-        logger.info(f"{table_name}:: removed {item} from date: {date}")
+        if delete:
+            item = "nan"
+        else:
+            if accumulate and (fetched_data[0][index] != "nan"):
+                item = float(fetched_data[0][index]) + float(item)
+    logger.info(f"@{datetime.datetime.now()} :: adding {item} to {date}'s {label}")
+
+    db_cursor.execute("UPDATE tracker SET " + label + " = ? WHERE date = ?", (item, date,))
     db_connection.commit()
     lock.release()
     return "Done", 200
@@ -348,29 +352,34 @@ def collect_months_data(page_month: int, page_year: int, db_cursor, lock):
     activities_plannes = []
     moods = []
     lock.acquire(True)
-    db_cursor.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
+    db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
-    activities += db_cursor.fetchall()
-    db_cursor.execute("""SELECT * FROM activityPlanner WHERE date >= ? and date <= ?  """,
+    index = tracker_settings["activityTracker"]["index"]
+    activities += [(x[0], x[index]) for x in db_cursor.fetchall()]
+
+    db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
-    activities_plannes += db_cursor.fetchall()
-    db_cursor.execute("""SELECT * FROM moodTracker WHERE date >= ? and date <= ?  """,
+    index = tracker_settings["activityPlanner"]["index"]
+    activities_plannes += [(x[0], x[index]) for x in db_cursor.fetchall()]
+
+    db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
-    moods += db_cursor.fetchall()
+    index = tracker_settings["moodTracker"]["index"]
+    moods += [(x[0], x[index]) for x in db_cursor.fetchall()]
     lock.release()
     return activities, activities_plannes, moods
 
 
 def collect_yearly_activities(page_year: int, db_cursor, lock):
-    activities = []
     lock.acquire(True)
-    db_cursor.execute("""SELECT * FROM activityTracker WHERE date >= ? and date <= ?  """,
+    db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
                       (get_months_beginning(1, page_year).date(),
                        get_months_end(12, page_year).date(),))
-    activities += db_cursor.fetchall()
+    index = tracker_settings["activityTracker"]["index"]
+    activities = {x[0]: x[index] for x in db_cursor.fetchall()}
     lock.release()
 
     activity_list = [x.replace(" ", "") for x in
@@ -381,10 +390,11 @@ def collect_yearly_activities(page_year: int, db_cursor, lock):
             for activity in activity_list:
                 date = str(datetime.datetime.strptime(f"{page_year}-{month}-{day}", '%Y-%m-%d').date())
                 return_dict[activity] = return_dict.get(activity, [])
-                if (activity, date) in activities:
+                if activity in activities.get(date, []):
                     return_dict[activity].append(1)
                 else:
                     return_dict[activity].append(0)
+
     return return_dict
 
 
@@ -396,44 +406,31 @@ def create_db(db_name):
 
 def generate_db_tables(db_cursor, db_connection, lock):
     lock.acquire(True)
+    db_cursor.execute("""CREATE TABLE if not exists tracker (
+                 date text, 
+                 work_hour text,
+                 HR_Min text, HR_Max text, BP_Min text, BP_Max text, BO text,
+                 sleepTime text, weight text, steps text, hydration text, 
+                 run text, pace text,
+                 mood_name text, log text,
+                 activity_tracker_name text, 
+                 activity_planner_name text
+                 )""")
+
     db_cursor.execute("""CREATE TABLE if not exists calendar (
              date text, startTime text, endTime text, eventName text, color text, details text)""")
+
     db_cursor.execute("""CREATE TABLE if not exists flashcards (
              setName text, side1 text, side2 text, reviewInDays text, lastTimeReviewed text)""")
+
     db_cursor.execute("""CREATE TABLE if not exists travelTracker (
              Destination text, latitude text, longitude text)""")
-    db_cursor.execute("""CREATE TABLE if not exists HRTracker (
-             HR_Min text, HR_Max text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists BPTracker (
-             BP_Min text, BP_Max text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists oxygenTracker (
-             BO text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists sleepTracker (
-             sleepTime text, date text)""")
+
     db_cursor.execute("""CREATE TABLE if not exists savingTracker (
-             saving text, month text)""")
+                 saving text, month text)""")
     db_cursor.execute("""CREATE TABLE if not exists mortgageTracker (
-             mortgage text, month text)""")
-    db_cursor.execute("""CREATE TABLE if not exists weightTracker (
-             weight text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists workTracker (
-             work_hour text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists stepTracker (
-             steps text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists hydrationTracker (
-             hydration text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists runningTracker (
-             run text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists paceTracker (
-             pace text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists activityTracker (
-             activity_name text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists activityPlanner (
-             activity_name text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists moodTracker (
-             mood_name text, date text)""")
-    db_cursor.execute("""CREATE TABLE if not exists logTracker (
-             log text, date text)""")
+                 mortgage text, month text)""")
+
     db_cursor.execute("""CREATE TABLE if not exists todoList (
              task text, date text, done text, color, text)""")
     db_cursor.execute("""CREATE TABLE if not exists scrumBoard (
@@ -708,3 +705,35 @@ def remove_tag_from_picture(filename, tag):
     metadata['Exif.Photo.UserComment'] = json.dumps(userdata)
     metadata.write()
     return True
+
+
+def clean_db(table_name, db_connection, db_cursor, lock):
+
+    lock.acquire(True)
+    db_cursor.execute("SELECT * FROM "+table_name)
+    fetched_data = db_cursor.fetchall()
+
+    tracker_dictionary = {}
+
+    for item in fetched_data:
+        date = item[1]
+        value = item[0]
+        old_value = tracker_dictionary.get(str(date), [])
+        tracker_dictionary[date] = old_value + [value]
+
+    for key in tracker_dictionary:
+        date = key
+        value = tracker_dictionary[key]
+
+        db_cursor.execute("SELECT * FROM tracker WHERE date = ?", (date,))
+        fetched_data = db_cursor.fetchall()
+        if len(fetched_data) == 0:
+            db_cursor.execute("INSERT INTO tracker VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                              (date, "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan",
+                               "nan", "nan", "nan", "nan"))
+            db_connection.commit()
+
+        db_cursor.execute("UPDATE tracker SET " + "activity_planner_name" + " = ? WHERE date = ?", (str(value), date,))
+        db_connection.commit()
+    lock.release()
+

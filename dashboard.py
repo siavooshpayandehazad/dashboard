@@ -7,7 +7,7 @@ from flask import send_from_directory
 from flask_restful import reqparse, Api
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 import os
 from random import randint
 import logging

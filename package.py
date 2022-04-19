@@ -15,3 +15,21 @@ RED = '\033[91m'
 ENDC = '\033[0m'
 
 temporary_data = {}
+
+
+tracker_settings = {"workTracker": {"index": 1,  "label": "work_hour", "accumulate": True},
+                    "HR_Min": {"index": 2,  "label": "HR_Min", "accumulate": True},
+                    "HR_Max": {"index": 3,  "label": "HR_Max", "accumulate": True},
+                    "BP_Min": {"index": 4,  "label": "BP_Min", "accumulate": True},
+                    "BP_Max": {"index": 5,  "label": "BP_Max", "accumulate": True},
+                    "oxygenTracker": {"index": 6,  "label": "BO", "accumulate": False},
+                    "sleepTracker": {"index": 7,  "label": "sleepTime", "accumulate": False},
+                    "weightTracker": {"index": 8,  "label": "weight", "accumulate": False},
+                    "stepTracker": {"index": 9,  "label": "steps", "accumulate": False},
+                    "hydrationTracker": {"index": 10,  "label": "hydration", "accumulate": False},
+                    "runningTracker": {"index": 11, "label": "run", "accumulate": False},
+                    "paceTracker": {"index": 12, "label": "pace", "accumulate": False},
+                    "moodTracker": {"index": 13, "label": "mood_name", "accumulate": False},
+                    "activityTracker": {"index": 15, "label": "activity_tracker_name", "accumulate": False},
+                    "activityPlanner": {"index": 16, "label": "activity_planner_name", "accumulate": False},
+                    }

@@ -1,10 +1,10 @@
 import datetime
-from dateutil.relativedelta import relativedelta
-from functionPackages.misc import get_months_beginning, get_months_end, is_number
+from functionPackages.misc import get_months_beginning, get_months_end
 import os
 import time
 import logging
-from functionPackages.dateTime import convert_time_to24
+from functionPackages.dateTime import convert_time_to24, number_of_days_in_month
+from package import tracker_settings
 
 
 logger = logging.getLogger(__name__)
@@ -22,57 +22,8 @@ def get_travel_destinations(db_cursor, lock):
     return all_travels
 
 
-def generate_weight_chart_data(page_month: int, page_year: int, number_of_days: int, db_cursor, lock):
-    last_months_beginning = datetime.datetime.strptime(f"{page_year}-{page_month}-01", '%Y-%m-%d') - \
-                            relativedelta(months=+1)
-    last_months_end = datetime.datetime.strptime(f"{page_year}-{page_month}-01", '%Y-%m-%d') - \
-                                                 datetime.timedelta(days=1)
-
-    last_months_weights = []
-    lock.acquire(True)
-    db_cursor.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
-                      (last_months_beginning.date(), last_months_end.date(),))
-    last_months_weights += db_cursor.fetchall()
-    lock.release()
-
-    months_weights = []
-
-    lock.acquire(True)
-    db_cursor.execute("""SELECT * FROM weightTracker WHERE date >= ? and date <= ?  """,
-                      (get_months_beginning(page_month, page_year).date(),
-                       get_months_end(page_month, page_year).date(),))
-    months_weights += db_cursor.fetchall()
-    lock.release()
-
-    start_weight = "nan"
-    if len(last_months_weights) > 0:
-        start_weight = float(sorted(last_months_weights, key=lambda x: int(x[1].split("-")[2]))[0][0])
-    else:
-        if len(months_weights) > 0:
-            start_weight = float(sorted(months_weights, key=lambda x: int(x[1].split("-")[2]))[0][0])
-
-    chart_weights = []
-    for i in range(1, number_of_days + 1):
-        current_month = int(str(datetime.date.today()).split("-")[1])
-        weight = "nan"
-        for item in months_weights:
-            if int(item[1].split("-")[2]) == i:
-                weight = float(item[0])
-        # fix the beginning of the month by extending the first value to beginning
-        if (i == 1) and (weight == 'nan'):
-            weight = start_weight
-        # fix the end of the month by extending the last value to the end...
-        # do not do it for current month
-        if (i == number_of_days) and (weight == 'nan') and current_month != page_month:
-            recorded_days = [x for x in chart_weights if (x != 'nan')]
-            if len(recorded_days) > 0:
-                weight = recorded_days[-1]
-        chart_weights.append(weight)
-    return chart_weights
-
-
-def weight_func(res, weight):
-    weight_list = [float(x[0]) for x in res if is_number(x[0])]
+def weight_func(res, index, weight):
+    weight_list = [float(x[index]) for x in res if x[index] != "nan"]
     if len(weight_list) > 0:
         weight.append(float(sum(weight_list))/len(weight_list))
     else:
@@ -80,8 +31,8 @@ def weight_func(res, weight):
     return weight
 
 
-def bo_func(res, bo):
-    bo_list = [float(x[0]) for x in res if is_number(x[0])]
+def bo_func(res, index, bo):
+    bo_list = [float(x[index]) for x in res if x[index] != "nan"]
     if len(bo_list) > 0:
         bo.append(float(sum(bo_list)) / len(bo_list))
     else:
@@ -89,30 +40,30 @@ def bo_func(res, bo):
     return bo
 
 
-def wh_func(res, year_wh):
-    year_wh.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+def wh_func(res, index, year_wh):
+    year_wh.append(sum([float(x[index]) for x in res if x[index] != "nan"]))
     return year_wh
 
 
-def sleep_func(res, year_sleep):
-    year_sleep.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+def sleep_func(res, index, year_sleep):
+    year_sleep.append(sum([float(x[index]) for x in res if x[index] != "nan"]))
     return year_sleep
 
 
-def step_func(res, year_step):
-    year_step.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+def step_func(res, index, year_step):
+    year_step.append(sum([float(x[index]) for x in res if x[index] != "nan"]))
     return year_step
 
 
-def hydration_func(res, year_hydration):
-    year_hydration.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+def hydration_func(res, index, year_hydration):
+    year_hydration.append(sum([float(x[index]) for x in res if x[index] != "nan"]))
     return year_hydration
 
 
-def mood_func(res, year_moods):
-    res = [x[0] for x in res]
-    month_val = res.count("great")*4.5 + res.count("good")*3.5 + res.count("ok")*2.5 + res.count("bad")*1.5 + \
-        res.count("awful")*0.5
+def mood_func(res, index, year_moods):
+    res = [x[index] for x in res]
+    month_val = res.count("great")*4.5 + res.count("good")*3.5 + res.count("ok")*2.5 + \
+                res.count("bad")*1.5 + res.count("awful")*0.5
     if len(res) > 0:
         mood_val = month_val/float(len(res))
         year_moods.append(mood_val)
@@ -121,8 +72,8 @@ def mood_func(res, year_moods):
     return year_moods
 
 
-def run_func(res, year_runs):
-    year_runs.append(sum([float(x[0]) for x in res if is_number(x[0])]))
+def run_func(res, index, year_runs):
+    year_runs.append(sum([float(x[index]) for x in res if x[index] != "nan"]))
     return year_runs
 
 
@@ -130,21 +81,23 @@ def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, l
     start_time = time.time()
     ret_list = []
     i = 0
+    index = tracker_settings[table_name]["index"]
     while (i+7) < 364:
         week_beg = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i)
         week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i + 6)
         lock.acquire(True)
-        db_cursor.execute("SELECT * FROM " + table_name + " WHERE date >= ? and date <= ?  ",
-                              (week_beg.date(), week_end.date(),))
-        ret_list = calc_func(db_cursor.fetchall(), ret_list)
+
+        db_cursor.execute("SELECT * FROM tracker WHERE date >= ? and date <= ?  ",
+                          (week_beg.date(), week_end.date(),))
+        ret_list = calc_func(db_cursor.fetchall(), index, ret_list)
         lock.release()
         i += 7
 
     week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=364)
     lock.acquire(True)
-    db_cursor.execute("SELECT * FROM " + table_name + " WHERE date >= ? and date <= ?  ",
+    db_cursor.execute("SELECT * FROM tracker WHERE date >= ? and date <= ?  ",
                       (week_end.date(), get_months_end(i, page_year).date(),))
-    ret_list = calc_func(db_cursor.fetchall(), ret_list)
+    ret_list = calc_func(db_cursor.fetchall(), index, ret_list)
     lock.release()
     execution_time = (time.time() - start_time)
     logger.info('{0: <20}'.format(table_name) + " time: " + str(execution_time))
@@ -153,9 +106,8 @@ def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, l
 
 def generate_hr_chart_data(page_month: int, page_year: int, number_of_days: int, db_cursor, lock):
     months_hr = []
-
     lock.acquire(True)
-    db_cursor.execute("""SELECT * FROM HRTracker WHERE date >= ? and date <= ?  """,
+    db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
     months_hr += db_cursor.fetchall()
@@ -163,22 +115,23 @@ def generate_hr_chart_data(page_month: int, page_year: int, number_of_days: int,
 
     chart_hr_min = []
     chart_hr_max = []
-    for i in range(1, number_of_days + 1):
-        hr_min = "nan"
-        hr_max = "nan"
-        for item in months_hr:
-            if int(item[2].split("-")[2]) == i:
-                hr_min, hr_max = float(item[0]), float(item[1])
-        chart_hr_min.append(hr_min)
-        chart_hr_max.append(hr_max)
+    temp = {x[0]: (x[tracker_settings["HR_Min"]["index"]], x[tracker_settings["HR_Max"]["index"]]) for x in months_hr}
+    for day in range(1, number_of_days_in_month(page_month, page_year)+1):
+        date = '{:04d}-{:02d}-{:02d}'.format(page_year, page_month, day)
+        if date not in temp:
+            chart_hr_min.append("nan")
+            chart_hr_max.append("nan")
+        else:
+            chart_hr_min.append(str(temp[date][0]))
+            chart_hr_max.append(str(temp[date][1]))
+
     return chart_hr_min, chart_hr_max
 
 
 def generate_bp_chart_data(page_month: int, page_year: int, number_of_days: int, db_cursor, lock):
     months_bp = []
-
     lock.acquire(True)
-    db_cursor.execute("""SELECT * FROM BPTracker WHERE date >= ? and date <= ?  """,
+    db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
     months_bp += db_cursor.fetchall()
@@ -186,33 +139,45 @@ def generate_bp_chart_data(page_month: int, page_year: int, number_of_days: int,
 
     chart_bp_min = []
     chart_bp_max = []
-    for i in range(1, number_of_days + 1):
-        bp_min = "nan"
-        bp_max = "nan"
-        for item in months_bp:
-            if int(item[2].split("-")[2]) == i:
-                bp_min, bp_max = float(item[0]), float(item[1])
-        chart_bp_min.append(bp_min)
-        chart_bp_max.append(bp_max)
+    temp = {x[0]: (x[tracker_settings["BP_Min"]["index"]], x[tracker_settings["BP_Max"]["index"]]) for x in months_bp}
+    for day in range(1, number_of_days_in_month(page_month, page_year) + 1):
+        date = '{:04d}-{:02d}-{:02d}'.format(page_year, page_month, day)
+        if date not in temp:
+            chart_bp_min.append("nan")
+            chart_bp_max.append("nan")
+        else:
+            chart_bp_min.append(str(temp[date][0]))
+            chart_bp_max.append(str(temp[date][1]))
+
     return chart_bp_min, chart_bp_max
 
 
 def generate_year_double_chart_data(page_year: int, tracker_name: str, db_cursor, lock):
     start_time = time.time()
+
     td_min_avg = []     # Table Data average Min
     td_max_avg = []     # Table Data average Max
+
     i = 0
     while (i+7) < 364:
         week_beg = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i)
         week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i + 6)
         lock.acquire(True)
-        db_cursor.execute("SELECT * FROM " + tracker_name + " WHERE date >= ? and date <= ?  ",
+        db_cursor.execute("SELECT * FROM tracker WHERE date >= ? and date <= ?  ",
                           (week_beg.date(), week_end.date(),))
         res = db_cursor.fetchall()
         lock.release()
 
-        td_min = [float(x[0]) for x in res if is_number(x[0])]
-        td_max = [float(x[1]) for x in res if is_number(x[1])]
+        if tracker_name == "HRTracker":
+            index1 = tracker_settings["HR_Min"]["index"]
+            index2 = tracker_settings["HR_Max"]["index"]
+        elif tracker_name == "BPTracker":
+            index1 = tracker_settings["BP_Min"]["index"]
+            index2 = tracker_settings["BP_Max"]["index"]
+        else:
+            raise ValueError("tracker_name is not defined")
+        td_min = [float(x[index1]) for x in res if x[index1] != "nan"]
+        td_max = [float(x[index2]) for x in res if x[index2] != "nan"]
         if len(td_min) > 0:
             td_min_avg.append(float(sum(td_min))/len(td_min))
         else:
@@ -226,13 +191,21 @@ def generate_year_double_chart_data(page_year: int, tracker_name: str, db_cursor
     week_beg = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i)
     week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=364)
     lock.acquire(True)
-    db_cursor.execute("SELECT * FROM " + tracker_name + " WHERE date >= ? and date <= ?  ",
+    db_cursor.execute("SELECT * FROM tracker WHERE date >= ? and date <= ?  ",
                       (week_beg.date(), week_end.date(),))
     res = db_cursor.fetchall()
     lock.release()
 
-    td_min = [float(x[0]) for x in res if is_number(x[0])]
-    td_max = [float(x[1]) for x in res if is_number(x[1])]
+    if tracker_name == "HRTracker":
+        index1 = tracker_settings["HR_Min"]["index"]
+        index2 = tracker_settings["HR_Max"]["index"]
+    elif tracker_name == "BPTracker":
+        index1 = tracker_settings["BP_Min"]["index"]
+        index2 = tracker_settings["BP_Max"]["index"]
+    else:
+        raise ValueError("tracker_name is not defined")
+    td_min = [float(x[index1]) for x in res if x[index1] != "nan"]
+    td_max = [float(x[index2]) for x in res if x[index2] != "nan"]
     if len(td_min) > 0:
         td_min_avg.append(float(sum(td_min))/len(td_min))
     else:
@@ -244,6 +217,7 @@ def generate_year_double_chart_data(page_year: int, tracker_name: str, db_cursor
 
     execution_time = (time.time() - start_time)
     logger.info('{0: <20}'.format(tracker_name) + " time: " + str(execution_time))
+
     return td_min_avg, td_max_avg
 
 
@@ -297,25 +271,20 @@ def generate_mortgage_tracker_chart_data(page_year: int, db_cursor, lock):
 
 
 def generate_monthly_chart_data(page_month: int, page_year: int, tabel_name: str, number_of_days: int, db_cursor, lock):
-    months_vals = []
     lock.acquire(True)
-    db_cursor.execute("SELECT * FROM " + tabel_name + " WHERE date >= ? and date <= ?  ",
+    months_data = []
+    db_cursor.execute("SELECT * FROM tracker WHERE date >= ? and date <= ?  ",
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
-    months_vals += db_cursor.fetchall()
+    index = tracker_settings[tabel_name]["index"]
+    temp = {x[0]: x[index] for x in db_cursor.fetchall()}
+    for day in range(1, number_of_days_in_month(page_month, page_year)+1):
+        date = '{:04d}-{:02d}-{:02d}'.format(page_year, page_month, day)
+        if date not in temp:
+            months_data.append("nan")
+        else:
+            months_data.append(temp[date])
     lock.release()
-
-    months_data = []
-    for i in range(1, number_of_days + 1):
-        _value = "nan"
-        for item in months_vals:
-            if int(item[1].split("-")[2]) == i:
-                try:
-                    _value = float(item[0])
-                except Exception as err:
-                    logger.error(err)
-                    _value = "nan"
-        months_data.append(_value)
     return months_data
 
 
@@ -568,7 +537,7 @@ def get_chart_data(page_month, page_year, number_of_days, c, lock):
     # gather chart information ----------------------
     chart_data = dict()
     chart_data["monthsWeights"] = \
-        generate_weight_chart_data(int(page_month), int(page_year), number_of_days, c, lock)
+        generate_monthly_chart_data(int(page_month), int(page_year), "weightTracker", number_of_days, c, lock)
     chart_data["monthsPaces"] = \
         generate_monthly_chart_data(int(page_month), int(page_year), "paceTracker", number_of_days, c, lock)
     chart_data["BO"] = \

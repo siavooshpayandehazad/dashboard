@@ -47,6 +47,7 @@ class Dash(Resource):
         months_activities, months_activities_planned, months_moods = collect_months_data(int(page_month),
                                                                                          int(page_year), self.c,
                                                                                          self.lock)
+
         years_activities = collect_yearly_activities(int(page_year), self.c, self.lock)
         # highlights the current day in the activity tracker page!
         highlight = should_highlight(page_year, page_month)
@@ -98,8 +99,13 @@ class Dash(Resource):
             return add_tracker_item_to_table(args['value'].lower(), "", [], args['tracker_type'] + "Tracker",
                                              today_date, delete_day, True, self.c, self.conn, self.lock)
         if args['tracker_type'] in ['HR', 'BP']:
-            return add_tracker_item_to_table(args['value'].split(","), "", [], args['tracker_type'] + "Tracker",
+            values = args['value'].split(",")
+            ret1 = add_tracker_item_to_table(values[0], "", [], args['tracker_type'] + "_Min",
                                              today_date, delete_day, True, self.c, self.conn, self.lock)
+            ret2 = add_tracker_item_to_table(values[1], "", [], args['tracker_type'] + "_Max",
+                                             today_date, delete_day, True, self.c, self.conn, self.lock)
+            return "Done", 200
+
         if args['tracker_type'] == 'blood oxygen':
             return add_tracker_item_to_table(args['value'].lower(), "", [], "oxygenTracker", today_date,
                                              delete_day, True, self.c, self.conn, self.lock)

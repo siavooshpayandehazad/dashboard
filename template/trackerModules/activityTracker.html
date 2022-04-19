@@ -121,12 +121,12 @@
               {% if day != None  %}
                 {% set ns = namespace (found = 0, planned=0)%}
                 {%for item in activities%}
-                    {%if (item[1].split("-")[2]|int == day) and (item[0] == activity) %}
+                    {%if (item[0].split("-")[2]|int == day) and (activity in item[1]) %}
                         {%set ns.found = 1 %}
                     {%endif%}
                 {%endfor%}
                 {%for item in monthsActivitiesPlanned%}
-                    {%if (item[1].split("-")[2]|int == day) and (item[0] == activity) %}
+                    {%if (item[0].split("-")[2]|int == day) and (activity in item[1]) %}
                         {%set ns.planned = 1 %}
                     {%endif%}
                 {%endfor%}

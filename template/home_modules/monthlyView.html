@@ -4,7 +4,6 @@
       {% include "generic_modules/monthSelector.html" %}
     {% endwith %}
   </div>
-
   <div class="col-sm-10 col-lg-7">
     {% with days = days, highlight=highlight,today=today, activityList=activityList, monthsActivitiesPlanned=monthsActivitiesPlanned%}
       {% include "trackerModules/activityTracker.html" %}
