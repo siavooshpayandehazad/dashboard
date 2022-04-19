@@ -53,7 +53,7 @@ class Journal(Resource):
             log_entry = args['value'].lower()
 
             self.lock.acquire(True)
-            self.c.execute("""SELECT * FROM logTracker WHERE date = ? """, (today_date,))
+            self.c.execute("""SELECT * FROM tracker WHERE date = ? """, (today_date,))
             if len(self.c.fetchall()) == 0:
                 self.c.execute("INSERT INTO tracker VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                                (today_date, "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan",

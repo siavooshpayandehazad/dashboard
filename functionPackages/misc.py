@@ -219,8 +219,7 @@ def all_days_with_photos(photo_dir, year, month):
 
 
 def add_tracker_item_to_table(item: str, item_name: str, item_list, table_name: str,
-                              date: str, delete: bool, delete_day: bool, db_cursor,
-                              db_connection, lock):
+                              date: str, delete: bool, db_cursor,  db_connection, lock):
     if item_list and (item not in item_list):
         return item + " not found", 400
 
@@ -241,7 +240,6 @@ def add_tracker_item_to_table(item: str, item_name: str, item_list, table_name: 
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM tracker WHERE date = ?", (date,))
     fetched_data = db_cursor.fetchall()
-    print(fetched_data)
     if table_name in ["activityTracker", "activityPlanner"]:
         if fetched_data[0][index] in ["nan", "None"]:
             init_set = []
@@ -359,27 +357,24 @@ def add_mortgage_item_to_table(item: str, date: str, db_cursor, db_connection, l
 
 
 def collect_months_data(page_month: int, page_year: int, db_cursor, lock):
-    activities = []
-    activities_plannes = []
-    moods = []
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
     index = tracker_settings["activityTracker"]["index"]
-    activities += [(x[0], x[index]) for x in db_cursor.fetchall()]
+    activities = [(x[0], x[index]) for x in db_cursor.fetchall()]
 
     db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
     index = tracker_settings["activityPlanner"]["index"]
-    activities_plannes += [(x[0], x[index]) for x in db_cursor.fetchall()]
+    activities_plannes = [(x[0], x[index]) for x in db_cursor.fetchall()]
 
     db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
     index = tracker_settings["moodTracker"]["index"]
-    moods += [(x[0], x[index]) for x in db_cursor.fetchall()]
+    moods = [(x[0], x[index]) for x in db_cursor.fetchall()]
     lock.release()
     return activities, activities_plannes, moods
 

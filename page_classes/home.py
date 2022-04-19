@@ -92,40 +92,38 @@ class Dash(Resource):
             update_setting_param(self.c, self.conn, "counter", counter_value, self.lock)
 
         today_date = parse_date(args['date'])
-        delete_day = False
+        delete = False
         if len(args['value'].strip()) == 0:
-            delete_day = True
+            delete = True
         if args['tracker_type'] in ['sleep', 'running', 'pace', 'step', 'weight', 'work', 'hydration']:
             return add_tracker_item_to_table(args['value'].lower(), "", [], args['tracker_type'] + "Tracker",
-                                             today_date, delete_day, True, self.c, self.conn, self.lock)
+                                             today_date, delete, self.c, self.conn, self.lock)
         if args['tracker_type'] in ['HR', 'BP']:
             values = args['value'].split(",")
             ret1 = add_tracker_item_to_table(values[0], "", [], args['tracker_type'] + "_Min",
-                                             today_date, delete_day, True, self.c, self.conn, self.lock)
+                                             today_date, delete, self.c, self.conn, self.lock)
             ret2 = add_tracker_item_to_table(values[1], "", [], args['tracker_type'] + "_Max",
-                                             today_date, delete_day, True, self.c, self.conn, self.lock)
+                                             today_date, delete, self.c, self.conn, self.lock)
             return "Done", 200
 
         if args['tracker_type'] == 'blood oxygen':
             return add_tracker_item_to_table(args['value'].lower(), "", [], "oxygenTracker", today_date,
-                                             delete_day, True, self.c, self.conn, self.lock)
+                                             delete, self.c, self.conn, self.lock)
         if args['tracker_type'] == 'saving':
             return add_saving_item_to_table(args['value'].lower(), today_date, self.c, self.conn, self.lock)
         if args['tracker_type'] == 'mortgage':
             return add_mortgage_item_to_table(args['value'].lower(), today_date, self.c, self.conn, self.lock)
         if args['tracker_type'] == 'mood':
             return add_tracker_item_to_table(args['value'].lower(), "mood_name", moodList, "moodTracker",
-                                             today_date, False, False, self.c, self.conn, self.lock)
+                                             today_date, False, self.c, self.conn, self.lock)
         if args['tracker_type'] == "activity":
             delete = True if args['action'] == "delete" else False
             if args['planner'] == "True":
                 return add_tracker_item_to_table(args['value'].lower(), "activity_name", activity_list,
-                                                 "activityPlanner", today_date, delete, False, self.c,
-                                                 self.conn, self.lock)
+                                                 "activityPlanner", today_date, delete, self.c, self.conn, self.lock)
             else:
                 return add_tracker_item_to_table(args['value'].lower(), "activity_name", activity_list,
-                                                 "activityTracker", today_date, delete, False, self.c,
-                                                 self.conn, self.lock)
+                                                 "activityTracker", today_date, delete, self.c, self.conn, self.lock)
         if args['tracker_type'] == "travel":
             values = args['value'].split(",")
             add_travel_item(values[0], values[1], values[2], self.c, self.conn, self.lock)
