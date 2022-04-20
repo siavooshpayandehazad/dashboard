@@ -14,6 +14,7 @@ class Org(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
+        self.login = kwargs["login"]
 
     def get(self):
         start_time = time.time()
@@ -49,9 +50,12 @@ class Org(Resource):
                             Backlog=scrum_board_lists["backlog"], ScrumTodo=scrum_board_lists["todo"],
                             inProgress=scrum_board_lists["in progress"], done=scrum_board_lists["done"],
                             ChartMonthDays=chart_month_days, ChartDoneTasks=chart_done_tasks,
-                            ChartthisMonthTasks=chart_this_month_tasks, pageTheme=page_theme), 200, headers)
+                            ChartthisMonthTasks=chart_this_month_tasks, pageTheme=page_theme,
+                            loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):
+        if not self.login.is_logged_in:
+            return "user is not logged in", 401
         args = self.parser.parse_args()
         if args['type'] == 'todo':
             if args['action'] == "search":

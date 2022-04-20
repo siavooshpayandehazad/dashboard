@@ -15,6 +15,7 @@ class Journal(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
+        self.login = kwargs["login"]
 
     def get(self):
         start_time = time.time()
@@ -43,10 +44,12 @@ class Journal(Resource):
                                              day=day, month=month, year=year, monthsBeginning=months_beginning,
                                              log=today_log, todaysLogText=today_log_text, todayPhotos=today_photos,
                                              logged_days=logged_days, daysWithPhotos=days_with_photos,
-                                             pageTheme=page_theme),
+                                             pageTheme=page_theme, loggedIn=str(self.login.is_logged_in)),
                              200, headers)
 
     def post(self):
+        if not self.login.is_logged_in:
+            return "user is not logged in", 401
         args = self.parser.parse_args()
         if args['type'] == 'log':
             today_date = parse_date(args['date'])

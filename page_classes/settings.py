@@ -13,6 +13,7 @@ class Settings(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
+        self.login = kwargs["login"]
 
     def get(self):
         headers = {'Content-Type': 'text/html'}
@@ -38,9 +39,13 @@ class Settings(Resource):
                          }
         return make_response(render_template('settings.html', activityList=activity_list,
                                              audiobooksPath=audiobooks_path, pageTheme=page_theme,
-                                             email_setting=email_setting), 200, headers)
+                                             email_setting=email_setting,
+                                             loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):
+        if not self.login.is_logged_in:
+            return "user is not logged in", 401
+
         args = self.parser.parse_args()
         if args['type'] == "Theme":
             page_theme = args['value']

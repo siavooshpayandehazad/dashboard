@@ -13,6 +13,7 @@ class Lists(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
+        self.login = kwargs["login"]
 
     def get(self):
         start_time = time.time()
@@ -38,9 +39,11 @@ class Lists(Resource):
                                              animeList=lists["anime"], movieList=lists["movie"],
                                              bucketList=lists["bucketList"],
                                              toLearnList=lists["toLearn"],
-                                             pageTheme=page_theme), 200, headers)
+                                             pageTheme=page_theme, loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):
+        if not self.login.is_logged_in:
+            return "user is not logged in", 401
         args = self.parser.parse_args()
         if args['action'] == "create list":
             list_name = eval(args['value'])["listName"]

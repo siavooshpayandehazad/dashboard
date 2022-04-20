@@ -16,6 +16,7 @@ class Server(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
+        self.login = kwargs["login"]
 
     def get(self):
         start_time = time.time()
@@ -41,8 +42,10 @@ class Server(Resource):
                                              cpuUsageYearly=cpu_usage_yearly, cpuTempsYearly=cpu_temps_yearly,
                                              upTime=up_time, HideLine="true", chart_months=chart_months,
                                              discSpace=disc_space, year=int(year), month=int(month), day=int(day),
-                                             PageYear=1999, PageMonth=10), 200, headers)
+                                             PageYear=1999, PageMonth=10,
+                                             loggedIn=str(self.login.is_logged_in)), 200, headers)
 
-    @staticmethod
-    def post():
+    def post(self):
+        if not self.login.is_logged_in:
+            return "user is not logged in", 401
         return "Nothing to be posted!", 200

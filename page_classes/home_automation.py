@@ -20,6 +20,7 @@ class HomeAutomation(Resource):
         self.parser = kwargs["parser"]
         self.conn_ha = kwargs["conn_ha"]
         self.c_ha = kwargs["c_ha"]
+        self.login = kwargs["login"]
 
     def get(self):
         start_time = time.time()
@@ -42,9 +43,12 @@ class HomeAutomation(Resource):
                                              monthly_Data=monthly_data, chart_months=chart_months,
                                              myAnnualConsumption=my_annual_consumption, description=description,
                                              pageTheme=page_theme, HideLine="true",
-                                             PageYear=int(year), PageMonth=int(month), day=int(day), ), 200, headers)
+                                             PageYear=int(year), PageMonth=int(month), day=int(day),
+                                             loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):
+        if not self.login.is_logged_in:
+            return "user is not logged in", 401
         args = self.parser.parse_args()
         value = json.loads(args['value'])
         if args['action'] == "rename":

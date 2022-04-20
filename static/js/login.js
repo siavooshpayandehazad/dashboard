@@ -48,11 +48,3 @@ function login(){
   })
 }
 
-function checkLoggedIn () {
-  const token = localStorage.getItem('token');
-  if ((token !== "true")){
-    document.getElementById("overlay").style.display = "block";
-  }
-}
-
-checkLoggedIn();

@@ -13,6 +13,7 @@ class Gallery(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
+        self.login = kwargs["login"]
 
     def get(self):
         start_time = time.time()
@@ -33,8 +34,9 @@ class Gallery(Resource):
         return make_response(render_template('gallery.html', day=day, month=month, year=year,
                                              numberOfDays=number_of_days, monthsBeginning=months_beginning,
                                              monthsPhotos=months_photos,
-                                             pageTheme=page_theme), 200, headers)
+                                             pageTheme=page_theme, loggedIn=str(self.login.is_logged_in)), 200, headers)
 
-    @staticmethod
-    def post():
+    def post(self):
+        if not self.login.is_logged_in:
+            return "user is not logged in", 401
         return "Done", 200

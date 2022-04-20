@@ -30,6 +30,7 @@ from page_classes.learning import Learning
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
 mail = Mail()
+login = Login()
 
 try:
     os.mkdir("./logs")
@@ -103,6 +104,7 @@ def shutdown_server():
     if request.method == 'POST':
         logger.info("shutdown request received...")
         send_mail("Server:: shutting down", "shut down command received.", app, mail, c, lock)
+        login.logout()
         shutdown_req = request.environ.get('werkzeug.server.shutdown')
         if shutdown_req is None:
             raise RuntimeError('Not running with the Werkzeug Server')
@@ -175,7 +177,8 @@ scheduler.add_job(func=send_cal_notification, trigger="interval", seconds=60)
 scheduler.add_job(func=send_daily_digest, trigger=CronTrigger.from_crontab('0 6 * * *'))
 scheduler.start()
 
-resource_class_args = {"conn": conn, "c": c, "lock": lock, "parser": parser, "conn_ha": conn_ha, "c_ha": c_ha}
+resource_class_args = {"conn": conn, "c": c, "lock": lock, "parser": parser, "conn_ha": conn_ha,
+                       "c_ha": c_ha, "login": login}
 
 api.add_resource(Dash, '/', resource_class_kwargs=resource_class_args)
 api.add_resource(Journal, '/journal', resource_class_kwargs=resource_class_args)
@@ -190,6 +193,6 @@ api.add_resource(Audiobooks, '/audiobooks', resource_class_kwargs=resource_class
 api.add_resource(HomeAutomation, '/homeAutomation', resource_class_kwargs=resource_class_args)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
 
 conn.close()

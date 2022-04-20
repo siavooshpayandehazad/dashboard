@@ -16,6 +16,7 @@ class Dash(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
+        self.login = kwargs["login"]
 
     def get(self):
         start_time = time.time()
@@ -68,20 +69,21 @@ class Dash(Resource):
                                              monthsActivitiesPlanned=months_activities_planned,
                                              activityList=activity_list, days=mood_tracker_days, highlight=highlight,
                                              yearsActivities=years_activities,
-                                             pageTheme=page_theme, counterValue=counter_value), 200, headers)
+                                             pageTheme=page_theme, counterValue=counter_value,
+                                             loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):
         activity_list = fetch_setting_param_from_db(self.c, "activityList", self.lock).replace(" ", "").split(",")
         args = self.parser.parse_args()
         if args['type'] == "password":
             password = fetch_setting_param_from_db(self.c, "password", self.lock)
-            if password == "None":
+            if self.login.verify_user(password, args['value']):
                 return "success", 200
             else:
-                if not verify_password(password, args['value']):
-                    return "failed", 200
-                else:
-                    return "success", 200
+                return "failed", 400
+
+        if not self.login.is_logged_in:
+            return "user is not logged in", 401
 
         if args['type'] == "counter":
             counter_value = int(fetch_setting_param_from_db(self.c, "counter", self.lock))

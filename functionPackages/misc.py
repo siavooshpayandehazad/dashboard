@@ -740,3 +740,26 @@ def clean_db(table_name, db_connection, db_cursor, lock):
         db_cursor.execute("UPDATE tracker SET " + "activity_planner_name" + " = ? WHERE date = ?", (str(value), date,))
         db_connection.commit()
     lock.release()
+
+
+class Login:
+    def __init__(self):
+        print("initializing user login...")
+        self.is_logged_in = False
+
+    def verify_user(self, db_pw, user_pw):
+        if db_pw == "None":
+            self.is_logged_in = True
+            print("login successful!")
+            return True
+        elif verify_password(db_pw, user_pw):
+            print("login successful!")
+            self.is_logged_in = True
+            return True
+        print("login attempt failed!")
+        self.is_logged_in = False
+        return False
+
+    def logout(self):
+        print("user is logged out!")
+        self.is_logged_in = False

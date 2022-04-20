@@ -13,6 +13,7 @@ class Notes(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
+        self.login = kwargs["login"]
 
     def get(self):
         start_time = time.time()
@@ -28,10 +29,12 @@ class Notes(Resource):
                     if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif', '.mp4')):
                         photos[notebook_name] = photos.get(notebook_name, []) + [filename]
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
-        return make_response(render_template('notes.html', pageTheme=page_theme, Notebooks=notebooks, photos=photos),
-                             200, headers)
+        return make_response(render_template('notes.html', pageTheme=page_theme, Notebooks=notebooks, photos=photos,
+                                             loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):
+        if not self.login.is_logged_in:
+            return "user is not logged in", 401
         args = self.parser.parse_args()
         value_dict = eval((args['value']))
         if args['action'] == "delete":
