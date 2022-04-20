@@ -76,7 +76,7 @@ def get_flash_cards(db_cursor, lock):
     to_review = []
     set_names = set()
     max_days_numbers = 0
-    cnts = Counter()
+    counts = Counter()
     for item in flash_cards:
         date = (datetime.datetime.strptime(item[4], '%Y-%m-%d')+datetime.timedelta(days=int(item[3]))).date()
         today_date = datetime.date.today()
@@ -85,8 +85,8 @@ def get_flash_cards(db_cursor, lock):
             to_review.append(item)
         set_names.add(item[0])
         max_days_numbers = max(max_days_numbers, int(item[3]))
-        cnts[int(item[3])] += 1
-    return set_names, max_days_numbers, cnts, to_review
+        counts[int(item[3])] += 1
+    return set_names, max_days_numbers, counts, to_review
 
 
 def add_flash_cards(set_name, side1, side2, last_time_reviewed, db_cursor, db_connection, lock):
@@ -214,11 +214,11 @@ def all_days_with_photos(photo_dir, year, month):
     days_with_photos = []
     if os.path.isdir(photo_dir):
         days_with_photos = [int(x.split("-")[2]) for x in os.listdir(photo_dir) if str(year) + "-" +
-                            '%02d' % (month) in x]
+                            '%02d' % month in x]
     return sorted(days_with_photos)
 
 
-def add_tracker_item_to_table(item: str, item_name: str, item_list, table_name: str,
+def add_tracker_item_to_table(item: str, item_list, table_name: str,
                               date: str, delete: bool, db_cursor,  db_connection, lock):
     if item_list and (item not in item_list):
         return item + " not found", 400
@@ -304,8 +304,7 @@ def add_saving_item_to_table(item: str, date: str, db_cursor, db_connection, loc
             last_month_val = 0
         item = float(last_month_val)+float(item)
     lock.acquire(True)
-    db_cursor.execute("DELETE from savingTracker where month = ?", (month,))
-    db_cursor.execute("INSERT INTO savingTracker VALUES(?, ?)", (item, month))
+    db_cursor.execute("UPDATE savingTracker SET saving = ? WHERE month = ?", (item, month,))
     db_connection.commit()
     lock.release()
     return "Done", 200
@@ -349,8 +348,7 @@ def add_mortgage_item_to_table(item: str, date: str, db_cursor, db_connection, l
             last_month_val = 0
         item = float(last_month_val)+float(item)
     lock.acquire(True)
-    db_cursor.execute("DELETE from mortgageTracker where month = ?", (month,))
-    db_cursor.execute("INSERT INTO mortgageTracker VALUES(?, ?)", (item, month))
+    db_cursor.execute("UPDATE mortgageTracker SET mortgage = ? WHERE month = ?", (item, month,))
     db_connection.commit()
     lock.release()
     return "Done", 200
@@ -368,7 +366,7 @@ def collect_months_data(page_month: int, page_year: int, db_cursor, lock):
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
     index = tracker_settings["activityPlanner"]["index"]
-    activities_plannes = [(x[0], x[index]) for x in db_cursor.fetchall()]
+    activities_planned = [(x[0], x[index]) for x in db_cursor.fetchall()]
 
     db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
                       (get_months_beginning(page_month, page_year).date(),
@@ -376,7 +374,7 @@ def collect_months_data(page_month: int, page_year: int, db_cursor, lock):
     index = tracker_settings["moodTracker"]["index"]
     moods = [(x[0], x[index]) for x in db_cursor.fetchall()]
     lock.release()
-    return activities, activities_plannes, moods
+    return activities, activities_planned, moods
 
 
 def collect_yearly_activities(page_year: int, db_cursor, lock):
@@ -456,13 +454,13 @@ def setup_setting_table(db_cursor, db_connection, lock):
     db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("Theme",))
     try:
         db_cursor.fetchall()[0][1]
-    except:
+    except IndexError:
         db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", ("Theme", "Dark"))
 
     db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("counter",))
     try:
         db_cursor.fetchall()[0][1]
-    except:
+    except IndexError:
         db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", ("counter", "0"))
 
     for item in ["activityList", "activityList", "MAIL_SERVER", "MAIL_PORT", "MAIL_USE_SSL",
@@ -470,14 +468,14 @@ def setup_setting_table(db_cursor, db_connection, lock):
         db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, (item,))
         try:
             db_cursor.fetchall()[0][1]
-        except:
+        except IndexError:
             db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "None"))
 
     for item in ["EnableDailyDigest", "EnableEventNotifications"]:
         db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, (item,))
         try:
             db_cursor.fetchall()[0][1]
-        except:
+        except IndexError:
             db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "false"))
 
     db_connection.commit()
@@ -508,7 +506,7 @@ def backup_database(conn):
         logger.info("backup successful")
     except sqlite3.Error as error:
         logger.error("Error while taking backup: " + str(error))
-    finally:
+    else:
         if backup_con:
             backup_con.close()
 
@@ -742,4 +740,3 @@ def clean_db(table_name, db_connection, db_cursor, lock):
         db_cursor.execute("UPDATE tracker SET " + "activity_planner_name" + " = ? WHERE date = ?", (str(value), date,))
         db_connection.commit()
     lock.release()
-

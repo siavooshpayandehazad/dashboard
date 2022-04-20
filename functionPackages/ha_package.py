@@ -44,8 +44,7 @@ def add_econsumption_data(date, value, db_cursor, db_connection, lock):
 def rename_room(room_number: str, new_name: str, db_cursor, db_connection, lock):
     try:
         lock.acquire(True)
-        db_cursor.execute("""DELETE FROM settings WHERE room = ? """, (room_number,))
-        db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", (room_number, new_name))
+        db_cursor.execute("UPDATE settings SET description = ? WHERE room = ?", (new_name, room_number,))
         db_connection.commit()
         lock.release()
         return True
