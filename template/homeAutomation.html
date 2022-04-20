@@ -68,10 +68,10 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
 
   ValDiv = document.createElement("div")
   ValDiv.style.color     = "rgb("+r+","+g+","+b+")";
-  ValDiv.style.left      = "10px";
+  ValDiv.style.left      = "20px";
   ValDiv.style.bottom    = "0px";
   ValDiv.style.position  = "absolute";
-  ValDiv.style.fontSize  = "30px";
+  ValDiv.style.fontSize  = "18px";
   Val = document.createElement("span")
   Val.textContent = lastVal + unit;
   ValDiv.appendChild(Val)
@@ -79,10 +79,10 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
 
   minValDiv = document.createElement("div")
   minValDiv.style.color     = "rgb("+r+","+g+","+b+")";
-  minValDiv.style.left      = "10px";
-  minValDiv.style.bottom    = "40px";
+  minValDiv.style.left      = "20px";
+  minValDiv.style.bottom    = "25px";
   minValDiv.style.position  = "absolute";
-  minValDiv.style.fontSize  = "20px";
+  minValDiv.style.fontSize  = "12px";
   minVal = document.createElement("span")
   minVal.textContent = '⇂ ' + minOfDay + unit;
   minValDiv.appendChild(minVal)
@@ -90,10 +90,10 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
 
   maxValDiv = document.createElement("div")
   maxValDiv.style.color     = "rgb("+r+","+g+","+b+")";
-  maxValDiv.style.left      = "10px";
-  maxValDiv.style.bottom    = "60px";
+  maxValDiv.style.left      = "20px";
+  maxValDiv.style.bottom    = "40px";
   maxValDiv.style.position  = "absolute";
-  maxValDiv.style.fontSize  = "20px";
+  maxValDiv.style.fontSize  = "12px";
   maxVal = document.createElement("span")
   maxVal.innerHTML = '↿ ' + maxOfDay + unit;
   maxValDiv.appendChild(maxVal)

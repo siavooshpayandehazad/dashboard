@@ -6,15 +6,15 @@
           </div>
           <div class="row">
             <div class="col-sm-1">
-              <div id="tempGauge_{{room}}" style="float: left; margin-left: 4%; margin-top: 5px; position:relative; width:130px; height:120px; border-radius:20px;">
-                <h5 style="float: left; margin-left: 10px; margin-top:5px;color:black;">Temperature</h5>
+              <div id="tempGauge_{{room}}" style="float: left; margin-left: 4%; margin-top: 5px; position:relative; width:100px; height:80px; border-radius:20px;">
+                <h5 style="font-size:14px; float: left; margin-left: 10px; margin-top:5px; color:black;">Temperature</h5>
               </div>
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-4 ml-5">
               {% with dataset = daily_data[room]["temp"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
                     thresholds = [], trackerName = "Temperature_"+room|string, unit="(°C)", addAvg="true", tcf="false",
                     pointStyle = 'circle', showTotalVal = false, suggestedMin = 10, yearMonth = "", clickable="false",
-                    accumulate = "false", width = "100%", height = "110px",
+                    accumulate = "false", width = "100%", height = "150px",
                     bgColors = ['rgba(203,24,29, 0.5)'],
                     bColors = ['rgba(203,24,29, 1)']%}
                 {% include "trackerModules/singleChart.html" %}
@@ -33,15 +33,15 @@
 
           <div class="row">
             <div class="col-sm-1">
-              <div id="humidityGauge_{{room}}" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:130px; height:120px; border-radius:20px;">
-                <h5 style="float: left; margin-left: 10px; margin-top:5px;color:black;">Humidty</h5>
+              <div id="humidityGauge_{{room}}" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:100px; height:80px; border-radius:20px;">
+                <h5 style="font-size:14px; float: left; margin-left: 20px; margin-top:5px; color:black;">Humidty</h5>
               </div>
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-4 ml-5">
               {% with dataset = daily_data[room]["humidity"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
                     thresholds = [], trackerName = "Humidty_"+room|string, unit="(%)", addAvg="true", tcf="false",
                     pointStyle = 'circle', showTotalVal = false, suggestedMin = 0, yearMonth = "", clickable="false",
-                    accumulate = "false", width = "100%", height = "110px",
+                    accumulate = "false", width = "100%", height = "150px",
                     bgColors = ['rgba(29,145,192, 0.5)'],
                     bColors = ['rgba(29,145,192, 1)']%}
                 {% include "trackerModules/singleChart.html" %}
@@ -60,15 +60,15 @@
 
           <div class="row">
             <div class="col-sm-1">
-              <div id="pressureGauge_{{room}}" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:130px; height:120px; border-radius:20px;">
-                <h5 style="float: left; margin-left: 10px; margin-top:5px; color:black;">Pressure</h5>
+              <div id="pressureGauge_{{room}}" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:100px; height:80px; border-radius:20px;">
+                <h5 style="font-size:14px; float: left; margin-left: 20px; margin-top:5px; color:black;">Pressure</h5>
               </div>
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-4 ml-5">
               {% with dataset = daily_data[room]["pressure"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
                     thresholds = [], trackerName = "Pressure_"+room|string, unit="(bar)", addAvg="true", tcf="false",
                     pointStyle = 'circle', showTotalVal = false, suggestedMin = 0.9, yearMonth = "", clickable="false",
-                    accumulate = "false", width = "100%", height = "110px",
+                    accumulate = "false", width = "100%", height = "150px",
                     bgColors = [ 'rgba(106,81,163, 0.5)'],
                     bColors = ['rgba(106,81,163, 1)']%}
                 {% include "trackerModules/singleChart.html" %}
@@ -86,15 +86,15 @@
           </div>
           <div class="row">
             <div class="col-sm-1">
-              <div id="moistureGauge_{{room}}" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:130px; height:120px; border-radius:20px;">
-                <h5 style="float: left; margin-left: 10px; margin-top:5px; color:black;">Moisture</h5>
+              <div id="moistureGauge_{{room}}" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:100px; height:80px; border-radius:20px;">
+                <h5 style="font-size:14px; float: left; margin-left: 20px; margin-top:5px; color:black;">Moisture</h5>
               </div>
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-4 ml-5">
               {% with dataset = daily_data[room]["moisture"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
                     thresholds = [], trackerName = "Moisture_"+room|string, unit="(%)", addAvg="true", tcf="false",
                     pointStyle = 'circle', showTotalVal = false, suggestedMin = 0.9, yearMonth = "", clickable="false",
-                    accumulate = "false", width = "100%", height = "110px",
+                    accumulate = "false", width = "100%", height = "150px",
                     bgColors = [ 'rgba(206,18,86, 0.5)'],
                     bColors = ['rgba(206,18,86, 1)']%}
                 {% include "trackerModules/singleChart.html" %}
