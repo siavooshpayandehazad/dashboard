@@ -18,10 +18,10 @@ temporary_data = {}
 
 
 tracker_settings = {"workTracker": {"index": 1,  "label": "work_hour", "accumulate": True},
-                    "HR_Min": {"index": 2,  "label": "HR_Min", "accumulate": True},
-                    "HR_Max": {"index": 3,  "label": "HR_Max", "accumulate": True},
-                    "BP_Min": {"index": 4,  "label": "BP_Min", "accumulate": True},
-                    "BP_Max": {"index": 5,  "label": "BP_Max", "accumulate": True},
+                    "HR_Min": {"index": 2,  "label": "HR_Min", "accumulate": False},
+                    "HR_Max": {"index": 3,  "label": "HR_Max", "accumulate": False},
+                    "BP_Min": {"index": 4,  "label": "BP_Min", "accumulate": False},
+                    "BP_Max": {"index": 5,  "label": "BP_Max", "accumulate": False},
                     "oxygenTracker": {"index": 6,  "label": "BO", "accumulate": False},
                     "sleepTracker": {"index": 7,  "label": "sleepTime", "accumulate": False},
                     "weightTracker": {"index": 8,  "label": "weight", "accumulate": False},
