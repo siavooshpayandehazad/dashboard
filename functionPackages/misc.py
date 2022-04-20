@@ -748,13 +748,9 @@ class Login:
         self.is_logged_in = False
 
     def verify_user(self, db_pw, user_pw):
-        if db_pw == "None":
+        if (db_pw == "None") or verify_password(db_pw, user_pw):
             self.is_logged_in = True
             print("login successful!")
-            return True
-        elif verify_password(db_pw, user_pw):
-            print("login successful!")
-            self.is_logged_in = True
             return True
         print("login attempt failed!")
         self.is_logged_in = False

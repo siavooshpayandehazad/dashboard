@@ -82,6 +82,10 @@ class Dash(Resource):
             else:
                 return "failed", 400
 
+        if args['type'] == "logout":
+            self.login.logout()
+            return "user is logged out!", 200
+
         if not self.login.is_logged_in:
             return "user is not logged in", 401
 

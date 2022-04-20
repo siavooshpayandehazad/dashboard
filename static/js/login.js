@@ -15,7 +15,11 @@ async function autoRedirect () {
 
 function logout(){
   localStorage.setItem('token',"false")
-  //window.location.replace('/home')
+  $.ajax({
+      type: "POST",
+      url: "/",
+      data: {"type":"logout"},
+  })
   checkLoggedIn();
 }
 autoRedirect();
