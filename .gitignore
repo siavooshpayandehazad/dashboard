@@ -14,3 +14,4 @@ venv*
 tests/.coverage
 tests/test.db
 logs/*
+/learning.db

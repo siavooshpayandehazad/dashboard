@@ -10,6 +10,8 @@ class Learning(Resource):
         super().__init__()
         self.conn = kwargs["conn"]
         self.c = kwargs["c"]
+        self.conn_learning = kwargs["conn_learning"]
+        self.c_learning = kwargs["c_learning"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
         self.login = kwargs["login"]
@@ -17,7 +19,7 @@ class Learning(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
-        set_names, max_days_numbers, cnts, flash_cards = get_flash_cards(self.c, self.lock)
+        set_names, max_days_numbers, cnts, flash_cards = get_flash_cards(self.c_learning, self.lock)
         max_days_numbers = list(range(1, max_days_numbers + 1))
         counters = []
         for i in max_days_numbers:
@@ -40,21 +42,21 @@ class Learning(Resource):
                 side1 = values["side1"]
                 side2 = values["side2"]
                 last_time_reviewed = str(datetime.date.today())
-                add_flash_cards(set_name, side1, side2, last_time_reviewed, self.c, self.conn, self.lock)
+                add_flash_cards(set_name, side1, side2, last_time_reviewed, self.c_learning,
+                                self.conn_learning, self.lock)
             elif args["action"] == "delete":
                 values = json.loads(args['value'])
                 set_name = values["setName"]
                 side1 = values["side1"]
                 side2 = values["side2"]
-                delete_flash_cards(set_name, side1, side2, self.c, self.conn, self.lock)
+                delete_flash_cards(set_name, side1, side2, self.c_learning, self.conn_learning, self.lock)
             else:
                 values = json.loads(args['value'])
                 set_name = values["setName"]
                 side1 = values["side1"]
                 side2 = values["side2"]
-                last_time_reviewed = str(datetime.date.today())
                 if args["action"] == "true":
-                    change_flash_cards(set_name, side1, side2, last_time_reviewed, True, self.c, self.conn, self.lock)
-                else:
-                    change_flash_cards(set_name, side1, side2, last_time_reviewed, False, self.c, self.conn, self.lock)
+                    last_time_reviewed = str(datetime.date.today())
+                    change_flash_cards(set_name, side1, side2, last_time_reviewed, self.c_learning,
+                                       self.conn_learning, self.lock)
         return "Done", 200

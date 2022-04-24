@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <title>My Journal</title>
 
   <script  type="text/javascript">
@@ -20,67 +21,80 @@
 </head>
 
 {%if pageTheme=="Dark"%}
-<body class="featured">
+<body  class="journal featured">
 {% else %}
-<body>
+<body  class="journal" background="{{url_for('static', filename='decorationImages/journal_background.png') }}">
 {% endif %}
 
-{% with page="learning" %}
-    {% include "generic_modules/header.html" %}
-{% endwith %}
+<div class="container-fluid bg">
 
-<div style="width:100%; height:460px; background-color:white; border-radius:20px;" id="flashCardsMainDiv">
-  <h2 style="margin-left:20px;"> <font style="text-decoration: underline;"> FlashCards </font></h2>
-
-  <div style=" float:left; padding-left:20px;">
-    <div style="float:left;">Select Set:</div>
-    <div style="float:left; margin-left:20px;">
-      <select id="setName">
-        {% for item in setNames %}
-          <option value="{{item}}">{{item}}</option>
-        {%endfor%}
-      </select>
+  <div class="row">
+    <div class="col">
+      {% with page="learning" %}
+      {% include "generic_modules/header.html" %}
+      {% endwith %}
     </div>
-    <div style=" float:left; margin-left: 20px; width:20px; height:20px; background-color: powderblue; text-align: center; border-radius:10px;"> + </div>
   </div>
 
-  <div  class="flashCardsButton" style=" margin-right: 10px;  margin-top: 10px; float:right;  width:100px; background-color: powderblue;" onclick="flashPopUp(false)"> add new card </div>
+  <div class="row">
+    <div class="col-sm-12">
+      <div style="width:90%; margin-left:5%; height:460px; background-color:white; border-radius:10px; color:black" id="flashCardsMainDiv">
+        <h2 style="margin-left:20px;"> <font style="text-decoration: underline;"> FlashCards </font></h2>
 
-  <div style="margin-top:10px; float:left; padding-left:20px; width:100%">
-  </div>
-
-  <div style="float:left; width:50%">
-
-    <div class="flip-container" style="float:left; width:100%">
-
-      <div  class="flipper" onclick="this.classList.toggle('flipped')">
-        <div class="front">
-          {% if flashCards|length > 0 %}
-            {{flashCards[0][1]|safe}}
-          {% endif %}
+        <div style=" float:left; padding-left:20px;">
+          <div style="float:left;">Select Set:</div>
+          <div style="float:left; margin-left:20px;">
+            <select id="setName">
+              {% for item in setNames %}
+              <option value="{{item}}">{{item}}</option>
+              {%endfor%}
+            </select>
+          </div>
+          <div style=" float:left; margin-left: 20px; width:20px; height:20px; background-color: powderblue; text-align: center; border-radius:10px;"> + </div>
         </div>
-        <div class="back">
-          {% if flashCards|length > 0 %}
-            {{flashCards[0][2]|safe}}
-          {% endif %}
+
+        <div  class="flashCardsButton" style=" margin-right: 10px;  margin-top: 10px; float:right;  width:100px; background-color: powderblue;" onclick="flashPopUp(false)"> add new card </div>
+
+        <div style="margin-top:10px; float:left; padding-left:20px; width:100%">
+        </div>
+
+        <div style="float:left; width:50%">
+
+          <div class="flip-container" style="float:left; width:100%">
+
+            <div  class="flipper" onclick="this.classList.toggle('flipped')">
+              <div class="front">
+                {% if flashCards|length > 0 %}
+                {{flashCards[0][1]|safe}}
+                {% endif %}
+              </div>
+              <div class="back">
+                {% if flashCards|length > 0 %}
+                {{flashCards[0][2]|safe}}
+                {% endif %}
+              </div>
+            </div>
+            <div style="float:left; margin-top:50px; margin-left:20px; width:20px;">
+              <i class="fa fa-trash-o hover-red" onclick="deleteCard(true)"></i>
+              <i class="fa fa-edit hover-red" onclick="flashPopUp(true)"></i>
+            </div>
+          </div>
+          <div  class="flashCardsButton" style="margin-top: 250px; margin-left: 29%; background-color: salmon;" onclick="nextCard(false)"> Wrong </div>
+          <div  class="flashCardsButton" style="margin-top: 250px; margin-left: 1%; background-color: powderblue;" onclick="nextCard(true)"> Correct </div>
+        </div>
+
+        <div style="float:left; width:5px; margin-top: 50px; background-color:black; height:250px;"></div>
+
+        <div style="float:left; margin-top: 50px; margin-left: 3%; width:45%;">
+          <canvas  height="100px" id="flashCardTracker"></canvas>
         </div>
       </div>
-      <div style="float:left; margin-top:50px; margin-left:20px; width:20px;">
-        <i class="fa fa-trash-o hover-red" onclick="deleteCard(true)"></i>
-        <i class="fa fa-edit hover-red" onclick="flashPopUp(true)"></i>
-      </div>
+
     </div>
-    <div  class="flashCardsButton" style="margin-top: 250px; margin-left: 29%; background-color: salmon;" onclick="nextCard(false)"> Wrong </div>
-    <div  class="flashCardsButton" style="margin-top: 250px; margin-left: 1%; background-color: powderblue;" onclick="nextCard(true)"> Correct </div>
-  </div>
-
-    <div style="float:left; width:5px; margin-top: 50px; background-color:black; height:250px;"></div>
-
-  <div style="float:left; margin-top: 50px; margin-left: 3%; width:45%;">
-      <canvas  height="100px" id="flashCardTracker"></canvas>
   </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 </body>
 
 <script  type="text/javascript">
@@ -222,14 +236,16 @@ function submitCardValue(setName, side1, side2, cardValue){
 function nextCard(cardValue){
   cardNum = cardNum + 1;
   if(cardNum<flashcards.length){
+
     var setName = document.getElementById("setName").value
     var side1 = document.getElementsByClassName("front")[0].innerHTML.trim()
     var side2 = document.getElementsByClassName("back")[0].innerHTML.trim()
+    document.getElementsByClassName("flipper")[0].classList.remove("flipped");
+    document.getElementsByClassName("front")[0].innerHTML=flashcards[cardNum][1]
     if (cardValue !== null) {
       submitCardValue(setName, side1, side2, cardValue)
     }
-    document.getElementsByClassName("flipper")[0].classList.remove("flipped");
-    document.getElementsByClassName("front")[0].innerHTML=flashcards[cardNum][1]
+
     document.getElementsByClassName("back")[0].innerHTML=flashcards[cardNum][2]
   }else{
     document.getElementsByClassName("front")[0].innerHTML=""

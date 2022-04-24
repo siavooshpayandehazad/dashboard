@@ -78,21 +78,19 @@ def get_flash_cards(db_cursor, lock):
     max_days_numbers = 0
     counts = Counter()
     for item in flash_cards:
-        date = (datetime.datetime.strptime(item[4], '%Y-%m-%d')+datetime.timedelta(days=int(item[3]))).date()
+        date = datetime.datetime.strptime(item[3], '%Y-%m-%d').date()
         today_date = datetime.date.today()
         delta = today_date - date
         if delta.days >= 0:
             to_review.append(item)
         set_names.add(item[0])
-        max_days_numbers = max(max_days_numbers, int(item[3]))
-        counts[int(item[3])] += 1
     return set_names, max_days_numbers, counts, to_review
 
 
 def add_flash_cards(set_name, side1, side2, last_time_reviewed, db_cursor, db_connection, lock):
     lock.acquire(True)
-    db_cursor.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""",
-                      (set_name, side1, side2, 1, last_time_reviewed))
+    db_cursor.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?)""",
+                      (set_name, side1, side2, last_time_reviewed))
     db_connection.commit()
     lock.release()
 
@@ -106,26 +104,12 @@ def delete_flash_cards(set_name, side1, side2, db_cursor, db_connection, lock):
     lock.release()
 
 
-def change_flash_cards(set_name, side1, side2, last_time_reviewed, increment, db_cursor, db_connection, lock):
-    lock.acquire(True)
-    db_cursor.execute("""SELECT * FROM flashcards WHERE setName = ? and side1 = ? and side2 = ?""",
-                      (set_name, side1, side2,))
-    val = db_cursor.fetchall()
-    lock.release()
-    value = int(val[0][3])
-    if increment:
-        value += 1
-        logger.info("increase the reviewInDays to" + str(value))
-    else:
-        if value == 1:
-            return
-        value -= 1
-        logger.info("increase the reviewInDays to" + str(value))
+def change_flash_cards(set_name, side1, side2, last_time_reviewed, db_cursor, db_connection, lock):
     lock.acquire(True)
     db_cursor.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""",
                       (set_name, side1, side2,))
-    db_cursor.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?, ?)""",
-                      (set_name, side1, side2, value, last_time_reviewed))
+    db_cursor.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?)""",
+                      (set_name, side1, side2, last_time_reviewed))
     db_connection.commit()
     lock.release()
 
@@ -408,6 +392,14 @@ def create_db(db_name):
     return db_connection, db_cursor
 
 
+def generate_db_tables_learning(db_cursor, db_connection, lock):
+    lock.acquire(True)
+    db_cursor.execute("""CREATE TABLE if not exists flashcards (
+                 setName text, side1 text, side2 text, lastTimeReviewed text)""")
+    db_connection.commit()
+    lock.release()
+
+
 def generate_db_tables(db_cursor, db_connection, lock):
     lock.acquire(True)
     db_cursor.execute("""CREATE TABLE if not exists tracker (
@@ -423,9 +415,6 @@ def generate_db_tables(db_cursor, db_connection, lock):
 
     db_cursor.execute("""CREATE TABLE if not exists calendar (
              date text, startTime text, endTime text, eventName text, color text, details text)""")
-
-    db_cursor.execute("""CREATE TABLE if not exists flashcards (
-             setName text, side1 text, side2 text, reviewInDays text, lastTimeReviewed text)""")
 
     db_cursor.execute("""CREATE TABLE if not exists travelTracker (
              Destination text, latitude text, longitude text)""")
