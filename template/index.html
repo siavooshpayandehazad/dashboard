@@ -5,7 +5,7 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <link rel="stylesheet" href="/static/lib/WorldMap/dist/css/jsvectormap.css" />
-  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css">
   <script src="/static/lib/WorldMap/dist/js/jsvectormap.min.js"></script>
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
@@ -13,55 +13,40 @@
   <title>My Journal</title>
 </head>
 
-{%if pageTheme=="Dark"%}
-<body  class="featured">
-{% else %}
 <body>
-{% endif %}
+
+<script type="text/javascript">
+var page_theme = "{{pageTheme}}";
+if (page_theme == "Dark"){
+   document.body.classList.add("featured");
+}
+</script>
 
 <div class="container-fluid bg">
   {% include "trackerModules/graphFuncs.html" %}
 
   {% with page="index" %}
-    {% include "generic_modules/header.html" %}
+  {% include "generic_modules/header.html" %}
   {% endwith %}
 
-<!--- %%%%%%%%%%%%%%    Home Header    %%%%%%%%%%%%%% ---->
-
+  <!--- %%%%%%%%%%%%%%    Home Header    %%%%%%%%%%%%%% ---->
   {% include "home_modules/home_header.html" %}
-
-
-<!--- %%%%%%%%%%%%%%    Monthly View    %%%%%%%%%%%%%% ---->
-  {% if request.args.get('yearlyView') == "true" %}
-    <div id="MonthlyDisplay" style="display:none;">
-  {%else%}
-    <div id="MonthlyDisplay">
-  {%endif%}
-
+  <!--- %%%%%%%%%%%%%%    Monthly View    %%%%%%%%%%%%%% ---->
   {% with page="index" %}
-    {% include "home_modules/monthlyView.html" %}
+  {% include "home_modules/monthlyView.html" %}
   {% endwith %}
-  </div>
 
-<!--- %%%%%%%%%%%%%%    YEARLY View    %%%%%%%%%%%%%% ---->
-  {% if request.args.get('yearlyView') == "true" %}
-    <div id="YearlyDisplay">
-  {%else%}
-    <div id="YearlyDisplay" style="display:none;">
-  {%endif%}
-
+  <!--- %%%%%%%%%%%%%%    YEARLY View    %%%%%%%%%%%%%% ---->
   {% with page="index" %}
-    {% include "home_modules/yearlyView.html" %}
+  {% include "home_modules/yearlyView.html" %}
   {% endwith %}
-  </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 </body>
 
-<script>
-
-function renderchart() {
+<script type="text/javascript">
+function render_chart() {
    renderHeartRateChart();
    renderHeartRateChartYear();
    renderBloodPressureChartYear();
@@ -71,7 +56,6 @@ function renderchart() {
    renderHeartBPChart();
    toggleMonthYear()
 }
-
-window.onload = renderchart;
+window.onload = render_chart;
 </script>
 </html>

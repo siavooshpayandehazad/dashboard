@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8"/>
   <title>My Journal</title>
-  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css">
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/journal.css') }}">
@@ -13,68 +13,72 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 </head>
 
-{%if pageTheme=="Dark"%}
-  <body  class="journal featured">
-{% else %}
-  <body  class="journal" background="{{url_for('static', filename='decorationImages/journal_background.png') }}">
-{% endif %}
+
+<body  class="journal" background="{{url_for('static', filename='decorationImages/journal_background.png') }}">
+
+<script type="text/javascript">
+var page_theme = "{{pageTheme}}";
+if (page_theme == "Dark"){
+   document.body.classList.add("featured");
+}
+</script>
 
 <div class="container-fluid bg">
 
   <div class="row">
     <div class="col">
       {% with page="journal" %}
-          {% include "generic_modules/header.html" %}
+      {% include "generic_modules/header.html" %}
       {% endwith %}
     </div>
   </div>
 
-<div class="row">
+  <div class="row">
     <!-- selector header -->
     {% include "journal_modules/journal_header.html" %}
-</div>
+  </div>
 
-<div class="row no-gutters">
-  <div class="col-sm-1 col-lg-1">
-    <!-- left-side monthly selector -->
-    {% with PageYear=year, PageMonth=month%}
+  <div class="row no-gutters">
+    <div class="col-sm-1 col-lg-1">
+      <!-- left-side monthly selector -->
+      {% with PageYear=year, PageMonth=month%}
       {% include "generic_modules/monthSelector.html" %}
-    {% endwith %}
+      {% endwith %}
+    </div>
+
+    <div class="col-sm-7 col-lg-7">
+      <div  style="width:100%; min-height: 400px; float:left; margin-left:10px; margin-top:10px;">
+        <!-- log! -->
+        <div id= "todayslog" class="logText">
+          {% autoescape false %}
+          {{log}}
+          {% endautoescape %}
+        </div>
+        <!-- Photos! -->
+        <div style="margin-bottom:10px;">
+          {% include "journal_modules/uploader.html" %}
+
+          {% include "journal_modules/journal_photo.html" %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-4 col-lg-4">
+      <!-- daily entry -->
+      {% include "journal_modules/daily_entry.html" %}
+    </div>
   </div>
 
-  <div class="col-sm-7 col-lg-7">
-    <div  style="width:100%; min-height: 400px; float:left; margin-left:10px; margin-top:10px;">
-      <!-- log! -->
-      <div id= "todayslog" class="logText">
-        {% autoescape false %}
-        {{log}}
-        {% endautoescape %}
-      </div>
-      <!-- Photos! -->
-      <div style="margin-bottom:10px;">
-        {% include "journal_modules/uploader.html" %}
 
-        {% include "journal_modules/journal_photo.html" %}
+  <div class="row">
+    <div class="col">
+      <div style="margin-right: 20px;float:right;">
+        <img src= "{{url_for('static', filename = 'decorationImages/journal_overlay.png')}}" style="float:right; width:120px"  alt="roy">
       </div>
     </div>
   </div>
 
-  <div class="col-sm-4 col-lg-4">
-    <!-- daily entry -->
-    {% include "journal_modules/daily_entry.html" %}
-  </div>
 </div>
-
-
-<div class="row">
-  <div class="col">
-    <div style="margin-right: 20px;float:right;">
-      <img src= "{{url_for('static', filename = 'decorationImages/journal_overlay.png')}}" float="right" width = "120" alt="roy">
-    </div>
-  </div>
-</div>
-
-<div>
 
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>

@@ -3,7 +3,7 @@
 <head>
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css">
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -88,11 +88,14 @@
   </script>
 </head>
 
-{%if pageTheme=="Dark"%}
-<body class="featured">
-{% else %}
+
 <body>
-{% endif %}
+<script type="text/javascript">
+var page_theme = "{{pageTheme}}";
+if (page_theme == "Dark"){
+   document.body.classList.add("featured");
+}
+</script>
 
 <div class="container-fluid bg">
 
@@ -116,14 +119,14 @@
       <h4>Change password</h4>
       <div class="row">
         <div class="col-sm-4 col-lg-4"> Current password: </div>
-        <div class="col-sm-8 col-lg-8"> <input style= "width:100%; float:right;" type="password" id="currentpwd" name="currentpwd"></input></div>
+        <div class="col-sm-8 col-lg-8"> <input style= "width:100%; float:right;" type="password" id="currentpwd" name="currentpwd"></div>
       </div>
       <div class="row">
         <div class="col-sm-4 col-lg-4"> New password: </div>
-        <div class="col-sm-8 col-lg-8"> <input  style= "width:100%; float:right;" type="password" id="newpwd" name="newpwd"></input></div>
+        <div class="col-sm-8 col-lg-8"> <input  style= "width:100%; float:right;" type="password" id="newpwd" name="newpwd"></div>
       </div>
       <div class="row mt-2">
-        <div class="col-sm-12 col-lg-12"> <input style="float:right;" type="submit" onclick="resetPass()"></input></div>
+        <div class="col-sm-12 col-lg-12"> <input style="float:right;" type="submit" onclick="resetPass()"></div>
       </div>
     </div>
 
@@ -186,10 +189,10 @@
     <div class="col-sm-5 col-lg-5">
       <form action="javascript:;" onsubmit="return updateMailSetting()">
           <span style="float: left; min-width: 40%;"> MAIL_SERVER: </span>
-          <textarea id="MAIL_SERVER" type="text" rows="1" style="width:60%; outline:None; resize:None" placeholder="{{email_setting["MAIL_SERVER"]}}"></textarea><br>
+          <textarea id="MAIL_SERVER" type="text" rows="1" style="width:60%; outline:None; resize:None" placeholder='{{email_setting["MAIL_SERVER"]}}'></textarea><br>
 
           <span style="float: left; min-width: 40%;"> MAIL_PORT: </span>
-          <textarea id="MAIL_PORT" type="text"  rows="1" style="width:60px; outline:None; resize:None" placeholder="{{email_setting["MAIL_PORT"]}}"></textarea><br>
+          <textarea id="MAIL_PORT" type="text"  rows="1" style="width:60px; outline:None; resize:None" placeholder='{{email_setting["MAIL_PORT"]}}'></textarea><br>
 
           <span style="float: left; min-width: 40%;"> MAIL_USE_SSL: </span>
           <select id="MAIL_USE_SSL" style="float:left;">
@@ -206,13 +209,13 @@
           </select><br>
 
           <span style="float: left; width: 40%;"> MAIL_USERNAME: </span>
-          <textarea id="MAIL_USERNAME" type="text"  rows="1" style=" width:60%; outline:None; resize:None" placeholder="{{email_setting["MAIL_USERNAME"]}}"></textarea><br>
+          <textarea id="MAIL_USERNAME" type="text"  rows="1" style=" width:60%; outline:None; resize:None" placeholder='{{email_setting["MAIL_USERNAME"]}}'></textarea><br>
 
           <span style="float: left; width: 40%;"> MAIL_PASSWORD: </span>
-          <input id="MAIL_PASSWORD" type="password" placeholder = "{{email_setting["MAIL_PASSWORD"]}}" style="margin-top: 5px; width:60%; outline:None; resize:None"><br>
+          <input id="MAIL_PASSWORD" type="password" placeholder = '{{email_setting["MAIL_PASSWORD"]}}' style="margin-top: 5px; width:60%; outline:None; resize:None"><br>
 
           <span style="float: left; width: 40%;"> MAIL_RECIPIENT: </span>
-          <textarea id="MAIL_RECIPIENT" type="text" rows="1" style="width:60%; outline:None; resize:None" placeholder="{{email_setting["MAIL_RECIPIENT"]}}"></textarea><br>
+          <textarea id="MAIL_RECIPIENT" type="text" rows="1" style="width:60%; outline:None; resize:None" placeholder='{{email_setting["MAIL_RECIPIENT"]}}'></textarea><br>
 
           <input type="submit" style="float:right; margin-right: 0%;margin-top: 5px;">
       </form>
@@ -223,9 +226,9 @@
           Enable Daily Digest Emails
           <label class="switch" style="float:left; margin-right: 10px;">
             {%if email_setting["EnableDailyDigest"]=="false"%}
-              <input type="checkbox" id= "sendDailyDigest" onclick="enableDailyDigest(this)" unchecked>
+              <input type="checkbox"  onclick="enableDailyDigest(this)" unchecked>
             {% else %}
-              <input type="checkbox" id= "sendDailyDigest" onclick="enableDailyDigest(this)" checked>
+              <input type="checkbox"  onclick="enableDailyDigest(this)" checked>
             {% endif %}
             <span class="slider round"></span>
           </label>
@@ -235,9 +238,9 @@
           Enable Event Notifications
           <label class="switch" style="float:left; margin-right: 10px;">
             {%if email_setting["EnableEventNotifications"]=="false"%}
-              <input type="checkbox" id= "sendEventNotifications" onclick="enableEventNotifications(this)" unchecked>
+              <input type="checkbox" onclick="enableEventNotifications(this)" unchecked>
             {% else %}
-              <input type="checkbox" id= "sendEventNotifications" onclick="enableEventNotifications(this)" checked>
+              <input type="checkbox" onclick="enableEventNotifications(this)" checked>
             {% endif %}
             <span class="slider round"></span>
           </label>

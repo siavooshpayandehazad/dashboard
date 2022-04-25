@@ -2,20 +2,20 @@
 
 <html lang="en">
 <head>
-  <style>
+    <style>
   input[type='checkbox']:checked + span{
     text-decoration:line-through;
   }
   </style>
-  <meta charset="utf-8"/>
-  <title>My Journal</title>
-  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
-  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-  <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+    <meta charset="utf-8"/>
+    <title>My Journal</title>
+    <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
 
-  <script type="text/javascript">
+    <script type="text/javascript">
   function createNewList(){
     listName = window.prompt("Select a name for your new list:", "");
     $.ajax({ type: "POST",
@@ -32,37 +32,40 @@
 
 </head>
 
-{%if pageTheme=="Dark"%}
-  <body  class="journal featured">
-{% else %}
-  <body  class="journal" background="{{url_for('static', filename='decorationImages/journal_background.png') }}">
-{% endif %}
+
+<body>
+<script type="text/javascript">
+var page_theme = "{{pageTheme}}";
+if (page_theme == "Dark"){
+   document.body.classList.add("featured");
+}
+</script>
 
 <div class="container-fluid bg">
 
-<div class="row">
-  <div class="col">
-    {% with page="lists" %}
-        {% include "generic_modules/header.html" %}
-    {% endwith %}
-  </div>
-</div>
-
-<div class="row">
-    <div class="col-sm-12 col-lg-12 text-right">
-      <button type="button" class="btn btn-outline-primary mt-2" onclick="createNewList()">Add new List</button>
+    <div class="row">
+        <div class="col">
+            {% with page="lists" %}
+            {% include "generic_modules/header.html" %}
+            {% endwith %}
+        </div>
     </div>
-</div>
 
-<div class="row">
-  {%for listName, listContent in lists.items()%}
-      <div class="col-sm-6 col-lg-4">
-        {% with listName = listName, listContent = listContent %}
+    <div class="row">
+        <div class="col-sm-12 col-lg-12 text-right">
+            <button type="button" class="btn btn-outline-primary mt-2" onclick="createNewList()">Add new List</button>
+        </div>
+    </div>
+
+    <div class="row">
+        {%for listName, listContent in lists.items()%}
+        <div class="col-sm-6 col-lg-4">
+            {% with listName = listName, listContent = listContent %}
             {% include "lists_modules/lists.html" %}
-        {% endwith %}
-      </div>
-  {%endfor%}
-</div>
+            {% endwith %}
+        </div>
+        {%endfor%}
+    </div>
 
 </div>
 

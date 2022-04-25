@@ -11,7 +11,7 @@
   </style>
     <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
     <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
-    <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+    <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script type="text/javascript">
  var vars = {};
@@ -23,11 +23,13 @@
     <title>My Journal</title>
 </head>
 
-{%if pageTheme=="Dark"%}
-<body class="featured">
-{% else %}
 <body>
-{% endif %}
+<script type="text/javascript">
+var page_theme = "{{pageTheme}}";
+if (page_theme == "Dark"){
+   document.body.classList.add("featured");
+}
+</script>
 
 <div class="container-fluid bg">
 

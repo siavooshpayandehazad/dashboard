@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css"></script>
+    <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/homeAutomation.css') }}">
     <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
     <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
@@ -30,12 +30,12 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
 
   if (lastVal > MaxVal){
     //gauge.style.display = "none";
-    console.log("value over max!", lastVal);
+    //console.log("value over max! value:", lastVal);
     return;
   }
   if (lastVal < MinVal){
     //gauge.style.display = "none";
-    console.log("value bellow min!", lastVal);
+    //console.log("value bellow min! value:", lastVal);
     return;
   }
 
@@ -137,69 +137,73 @@ function editRoomName(item, roomNumber){
 }
 </script>
 
-{%if pageTheme=="Dark"%}
-<body class="featured">
-{% else %}
+
+
 <body>
-{% endif %}
+<script type="text/javascript">
+var page_theme = "{{pageTheme}}";
+if (page_theme == "Dark"){
+   document.body.classList.add("featured");
+}
+</script>
 
-    <div class="container-fluid bg">
+<div class="container-fluid bg">
 
-        {% include "trackerModules/graphFuncs.html" %}
+    {% include "trackerModules/graphFuncs.html" %}
 
-        {% with page="homeAutomation" %}
-        {% include "generic_modules/header.html" %}
-        {% endwith %}
+    {% with page="homeAutomation" %}
+    {% include "generic_modules/header.html" %}
+    {% endwith %}
 
-        <div class="row">
-            <div class="col-sm-12 text-justify">
-                <h2 class="title journal" style="margin-left:40%">
-                    <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
-                    {{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}
-                    <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
-                </h2>
-            </div>
+    <div class="row">
+        <div class="col-sm-12 text-justify">
+            <h2 class="title journal" style="margin-left:40%">
+                <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
+                {{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}
+                <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
+            </h2>
         </div>
+    </div>
 
-        <div class="row">
-            <div class="col-sm-1" style="padding-top:20px;">
-                <button type="button" class="btn btn-primary" style="font-size: 10px; margin-top: 5px; width:100%" number="0" onclick="viewroom(this)">Overview</button>
-                {% for item in daily_data|sort() %}
-                <button type="button" class="btn btn-primary" style="font-size: 10px; margin-top: 5px; width:100%" number="{{item}}" onclick="viewroom(this)">{{description[item|string]}}</button>
-                {%endfor%}
-            </div>
-
-            {% include "homeAutomation_modules/overview.html" %}
-
-            {% for item in daily_data %}
-              {% with room=item, description=description%}
-                {% include "homeAutomation_modules/roomGauge.html" %}
-              {% endwith %}
+    <div class="row">
+        <div class="col-sm-1" style="padding-top:20px;">
+            <button type="button" class="btn btn-primary" style="font-size: 10px; margin-top: 5px; width:100%" number="0" onclick="viewroom(this)">Overview</button>
+            {% for item in daily_data|sort() %}
+            <button type="button" class="btn btn-primary" style="font-size: 10px; margin-top: 5px; width:100%" number="{{item}}" onclick="viewroom(this)">{{description[item|string]}}</button>
             {%endfor%}
         </div>
 
-        {% with dir="left" %}
-        {% include "generic_modules/divider.html" %}
-        {% endwith %}
+        {% include "homeAutomation_modules/overview.html" %}
 
-        <div class="row">
-          <div class="col-sm-6" style="margin-top: 20px;">
-            {% with myAnnualConsumption = myAnnualConsumption, ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                    PageYear = PageYear, PageMonth = PageMonth%}
-                {% include "homeAutomation_modules/eConsumptionTracker.html" %}
-            {% endwith %}
-          </div>
-          <div class="col-sm-6" style="margin-top: 20px;">
-            {% with light = "1", ip="192.168.1.85"  %}
-                {% include "homeAutomation_modules/lightController.html" %}
-            {% endwith %}
-        </div>
-      </div>
+        {% for item in daily_data %}
+        {% with room=item, description=description%}
+        {% include "homeAutomation_modules/roomGauge.html" %}
+        {% endwith %}
+        {%endfor%}
     </div>
 
+    {% with dir="left" %}
+    {% include "generic_modules/divider.html" %}
+    {% endwith %}
 
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <div class="row">
+        <div class="col-sm-6" style="margin-top: 20px;">
+            {% with myAnnualConsumption = myAnnualConsumption, ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            PageYear = PageYear, PageMonth = PageMonth%}
+            {% include "homeAutomation_modules/eConsumptionTracker.html" %}
+            {% endwith %}
+        </div>
+        <div class="col-sm-6" style="margin-top: 20px;">
+            {% with light = "1", ip="192.168.1.85"  %}
+            {% include "homeAutomation_modules/lightController.html" %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
 </body>
 
