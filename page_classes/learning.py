@@ -19,17 +19,11 @@ class Learning(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
-        set_names, max_days_numbers, cnts, flash_cards = get_flash_cards(self.c_learning, self.lock)
-        max_days_numbers = list(range(1, max_days_numbers + 1))
-        counters = []
-        for i in max_days_numbers:
-            if i in cnts.keys():
-                counters.append(cnts[i])
-            else:
-                counters.append(0)
+        set_names, flash_cards = get_flash_cards(self.c_learning, self.lock)
+
         return make_response(render_template('learning.html', pageTheme=page_theme, setNames=set_names,
-                                             flashCards=flash_cards, maxDaysNumbers=max_days_numbers,
-                                             countes=counters, loggedIn=str(self.login.is_logged_in)), 200, headers)
+                                             flashCards=flash_cards,
+                                             loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):
         if not self.login.is_logged_in:

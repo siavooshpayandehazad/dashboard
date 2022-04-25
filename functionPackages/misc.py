@@ -75,8 +75,6 @@ def get_flash_cards(db_cursor, lock):
     lock.release()
     to_review = []
     set_names = set()
-    max_days_numbers = 0
-    counts = Counter()
     for item in flash_cards:
         date = datetime.datetime.strptime(item[3], '%Y-%m-%d').date()
         today_date = datetime.date.today()
@@ -84,7 +82,7 @@ def get_flash_cards(db_cursor, lock):
         if delta.days >= 0:
             to_review.append(item)
         set_names.add(item[0])
-    return set_names, max_days_numbers, counts, to_review
+    return set_names, to_review
 
 
 def add_flash_cards(set_name, side1, side2, last_time_reviewed, db_cursor, db_connection, lock):
