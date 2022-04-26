@@ -30,15 +30,15 @@ function setupMonthCal(){
     tr = document.createElement("tr")
     tr.style="height:130px;"
     td1 = document.createElement("td")
-    td1.style="width:12.5%; border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff;";
+    td1.style="width:6.5%; border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff;";
     td2 = document.createElement("td")
-    td2.style = "width:12.5%; border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;vertical-align:top;"
+    td2.style = "width:13.35%; border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;vertical-align:top;"
     td2.onclick = function(){calendarClick(event, this, 'month');};
     tr.appendChild(td1)
     tr.appendChild(td2)
     for (var i=1; i<7; i++){
       td = document.createElement("td")
-      td.style = "width:12.5%;border-bottom: 1px solid #9ecae1;vertical-align:top;"
+      td.style = "width:13.35%;border-bottom: 1px solid #9ecae1;vertical-align:top;"
       td.onclick = function(){calendarClick(event, this, 'month');};
       tr.appendChild(td)
     }
@@ -116,7 +116,6 @@ function drawMonthEvents(){
         }
         div = document.createElement("div")
         div.classList.add("monthEvent")
-        div.style="margin-left:2.5%; width:95%; height:16; margin-bottom:5px; text-overflow: ellipsis; overflow: hidden; border-radius: 5px; font-size:13px;";
         div.textContent=((calMonths[j][1]=="None")?"":calMonths[j][1]) + " " + calMonths[j][3];
         div.style.backgroundColor=calMonths[j][6];
         scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,

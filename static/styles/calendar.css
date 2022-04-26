@@ -1,5 +1,4 @@
 tbody.calendartb td, thead.calendarth th{
-  width: 12.5%;
   user-select: none;
 }
 thead.calendarth th{
@@ -25,12 +24,23 @@ tbody.calendartb td{
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  font-size:14px;
+  text-height
 }
 .weekEvent:hover{
   opacity: 1;
 }
+.monthEvent{
+    margin-left:2.5%;
+    width:95%;
+    height:16;
+    margin-bottom:5px;
+    text-overflow: ellipsis; overflow: hidden;
+    border-radius: 5px;
+    font-size:13px;
+}
 .timeCurser{
-  width: 12%;
+  width: 12.5%;
   height: 3px;
   background-color: red;
   position: absolute;
@@ -39,7 +49,7 @@ tbody.calendartb td{
 .calendarLabel{
   border-right: 1px solid white;
   border-left: 1px solid white;
-  width:12.5%;
+  width:6.5%;
   text-align: center;
 }
 .calendarLabel:hover{
@@ -73,7 +83,7 @@ tbody.calendartb td{
   background-color: #c6dbef;
 }
 th.calHeader{
-  max-width: 12.5%;
+  max-width: 13.35%;
   text-align: center;
   border-right: 1px solid #9ecae1;
   border-radius:10px 10px 0px 0px;

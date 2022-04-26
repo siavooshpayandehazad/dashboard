@@ -3,7 +3,6 @@ import sqlite3
 import hashlib
 import binascii
 from functionPackages.dateTime import *
-from collections import Counter
 from pyexiv2 import ImageMetadata
 import json
 from package import tracker_settings
@@ -119,7 +118,7 @@ def add_travel_item(name, latitude, longitude, db_cursor, db_connection, lock):
     lock.release()
 
 
-def get_cal_events(today_date, db_cursor, lock):
+def get_cal_events_week(today_date, db_cursor, lock):
     dt = datetime.datetime.strptime(today_date, '%Y-%m-%d')
     weeks_beginning = dt - datetime.timedelta(days=dt.weekday())
     weeks_end = weeks_beginning + datetime.timedelta(days=6)
@@ -153,6 +152,9 @@ def get_cal_events_month(today_date, db_cursor, lock):
             cal_list.append([item[0], item[1], item[2], item[3], 1, 1, item[4], item[5]])
         except Exception as e:
             logger.error(e)
+    cal_list = sorted(cal_list, key=lambda x: x[1])
+    cal_list = sorted(cal_list, key=lambda x: (x[1]!="None"))
+    cal_list = sorted(cal_list, key=lambda x: x[0])
     return cal_list
 
 

@@ -120,8 +120,9 @@ function drawCell(calDate, idVal){
     hoursDiff = parseInt(calDate[2].slice(0,2))-parseInt(calDate[1].slice(0,2))
     minsDiff = (parseInt(calDate[2].slice(3,5))-parseInt(calDate[1].slice(3,5)))*42/60
     div.style.height = ((hoursDiff)*cell.offsetHeight+minsDiff-6)+"px";
+    div.style.lineHeight = ((hoursDiff)*cell.offsetHeight+minsDiff-6)+"px";
     div.style.position= "absolute";
-    div.style.marginLeft = "0.5%";
+    div.style.marginLeft = "0.3%";
   }else{
     div.style.marginBottom="2px";
     div.style.height = "50px;"
@@ -527,27 +528,36 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
     </thead>
     <tbody class="calendartb" style="max-height:350px;">
       <tr>
-        <td id= "weekNumber" style="width: 12.5%; height:70px; border-bottom: 1px solid #9ecae1; border-right: 0px solid #9ecae1; vertical-align:top; font-size:30px;">
+        <td id= "weekNumber" style="width: 6.5%; height:50px; border-bottom: 1px solid #9ecae1; border-right: 0px solid #9ecae1; vertical-align:top; font-size:30px;">
         </td>
         {%for j in range(1, 8)%}
           {%if j == 1%}
-              <td style = "width: 12.5%; border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)"> </td>
+              <td style = "width: 13.35%; border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)"> </td>
           {%else%}
-              <td style = "width: 12.5%; border-bottom: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+              <td style = "width: 13.35%; border-bottom: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
           {%endif%}
         {%endfor%}
       </tr>
     {%for i in range(daysBeginning, daysEnd)%}
       <tr>
-        <td style="width: 12.5%;  border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff; vertical-align:top"> {{'%02d' %(i)}}:00 </td>
+        <td style="width: 6.5%;  border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff; vertical-align:top"> {{'%02d' %(i)}}:00 </td>
         {%for j in range(1, 8)%}
           {%if j == 1%}
-              <td style = "width: 12.5%; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+              {%if (i < 8) or (i > 17)%}
+                  <td style = "width: 13.35%; border-left: 1px solid #9ecae1; background-color:#f0f0f0" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                {%else%}
+                  <td style = "width: 13.35%; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                {%endif%}
+
           {%else%}
               {%if (j == 6) or (j == 7)%}
-                <td style="width: 12.5%; background-color:#deebf7" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                <td style="width: 13.35%; background-color:#deebf7" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
               {%else%}
-                <td style="width: 12.5%;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                {%if (i < 8) or (i > 17)%}
+                  <td style="width: 13.35%; background-color:#f0f0f0" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                {%else%}
+                  <td style="width: 13.35%;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                {%endif%}
               {%endif%}
           {%endif%}
         {%endfor%}

@@ -33,7 +33,7 @@ class Org(Resource):
         scrum_board_lists, chart_done_tasks, chart_month_days, chart_this_month_tasks = \
             get_scrum_tasks(today_date, self.c, self.lock)
 
-        cal_date = get_cal_events(today_date, self.c, self.lock)
+        cal_date = get_cal_events_week(today_date, self.c, self.lock)
         cal_month = get_cal_events_month(today_date, self.c, self.lock)
         # ---------------------------
         header_dates = []
