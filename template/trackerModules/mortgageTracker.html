@@ -1,6 +1,6 @@
 <script type="text/javascript">
 var myAnnualMortgages = {{YearsMortgages|safe}}
-function renderMortgageTrackerChart(){
+function render_mortgage_tracker_chart(){
   var ctx = document.getElementById("mortgageTracker").getContext('2d');
 
   var MortgageLineChart = new Chart(ctx, {
@@ -26,7 +26,7 @@ function renderMortgageTrackerChart(){
                     (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
                    return;
                  }
-                 var selectedMonth = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
+                 var selectedMonth = this.scales['x-axis-0'].getValueForPixel(event.layerX)-1;
                  var selectedVal =  myAnnualMortgages[selectedMonth-1]
                  var date = {{PageYear}}+"-"+zeroPad(selectedMonth, 2)+"-01";
                  var newVal = window.prompt("Add mortgage for the month " + selectedMonth + "?", 0);
@@ -60,3 +60,9 @@ function renderMortgageTrackerChart(){
     <canvas  height="100px" id="mortgageTracker"></canvas>
   </div>
 </div>
+
+
+
+<script type="text/javascript">
+    render_mortgage_tracker_chart()
+</script>

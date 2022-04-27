@@ -3,7 +3,7 @@ var monthsRunning = {{monthsRuns | safe}};
 var monthsPace = {{monthsPaces | safe}};
 
 
-function renderRunningTrackerChart(){
+function render_running_tracker_chart(){
 
   var Running_BG_Colors = []
   var Running_B_Colors = []
@@ -96,7 +96,7 @@ function renderRunningTrackerChart(){
                   );
                   monthsRunning[selectedDay-1]=distance;
                   monthsPace[selectedDay-1]=pace;
-                  countTotalRun();
+                  count_total_run();
                   this.update();
                 }
            },
@@ -105,7 +105,7 @@ function renderRunningTrackerChart(){
   });
 }
 
-function countTotalRun(){
+function count_total_run(){
   var span =  document.getElementById("totalRun");
   var sum = 0;
   for(var i = 0; i < monthsRunning.length; i++ ){
@@ -128,6 +128,6 @@ function countTotalRun(){
 
 <script type="text/javascript">
 
-  countTotalRun();
-
+  count_total_run();
+  render_running_tracker_chart();
 </script>

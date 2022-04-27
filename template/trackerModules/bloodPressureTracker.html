@@ -2,7 +2,7 @@
 var bp_Min = {{BP_Min|safe}};
 var bp_Max = {{BP_Max|safe}};
 
-function renderHeartBPChart(bpMin, bpMax){
+function render_blood_pressure_chart(bpMin, bpMax){
   var ctx = document.getElementById("BPTracker").getContext('2d');
   var today = new Date();
   var dd = String(today.getDate()).padStart(2, '0');
@@ -83,3 +83,8 @@ function renderHeartBPChart(bpMin, bpMax){
     <canvas  height="{{height}}" id="BPTracker"></canvas>
   </div>
 </div>
+
+
+<script type="text/javascript">
+  render_blood_pressure_chart();
+</script>

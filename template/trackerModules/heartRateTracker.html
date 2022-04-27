@@ -2,7 +2,7 @@
 var hr_Min = {{HR_Min|safe}};
 var hr_Max = {{HR_Max|safe}};
 
-function renderHeartRateChart(hrMin, hrMax){
+function render_heart_rate_chart(hrMin, hrMax){
   var ctx = document.getElementById("HRTracker").getContext('2d');
   var today = new Date();
   var dd = String(today.getDate()).padStart(2, '0');
@@ -83,3 +83,7 @@ function renderHeartRateChart(hrMin, hrMax){
     <canvas  height="{{height}}" id="HRTracker"></canvas>
   </div>
 </div>
+
+<script type="text/javascript">
+  render_heart_rate_chart();
+</script>

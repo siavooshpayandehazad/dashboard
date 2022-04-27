@@ -2,7 +2,7 @@
 var hr_MinY = {{HR_Min|safe}};
 var hr_MaxY = {{HR_Max|safe}};
 
-function renderHeartRateChartYear(hrMin, hrMax){
+function render_heart_rate_chart_year(hrMin, hrMax){
   var ctx = document.getElementById("HRTrackerYear").getContext('2d');
   var today = new Date();
   var dd = String(today.getDate()).padStart(2, '0');
@@ -53,3 +53,8 @@ function renderHeartRateChartYear(hrMin, hrMax){
     <canvas  height="100px" id="HRTrackerYear"></canvas>
   </div>
 </div>
+
+
+<script type="text/javascript">
+  render_heart_rate_chart_year();
+</script>

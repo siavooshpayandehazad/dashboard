@@ -101,6 +101,8 @@ def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, l
     lock.release()
     execution_time = (time.time() - start_time)
     logger.info('{0: <20}'.format(table_name) + " time: " + str(execution_time))
+    if len(ret_list) != 52:
+        raise ValueError(f"return list for table {table_name} is of length {len(ret_list)} instead of 52.")
     return ret_list
 
 
@@ -217,6 +219,12 @@ def generate_year_double_chart_data(page_year: int, tracker_name: str, db_cursor
 
     execution_time = (time.time() - start_time)
     logger.info('{0: <20}'.format(tracker_name) + " time: " + str(execution_time))
+
+    if len(td_min_avg) != 52:
+        raise ValueError(f"return list for table {tracker_name} is of length {len(td_min_avg)} instead of 52.")
+
+    if len(td_max_avg) != 52:
+        raise ValueError(f"return list for table {tracker_name} is of length {len(td_max_avg)} instead of 52.")
 
     return td_min_avg, td_max_avg
 
@@ -573,5 +581,4 @@ def get_chart_data(page_month, page_year, number_of_days, c, lock):
         generate_year_double_chart_data(int(page_year), "HRTracker", c, lock)
     chart_data["yearBP_Min"], chart_data["yearBP_Max"] = \
         generate_year_double_chart_data(int(page_year), "BPTracker", c, lock)
-
     return chart_data

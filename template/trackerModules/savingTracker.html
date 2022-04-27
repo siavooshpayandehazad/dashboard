@@ -1,6 +1,6 @@
 <script type="text/javascript">
 var myAnnualSavings = {{YearsSavings|safe}}
-function renderSavingTrackerChart(){
+function render_saving_tracker_chart(){
   var ctx = document.getElementById("savingTracker").getContext('2d');
 
   var SavingLineChart = new Chart(ctx, {
@@ -26,7 +26,7 @@ function renderSavingTrackerChart(){
                     (this.scales['y-axis-0'].getValueForPixel(event.layerY)+1 > this.scales['y-axis-0'].end)){
                    return;
                  }
-                 var selectedMonth = this.scales['x-axis-0'].getValueForPixel(event.layerX)+1;
+                 var selectedMonth = this.scales['x-axis-0'].getValueForPixel(event.layerX)-1;
                  var selectedVal =  parseInt(myAnnualSavings[selectedMonth-1])
                  var date = {{PageYear}}+"-"+zeroPad(selectedMonth, 2)+"-01";
                  var newVal = window.prompt("Add saving for the month " + selectedMonth + "?", 0);
@@ -59,3 +59,8 @@ function renderSavingTrackerChart(){
     <canvas  height="100px" id="savingTracker"></canvas>
   </div>
 </div>
+
+
+<script type="text/javascript">
+  render_saving_tracker_chart();
+</script>
