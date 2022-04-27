@@ -28,7 +28,7 @@ class Gallery(Resource):
         for day_number in range(1, number_of_days + 1):
             date_value = str(year) + "-" + str(month).zfill(2) + "-" + str(day_number).zfill(2)
             photo_dir = os.getcwd() + "/static/photos/" + str(year) + "/" + date_value
-            today_photos = all_photos_in_dir(photo_dir, year, date_value)
+            today_photos = all_photos_in_dir(photo_dir, str(year), date_value)
             months_photos.append(today_photos)
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('gallery.html', day=day, month=month, year=year,

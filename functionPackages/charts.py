@@ -6,7 +6,6 @@ import logging
 from functionPackages.dateTime import convert_time_to24, number_of_days_in_month
 from package import tracker_settings
 
-
 logger = logging.getLogger(__name__)
 temporary_data = {}
 
@@ -22,16 +21,16 @@ def get_travel_destinations(db_cursor, lock):
     return all_travels
 
 
-def weight_func(res, index, weight):
+def weight_func(res, index: int, weight: list):
     weight_list = [float(x[index]) for x in res if x[index] != "nan"]
     if len(weight_list) > 0:
-        weight.append(float(sum(weight_list))/len(weight_list))
+        weight.append(float(sum(weight_list)) / len(weight_list))
     else:
         weight.append("nan")
     return weight
 
 
-def bo_func(res, index, bo):
+def bo_func(res, index: int, bo: list):
     bo_list = [float(x[index]) for x in res if x[index] != "nan"]
     if len(bo_list) > 0:
         bo.append(float(sum(bo_list)) / len(bo_list))
@@ -40,39 +39,39 @@ def bo_func(res, index, bo):
     return bo
 
 
-def wh_func(res, index, year_wh):
+def wh_func(res, index: int, year_wh: list):
     year_wh.append(sum([float(x[index]) for x in res if x[index] != "nan"]))
     return year_wh
 
 
-def sleep_func(res, index, year_sleep):
+def sleep_func(res, index: int, year_sleep: list):
     year_sleep.append(sum([float(x[index]) for x in res if x[index] != "nan"]))
     return year_sleep
 
 
-def step_func(res, index, year_step):
+def step_func(res, index, year_step: list):
     year_step.append(sum([float(x[index]) for x in res if x[index] != "nan"]))
     return year_step
 
 
-def hydration_func(res, index, year_hydration):
+def hydration_func(res, index: int, year_hydration: list):
     year_hydration.append(sum([float(x[index]) for x in res if x[index] != "nan"]))
     return year_hydration
 
 
-def mood_func(res, index, year_moods):
+def mood_func(res, index: int, year_moods: list):
     res = [x[index] for x in res]
-    month_val = res.count("great")*4.5 + res.count("good")*3.5 + res.count("ok")*2.5 + \
-                res.count("bad")*1.5 + res.count("awful")*0.5
+    month_val = res.count("great") * 4.5 + res.count("good") * 3.5 + res.count("ok") * 2.5 + \
+                res.count("bad") * 1.5 + res.count("awful") * 0.5
     if len(res) > 0:
-        mood_val = month_val/float(len(res))
+        mood_val = month_val / float(len(res))
         year_moods.append(mood_val)
     else:
         year_moods.append("nan")
     return year_moods
 
 
-def run_func(res, index, year_runs):
+def run_func(res, index: int, year_runs: list):
     year_runs.append(sum([float(x[index]) for x in res if x[index] != "nan"]))
     return year_runs
 
@@ -82,7 +81,7 @@ def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, l
     ret_list = []
     i = 0
     index = tracker_settings[table_name]["index"]
-    while (i+7) < 364:
+    while (i + 7) < 364:
         week_beg = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i)
         week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i + 6)
         lock.acquire(True)
@@ -106,7 +105,7 @@ def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, l
     return ret_list
 
 
-def generate_hr_chart_data(page_month: int, page_year: int, number_of_days: int, db_cursor, lock):
+def generate_hr_chart_data(page_month: int, page_year: int, db_cursor, lock):
     months_hr = []
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
@@ -118,7 +117,7 @@ def generate_hr_chart_data(page_month: int, page_year: int, number_of_days: int,
     chart_hr_min = []
     chart_hr_max = []
     temp = {x[0]: (x[tracker_settings["HR_Min"]["index"]], x[tracker_settings["HR_Max"]["index"]]) for x in months_hr}
-    for day in range(1, number_of_days_in_month(page_month, page_year)+1):
+    for day in range(1, number_of_days_in_month(page_month, page_year) + 1):
         date = '{:04d}-{:02d}-{:02d}'.format(page_year, page_month, day)
         if date not in temp:
             chart_hr_min.append("nan")
@@ -130,7 +129,7 @@ def generate_hr_chart_data(page_month: int, page_year: int, number_of_days: int,
     return chart_hr_min, chart_hr_max
 
 
-def generate_bp_chart_data(page_month: int, page_year: int, number_of_days: int, db_cursor, lock):
+def generate_bp_chart_data(page_month: int, page_year: int, db_cursor, lock):
     months_bp = []
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ?  """,
@@ -157,11 +156,11 @@ def generate_bp_chart_data(page_month: int, page_year: int, number_of_days: int,
 def generate_year_double_chart_data(page_year: int, tracker_name: str, db_cursor, lock):
     start_time = time.time()
 
-    td_min_avg = []     # Table Data average Min
-    td_max_avg = []     # Table Data average Max
+    td_min_avg = []  # Table Data average Min
+    td_max_avg = []  # Table Data average Max
 
     i = 0
-    while (i+7) < 364:
+    while (i + 7) < 364:
         week_beg = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i)
         week_end = datetime.datetime.strptime(f"{page_year}-01-01", '%Y-%m-%d') + datetime.timedelta(days=i + 6)
         lock.acquire(True)
@@ -181,11 +180,11 @@ def generate_year_double_chart_data(page_year: int, tracker_name: str, db_cursor
         td_min = [float(x[index1]) for x in res if x[index1] != "nan"]
         td_max = [float(x[index2]) for x in res if x[index2] != "nan"]
         if len(td_min) > 0:
-            td_min_avg.append(float(sum(td_min))/len(td_min))
+            td_min_avg.append(float(sum(td_min)) / len(td_min))
         else:
             td_min_avg.append("nan")
         if len(td_max) > 0:
-            td_max_avg.append(float(sum(td_max))/len(td_max))
+            td_max_avg.append(float(sum(td_max)) / len(td_max))
         else:
             td_max_avg.append("nan")
         i += 7
@@ -209,11 +208,11 @@ def generate_year_double_chart_data(page_year: int, tracker_name: str, db_cursor
     td_min = [float(x[index1]) for x in res if x[index1] != "nan"]
     td_max = [float(x[index2]) for x in res if x[index2] != "nan"]
     if len(td_min) > 0:
-        td_min_avg.append(float(sum(td_min))/len(td_min))
+        td_min_avg.append(float(sum(td_min)) / len(td_min))
     else:
         td_min_avg.append("nan")
     if len(td_max) > 0:
-        td_max_avg.append(float(sum(td_max))/len(td_max))
+        td_max_avg.append(float(sum(td_max)) / len(td_max))
     else:
         td_max_avg.append("nan")
 
@@ -278,7 +277,7 @@ def generate_mortgage_tracker_chart_data(page_year: int, db_cursor, lock):
     return mortgage_tracker_data, paid
 
 
-def generate_monthly_chart_data(page_month: int, page_year: int, tabel_name: str, number_of_days: int, db_cursor, lock):
+def generate_monthly_chart_data(page_month: int, page_year: int, tabel_name: str, db_cursor, lock):
     lock.acquire(True)
     months_data = []
     db_cursor.execute("SELECT * FROM tracker WHERE date >= ? and date <= ?  ",
@@ -286,7 +285,7 @@ def generate_monthly_chart_data(page_month: int, page_year: int, tabel_name: str
                        get_months_end(page_month, page_year).date(),))
     index = tracker_settings[tabel_name]["index"]
     temp = {x[0]: x[index] for x in db_cursor.fetchall()}
-    for day in range(1, number_of_days_in_month(page_month, page_year)+1):
+    for day in range(1, number_of_days_in_month(page_month, page_year) + 1):
         date = '{:04d}-{:02d}-{:02d}'.format(page_year, page_month, day)
         if date not in temp:
             months_data.append("nan")
@@ -311,7 +310,7 @@ def generate_weather_monthly(db_cursor, year: int, lock):
             temp_data[room] = temp_data.get(room, {"temp": [], "pressure": [], "humidity": [], "moisture": []})
             temp_data[room]["temp"].append(float(item[3]))
             temp_data[room]["humidity"].append(float(item[4]))
-            temp_data[room]["pressure"].append(float(item[5])/1000)
+            temp_data[room]["pressure"].append(float(item[5]) / 1000)
             temp_data[room]["moisture"].append(float(item[6]))
 
         for item in temp_data.keys():
@@ -327,7 +326,7 @@ def generate_weather_monthly(db_cursor, year: int, lock):
                 if len(temp_data_clean_list) > 0:
                     return_data[room][parameter]["min"].append(min(temp_data_clean_list))
                     return_data[room][parameter]["max"].append(max(temp_data_clean_list))
-                    return_data[room][parameter]["avg"].append(sum(temp_data_clean_list)/len(temp_data_clean_list))
+                    return_data[room][parameter]["avg"].append(sum(temp_data_clean_list) / len(temp_data_clean_list))
                 else:
                     return_data[room][parameter]["min"].append("nan")
                     return_data[room][parameter]["max"].append("nan")
@@ -336,56 +335,59 @@ def generate_weather_monthly(db_cursor, year: int, lock):
         for room in return_data.keys():
             if month not in return_data[room]["months"]:
                 for parameter in ["temp", "pressure", "humidity", "moisture"]:
-                    return_data[room][parameter]["min"] = return_data[room][parameter]["min"][:month-1] + ["nan"] + \
-                                                          return_data[room][parameter]["min"][month-1:]
-                    return_data[room][parameter]["max"] = return_data[room][parameter]["max"][:month-1] + ["nan"] + \
-                                                          return_data[room][parameter]["max"][month-1:]
-                    return_data[room][parameter]["avg"] = return_data[room][parameter]["avg"][:month-1] + ["nan"] + \
-                                                          return_data[room][parameter]["avg"][month-1:]
+                    return_data[room][parameter]["min"] = return_data[room][parameter]["min"][:month - 1] + ["nan"] + \
+                                                          return_data[room][parameter]["min"][month - 1:]
+                    return_data[room][parameter]["max"] = return_data[room][parameter]["max"][:month - 1] + ["nan"] + \
+                                                          return_data[room][parameter]["max"][month - 1:]
+                    return_data[room][parameter]["avg"] = return_data[room][parameter]["avg"][:month - 1] + ["nan"] + \
+                                                          return_data[room][parameter]["avg"][month - 1:]
 
     return return_data
 
 
-def generate_weather_daily(db_cursor, today_date, lock):
+def generate_weather_daily(db_cursor, today_date: str, lock):
     daily_data = {}
+
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM weatherStation WHERE date = ? ", (today_date,))
     today_vals = db_cursor.fetchall()
     lock.release()
+
     for item in today_vals:
         room = int(item[0])
-        daily_data[room] = daily_data.get(room, {"time": [], "temp": [], "pressure": [], "humidity": [], "moisture": []})
+        daily_data[room] = daily_data.get(room, {"time": [], "temp": [], "pressure": [],
+                                                 "humidity": [], "moisture": []})
         daily_data[room]["time"].append(item[2].strip()[:-3])
         daily_data[room]["temp"].append(item[3].strip())
         daily_data[room]["humidity"].append(item[4].strip())
-        daily_data[room]["pressure"].append(float(item[5])/1000)
+        daily_data[room]["pressure"].append(float(item[5]) / 1000)
         daily_data[room]["moisture"].append(float(item[6]))
-
 
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM settings")
     res = db_cursor.fetchall()
+    lock.release()
+
     description = {}
     for item in res:
         description[str(item[0])] = item[1]
     for item in today_vals:
         room = str(item[0])
         if room not in description.keys():
-            description[room] = "room_"+room
-    lock.release()
+            description[room] = "room_" + room
 
     return daily_data, description
 
 
-def generate_cpu_stat(today_date, year):
-    server_report_dir = 'serverScripts/reports/cpuReports/'+str(year)
+def generate_cpu_stat(today_date: str, year: str):
+    server_report_dir = 'serverScripts/reports/cpuReports/' + year
     cpu_temps = []
     cpu_temps_times = []
 
     cpu_usage = []
     cpu_usage_times = []
     try:
-        with open(server_report_dir + '/cpuUsageData_' + str(today_date) + '.txt', 'r') as reader2:
+        with open(server_report_dir + '/cpuUsageData_' + today_date + '.txt', 'r') as reader2:
             line2 = reader2.readline()
             while line2 != "":
                 line_split = line2.split(" ")
@@ -409,7 +411,7 @@ def generate_cpu_stat(today_date, year):
             line2 = reader2.readline()
             while line2 != "":
                 line_split = line2.split(" ")
-                cpu_temps.append(float(line_split[0])/1000)
+                cpu_temps.append(float(line_split[0]) / 1000)
                 cpu_temps_times.append(line_split[2])
                 line2 = reader2.readline()
         reader2.close()
@@ -433,14 +435,14 @@ def generate_cpu_stat(today_date, year):
 
     try:
         disc_space3_temp = os.popen('free -m | grep "Mem"').read().split()
-        disc_space3 = (float(disc_space3_temp[2])/float(disc_space3_temp[1]))*100
+        disc_space3 = (float(disc_space3_temp[2]) / float(disc_space3_temp[1])) * 100
     except Exception as err:
         logger.error(err)
         disc_space3 = 0
 
     try:
         disc_space4_temp = os.popen('free -m | grep "Swap"').read().split()
-        disc_space4 = (float(disc_space4_temp[2])/float(disc_space4_temp[1]))*100
+        disc_space4 = (float(disc_space4_temp[2]) / float(disc_space4_temp[1])) * 100
     except Exception as err:
         logger.error(err)
         disc_space4 = 0
@@ -449,20 +451,20 @@ def generate_cpu_stat(today_date, year):
         up_time_string = " ".join(os.popen('uptime -s').read().split())
         boot_time = datetime.datetime.strptime(up_time_string, '%Y-%m-%d %H:%M:%S')
         up_time = datetime.datetime.now() - boot_time
-        up_time = int(up_time.total_seconds()/3600)
+        up_time = int(up_time.total_seconds() / 3600)
     except Exception as err:
         logger.error(err)
         up_time = 0
 
-    disc_space = {"/dev/root": [disc_space1, 100-disc_space1],
-                  "/dev/sda1": [disc_space2, 100-disc_space2],
-                  "Mem": [disc_space3, 100-disc_space3],
-                  "Swap": [disc_space4, 100-disc_space4]}
+    disc_space = {"/dev/root": [disc_space1, 100 - disc_space1],
+                  "/dev/sda1": [disc_space2, 100 - disc_space2],
+                  "Mem": [disc_space3, 100 - disc_space3],
+                  "Swap": [disc_space4, 100 - disc_space4]}
     return cpu_temps, cpu_temps_times, cpu_usage, cpu_usage_times, disc_space, up_time
 
 
 def generate_cpu_stat_monthly(year: str):
-    server_report_dir = 'serverScripts/reports/cpuReports/'+str(year)
+    server_report_dir = 'serverScripts/reports/cpuReports/' + year
     cpu_temps = {}
     cpu_usage = {}
 
@@ -480,10 +482,10 @@ def generate_cpu_stat_monthly(year: str):
         file_year = file.split(".")[0].split("-")[2]
         file_month = int(file.split(".")[0].split("-")[1])
         if file_year == str(year)[2:]:
-            if(temporary_data["yearly_cpu_usage"][year]["min"][file_month-1] == "nan") or \
+            if (temporary_data["yearly_cpu_usage"][year]["min"][file_month - 1] == "nan") or \
                     (int(file_month) == int(now.month)):
                 try:
-                    with open(server_report_dir+"/"+file, 'r') as reader2:
+                    with open(server_report_dir + "/" + file, 'r') as reader2:
                         line2 = reader2.readline()
                         while line2 != "":
                             line_split = line2.strip().split(" ")
@@ -496,7 +498,7 @@ def generate_cpu_stat_monthly(year: str):
                                 cpu_usage[file_month].append(float(line_split[2]))
                             else:
                                 cpu_temps[file_month] = cpu_temps.get(file_month, [])
-                                cpu_temps[file_month].append(float(line_split[0])/1000)
+                                cpu_temps[file_month].append(float(line_split[0]) / 1000)
                             line2 = reader2.readline()
                     reader2.close()
                 except Exception as e:
@@ -509,13 +511,13 @@ def generate_cpu_stat_monthly(year: str):
     cpu_usage_yearly = {"min": ["nan" for _ in range(1, 13)], "max": ["nan" for _ in range(1, 13)]}
     cpu_temps_yearly = {"min": ["nan" for _ in range(1, 13)], "max": ["nan" for _ in range(1, 13)]}
     for i in range(1, 13):
-        if(temporary_data["yearly_cpu_usage"][year]["min"][i-1] == "nan") or (i == now.month):
+        if (temporary_data["yearly_cpu_usage"][year]["min"][i - 1] == "nan") or (i == now.month):
             if i in cpu_usage:
-                temporary_data["yearly_cpu_usage"][year]["min"][i-1] = min(cpu_usage[i])
-                temporary_data["yearly_cpu_usage"][year]["max"][i-1] = max(cpu_usage[i])
+                temporary_data["yearly_cpu_usage"][year]["min"][i - 1] = min(cpu_usage[i])
+                temporary_data["yearly_cpu_usage"][year]["max"][i - 1] = max(cpu_usage[i])
             if i in cpu_temps:
-                temporary_data["yearly_cpu_temp"][year]["min"][i-1] = min(cpu_temps[i])
-                temporary_data["yearly_cpu_temp"][year]["max"][i-1] = max(cpu_temps[i])
+                temporary_data["yearly_cpu_temp"][year]["min"][i - 1] = min(cpu_temps[i])
+                temporary_data["yearly_cpu_temp"][year]["max"][i - 1] = max(cpu_temps[i])
     cpu_usage_yearly["min"] = temporary_data["yearly_cpu_usage"][year]["min"][:]
     cpu_usage_yearly["max"] = temporary_data["yearly_cpu_usage"][year]["max"][:]
     cpu_temps_yearly["min"] = temporary_data["yearly_cpu_temp"][year]["min"][:]
@@ -541,44 +543,36 @@ def generate_e_consumption_tracker_chart_data(page_year: str, db_cursor, lock):
     return consumption_tracker_data
 
 
-def get_chart_data(page_month, page_year, number_of_days, c, lock):
+def get_chart_data(page_month: int, page_year: int, number_of_days: int, c, lock):
     # gather chart information ----------------------
     chart_data = dict()
-    chart_data["monthsWeights"] = \
-        generate_monthly_chart_data(int(page_month), int(page_year), "weightTracker", number_of_days, c, lock)
-    chart_data["monthsPaces"] = \
-        generate_monthly_chart_data(int(page_month), int(page_year), "paceTracker", number_of_days, c, lock)
-    chart_data["BO"] = \
-        generate_monthly_chart_data(int(page_month), int(page_year), "oxygenTracker", number_of_days, c, lock)
-    chart_data["monthsWorkHours"] = \
-        generate_monthly_chart_data(int(page_month), int(page_year), "workTracker", number_of_days, c, lock)
-    chart_data["monthsSleepTimes"] = \
-        generate_monthly_chart_data(int(page_month), int(page_year), "sleepTracker", number_of_days, c, lock)
-    chart_data["monthsSteps"] = \
-        generate_monthly_chart_data(int(page_month), int(page_year), "stepTracker", number_of_days, c, lock)
-    chart_data["monthsHydration"] = \
-        generate_monthly_chart_data(int(page_month), int(page_year), "hydrationTracker", number_of_days, c, lock)
-    chart_data["monthsRuns"] = \
-        generate_monthly_chart_data(int(page_month), int(page_year), "runningTracker", number_of_days, c, lock)
+    chart_data["monthsWeights"] = generate_monthly_chart_data(page_month, page_year, "weightTracker", c, lock)
+    chart_data["monthsPaces"] = generate_monthly_chart_data(page_month, page_year, "paceTracker", c, lock)
+    chart_data["BO"] = generate_monthly_chart_data(page_month, page_year, "oxygenTracker", c, lock)
+    chart_data["monthsWorkHours"] = generate_monthly_chart_data(page_month, page_year, "workTracker", c, lock)
+    chart_data["monthsSleepTimes"] = generate_monthly_chart_data(page_month, page_year, "sleepTracker", c, lock)
+    chart_data["monthsSteps"] = generate_monthly_chart_data(page_month, page_year, "stepTracker", c, lock)
+    chart_data["monthsHydration"] = generate_monthly_chart_data(page_month, page_year, "hydrationTracker", c, lock)
+    chart_data["monthsRuns"] = generate_monthly_chart_data(page_month, page_year, "runningTracker", c, lock)
     chart_data["YearsSavings"] = generate_saving_tracker_chart_data(page_year, c, lock)
     chart_data["YearsMortgages"], chart_data["MortgagePaid"] = generate_mortgage_tracker_chart_data(page_year, c, lock)
     chart_data["ChartMonthDays"] = [str(i) for i in range(1, number_of_days + 1)]
     chart_data["travels"] = get_travel_destinations(c, lock)
     chart_data["HR_Min"], chart_data["HR_Max"] = \
-        generate_hr_chart_data(int(page_month), int(page_year), number_of_days, c, lock)
+        generate_hr_chart_data(page_month, page_year, c, lock)
     chart_data["BP_Min"], chart_data["BP_Max"] = \
-        generate_bp_chart_data(int(page_month), int(page_year), number_of_days, c, lock)
+        generate_bp_chart_data(page_month, page_year, c, lock)
     # ----------------------------------------------
-    chart_data["yearRuns"] = gen_year_chart_data(int(page_year), "runningTracker", run_func, c, lock)
-    chart_data["yearSteps"] = gen_year_chart_data(int(page_year), "stepTracker", step_func, c, lock)
-    chart_data["yearSleep"] = gen_year_chart_data(int(page_year), "sleepTracker", sleep_func, c, lock)
-    chart_data["yearHydr"] = gen_year_chart_data(int(page_year), "hydrationTracker", hydration_func, c, lock)
-    chart_data["yearWeight"] = gen_year_chart_data(int(page_year), "weightTracker", weight_func, c, lock)
-    chart_data["yearBO"] = gen_year_chart_data(int(page_year), "oxygenTracker", bo_func, c, lock)
-    chart_data["yearWH"] = gen_year_chart_data(int(page_year), "workTracker", wh_func, c, lock)
-    chart_data["yearMood"] = gen_year_chart_data(int(page_year), "moodTracker", mood_func, c, lock)
+    chart_data["yearRuns"] = gen_year_chart_data(page_year, "runningTracker", run_func, c, lock)
+    chart_data["yearSteps"] = gen_year_chart_data(page_year, "stepTracker", step_func, c, lock)
+    chart_data["yearSleep"] = gen_year_chart_data(page_year, "sleepTracker", sleep_func, c, lock)
+    chart_data["yearHydr"] = gen_year_chart_data(page_year, "hydrationTracker", hydration_func, c, lock)
+    chart_data["yearWeight"] = gen_year_chart_data(page_year, "weightTracker", weight_func, c, lock)
+    chart_data["yearBO"] = gen_year_chart_data(page_year, "oxygenTracker", bo_func, c, lock)
+    chart_data["yearWH"] = gen_year_chart_data(page_year, "workTracker", wh_func, c, lock)
+    chart_data["yearMood"] = gen_year_chart_data(page_year, "moodTracker", mood_func, c, lock)
     chart_data["yearHR_Min"], chart_data["yearHR_Max"] = \
-        generate_year_double_chart_data(int(page_year), "HRTracker", c, lock)
+        generate_year_double_chart_data(page_year, "HRTracker", c, lock)
     chart_data["yearBP_Min"], chart_data["yearBP_Max"] = \
-        generate_year_double_chart_data(int(page_year), "BPTracker", c, lock)
+        generate_year_double_chart_data(page_year, "BPTracker", c, lock)
     return chart_data

@@ -12,14 +12,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
-
-
 def get_audiobooks(path):
     audiobooks = {}
     for a in os.scandir(path):
@@ -84,7 +76,8 @@ def get_flash_cards(db_cursor, lock):
     return set_names, to_review
 
 
-def add_flash_cards(set_name, side1, side2, last_time_reviewed, db_cursor, db_connection, lock):
+def add_flash_cards(set_name: str, side1: str, side2: str, last_time_reviewed: str, db_cursor, db_connection, lock):
+    logger.info(f"Adding card {side1} and {side2} to set {set_name}")
     lock.acquire(True)
     db_cursor.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?)""",
                       (set_name, side1, side2, last_time_reviewed))
@@ -92,7 +85,7 @@ def add_flash_cards(set_name, side1, side2, last_time_reviewed, db_cursor, db_co
     lock.release()
 
 
-def delete_flash_cards(set_name, side1, side2, db_cursor, db_connection, lock):
+def delete_flash_cards(set_name: str, side1: str, side2: str, db_cursor, db_connection, lock):
     logger.info(f"deleting card {side1} and {side2} from set {set_name}")
     lock.acquire(True)
     db_cursor.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""",
@@ -101,7 +94,7 @@ def delete_flash_cards(set_name, side1, side2, db_cursor, db_connection, lock):
     lock.release()
 
 
-def change_flash_cards(set_name, side1, side2, last_time_reviewed, db_cursor, db_connection, lock):
+def change_flash_cards(set_name: str, side1: str, side2: str, last_time_reviewed: str, db_cursor, db_connection, lock):
     lock.acquire(True)
     db_cursor.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""",
                       (set_name, side1, side2,))
@@ -111,14 +104,15 @@ def change_flash_cards(set_name, side1, side2, last_time_reviewed, db_cursor, db
     lock.release()
 
 
-def add_travel_item(name, latitude, longitude, db_cursor, db_connection, lock):
+def add_travel_item(name: str, latitude: str, longitude: str, db_cursor, db_connection, lock) -> None:
     lock.acquire(True)
     db_cursor.execute("""INSERT INTO travelTracker VALUES(?, ?, ?)""", (name, latitude, longitude))
     db_connection.commit()
     lock.release()
+    return None
 
 
-def get_cal_events_week(today_date, db_cursor, lock):
+def get_cal_events_week(today_date: str, db_cursor, lock) -> list:
     dt = datetime.datetime.strptime(today_date, '%Y-%m-%d')
     weeks_beginning = dt - datetime.timedelta(days=dt.weekday())
     weeks_end = weeks_beginning + datetime.timedelta(days=6)
@@ -139,7 +133,7 @@ def get_cal_events_week(today_date, db_cursor, lock):
     return cal_list
 
 
-def get_cal_events_month(today_date, db_cursor, lock):
+def get_cal_events_month(today_date: str, db_cursor, lock) -> list:
     day, month, year = separate_day_month_year(today_date)
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
@@ -153,12 +147,12 @@ def get_cal_events_month(today_date, db_cursor, lock):
         except Exception as e:
             logger.error(e)
     cal_list = sorted(cal_list, key=lambda x: x[1])
-    cal_list = sorted(cal_list, key=lambda x: (x[1]!="None"))
+    cal_list = sorted(cal_list, key=lambda x: (x[1] != "None"))
     cal_list = sorted(cal_list, key=lambda x: x[0])
     return cal_list
 
 
-def get_today_logs(db_cursor, today_date, lock):
+def get_today_logs(db_cursor, today_date: str, lock):
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM tracker WHERE date = ? """, (today_date,))
     log_value = db_cursor.fetchall()[0][14]
@@ -172,14 +166,14 @@ def get_today_logs(db_cursor, today_date, lock):
     return today_log, today_log_text
 
 
-def all_photos_in_dir(photo_dir, year, date):
+def all_photos_in_dir(photo_dir: str, year: str, date: str) -> dict:
     today_photos = {}
     if os.path.isdir(photo_dir):
         for file in os.listdir(photo_dir):
             if file.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
                 tags = []
                 try:
-                    file_name = "./static/photos/"+str(year)+"/"+date+"/"+file
+                    file_name = "./static/photos/"+year+"/"+date+"/"+file
                     metadata = ImageMetadata(file_name)
                     metadata.read()
                     if 'Exif.Photo.UserComment' in metadata:
@@ -188,21 +182,21 @@ def all_photos_in_dir(photo_dir, year, date):
                             tags = list(userdata["tags"])
                 except Exception as e:
                     logger.error(e)
-                today_photos[str(year)+"/"+date+"/"+file] = tags
+                today_photos[year+"/"+date+"/"+file] = tags
             if file.lower().endswith('.mp4'):
-                today_photos[str(year)+"/"+date+"/"+file] = []
+                today_photos[year+"/"+date+"/"+file] = []
     return today_photos
 
 
-def all_days_with_photos(photo_dir, year, month):
+def all_days_with_photos(photo_dir: str, year: str, month: str) -> list:
     days_with_photos = []
     if os.path.isdir(photo_dir):
-        days_with_photos = [int(x.split("-")[2]) for x in os.listdir(photo_dir) if str(year) + "-" +
-                            '%02d' % month in x]
+        days_with_photos = [int(x.split("-")[2]) for x in os.listdir(photo_dir) if year + "-" +
+                            '%02d' % int(month) in x]
     return sorted(days_with_photos)
 
 
-def add_tracker_item_to_table(item: str, item_list, table_name: str,
+def add_tracker_item_to_table(item: str, item_list: list, table_name: str,
                               date: str, delete: bool, db_cursor,  db_connection, lock):
     if item_list and (item not in item_list):
         return item + " not found", 400
@@ -537,7 +531,7 @@ def update_setting_param(db_cursor, db_connection, param, value, lock):
         return False
 
 
-def hash_password(password: str) -> any:
+def hash_password(password: str) -> str:
     salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
     pwd_hash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
                                    salt, 100000)
@@ -556,7 +550,7 @@ def verify_password(stored_password: str, provided_password: str) -> bool:
     return pwd_hash == stored_password
 
 
-def get_todos(today_date, db_cursor, lock):
+def get_todos(today_date: str, db_cursor, lock):
     day, month, year = separate_day_month_year(today_date)
     months_beginning = get_months_beginning(month, year)
     lock.acquire(True)
@@ -577,7 +571,7 @@ def get_todos(today_date, db_cursor, lock):
     return all_due_events, this_months_events, today_todos
 
 
-def get_scrum_tasks(today_date, db_cursor, lock):
+def get_scrum_tasks(today_date: str, db_cursor, lock):
     day, month, year = separate_day_month_year(today_date)
     months_beginning = get_months_beginning(month, year)
     number_of_days = number_of_days_in_month(int(month), int(year))
@@ -613,20 +607,20 @@ def get_scrum_tasks(today_date, db_cursor, lock):
     return scrum_board_lists, chart_done_tasks, chart_month_days, chart_this_month_tasks
 
 
-def delete_scrum_task(proj, task, db_cursor, db_connection, lock):
+def delete_scrum_task(proj: str, task: str, db_cursor, db_connection, lock):
     try:
-        logger.info("deleting card:" + str(task))
+        logger.info("deleting card:" + task)
         lock.acquire(True)
         db_cursor.execute("""DELETE from scrumBoard where project = ? and task = ?""", (proj, task))
         db_connection.commit()
         lock.release()
         return True
     except Exception as err:
-        print(err)
+        print(f"delete_scrum_task failed with error: {err}")
         return False
 
 
-def add_scrum_task(proj, task, list_name, priority, date, db_cursor, db_connection, lock):
+def add_scrum_task(proj: str, task: str, list_name: str, priority: str, date: str, db_cursor, db_connection, lock):
     try:
         lock.acquire(True)
         db_cursor.execute("""INSERT INTO scrumBoard VALUES(?, ?, ?, ?, ?)""", (proj, task, list_name, priority, date))
@@ -634,11 +628,11 @@ def add_scrum_task(proj, task, list_name, priority, date, db_cursor, db_connecti
         lock.release()
         return True
     except Exception as err:
-        print(err)
+        print(f"add_scrum_task failed with error: {err}")
         return False
 
 
-def send_mail(msg_subject, msg_content, flask_app, mail_instance, db_cursor, lock):
+def send_mail(msg_subject: str, msg_content: str, flask_app, mail_instance, db_cursor, lock):
     server_email = fetch_setting_param_from_db(db_cursor, "MAIL_USERNAME", lock)
     app_password = fetch_setting_param_from_db(db_cursor, "MAIL_PASSWORD", lock)
     mail_server = fetch_setting_param_from_db(db_cursor, "MAIL_SERVER", lock)
@@ -665,7 +659,7 @@ def send_mail(msg_subject, msg_content, flask_app, mail_instance, db_cursor, loc
     return 'Mail sent'
 
 
-def add_tag_to_picture(filename, tag):
+def add_tag_to_picture(filename: str, tag: str):
     metadata = ImageMetadata(filename)
     metadata.read()
     current_tags = []
@@ -682,7 +676,7 @@ def add_tag_to_picture(filename, tag):
     return True
 
 
-def remove_tag_from_picture(filename, tag):
+def remove_tag_from_picture(filename: str, tag: str):
     metadata = ImageMetadata(filename)
     metadata.read()
     if 'Exif.Photo.UserComment' not in metadata:
@@ -700,7 +694,7 @@ def remove_tag_from_picture(filename, tag):
     return True
 
 
-def clean_db(table_name, db_connection, db_cursor, lock):
+def clean_db(table_name: str, db_connection, db_cursor, lock):
 
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM "+table_name)

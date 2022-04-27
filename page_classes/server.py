@@ -33,8 +33,8 @@ class Server(Resource):
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
 
         cpu_temps, cpu_temps_times, cpu_usage, cpu_usage_times, disc_space, up_time = \
-            generate_cpu_stat(today_date, year)
-        cpu_temps_yearly, cpu_usage_yearly = generate_cpu_stat_monthly(year)
+            generate_cpu_stat(today_date, str(year))
+        cpu_temps_yearly, cpu_usage_yearly = generate_cpu_stat_monthly(str(year))
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('server.html', pageTheme=page_theme,
                                              cpuTemps=cpu_temps, cpuTempsTimes=cpu_temps_times,

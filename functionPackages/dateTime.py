@@ -27,7 +27,7 @@ def separate_day_month_year(today_date: str) -> tuple:
     return day, month, year
 
 
-def parse_date(date_val):
+def parse_date(date_val: str) -> str:
     if date_val is None:
         return str(datetime.date.today())
     else:

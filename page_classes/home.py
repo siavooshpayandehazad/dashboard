@@ -54,7 +54,7 @@ class Dash(Resource):
         highlight = should_highlight(page_year, page_month)
         counter_value = fetch_setting_param_from_db(self.c, "counter", self.lock)
 
-        chart_data = get_chart_data(page_month, page_year, number_of_days, self.c, self.lock)
+        chart_data = get_chart_data(int(page_month), int(page_year), number_of_days, self.c, self.lock)
 
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('index.html', name=page_title, titleDate=title_date,
