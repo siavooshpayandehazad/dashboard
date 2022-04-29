@@ -5,7 +5,7 @@ import binascii
 from functionPackages.dateTime import *
 from pyexiv2 import ImageMetadata
 import json
-from package import tracker_settings
+from package import tracker_settings, temporary_data
 
 import logging
 
@@ -198,8 +198,13 @@ def all_days_with_photos(photo_dir: str, year: str, month: str) -> list:
 
 def add_tracker_item_to_table(item: str, item_list: list, table_name: str,
                               date: str, delete: bool, db_cursor,  db_connection, lock):
+
     if item_list and (item not in item_list):
         return item + " not found", 400
+
+    # invalidate the temporary_data for the whole year
+    year = int(date.split("-")[0])
+    temporary_data.pop(year, None)
 
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM tracker WHERE date = ?", (date,))
@@ -248,6 +253,10 @@ def add_tracker_item_to_table(item: str, item_list: list, table_name: str,
 
 
 def add_saving_item_to_table(item: str, date: str, db_cursor, db_connection, lock):
+    # invalidate the temporary_data for the whole year
+    year = int(date.split("-")[0])
+    temporary_data.pop(year, None)
+
     month = "-".join(date.split("-")[0:2])
     db_cursor.execute("SELECT * FROM savingTracker WHERE month = ?", (month,))
     fetched_data = db_cursor.fetchall()
@@ -290,6 +299,11 @@ def add_saving_item_to_table(item: str, date: str, db_cursor, db_connection, loc
 
 def add_mortgage_item_to_table(item: str, date: str, db_cursor, db_connection, lock):
     month = "-".join(date.split("-")[0:2])
+
+    # invalidate the temporary_data for the whole year
+    year = int(date.split("-")[0])
+    temporary_data.pop(year, None)
+
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM mortgageTracker WHERE month = ?", (month,))
     fetched_data = db_cursor.fetchall()

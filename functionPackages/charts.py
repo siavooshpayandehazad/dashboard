@@ -4,10 +4,9 @@ import os
 import time
 import logging
 from functionPackages.dateTime import convert_time_to24, number_of_days_in_month
-from package import tracker_settings
+from package import tracker_settings, temporary_data
 
 logger = logging.getLogger(__name__)
-temporary_data = {}
 
 
 def get_travel_destinations(db_cursor, lock):
@@ -77,7 +76,9 @@ def run_func(res, index: int, year_runs: list):
 
 
 def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, lock):
-    start_time = time.time()
+    if page_year in temporary_data.keys():
+        if table_name in temporary_data[page_year].keys():
+            return temporary_data[page_year][table_name]
     ret_list = []
     i = 0
     index = tracker_settings[table_name]["index"]
@@ -98,10 +99,10 @@ def gen_year_chart_data(page_year: int, table_name: str, calc_func, db_cursor, l
                       (week_end.date(), get_months_end(i, page_year).date(),))
     ret_list = calc_func(db_cursor.fetchall(), index, ret_list)
     lock.release()
-    execution_time = (time.time() - start_time)
-    logger.info('{0: <20}'.format(table_name) + " time: " + str(execution_time))
     if len(ret_list) != 52:
         raise ValueError(f"return list for table {table_name} is of length {len(ret_list)} instead of 52.")
+    temporary_data[page_year] = temporary_data.get(page_year, {})
+    temporary_data[page_year][table_name] = ret_list
     return ret_list
 
 
@@ -154,6 +155,11 @@ def generate_bp_chart_data(page_month: int, page_year: int, db_cursor, lock):
 
 
 def generate_year_double_chart_data(page_year: int, tracker_name: str, db_cursor, lock):
+
+    if page_year in temporary_data.keys():
+        if tracker_name in temporary_data[page_year].keys():
+            return temporary_data[page_year][tracker_name]["Min"], temporary_data[page_year][tracker_name]["Max"]
+
     start_time = time.time()
 
     td_min_avg = []  # Table Data average Min
@@ -216,14 +222,19 @@ def generate_year_double_chart_data(page_year: int, tracker_name: str, db_cursor
     else:
         td_max_avg.append("nan")
 
-    execution_time = (time.time() - start_time)
-    logger.info('{0: <20}'.format(tracker_name) + " time: " + str(execution_time))
-
     if len(td_min_avg) != 52:
         raise ValueError(f"return list for table {tracker_name} is of length {len(td_min_avg)} instead of 52.")
 
     if len(td_max_avg) != 52:
         raise ValueError(f"return list for table {tracker_name} is of length {len(td_max_avg)} instead of 52.")
+
+    temporary_data[page_year] = temporary_data.get(page_year, {})
+    temporary_data[page_year][tracker_name] = temporary_data[page_year].get(tracker_name, {})
+    temporary_data[page_year][tracker_name]["Min"] = td_min_avg
+    temporary_data[page_year][tracker_name]["Max"] = td_max_avg
+
+    execution_time = (time.time() - start_time)
+    logger.info('{0: <20}'.format(tracker_name) + " time: " + str(execution_time))
 
     return td_min_avg, td_max_avg
 
@@ -544,6 +555,7 @@ def generate_e_consumption_tracker_chart_data(page_year: str, db_cursor, lock):
 
 
 def get_chart_data(page_month: int, page_year: int, number_of_days: int, c, lock):
+
     # gather chart information ----------------------
     chart_data = dict()
     chart_data["monthsWeights"] = generate_monthly_chart_data(page_month, page_year, "weightTracker", c, lock)
