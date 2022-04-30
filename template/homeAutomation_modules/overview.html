@@ -1,7 +1,7 @@
 <div class="col-sm-11 weatherCard" id="weather_overview" style="display:none">
   <div class="row">
     {% for room in daily_data|sort() %}
-      <div class="col-sm-1 ml-5">
+      <div class="col-sm-1 mr-5">
         <h4 style="color:white; width: 80px; margin-left:10px; font-size:18px;"  ondblclick="editRoomName(this, {{room}})"> {{description[room|string]}} </h4>
         <div id="OV_tempGauge_{{room}}" style="float: left; position:relative; width:100px; height:80px; border-radius:20px;">
           <h5 style="font-size:14px; float: left; margin-left: 10px; margin-top:5px; color:black;">Temperature</h5>

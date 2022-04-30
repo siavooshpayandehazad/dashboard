@@ -27,6 +27,8 @@ class Settings(Resource):
         mail_ssl = fetch_setting_param_from_db(self.c, "MAIL_USE_SSL", self.lock)
         recipient_email = fetch_setting_param_from_db(self.c, "MAIL_RECIPIENT", self.lock)
         enable_daily_digest = fetch_setting_param_from_db(self.c, "EnableDailyDigest", self.lock)
+        latitude = fetch_setting_param_from_db(self.c, "latitude", self.lock)
+        longitude = fetch_setting_param_from_db(self.c, "longitude", self.lock)
         enable_event_notifications = fetch_setting_param_from_db(self.c, "EnableEventNotifications", self.lock)
         email_setting = {"MAIL_USERNAME": mail_username,
                          "MAIL_SERVER": mail_server,
@@ -39,8 +41,8 @@ class Settings(Resource):
                          }
         return make_response(render_template('settings.html', activityList=activity_list,
                                              audiobooksPath=audiobooks_path, pageTheme=page_theme,
-                                             email_setting=email_setting,
-                                             loggedIn=str(self.login.is_logged_in)), 200, headers)
+                                             email_setting=email_setting, latitude=latitude,
+                                             longitude=longitude, loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):
         if not self.login.is_logged_in:
@@ -80,5 +82,10 @@ class Settings(Resource):
             return "succeeded", 200
         if args['type'] == "EnableEventNotifications":
             update_setting_param(self.c, self.conn, "EnableEventNotifications", args['value'], self.lock)
+            return "succeeded", 200
+        if args['type'] == "location":
+            value_dict = eval((args['value']))
+            update_setting_param(self.c, self.conn, "latitude", value_dict["latitude"], self.lock)
+            update_setting_param(self.c, self.conn, "longitude", value_dict["longitude"], self.lock)
             return "succeeded", 200
         return "Done", 200

@@ -8,11 +8,11 @@
     {% if daily_data[room]["temp"][-1]|int > 0 %}
     <div class="row">
         <div class="col-sm-1">
-            <div id="tempGauge_{{room}}" style="float: left; margin-left: 4%; margin-top: 5px; position:relative; width:100px; height:80px; border-radius:20px;">
+            <div id="tempGauge_{{room}}" style="float: left; position:relative; width:100px; height:80px; border-radius:20px;">
                 <h5 style="font-size:14px; float: left; margin-left: 10px; margin-top:5px; color:black;">Temperature</h5>
             </div>
         </div>
-        <div class="col-sm-4 ml-5">
+        <div class="col-sm-11 col-xl-5">
             {% with dataset = daily_data[room]["temp"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
             thresholds = [], trackerName = "Temperature_"+room|string, unit="(°C)", addAvg="true", tcf="false",
             pointStyle = 'circle', showTotalVal = false, suggestedMin = 10, yearMonth = "", clickable="false",
@@ -22,12 +22,12 @@
             {% include "trackerModules/singleChart.html" %}
             {% endwith %}
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-12 col-xl-5">
             {% with dataset = monthly_Data[room]["temp"], ChartMonthDays = chart_months, chartType = "line",
             thresholds = [25], trackerName = "Temperature_"+room|string+" Yearly", unit="(°C)",
             pointStyle = 'circle',  suggestedMin = 10, suggestedMax = 20, yearMonth = "year",
             bgcolor='rgba(0,0,0, 0)', color=['rgba(252,146,114,1)', 'rgba(203,24,29, 1)'],
-            width = "100%", height = "115px"%}
+            width = "100%", height = "160px"%}
             {% include "homeAutomation_modules/minMaxChart.html" %}
             {% endwith %}
         </div>
@@ -37,11 +37,11 @@
     {% if daily_data[room]["humidity"][-1]|int > 0 %}
     <div class="row">
         <div class="col-sm-1">
-            <div id="humidityGauge_{{room}}" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:100px; height:80px; border-radius:20px;">
+            <div id="humidityGauge_{{room}}" style="float: left; position:relative; width:100px; height:80px; border-radius:20px;">
                 <h5 style="font-size:14px; float: left; margin-left: 20px; margin-top:5px; color:black;">Humidty</h5>
             </div>
         </div>
-        <div class="col-sm-4 ml-5">
+        <div class="col-sm-11 col-xl-5">
 
             {% with dataset = daily_data[room]["humidity"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
             thresholds = [], trackerName = "Humidty_"+room|string, unit="(%)", addAvg="true", tcf="false",
@@ -53,12 +53,12 @@
             {% endwith %}
 
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-12 col-xl-5">
             {% with dataset = monthly_Data[room]["humidity"], ChartMonthDays = chart_months, chartType = "line",
             thresholds = [25], trackerName = "Humidity_"+room|string+" Yearly", unit="(%)",
             pointStyle = 'circle',  suggestedMin = 0, suggestedMax = 100, yearMonth = "year",
             bgcolor='rgba(0,0,0, 0)', color=['rgba(65,182,196, 1)', 'rgba(37,52,148, 1)'],
-            width = "100%", height = "115px"%}
+            width = "100%", height = "160px"%}
             {% include "homeAutomation_modules/minMaxChart.html" %}
             {% endwith %}
         </div>
@@ -68,11 +68,11 @@
     {% if daily_data[room]["pressure"][-1]|int > 0 %}
     <div class="row">
         <div class="col-sm-1">
-            <div id="pressureGauge_{{room}}" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:100px; height:80px; border-radius:20px;">
+            <div id="pressureGauge_{{room}}" style="float: left; position:relative; width:100px; height:80px; border-radius:20px;">
                 <h5 style="font-size:14px; float: left; margin-left: 20px; margin-top:5px; color:black;">Pressure</h5>
             </div>
         </div>
-        <div class="col-sm-4 ml-5">
+        <div class="col-sm-11 col-xl-5">
             {% with dataset = daily_data[room]["pressure"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
             thresholds = [], trackerName = "Pressure_"+room|string, unit="(bar)", addAvg="true", tcf="false",
             pointStyle = 'circle', showTotalVal = false, suggestedMin = 0.9, yearMonth = "", clickable="false",
@@ -82,12 +82,12 @@
             {% include "trackerModules/singleChart.html" %}
             {% endwith %}
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-12 col-xl-5">
             {% with dataset = monthly_Data[room]["pressure"], ChartMonthDays = chart_months, chartType = "line",
             thresholds = [25], trackerName = "Pressure_"+room|string+" Yearly", unit="(bar)",
             pointStyle = 'circle',  suggestedMin = 0.9, suggestedMax = 1.1, yearMonth = "year",
             bgcolor='rgba(0,0,0, 0)', color=['rgba(158,154,200,1)', 'rgba(106,81,163, 1)'],
-            width = "100%", height = "115px"%}
+            width = "100%", height = "160px"%}
             {% include "homeAutomation_modules/minMaxChart.html" %}
             {% endwith %}
         </div>
@@ -101,7 +101,7 @@
                 <h5 style="font-size:14px; float: left; margin-left: 20px; margin-top:5px; color:black;">Moisture</h5>
             </div>
         </div>
-        <div class="col-sm-4 ml-5">
+        <div class="col-sm-11 col-xl-5">
             {% with dataset = daily_data[room]["moisture"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
             thresholds = [], trackerName = "Moisture_"+room|string, unit="(%)", addAvg="true", tcf="false",
             pointStyle = 'circle', showTotalVal = false, suggestedMin = 0.9, yearMonth = "", clickable="false",
@@ -111,12 +111,12 @@
             {% include "trackerModules/singleChart.html" %}
             {% endwith %}
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-12 col-xl-5">
             {% with dataset = monthly_Data[room]["moisture"], ChartMonthDays = chart_months, chartType = "line",
             thresholds = [25], trackerName = "Moisture_"+room|string+" Yearly", unit="(%)",
             pointStyle = 'circle',  suggestedMin = 0.9, suggestedMax = 1.1, yearMonth = "year",
             bgcolor='rgba(0,0,0, 0)', color=['rgba(206,18,86,1)', 'rgba(231,225,239, 1)'],
-            width = "100%", height = "115px"%}
+            width = "100%", height = "160px"%}
             {% include "homeAutomation_modules/minMaxChart.html" %}
             {% endwith %}
         </div>

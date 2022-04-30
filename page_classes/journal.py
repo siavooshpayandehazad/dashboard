@@ -27,7 +27,7 @@ class Journal(Resource):
         photo_dir = os.getcwd() + "/static/photos/" + str(year) + "/" + today_date
         photo_dir2 = os.getcwd() + "/static/photos/" + str(year)
         days_with_photos = all_days_with_photos(photo_dir2, str(year), str(month))
-        today_photos = all_photos_in_dir(photo_dir, year, today_date)
+        today_photos = all_photos_in_dir(photo_dir, str(year), today_date)
         today_log, today_log_text = get_today_logs(self.c, today_date, self.lock)
         number_of_days = number_of_days_in_month(int(month), int(year))
         months_beginning = get_months_beginning(month, year).weekday()

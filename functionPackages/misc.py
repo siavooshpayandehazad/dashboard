@@ -6,6 +6,7 @@ from functionPackages.dateTime import *
 from pyexiv2 import ImageMetadata
 import json
 from package import tracker_settings, temporary_data
+import requests
 
 import logging
 
@@ -475,6 +476,18 @@ def setup_setting_table(db_cursor, db_connection, lock):
         except IndexError:
             db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", (item, "false"))
 
+    db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("latitude",))
+    try:
+        db_cursor.fetchall()[0][1]
+    except IndexError:
+        db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", ("latitude", "ex. 52.523430"))
+
+    db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("longitude",))
+    try:
+        db_cursor.fetchall()[0][1]
+    except IndexError:
+        db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", ("longitude", "ex. 13.411440"))
+
     db_connection.commit()
     lock.release()
 
@@ -756,3 +769,24 @@ class Login:
     def logout(self):
         print("user is logged out!")
         self.is_logged_in = False
+
+
+def get_today_weather_information(db_connection, lock):
+    if temporary_data.get("weather_info", {"date": None}).get("date", None) == datetime.date.today():
+        # weather info already exists
+        sunrise = temporary_data["weather_info"]["sunrise"]
+        sunset = temporary_data["weather_info"]["sunset"]
+    else:
+        latitude = fetch_setting_param_from_db(db_connection, "latitude", lock)
+        longitude = fetch_setting_param_from_db(db_connection, "longitude", lock)
+        params = {
+            "lat": latitude,
+            "long": longitude,
+            "formatted": 0
+        }
+        response = requests.get(url="https://api.sunrise-sunset.org/json", params=params)
+        response.raise_for_status()
+        sunrise = response.json()["results"]["sunrise"].split("T")[1].split("+")[0]
+        sunset = response.json()["results"]["sunset"].split("T")[1].split("+")[0]
+        temporary_data["weather_info"] = {"date": datetime.date.today(), "sunset": sunset, "sunrise": sunrise}
+    return sunrise, sunset

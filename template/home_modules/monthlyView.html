@@ -6,19 +6,34 @@
       }
     </script>
     <div class="row">
-        <div class="col-sm-1 col-lg-1">
+        <div class="col-sm-1 col-xl-1">
             {% with PageYear=PageYear, PageMonth=PageMonth%}
             {% include "generic_modules/monthSelector.html" %}
             {% endwith %}
         </div>
-        <div class="col-sm-10 col-lg-7">
+        <div class="col-sm-11 col-xl-7">
             {% with days = days, highlight=highlight,today=today, activityList=activityList, monthsActivitiesPlanned=monthsActivitiesPlanned%}
             {% include "trackerModules/activityTracker.html" %}
             {% endwith %}
         </div>
 
-        <div class="col-sm-3 col-lg-1">
+        <div class="col-sm-2 col-xl-2">
+            {% with days = days, moods = moods, PageYear=PageYear, PageMonth=PageMonth, today=today %}
+            {% include "trackerModules/moodTracker.html" %}
+            {% endwith %}
+            {% with counterValue = counterValue %}
+            {% include "trackerModules/counter.html" %}
+            {% endwith %}
+        </div>
+
+        <div class="col-sm-3 col-xl-1">
             <div style="width:120px;">
+                <div style="float:left; margin-top: 20px;">
+                    <p style="font-size:18px"><i class="fa fa-sun-o" style="color:#feb24c"></i> <i class="fa fa-arrow-up" style="color:#feb24c" aria-hidden="true"></i>
+ {{sunrise}}</p>
+                    <p style="font-size:18px"><i class="fa fa-sun-o" style="color:#df65b0"></i> <i class="fa fa-arrow-down" style="color:#df65b0" aria-hidden="true"></i>
+ {{sunset}}</p>
+                </div>
                 <div style="float:left;">
                     <!-- weather widget start -->
                     {%if pageTheme=="Dark"%}
@@ -28,17 +43,10 @@
                     {%endif%}
                     <!-- weather widget end -->
                 </div>
-                {% with counterValue = counterValue %}
-                {% include "trackerModules/counter.html" %}
-                {% endwith %}
             </div>
         </div>
 
-        <div class="col-sm-3 col-lg-2">
-            {% with days = days, moods = moods, PageYear=PageYear, PageMonth=PageMonth, today=today %}
-            {% include "trackerModules/moodTracker.html" %}
-            {% endwith %}
-        </div>
+
 
     </div>
 
