@@ -1,0 +1,180 @@
+<script type="text/javascript">
+
+  //------------------------------
+  //preparation for generalizing trackers
+  // dataset      :  list     :
+  // accumulate   :  boolean  : if true, the input from user would be added to the
+  //                            current value of the day. otherwise it would be absolute
+  // thresholds   :  list     : a list of int where each value is threshold for changing color
+  // chartType    :  string   : chart type, can be bar or line
+  // unit         :  string   : unit of the values, to be shown in the caption
+  // suggestedMin :  float    : suggested minimum valye of Y-axis
+  // yearMonth    :  string   : "year" or "month" changes display of today line in chart
+  // clickable    :  boolean  : if false, user can not enter values (via clicking)
+  // height       :  string   : height of the canvas
+  // width        :  string   : width of the graphCard
+  // url          :  string   : url of the page for requestes to be posted to
+  // bgColors     :  list     : list of tuples of rgb colors, for background for each threshold
+  // bColors      :  list     : list of tuples of rgb colors, for border color for each threshold
+  // showTotalVal :  boolean  : shows total sum Value on top right corner
+  // tcf          :  boolean  : total counter value is float
+  // addAvg       :  boolean  : adds average line
+  // trackerName  :  string   : name of the tracker
+
+window['accumulate_{{trackerName}}'] = {{accumulate | safe}};
+window['dataset_{{trackerName}}'] = {{dataset | safe}};
+window['xaxis_{{trackerName}}'] = {{ChartMonthDays | safe}};
+window['thresholds_{{trackerName}}'] = {{thresholds | safe}};
+window['bgColors_{{trackerName}}'] = {{bgColors | safe}};
+window['bColors_{{trackerName}}'] = {{bColors | safe}};
+if ({{addAvg}}){
+  window['avg_{{trackerName}}'] = calculateAvg(window['dataset_{{trackerName}}']);
+}
+
+
+function generateDataSets(){
+  var datasets = []
+  var BG_Colors = []
+  var B_Colors = []
+
+  window['dataset_{{trackerName}}'].forEach((item, i) => {
+
+    var BG_Color = window['bgColors_{{trackerName}}'][0]
+    var B_Color  = window['bColors_{{trackerName}}'][0]
+    if (window['thresholds_{{trackerName}}'].length > 0){
+      for(var j = 0; j < window['thresholds_{{trackerName}}'].length; j++ ){
+        if(parseFloat(item)>=parseInt(window['thresholds_{{trackerName}}'][j])){
+          BG_Color = window['bgColors_{{trackerName}}'][j+1]
+          B_Color  = window['bColors_{{trackerName}}'][j+1]
+        }
+      }
+    }
+    BG_Colors.push(BG_Color)
+    B_Colors.push(B_Color)
+  });
+  if ({{addAvg}}){
+    datasets.push({
+        label: "Avg. {{trackerName}} {{unit}}",
+        type: 'line',
+        data: window['avg_{{trackerName}}'],
+        backgroundColor: ['rgba(239,59,44, 0)'],
+        borderColor: ['rgba(239,59,44, 1)'],
+        borderDash: [3,5],
+        borderWidth: 3,
+        spanGaps: true,
+        pointRadius: 2,
+        pointStyle: 'dash',
+     })
+  }
+  datasets.push({
+        label: "{{trackerName}} {{unit}}",
+        type: "{{chartType}}",
+        data: window['dataset_{{trackerName}}'],
+        backgroundColor: BG_Colors,
+        borderColor: B_Colors,
+        borderWidth: 2,
+        spanGaps: true,
+        pointStyle: "{{pointStyle}}",
+  })
+return  datasets;
+}
+
+function renderTrackerChart(){
+  var ctx = document.getElementById("{{trackerName}}Tracker").getContext('2d');
+  new Chart(ctx, {
+     type: "{{chartType}}",
+     data: {
+        labels: window['xaxis_{{trackerName}}'],
+        datasets: generateDataSets(),
+     },
+     options: { legend: {labels: {usePointStyle: true}},
+                scales: {
+                yAxes: [{ ticks:{suggestedMin: '{{suggestedMin}}', }}]},
+                onClick: function(event, array){
+                    if ("{{clickable}}" == "true"){
+                      if (isNaN(this.scales['y-axis-0'].getValueForPixel(event.layerY)) ||
+                         (this.scales['y-axis-0'].getValueForPixel(event.layerY) > this.scales['y-axis-0'].end)){
+                        return;
+                      }
+                      var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)-2;
+                      var selectedVal =  parseFloat(window['dataset_{{trackerName}}'][selectedDay-1]) || 0;
+                      var newVal;
+                      if(window['accumulate_{{trackerName}}'] == true){
+                        res = window.prompt("Add {{trackerName}} for day " + selectedDay + "?", "");
+                      }else{
+                        res = window.prompt("Update {{trackerName}} for day " + selectedDay + "?", selectedVal);
+                      }
+                      newVal = res.split(",")[1]
+                      if (isNaN(newVal) || (newVal===null)){return;}
+                      var date = {{PageYear}}+"-"+zeroPad({{PageMonth}}, 2)+"-"+zeroPad(selectedDay,2);
+                      if(newVal == ""){
+                        console.log("deleting data for day: ", date)
+                      }
+                      // submit new value
+                      $.ajax({
+                          type: "POST",
+                          url: "{{url}}",
+                          data: {"tracker_type":"{{trackerName}}", "value": res, "date": date},
+                          error: function(data) {
+                            window.alert("{{trackerName}} tracker failed to submit the value...")
+                          }
+                      });
+                      if(window['accumulate_{{trackerName}}'] == true){
+                        newVal = selectedVal + parseFloat(newVal);
+                      }
+                      //update the step value
+                      window['dataset_{{trackerName}}'][selectedDay-1] = parseFloat(newVal);
+                      if ({{addAvg}}){
+                        newAvg = calculateAvg(window['dataset_{{trackerName}}']);
+                        for(var i = 0; i < newAvg.length; i++ ){
+                          window['avg_{{trackerName}}'][i] = newAvg[i];
+                        }
+                      }
+                      countTotalVal(window['dataset_{{trackerName}}'], ('{{tcf}}'=='true'), "{{trackerName}}");
+                      this.update();
+
+                    }
+                }
+
+              },
+    lineAtIndex: todayLineInChart("{{yearMonth}}"),
+    lineAtIndexColor: ['{{B_High}}'],
+  });
+}
+
+function countTotalVal(list, floatRes, trackerName){
+  var span =  document.getElementById("total"+trackerName);
+  if (span!= null){
+    var sum = 0;
+    for(var i = 0; i < list.length; i++ ){
+      if (!isNaN(list[i])){
+        sum = sum + parseFloat(list[i]);
+      }
+    }
+    if(floatRes){
+      span.innerHTML = sum.toFixed(2);
+    }else{
+      span.innerHTML = parseInt(sum);
+    }
+  }
+}
+
+</script>
+
+<div class="graphCard" style = "width:{{width}};">
+  {% if showTotalVal == True%}
+    <span style="float: right; margin-right: 10px; margin-top: 5px; font-family:verdana; font-size:11px; color: black;"> monthly {{trackerName}}: <b><span id="total{{trackerName}}"></span></b> {{unit}}</span>
+  {% endif %}
+  <h4  class="title lightbg"  style="float:left; margin-left: 10px;">{{trackerName}} tracker</h4>
+  <div style="float:left; width:95%; margin-left:10px; background-color: white">
+    <canvas  height="{{height}}" id="{{trackerName}}Tracker"></canvas>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+  if ({{addAvg}}){
+    countTotalVal(window['dataset_{{trackerName}}'], ('{{tcf}}'=='true'), "{{trackerName}}");
+  }
+  renderTrackerChart();
+</script>

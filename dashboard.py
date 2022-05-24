@@ -1,3 +1,4 @@
+from functionPackages.finance_package import generate_finance_db_tables
 from functionPackages.ha_package import generate_ha_db_tables
 from functionPackages.misc import *
 
@@ -26,6 +27,8 @@ from page_classes.home_automation import HomeAutomation
 from page_classes.server import Server
 from page_classes.audiobooks import Audiobooks
 from page_classes.learning import Learning
+from page_classes.news import News
+from page_classes.finances import Finances
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
@@ -54,12 +57,14 @@ lock = Lock()
 conn, c = create_db("journal.db")
 conn_ha, c_ha = create_db("ha.db")
 conn_learning, c_learning = create_db("learning.db")
+conn_finance, c_finance = create_db("finance.db")
 backup_database(conn)
 
 generate_db_tables(c, conn, lock)
 generate_db_tables_learning(c_learning, conn_learning, lock)
-
+generate_finance_db_tables(c_finance, conn_finance, lock)
 generate_ha_db_tables(c_ha, conn_ha, lock)
+
 setup_setting_table(c, conn, lock)
 
 
@@ -184,6 +189,7 @@ scheduler.start()
 resource_class_args = {"conn": conn, "c": c, "lock": lock, "parser": parser,
                        "conn_ha": conn_ha, "c_ha": c_ha,
                        "c_learning": c_learning, "conn_learning": conn_learning,
+                       "conn_finance": conn_finance, "c_finance": c_finance,
                        "login": login}
 
 api.add_resource(Dash, '/', resource_class_kwargs=resource_class_args)
@@ -197,6 +203,8 @@ api.add_resource(Learning, '/learning', resource_class_kwargs=resource_class_arg
 api.add_resource(Server, '/server', resource_class_kwargs=resource_class_args)
 api.add_resource(Audiobooks, '/audiobooks', resource_class_kwargs=resource_class_args)
 api.add_resource(HomeAutomation, '/homeAutomation', resource_class_kwargs=resource_class_args)
+api.add_resource(News, '/news', resource_class_kwargs=resource_class_args)
+api.add_resource(Finances, '/finances', resource_class_kwargs=resource_class_args)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

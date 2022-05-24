@@ -566,8 +566,6 @@ def get_chart_data(page_month: int, page_year: int, number_of_days: int, c, lock
     chart_data["monthsSteps"] = generate_monthly_chart_data(page_month, page_year, "stepTracker", c, lock)
     chart_data["monthsHydration"] = generate_monthly_chart_data(page_month, page_year, "hydrationTracker", c, lock)
     chart_data["monthsRuns"] = generate_monthly_chart_data(page_month, page_year, "runningTracker", c, lock)
-    chart_data["YearsSavings"] = generate_saving_tracker_chart_data(page_year, c, lock)
-    chart_data["YearsMortgages"], chart_data["MortgagePaid"] = generate_mortgage_tracker_chart_data(page_year, c, lock)
     chart_data["ChartMonthDays"] = [str(i) for i in range(1, number_of_days + 1)]
     chart_data["travels"] = get_travel_destinations(c, lock)
     chart_data["HR_Min"], chart_data["HR_Max"] = \
@@ -587,4 +585,31 @@ def get_chart_data(page_month: int, page_year: int, number_of_days: int, c, lock
         generate_year_double_chart_data(page_year, "HRTracker", c, lock)
     chart_data["yearBP_Min"], chart_data["yearBP_Max"] = \
         generate_year_double_chart_data(page_year, "BPTracker", c, lock)
+    return chart_data
+
+
+def generate_spending_chart_data(page_month, page_year, number_of_days, db_cursor, lock):
+    months_finance = []
+    lock.acquire(True)
+    db_cursor.execute("""SELECT * FROM finance WHERE date >= ? and date <= ?  """,
+                      (get_months_beginning(page_month, page_year).date(),
+                       get_months_end(page_month, page_year).date(),))
+    months_vals = db_cursor.fetchall()
+    lock.release()
+    for day in range(1, number_of_days+1):
+        days_val = 0
+        for finance_item in months_vals:
+            if int(finance_item[0].split("-")[2]) == day:
+                days_val += float(finance_item[2])
+        months_finance.append(str(days_val))
+    return months_finance
+
+
+def generate_finance_charts(page_month: int, page_year: int, number_of_days: int, c, c_finance, lock) -> dict:
+    years_mortgages, mortgage_paid = generate_mortgage_tracker_chart_data(page_year, c, lock)
+    chart_data = {"YearsSavings": generate_saving_tracker_chart_data(page_year, c, lock),
+                  "ChartMonthDays": [str(i) for i in range(1, number_of_days + 1)],
+                  "MonthlySpending": generate_spending_chart_data(page_month, page_year, number_of_days, c_finance, lock),
+                  "MortgagePaid":  mortgage_paid,
+                  "YearsMortgages": years_mortgages}
     return chart_data

@@ -1,15 +1,17 @@
 <script src="{{ url_for('static', filename='js/commonFunctions.js') }}"></script>
 
 <div style="width:80%; padding-top: 20px; float: left;">
-{% for listMonth in ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]%}
-  {% if loop.index0+1==PageMonth  %}
+  {% for listMonth in ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]%}
+    {% if loop.index0+1==PageMonth  %}
     <div class="monthTab selected" onclick="goToMonth({{PageYear}}, {{loop.index0}})">
-  {%else%}
-    <div class="monthTab" onclick="goToMonth({{PageYear}}, {{loop.index0}})">
-  {%endif%}
-       <span style="margin-top:12px; margin-left:10px;"> <b> {{listMonth}} </b> </span>
+      <span style="margin-top:12px; margin-left:10px;"> <b> {{listMonth}} </b> </span>
     </div>
-{%endfor%}
+    {%else%}
+    <div class="monthTab" onclick="goToMonth({{PageYear}}, {{loop.index0}})">
+      <span style="margin-top:12px; margin-left:10px;"> <b> {{listMonth}} </b> </span>
+    </div>
+    {%endif%}
+  {%endfor%}
 </div>
 
 <div style="float:left; width:5px;">

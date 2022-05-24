@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <style>
+  input[type='checkbox']:checked + span{
+    text-decoration:line-through;
+  }
+  </style>
+  <meta charset="utf-8"/>
+  <title>My Journal</title>
+  <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+  <script type="text/javascript">
+    const zeroPad = (num, places) => String(num).padStart(places, '0')
+  </script>
+</head>
+
+
+
+<body  class="journal">
+<script type="text/javascript">
+var page_theme = "{{pageTheme}}";
+if (page_theme == "Dark"){
+   document.body.classList.add("featured");
+}
+</script>
+
+<div class="container-fluid bg">
+  {% include "trackerModules/graphFuncs.html" %}
+
+  <div class="row">
+    <div class="col">
+      {% with page="finances" %}
+      {% include "generic_modules/header.html" %}
+      {% endwith %}
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:10px;">
+    <div class="col-sm-12 col-lg-6">
+      <div class="row">
+        <div class="col-sm-12 col-lg-12">
+          {% with dataset = ChartData["MonthlySpending"], ChartMonthDays = ChartData["ChartMonthDays"], chartType = "bar",
+          thresholds = [100, 500, 1000], trackerName = "spending", unit="(kr)", addAvg="true", tcf="true",
+          pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
+          accumulate = "true", height = "100px",  width = "95%", url="/finances",
+          bgColors = ['rgba(128,205,193, 1)', 'rgba(107,174,214, 1)', 'rgba(254,196,79, 1)', 'rgba(252,146,114, 1)'],
+          bColors = ['rgba(53,151,143, 1)', 'rgba(33,113,181, 1)', 'rgba(236,112,20, 1)', 'rgba(203,24,29, 1)']%}
+          {% include "trackerModules/spendingTracker.html" %}
+          {% endwith %}
+        </div>
+        <div class="col-sm-12 col-lg-12">
+          <div id="accordion">
+
+            <div class="card" style="background-color:#bdbdbd;">
+              <div class="card-header" id="heading_breakdown">
+                <h5 class="mb-0">
+                  <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_breakdown" aria-expanded="false" aria-controls="collapse_news">
+                    finance breakdown
+                  </button>
+                </h5>
+              </div>
+              <div id="collapse_breakdown" class="collapse" aria-labelledby="heading_breakdown" data-parent="#accordion">
+                <div style="height:250px; overflow-y:scroll; width:98%; margin-left:1%; background-color: white; color: black; margin-top 10px;">
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="background-color:#bdbdbd;">
+              <div class="card-header" id="heading_table">
+                <h5 class="mb-0">
+                  <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_full_expense" aria-expanded="false" aria-controls="collapse_news">
+                    full list of this month's expenses
+                  </button>
+                </h5>
+              </div>
+              <div id="collapse_full_expense" class="collapse" aria-labelledby="heading_table" data-parent="#accordion">
+                <div style="height:250px; overflow-y:scroll; width:98%; margin-left:1%; background-color: white; color: black; margin-top 10px;">
+                  <table border="1">
+                    <tr>
+                      <th>date</th> <th>item</th> <th>cost</th> <th>type</th> <th></th>
+                    </tr>
+                    {% for item in SpendingData%}
+                    <tr>
+                      <td> {{item[0]}}</td>
+                      <td> {{item[1]}}</td>
+                      <td> {{item[2]}}</td>
+                      <td> {{item[3]}}</td>
+                      <td> edit/delete</td>
+                    </tr>
+                    {%endfor%}
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="col-sm-12 col-lg-6">
+      <div class="row">
+        <div class="col-sm-12 col-lg-12">
+          {% with YearsSavings = ChartData["YearsSavings"], ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+          PageYear = PageYear, PageMonth = PageMonth%}
+          {% include "trackerModules/savingTracker.html" %}
+          {% endwith %}
+        </div>
+        <div class="col-sm-12 col-lg-12">
+          {% with YearsMortgages = ChartData["YearsMortgages"], MortgagePaid = ChartData["MortgagePaid"], ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+          PageYear = PageYear, PageMonth = PageMonth, suggestedMax=1120000%}
+          {% include "trackerModules/mortgageTracker.html" %}
+          {% endwith %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

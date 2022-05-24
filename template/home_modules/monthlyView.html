@@ -26,25 +26,6 @@
             {% endwith %}
         </div>
 
-        <div class="col-sm-3 col-xl-1">
-            <div style="width:120px;">
-                <div style="float:left; margin-top: 20px;">
-                    <p style="font-size:18px"><i class="fa fa-sun-o" style="color:#feb24c"></i> <i class="fa fa-arrow-up" style="color:#feb24c" aria-hidden="true"></i>
- {{sunrise}}</p>
-                    <p style="font-size:18px"><i class="fa fa-sun-o" style="color:#df65b0"></i> <i class="fa fa-arrow-down" style="color:#df65b0" aria-hidden="true"></i>
- {{sunset}}</p>
-                </div>
-                <div style="float:left;">
-                    <!-- weather widget start -->
-                    {%if pageTheme=="Dark"%}
-                    <script type='text/javascript' src='https://darksky.net/widget/default-small/55.7081,13.1973/uk12/en.js?width=100%&height=60&title=Full Forecast&textColor=d9d9d9&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=&units=uk'></script>
-                    {%else%}
-                    <script type='text/javascript' src='https://darksky.net/widget/default-small/55.7081,13.1973/uk12/en.js?width=100%&height=60&title=Full Forecast&textColor=1b46ae&bgColor=transparent&transparency=true&skyColor=undefined&fontFamily=Default&customFont=&units=uk'></script>
-                    {%endif%}
-                    <!-- weather widget end -->
-                </div>
-            </div>
-        </div>
 
 
 

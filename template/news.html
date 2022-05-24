@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/flashCards.css') }}">
+    <link rel="stylesheet" href="/static/lib/font-awesome-4.7.0/css/font-awesome.min.css">
+    <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
+    <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>My Journal</title>
+</head>
+<body>
+
+<script type="text/javascript">
+var page_theme = "{{pageTheme}}";
+if (page_theme == "Dark"){
+   document.body.classList.add("featured");
+}
+var index = 1;
+var news_rss = {{news_rss|safe}}
+function moveFeed(dir){
+    document.getElementById("feed_name_"+String(index)).style.display="none";
+    document.getElementById("feed_div_"+String(index)).style.display="none";
+    if (dir == 1){
+        index += 1;
+        if(index==news_rss.length+1){
+            index = 1;
+        }
+    }else{
+        index -= 1;
+        if(index==0){
+            index = 3;
+        }
+    }
+
+    document.getElementById("feed_name_"+String(index)).style.display="block";
+    document.getElementById("feed_div_"+String(index)).style.display="block";
+
+}
+function pause_pressed(item){
+    var podcast_name=item.getAttribute("name");
+    var podcasts = JSON.parse(localStorage.getItem('podcasts'))
+    if (! podcasts){
+        podcasts = {}
+    }
+    podcasts[podcast_name] = [item.currentSrc, item.currentTime]
+    localStorage.setItem('podcasts', JSON.stringify(podcasts));
+}
+</script>
+
+<div class="container-fluid bg">
+    <div class="row">
+        <div class="col">
+            {% with page="news" %}
+            {% include "generic_modules/header.html" %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 col-xl-4">
+            <div style="background-color:#023858; border-radius:10px; margin-top:10px;  height:90vh">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <a class= "arrow hover-red" onclick="moveFeed(-1)" style="float:right; font-size:25px">&#9668;</a>
+                    </div>
+                    <div class="col-sm-8 text-center">
+                        {%for item in news_rss%}
+                        <h4 id="feed_name_{{loop.index}}" style="display: none"> {{item[0]}} </h4>
+                        {%endfor%}
+                    </div>
+                    <div class="col-sm-2">
+                        <a class= "arrow hover-red" onclick="moveFeed(1)" style="font-size:25px">&#9658; </a>
+                    </div>
+                </div>
+                <div style="height: 3px; margin-bottom: 10px; margin-left:10%; background-color:white; width:80%"></div>
+                {%for item in news_rss%}
+                <div id = "feed_div_{{loop.index}}" style="overflow-y: scroll; height:80vh; font-size:15px; width:95%; margin-left:2.5%; display: none">
+                    <script src ={{item[1]}}></script>
+                </div>
+                {%endfor%}
+            </div>
+        </div>
+        <div class="col-sm-12 col-xl-4">
+            <div style="background-color:#023858; border-radius:10px; margin-top:10px;">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div style="float:left; margin-left:10px; margin-top:5px;">
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <i class="fa fa-thermometer-full"  style="font-size:30px;margin-right:5px;margin-top:10px; text-shadow:1px 1px #49006a; color: rgba(255, 0, 0, {{weather_dict['temp']/40.0}});" aria-hidden="true"></i>
+                                </div>
+                                <div class="col-sm-10">
+                                    <p style="margin-top:0px; margin-bottom:0px; font-size:23px; font-weight:bold;">{{weather_dict["temp"]}} °C</p>
+                                    <p style="margin-top:0px; margin-bottom:0px">feels_like: {{weather_dict["feels_like"]}} °C</p>
+                                </div>
+                            </div>
+                            <p style="margin-top:0px; margin-bottom:0px; margin-left:35px;">humidity: {{weather_dict["humidity"]}} %</p>
+                            <p style="margin-top:0px; margin-bottom:0px; margin-left:35px;">pressure: {{weather_dict["pressure"]}} hPa</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 pl-0">
+                        <div style="float:left; margin-top: 10px;">
+                            <p style="font-size:18px">
+                                <i class="fa fa-sun-o" style="color:#feb24c"></i> <i class="fa fa-arrow-up" style="color:#feb24c; margin-right:5px;" aria-hidden="true"></i>{{weather_dict["sunrise"]}}<br>
+                                <i class="fa fa-sun-o" style="color:#df65b0"></i> <i class="fa fa-arrow-down" style="color:#df65b0; margin-right:5px;" aria-hidden="true"></i>{{weather_dict["sunset"]}}<br>
+                                uvi: {{weather_dict["uvi"]}}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="background-color:#023858; border-radius:10px; margin-top:10px; padding:10px; width:100%">
+                <h4>News and Podcast</h4>
+                <div id="accordion">
+                    <div class="card" style="background-color:#bdbdbd;">
+                        <div class="card-header" id="heading_news">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_news" aria-expanded="false" aria-controls="collapse_news">
+                                    News hour!
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapse_news" class="collapse" aria-labelledby="heading_news" data-parent="#accordion">
+                            <p style="margin-left: 10px; color: black">Published: {{news_show_date}}</p>
+                            <div class="card-body" style="background-color:black; padding: 10px 20px 5px 20px; border-radius: 0px 0px 5px 5px;">
+                                <iframe style="border-radius:15px; width:100%; min-height:200px" src="{{news_show_link}}" frameborder="0"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="background-color:#bdbdbd;">
+                        <div class="card-header" id="heading_podcast">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_pod" aria-expanded="false" aria-controls="collapse_pod">
+                                    Monthly Podcasts
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapse_pod" class="collapse" aria-labelledby="heading_podcast" data-parent="#accordion">
+                            <div class="card-body" style="background-color:#525252; padding: 10px 20px 5px 20px; border-radius: 0px 0px 5px 5px;">
+                                {%for item in podcast_links%}
+                                <div class="row mb-2" style="background-color: black; border-radius:10px;">
+                                    <div class="col-sm-3 pr-0">
+                                        <img style="width:100%; float:right; margin-top:5px; margin-bottom:5px;" src="{{item[1]}}">
+                                    </div>
+                                    <div class="col-sm-9 pr-0 pl-1">
+                                        <h6 style="margin-left:15px; font-size:20px; margin-top: 20px">{{item[0]}}</h6>
+                                    </div>
+                                    <div class="col-sm-12 pr-0 pl-1">
+                                        <audio class="podcast" name="{{item[0]}}" controls style="width:100%; height:30px;" onpause="pause_pressed(this)" onplay="set_podcast_play_time()">
+                                            <source src="{{item[2]}}" type="audio/mpeg">
+                                        </audio>
+                                    </div>
+                                </div>
+                                {%endfor%}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12 col-xl-4">
+            <div style="background-color:#023858; border-radius:10px; margin-top:10px; width:100%; height:90vh">
+                <h4 style="text-align:center">Concerts and Events</h4>
+                <div style="height: 3px; margin-bottom: 10px; margin-left:10%; background-color:white; width:80%"></div>
+                <div style="overflow-y: scroll; height:80vh; font-size:15px; width:95%; margin-left:2.5%; overflow-wrap: break-word;">
+                    <script style=" height: 100%; border: none; width: 100%; background-color: #d0d1e6;border-radius: 10px;" src="//rss.bloople.net/?url=https%3A%2F%2Fallevents.in%2FMalm%25C3%25B6%2FRSS&showtitle=false&striphtml=true&type=js"></script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+<script>
+    document.getElementById("feed_name_1").style.display="block";
+    document.getElementById("feed_div_1").style.display="block";
+
+    news_titles = document.getElementsByClassName("feed-item-title")
+    for(let i=0; i<news_titles.length;i++){
+        news_titles[i].style.fontSize="15px";
+    }
+    function set_podcast_play_time(){
+        var podcasts_mem = JSON.parse(localStorage.getItem('podcasts'))
+        podcasts = document.getElementsByClassName("podcast")
+        for(let i=0; i<podcasts.length;i++){
+            var podcast_name=podcasts[i].getAttribute("name");
+            console.log(podcast_name)
+            if(podcasts_mem[podcast_name][0] == podcasts[i].currentSrc){
+                podcasts[i].currentTime = podcasts_mem[podcast_name][1]
+            }
+        }
+    }
+    set_podcast_play_time()
+</script>
+</body>
+</html>

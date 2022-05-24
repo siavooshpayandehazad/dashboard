@@ -38,18 +38,6 @@
             {% include "trackerModules/singleChart.html" %}
             {% endwith %}
         </div>
-        <div class="col-sm-12 col-lg-6">
-            {% with YearsSavings = ChartData["YearsSavings"], ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-            PageYear = PageYear, PageMonth = PageMonth%}
-            {% include "trackerModules/savingTracker.html" %}
-            {% endwith %}
-        </div>
-        <div class="col-sm-12 col-lg-6">
-            {% with YearsMortgages = ChartData["YearsMortgages"], MortgagePaid = ChartData["MortgagePaid"], ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-            PageYear = PageYear, PageMonth = PageMonth, suggestedMax=1120000%}
-            {% include "trackerModules/mortgageTracker.html" %}
-            {% endwith %}
-        </div>
     </div>
 
     {% with dir="right" %}

@@ -7,7 +7,6 @@ from pyexiv2 import ImageMetadata
 import json
 from package import tracker_settings, temporary_data
 import requests
-
 import logging
 
 logger = logging.getLogger(__name__)
@@ -292,7 +291,14 @@ def add_saving_item_to_table(item: str, date: str, db_cursor, db_connection, loc
             last_month_val = 0
         item = float(last_month_val)+float(item)
     lock.acquire(True)
-    db_cursor.execute("UPDATE savingTracker SET saving = ? WHERE month = ?", (item, month,))
+    db_cursor.execute("SELECT * FROM savingTracker WHERE month = ?", (month,))
+    current_month_fetch = db_cursor.fetchall()
+    if len(current_month_fetch) == 0:
+
+        db_cursor.execute("INSERT INTO savingTracker VALUES(?, ?)", (item, month))
+    else:
+        db_cursor.execute("UPDATE savingTracker SET saving = ? WHERE month = ?", (item, month,))
+
     db_connection.commit()
     lock.release()
     return "Done", 200
@@ -341,7 +347,13 @@ def add_mortgage_item_to_table(item: str, date: str, db_cursor, db_connection, l
             last_month_val = 0
         item = float(last_month_val)+float(item)
     lock.acquire(True)
-    db_cursor.execute("UPDATE mortgageTracker SET mortgage = ? WHERE month = ?", (item, month,))
+    db_cursor.execute("SELECT * FROM mortgageTracker WHERE month = ?", (month,))
+    current_month_fetch = db_cursor.fetchall()
+    if len(current_month_fetch) == 0:
+
+        db_cursor.execute("INSERT INTO mortgageTracker VALUES(?, ?)", (item, month))
+    else:
+        db_cursor.execute("UPDATE mortgageTracker SET mortgage = ? WHERE month = ?", (item, month,))
     db_connection.commit()
     lock.release()
     return "Done", 200
@@ -771,22 +783,46 @@ class Login:
         self.is_logged_in = False
 
 
-def get_today_weather_information(db_connection, lock):
+def get_today_weather_information(db_connection, lock) -> dict:
     if temporary_data.get("weather_info", {"date": None}).get("date", None) == datetime.date.today():
         # weather info already exists
-        sunrise = temporary_data["weather_info"]["sunrise"]
-        sunset = temporary_data["weather_info"]["sunset"]
+        return temporary_data["weather_info"]
     else:
         latitude = fetch_setting_param_from_db(db_connection, "latitude", lock)
         longitude = fetch_setting_param_from_db(db_connection, "longitude", lock)
+        app_id = fetch_setting_param_from_db(db_connection, "weather_appid", lock)
         params = {
             "lat": latitude,
-            "long": longitude,
-            "formatted": 0
+            "lon": longitude,
+            "appid": app_id,
+            "units": "metric"
         }
-        response = requests.get(url="https://api.sunrise-sunset.org/json", params=params)
+
+        response = requests.get(url="https://api.openweathermap.org/data/2.5/onecall", params=params)
         response.raise_for_status()
-        sunrise = response.json()["results"]["sunrise"].split("T")[1].split("+")[0]
-        sunset = response.json()["results"]["sunset"].split("T")[1].split("+")[0]
-        temporary_data["weather_info"] = {"date": datetime.date.today(), "sunset": sunset, "sunrise": sunrise}
-    return sunrise, sunset
+        json_resp = response.json()["current"]
+        sunrise = datetime.datetime.fromtimestamp(json_resp["sunrise"]).time()
+        sunset = datetime.datetime.fromtimestamp(json_resp["sunset"]).time()
+        temp = json_resp["temp"]
+        feels_like = json_resp["feels_like"]
+        pressure = json_resp["pressure"]
+        humidity = json_resp["humidity"]
+        uvi = json_resp["uvi"]
+        wind_speed = json_resp["wind_speed"]
+
+        temporary_data["weather_info"] = {"date": datetime.date.today(),
+                                          "temp": temp, "feels_like": feels_like,
+                                          "pressure": pressure, "humidity": humidity,
+                                          "uvi": uvi, "wind_speed": wind_speed,
+                                          "sunset": sunset, "sunrise": sunrise}
+    return temporary_data["weather_info"]
+
+
+def generate_month_spending_data(page_month, page_year, db_cursor, lock):
+    lock.acquire(True)
+    db_cursor.execute("""SELECT * FROM finance WHERE date >= ? and date <= ?  """,
+                      (get_months_beginning(page_month, page_year).date(),
+                       get_months_end(page_month, page_year).date(),))
+    months_vals = db_cursor.fetchall()
+    lock.release()
+    return months_vals
