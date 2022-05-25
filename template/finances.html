@@ -17,6 +17,17 @@
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
   <script type="text/javascript">
     const zeroPad = (num, places) => String(num).padStart(places, '0')
+
+
+  function moveMonth(delta){
+    date = new Date(parseInt("{{PageYear}}"), parseInt("{{PageMonth}}")-1, 1, 0, 0, 0);
+    console.log(date)
+    date.setDate(date.getDate());
+    var dd = date.getDate();
+    var mm = date.getMonth()+1+delta; //January is 0!`
+    var yyyy = date.getFullYear();
+    window.location.href = "/finances?date="+zeroPad(yyyy, 2)+"-"+zeroPad(mm, 2)+"-"+zeroPad(dd, 2);
+  }
   </script>
 </head>
 
@@ -41,32 +52,64 @@ if (page_theme == "Dark"){
     </div>
   </div>
 
+  <div class="row">
+    <div class="col-sm-12 text-justify">
+      <h4 class="title journal" style="margin-left:40%">
+        <a class= "arrow hover-red"  onclick="moveMonth(-1)">&#9668;</a>
+        {{PageYear}}-{{'%02d' % (PageMonth|int)}}
+        <a class= "arrow hover-red"  onclick="moveMonth(1)">&#9658;</a>
+      </h4>
+    </div>
+  </div>
+
   <div class="row" style="margin-top:10px;">
     <div class="col-sm-12 col-lg-6">
       <div class="row">
-        <div class="col-sm-12 col-lg-12">
-          {% with dataset = ChartData["MonthlySpending"], ChartMonthDays = ChartData["ChartMonthDays"], chartType = "bar",
-          thresholds = [100, 500, 1000], trackerName = "spending", unit="(kr)", addAvg="true", tcf="true",
-          pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
-          accumulate = "true", height = "100px",  width = "95%", url="/finances",
-          bgColors = ['rgba(128,205,193, 1)', 'rgba(107,174,214, 1)', 'rgba(254,196,79, 1)', 'rgba(252,146,114, 1)'],
-          bColors = ['rgba(53,151,143, 1)', 'rgba(33,113,181, 1)', 'rgba(236,112,20, 1)', 'rgba(203,24,29, 1)']%}
-          {% include "trackerModules/spendingTracker.html" %}
-          {% endwith %}
-        </div>
+
         <div class="col-sm-12 col-lg-12">
           <div id="accordion">
+
+            <div class="card" style="background-color:#bdbdbd;">
+              <div class="card-header" id="heading_spending">
+                <h5 class="mb-0">
+                  <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_spending" aria-expanded="false" aria-controls="collapse_news">
+                    Monthly spending
+                  </button>
+                </h5>
+              </div>
+              <div id="collapse_spending" class="collapse show" aria-labelledby="heading_spending" data-parent="#accordion">
+                {% with dataset = ChartData["MonthlySpending"], ChartMonthDays = ChartData["ChartMonthDays"], chartType = "bar",
+                thresholds = [200, 500, 1000], trackerName = "spending", unit="(kr)", addAvg="true", tcf="true",
+                pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
+                accumulate = "true", height = "100px",  width = "95%", url="/finances",
+                bgColors = ['rgba(128,205,193, 1)', 'rgba(107,174,214, 1)', 'rgba(254,196,79, 1)', 'rgba(252,146,114, 1)'],
+                bColors = ['rgba(53,151,143, 1)', 'rgba(33,113,181, 1)', 'rgba(236,112,20, 1)', 'rgba(203,24,29, 1)']%}
+                {% include "trackerModules/spendingTracker.html" %}
+                {% endwith %}
+              </div>
+            </div>
 
             <div class="card" style="background-color:#bdbdbd;">
               <div class="card-header" id="heading_breakdown">
                 <h5 class="mb-0">
                   <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_breakdown" aria-expanded="false" aria-controls="collapse_news">
-                    finance breakdown
+                    Finance breakdown
                   </button>
                 </h5>
               </div>
               <div id="collapse_breakdown" class="collapse" aria-labelledby="heading_breakdown" data-parent="#accordion">
                 <div style="height:250px; overflow-y:scroll; width:98%; margin-left:1%; background-color: white; color: black; margin-top 10px;">
+
+                  {% with dataset = breakDownValues, ChartMonthDays = breakDownTitles, chartType = "bar",
+                thresholds = [1000, 3000, 5000], trackerName = "spending breakdown", unit="(kr)", addAvg="false", tcf="true",
+                pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, clickable="false",
+                accumulate = "false", height = "100px",  width = "95%", HideLine="ture",
+                bgColors = ['rgba(128,205,193, 1)', 'rgba(107,174,214, 1)', 'rgba(254,196,79, 1)', 'rgba(252,146,114, 1)'],
+                bColors = ['rgba(53,151,143, 1)', 'rgba(33,113,181, 1)', 'rgba(236,112,20, 1)', 'rgba(203,24,29, 1)']%}
+
+                  {% include "trackerModules/singleChart.html" %}
+                {% endwith %}
+
                 </div>
               </div>
             </div>
@@ -75,7 +118,7 @@ if (page_theme == "Dark"){
               <div class="card-header" id="heading_table">
                 <h5 class="mb-0">
                   <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_full_expense" aria-expanded="false" aria-controls="collapse_news">
-                    full list of this month's expenses
+                    List of this month's expenses
                   </button>
                 </h5>
               </div>
@@ -86,13 +129,7 @@ if (page_theme == "Dark"){
                       <th>date</th> <th>item</th> <th>cost</th> <th>type</th> <th></th>
                     </tr>
                     {% for item in SpendingData%}
-                    <tr>
-                      <td> {{item[0]}}</td>
-                      <td> {{item[1]}}</td>
-                      <td> {{item[2]}}</td>
-                      <td> {{item[3]}}</td>
-                      <td> edit/delete</td>
-                    </tr>
+                    <tr> <td> {{item[0]}}</td> <td> {{item[1]}}</td> <td> {{item[2]}}</td> <td> {{item[3]}}</td> <td> edit/delete</td></tr>
                     {%endfor%}
                   </table>
                 </div>

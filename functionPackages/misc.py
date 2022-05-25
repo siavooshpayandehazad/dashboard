@@ -824,5 +824,17 @@ def generate_month_spending_data(page_month, page_year, db_cursor, lock):
                       (get_months_beginning(page_month, page_year).date(),
                        get_months_end(page_month, page_year).date(),))
     months_vals = db_cursor.fetchall()
+    months_vals = sorted(months_vals, key=lambda x: int(x[0].split("-")[2]), reverse=True)
     lock.release()
-    return months_vals
+
+    break_down = {}
+    for item in months_vals:
+        break_down[item[3]] = break_down.get(item[3], 0) + float(item[2])
+
+    break_down_values = []
+    break_down_titles = []
+    for key in break_down:
+        break_down_titles.append(key)
+        break_down_values.append(break_down[key])
+
+    return months_vals, break_down_values, break_down_titles

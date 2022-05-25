@@ -66,8 +66,8 @@
 
     Chart.plugins.register(verticalLinePlugin);
 
-    function todayLineInChart(YearMonth){
-      if ({{HideLine}} == "ture"){
+    function todayLineInChart(YearMonth, HideLine){
+      if (HideLine == "ture"){
         return
       }
       date =  new Date();

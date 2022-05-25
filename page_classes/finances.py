@@ -35,11 +35,12 @@ class Finances(Resource):
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
         chart_data = generate_finance_charts(int(page_month), int(page_year), number_of_days,
                                              self.c, self.c_finance, self.lock)
-        spending_data = generate_month_spending_data(int(page_month), int(page_year), self.c_finance, self.lock)
+        spending_data, break_down_values, break_down_titles = generate_month_spending_data(int(page_month), int(page_year), self.c_finance, self.lock)
         return make_response(render_template('finances.html', ChartData=chart_data,
                                              PageYear=page_year, PageMonth=page_month,
                                              HideLine="false", today=datetime.date.today().day,
-                                             SpendingData=spending_data,
+                                             SpendingData=spending_data, breakDownValues=break_down_values,
+                                             breakDownTitles=break_down_titles,
                                              pageTheme=page_theme, loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):

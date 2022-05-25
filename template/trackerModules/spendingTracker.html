@@ -96,13 +96,13 @@ function renderTrackerChart(){
                          (this.scales['y-axis-0'].getValueForPixel(event.layerY) > this.scales['y-axis-0'].end)){
                         return;
                       }
-                      var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)-2;
+                      var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)-1;
                       var selectedVal =  parseFloat(window['dataset_{{trackerName}}'][selectedDay-1]) || 0;
                       var newVal;
                       if(window['accumulate_{{trackerName}}'] == true){
-                        res = window.prompt("Add {{trackerName}} for day " + selectedDay + "?", "");
+                        res = window.prompt("Add {{trackerName}} for day " + selectedDay + " (name, cost, type)?", "");
                       }else{
-                        res = window.prompt("Update {{trackerName}} for day " + selectedDay + "?", selectedVal);
+                        res = window.prompt("Update {{trackerName}} for day " + selectedDay + "(name, cost, type)?", selectedVal);
                       }
                       newVal = res.split(",")[1]
                       if (isNaN(newVal) || (newVal===null)){return;}
