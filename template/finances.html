@@ -6,6 +6,11 @@
   input[type='checkbox']:checked + span{
     text-decoration:line-through;
   }
+
+  span.editDelete:hover{
+    color:red;
+    cursor: pointer;
+  }
   </style>
   <meta charset="utf-8"/>
   <title>My Journal</title>
@@ -26,7 +31,19 @@
     var dd = date.getDate();
     var mm = date.getMonth()+1+delta; //January is 0!`
     var yyyy = date.getFullYear();
+    if (mm == 0){
+      mm = 12;
+      yyyy = yyyy-1;
+    }
+
     window.location.href = "/finances?date="+zeroPad(yyyy, 2)+"-"+zeroPad(mm, 2)+"-"+zeroPad(dd, 2);
+  }
+
+  function edit_expense(item){
+    console.log(item.parentElement)
+  }
+
+  function delete_expense(item){
   }
   </script>
 </head>
@@ -124,12 +141,13 @@ if (page_theme == "Dark"){
               </div>
               <div id="collapse_full_expense" class="collapse" aria-labelledby="heading_table" data-parent="#accordion">
                 <div style="height:250px; overflow-y:scroll; width:98%; margin-left:1%; background-color: white; color: black; margin-top 10px;">
-                  <table border="1">
+                  <table border="1" style="font-size:10px; width:100%;">
                     <tr>
-                      <th>date</th> <th>item</th> <th>cost</th> <th>type</th> <th></th>
+                      <th style="width:70px;">date</th> <th>item</th> <th style="width:70px;">cost</th> <th style="width:80px;">type</th> <th style="width:60px;"></th>
                     </tr>
                     {% for item in SpendingData%}
-                    <tr> <td> {{item[0]}}</td> <td> {{item[1]}}</td> <td> {{item[2]}}</td> <td> {{item[3]}}</td> <td> edit/delete</td></tr>
+                    <tr> <td> {{item[0]}}</td> <td> {{item[1]}}</td> <td> {{item[2]}}</td> <td> {{item[3]}}</td>
+                      <td> <span class="editDelete" onclick="edit_expense(this)">edit</span>/<span class="editDelete"  onclick="delete_expense(this)">delete</span></td></tr>
                     {%endfor%}
                   </table>
                 </div>
