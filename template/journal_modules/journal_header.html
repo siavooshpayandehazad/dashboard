@@ -1,14 +1,20 @@
-  <div class="col-sm-1 col-lg-1">
-      <h4> <font style="text-decoration: underline; color:white"> Journal </font></h4>
-  </div>
+<div class="col-sm-1 col-lg-1">
+    <h4> <font style="text-decoration: underline; color:white"> Journal </font></h4>
+</div>
 
-  <div class="col-sm-7 col-lg-7">
-    <div style="float:left; width:722px;">
-      <h2 class="title journal">
-          <a class= "arrow hover-red"  href="/journal?date={{year-1}}-01-01">&#9668;</a>
-          {{year}}
-          <a class= "arrow hover-red" href="/journal?date={{year+1}}-01-01">&#9658;</a>
-      </h2>
+<div class="col-sm-11 col-lg-11">
+    <div class="row">
+        <div class = "col" align="center">
+            <h4 class="title journal">
+                <a class= "arrow hover-red"  href="/journal?date={{year-1}}-01-01">&#9668;</a>
+                {{year}}
+                <a class= "arrow hover-red" href="/journal?date={{year+1}}-01-01">&#9658;</a>
+            </h4>
+        </div>
     </div>
-    {% include "journal_modules/daySelector.html" %}
-  </div>
+    <div class="row">
+        <div class = "col" align="center">
+            {% include "journal_modules/daySelector.html" %}
+        </div>
+    </div>
+</div>

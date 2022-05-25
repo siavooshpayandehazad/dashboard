@@ -38,7 +38,7 @@ if (page_theme == "Dark"){
     {% include "journal_modules/journal_header.html" %}
   </div>
 
-  <div class="row no-gutters">
+  <div class="row no-gutters" style="margin-top:5px;">
     <div class="col-sm-1 col-lg-1">
       <!-- left-side monthly selector -->
       {% with PageYear=year, PageMonth=month%}
@@ -65,15 +65,17 @@ if (page_theme == "Dark"){
 
     <div class="col-sm-4 col-lg-4">
       <!-- daily entry -->
-      {% include "journal_modules/daily_entry.html" %}
-    </div>
-  </div>
-
-
-  <div class="row">
-    <div class="col">
-      <div style="margin-right: 20px;float:right;">
-        <img src= "{{url_for('static', filename = 'decorationImages/journal_overlay.png')}}" style="float:right; width:120px"  alt="roy">
+      <div class="row">
+        <div class="col">
+            {% include "journal_modules/daily_entry.html" %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <div style="margin-right: 20px;float:right;">
+            <img src= "{{url_for('static', filename = 'decorationImages/journal_overlay.png')}}" style="float:right; width:120px"  alt="roy">
+          </div>
+        </div>
       </div>
     </div>
   </div>
