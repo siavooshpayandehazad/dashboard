@@ -24,9 +24,9 @@
   float:right
 }
 #dailyEntry{
-  margin-left: 5%;
+  margin-left: 1%;
   min-height:200px;
-  width:90%;
+  width:98%;
   outline:None;
   resize:None
 }
@@ -52,11 +52,11 @@ i.chevronIcon{
 
 div.dailyEntry{
  border-radius:12px;
- width:90%;
+ width:98%;
  height:280px;
  float:right;
  margin-right:20px;
- margin-left: 5%;
+ margin-left: 1%;
  background-color: var(--dailyentry-clr);
 }
 .mediaHoverDots{
@@ -77,4 +77,9 @@ div.tag{
   color: black;
   border-radius: 10px;
   padding: 0px 5px 0px 5px;
+}
+
+#todayslog {
+  width: calc(100% - 20px);
+  float: left;
 }

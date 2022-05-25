@@ -6,6 +6,7 @@
         data: {"type": "log", "value":newText, "date": document.getElementById("dailyEntry").name},
     });
     document.getElementById("todayslog").innerHTML = newText.replace(/\n/g, "<br>");;
+    displayLog()
   }
 </script>
 
@@ -14,5 +15,6 @@
    <form action="javascript:;" onsubmit="return submitEntry();">
       <textarea id="dailyEntry" name= "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" type="text" cols="40" rows="5" class="dailyEntry">{{todaysLogText|string()}}</textarea><br>
       <input type="submit" style="float: right; margin-right: 10px;">
+      <input type="button" style="float: right; margin-right: 10px;" onclick="displayLog()" value="close">
    </form>
 </div>

@@ -342,7 +342,7 @@ span.task{
   cursor: pointer;
   color:#b2182b;
 }
-input[type=submit] {
+input[type=submit], input[type=button]{
     padding:5px 15px;
     border:0 none;
     cursor:pointer;
@@ -350,7 +350,7 @@ input[type=submit] {
     border-radius: 5px;
     background:var(--submit-bg-clr);
 }
-input[type=submit]:hover {
+input[type=submit], input[type=button]:hover {
     background:var(--submit-bg-hvr-clr);
 }
 input.newTodo{
