@@ -72,7 +72,7 @@ class Journal(Resource):
                 if os.path.isfile(file):
                     os.remove(file)
                     parent_dir = "./static" + "/".join(args['value'].split("/static")[1].split("/")[:-1])
-                    logger.info("parent Directory:", parent_dir)
+                    logger.info(f"parent Directory: {parent_dir}")
                     if len(os.listdir(parent_dir)) == 0:
                         os.rmdir(parent_dir)
                 else:
