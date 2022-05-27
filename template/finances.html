@@ -19,7 +19,6 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-  <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
   <script type="text/javascript">
     const zeroPad = (num, places) => String(num).padStart(places, '0')
 
@@ -40,12 +39,61 @@
   }
 
   function edit_expense(item){
-    console.log(item.parentElement)
+    old_name = item.parentElement.parentElement.querySelector(".name").textContent
+    old_date = item.parentElement.parentElement.querySelector(".date").textContent
+    old_cost = item.parentElement.parentElement.querySelector(".cost").textContent
+    old_type = item.parentElement.parentElement.querySelector(".type").textContent
+    res = window.prompt("Update spending for day " + old_date + "(date, name, cost, type)?",
+                        old_date + ", " + old_name +", " + old_cost + ", " + old_type);
+    res = res.split(",");
+
+    new_date = res[0]
+    new_name = res[1]
+    new_cost = res[2]
+    new_type = res[3]
+
+    $.ajax({
+            type: "POST",
+            url: "/finances",
+            data: {"action":"update",
+                   "value": JSON.stringify({"date": new_date, "name": new_name, "cost": new_cost, "type": new_type}),
+                   "oldValue": JSON.stringify({"date": old_date, "name": old_name, "cost": old_cost, "type": old_type})
+                   },
+            error: function(data) {
+              window.alert("spending tracker failed to submit the value...")
+            }
+          });
+    item.parentElement.parentElement.querySelector(".date").textContent = new_date
+    item.parentElement.parentElement.querySelector(".name").textContent = new_name
+    item.parentElement.parentElement.querySelector(".cost").textContent = new_cost
+    item.parentElement.parentElement.querySelector(".type").textContent = new_type
   }
 
   function delete_expense(item){
+    name = item.parentElement.parentElement.querySelector(".name").textContent
+    date = item.parentElement.parentElement.querySelector(".date").textContent
+    cost = item.parentElement.parentElement.querySelector(".cost").textContent
+    type = item.parentElement.parentElement.querySelector(".type").textContent
+
+    decision = confirm("you are permenently deleting "+name+" item! are you sure?");
+    if(decision != true){
+      return;
+    }
+    $.ajax({
+            type: "POST",
+            url: "/finances",
+            data: {"action":"delete",
+                   "value": JSON.stringify({"date": date, "name": name, "cost": cost, "type": type}),
+                   },
+            error: function(data) {
+              window.alert("spending tracker failed to delete the value...")
+            }
+          });
+    row = item.parentElement.parentElement;
+    row.parentElement.removeChild(row);
   }
   </script>
+  <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
 </head>
 
 
@@ -146,8 +194,12 @@ if (page_theme == "Dark"){
                       <th style="width:70px;">date</th> <th>item</th> <th style="width:70px;">cost</th> <th style="width:80px;">type</th> <th style="width:60px;"></th>
                     </tr>
                     {% for item in SpendingData%}
-                    <tr> <td> {{item[0]}}</td> <td> {{item[1]}}</td> <td> {{item[2]}}</td> <td> {{item[3]}}</td>
-                      <td> <span class="editDelete" onclick="edit_expense(this)">edit</span>/<span class="editDelete"  onclick="delete_expense(this)">delete</span></td></tr>
+                    <tr> <td class="date"> {{item[0]}}</td>
+                         <td class="name"> {{item[1]}}</td>
+                         <td class="cost"> {{item[2]}}</td>
+                         <td class="type"> {{item[3]}}</td>
+                         <td> <span class="editDelete" onclick="edit_expense(this)">edit</span>/<span class="editDelete"  onclick="delete_expense(this)">delete</span></td>
+                    </tr>
                     {%endfor%}
                   </table>
                 </div>
