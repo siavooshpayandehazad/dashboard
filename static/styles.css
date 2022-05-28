@@ -116,9 +116,9 @@ div.tabBar{
   height:30px;
 }
 div.tabButton{
-   width: 60px;
+   width: 45px;
    height: 25px;
-   margin-right: 4px;
+   margin-right: 3px;
    padding-top:5px;
    border-radius:5px 5px 0px 0px;
    color:var(--tabbtn-font-clr);
