@@ -317,7 +317,7 @@ function toggleOverlay(displayStatus){
 </div>
 
 <div style = "width:75%; float:left; margin-bottom:10px;">
-  <b class="titleNewTask">Add new task:</b> <input id="task" name ="{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}"  type="text" class="newTodo">
+    <b class="titleNewTask">Add new task:</b> <textarea id="task" name ="{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}"  type="text" class="newTodo"></textarea>
 </div>
 
 <i class="fa fa-search todoSearch" style="margin-top:5px" onclick="toggleOverlay('block')"></i>
@@ -460,9 +460,9 @@ function toggleOverlay(displayStatus){
     return true;
   }
 
+
   document.getElementById('task').addEventListener('keypress', function submitonEnter(event) {
-      if (event.keyCode == 13) {
-              //console.log(document.getElementById("task").value
+      if ((event.keyCode == 13)) {
               var taskValue = document.getElementById("task").value;
               var taskDate = document.getElementById("task").name;
               if (!validateToDoInput(taskValue)){
