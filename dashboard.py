@@ -1,4 +1,4 @@
-from functionPackages.finance_package import generate_finance_db_tables
+from functionPackages.finance_package import generate_finance_db_tables, load_csv_to_finance_db
 from functionPackages.ha_package import generate_ha_db_tables
 from functionPackages.misc import *
 
@@ -92,7 +92,7 @@ def upload_file():
         return redirect(url_for('journal') + "?date=" + upload_date, 200)
 
 
-@app.route('/notesUploader', methods=['GET', 'POST'])
+@app.route('/noteUploader', methods=['GET', 'POST'])
 def upload_file_notes():
     if request.method == 'POST':
         notebook_label = request.form['notebookLabel']
@@ -106,6 +106,15 @@ def upload_file_notes():
             file_name = str(randint(1, 100)) + "_" + f.filename
         f.save(os.path.join("./static/photos/notebookPhotos/" + notebook_label, secure_filename(file_name)))
         return redirect(url_for('notes'), 200)
+
+
+@app.route('/financeUploader', methods=['POST'])
+def upload_file_finance():
+    if request.method == 'POST':
+        f = request.files['file']
+        f.save("./temp/finance.csv")
+        load_csv_to_finance_db("./temp/finance.csv", c_finance, conn_finance, lock)
+        return redirect(url_for('finances'), 200)
 
 
 @app.route('/shutdown', methods=['POST'])

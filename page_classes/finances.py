@@ -1,10 +1,8 @@
-import datetime
-
 from flask_restful import Resource
 from flask import render_template, make_response
 
 from functionPackages.charts import generate_finance_charts
-from functionPackages.finance_package import add_data_to_finance_db
+from functionPackages.finance_package import add_data_to_finance_db, load_csv_to_finance_db
 from functionPackages.misc import *
 
 logger = logging.getLogger(__name__)

@@ -833,7 +833,7 @@ def generate_month_spending_data(page_month, page_year, db_cursor, lock):
 
     break_down_values = []
     break_down_titles = []
-    for key in break_down:
+    for key in sorted(break_down.keys()):
         break_down_titles.append(key)
         break_down_values.append(break_down[key])
 

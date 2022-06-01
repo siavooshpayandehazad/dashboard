@@ -34,6 +34,10 @@
       mm = 12;
       yyyy = yyyy-1;
     }
+    if (mm == 13){
+      mm = 1;
+      yyyy = yyyy+1;
+    }
 
     window.location.href = "/finances?date="+zeroPad(yyyy, 2)+"-"+zeroPad(mm, 2)+"-"+zeroPad(dd, 2);
   }
@@ -92,6 +96,10 @@
     row = item.parentElement.parentElement;
     row.parentElement.removeChild(row);
   }
+
+  function validateForm(){
+    console.log("validate the form TBD")
+  }
   </script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
 </head>
@@ -130,7 +138,16 @@ if (page_theme == "Dark"){
   <div class="row" style="margin-top:10px;">
     <div class="col-sm-12 col-lg-6">
       <div class="row">
+        <div class="col-sm-12 col-lg-12">
+          <div style="background-color:white; margin-top:10px; margin-bottom:5px; border-radius:10px; padding:7px;">
+            <p style="color: black; margin-bottom: 5px;">Upload this month's expense file:</p>
+            <form  name="excelUploader" action = "/financeUploader" method = "POST" enctype = "multipart/form-data" onsubmit="return validateForm()">
+              <input type = "file" name = "file" />
+              <input type = "submit" style="float:right;" value="Upload" />
+          </form>
+          </div>
 
+        </div>
         <div class="col-sm-12 col-lg-12">
           <div id="accordion">
 
@@ -164,14 +181,12 @@ if (page_theme == "Dark"){
               </div>
               <div id="collapse_breakdown" class="collapse" aria-labelledby="heading_breakdown" data-parent="#accordion">
                 <div style="height:250px; overflow-y:scroll; width:98%; margin-left:1%; background-color: white; color: black; margin-top 10px;">
-
                   {% with dataset = breakDownValues, ChartMonthDays = breakDownTitles, chartType = "bar",
                 thresholds = [1000, 3000, 5000], trackerName = "spending breakdown", unit="(kr)", addAvg="false", tcf="true",
                 pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, clickable="false",
-                accumulate = "false", height = "100px",  width = "95%", HideLine="ture",
+                accumulate = "false", height = "110px",  width = "95%", HideLine="ture",
                 bgColors = ['rgba(128,205,193, 1)', 'rgba(107,174,214, 1)', 'rgba(254,196,79, 1)', 'rgba(252,146,114, 1)'],
                 bColors = ['rgba(53,151,143, 1)', 'rgba(33,113,181, 1)', 'rgba(236,112,20, 1)', 'rgba(203,24,29, 1)']%}
-
                   {% include "trackerModules/singleChart.html" %}
                 {% endwith %}
 

@@ -22,3 +22,12 @@ def add_data_to_finance_db(db_cursor, db_connection, date, name, cost, expense_t
     except Exception as err:
         print(err)
         return False
+
+
+def load_csv_to_finance_db(filename, db_cursor, db_connection, lock):
+    with open(filename, "r") as f:
+        line = f.readline().replace("\n", "")
+        while line != "":
+            data = line.split(",")
+            add_data_to_finance_db(db_cursor, db_connection, data[0], data[1], data[2], data[3], lock)
+            line = f.readline().replace("\n", "")
