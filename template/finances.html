@@ -99,6 +99,16 @@
 
   function validateForm(){
     console.log("validate the form TBD")
+    var fileName = document.forms["csvUploader"]["file"].value;
+    if (fileName == "") {
+      alert("Name must be filled out");
+      return false;
+    }
+    extension = fileName.split(".")[1].toLowerCase()
+    if(extension !="csv"){
+      alert("only the following extensions are allowed: csv");
+      return false;
+    }
   }
   </script>
   <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
@@ -140,9 +150,9 @@ if (page_theme == "Dark"){
       <div class="row">
         <div class="col-sm-12 col-lg-12">
           <div style="background-color:white; margin-top:10px; margin-bottom:5px; border-radius:10px; padding:7px;">
-            <p style="color: black; margin-bottom: 5px;">Upload this month's expense file:</p>
-            <form  name="excelUploader" action = "/financeUploader" method = "POST" enctype = "multipart/form-data" onsubmit="return validateForm()">
-              <input type = "file" name = "file" />
+            <p style="color: black; margin-bottom: 5px;">Upload an expense file (.csv):</p>
+            <form  name="csvUploader" action = "/financeUploader" method = "POST" enctype = "multipart/form-data" onsubmit="return validateForm()">
+              <input type = "file" name = "file" style="color:black;" />
               <input type = "submit" style="float:right;" value="Upload" />
           </form>
           </div>
