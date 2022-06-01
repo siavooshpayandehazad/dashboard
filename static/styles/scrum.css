@@ -10,10 +10,9 @@ div.ScrumCard{
 }
 div.NewScrumCardContainer{
   color:black;
-  margin-left:10%;
+  margin-left:1%;
   background-color: white;
   height:35px;
-  width:70%;
   border-radius:10px;
   float:left;
   padding-top: 5px;
