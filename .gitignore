@@ -6,12 +6,8 @@ static/docs/
 static/decorationImages/
 serverScripts/reports/
 homeAutomation
-journal.db
-test.db
-ha.db
+*.db
 backups/
 venv*
 tests/.coverage
-tests/test.db
 logs/*
-/learning.db
