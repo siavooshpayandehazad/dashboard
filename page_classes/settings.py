@@ -39,9 +39,11 @@ class Settings(Resource):
                          "EnableEventNotifications": enable_event_notifications,
                          "EnableDailyDigest": enable_daily_digest
                          }
+        weather_api_key = fetch_setting_param_from_db(self.c, "weather_appid", self.lock)
         return make_response(render_template('settings.html', activityList=activity_list,
                                              audiobooksPath=audiobooks_path, pageTheme=page_theme,
                                              email_setting=email_setting, latitude=latitude,
+                                             weatherApiKey=weather_api_key,
                                              longitude=longitude, loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):
@@ -87,5 +89,9 @@ class Settings(Resource):
             value_dict = eval((args['value']))
             update_setting_param(self.c, self.conn, "latitude", value_dict["latitude"], self.lock)
             update_setting_param(self.c, self.conn, "longitude", value_dict["longitude"], self.lock)
+            return "succeeded", 200
+        if args['type'] == "api_key":
+            value_dict = eval((args['value']))
+            update_setting_param(self.c, self.conn, "weather_appid", value_dict["weather_appid"], self.lock)
             return "succeeded", 200
         return "Done", 200
