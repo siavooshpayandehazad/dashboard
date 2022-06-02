@@ -33,3 +33,14 @@ just run:
    cd tests
    pytest
 ```
+
+
+### to add a new tracker
+add your tracker in `tracker_settings` in `package.py`.
+update the following functions: 
+* `misc.py`: 
+  * insert empty line in DB in `add_tracker_item_to_table`
+  * tracker item in `generate_db_tables`
+  * additional 'nan' in `clean_db`
+* `charts.py`:
+  * add new reader entry in `get_chart_data`

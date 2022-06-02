@@ -155,7 +155,7 @@ def get_cal_events_month(today_date: str, db_cursor, lock) -> list:
 def get_today_logs(db_cursor, today_date: str, lock):
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM tracker WHERE date = ? """, (today_date,))
-    log_value = db_cursor.fetchall()[0][14]
+    log_value = db_cursor.fetchall()[0][tracker_settings["log"]["index"]]
     lock.release()
     if len(log_value) > 0:
         today_log = log_value.replace("\n", "<br>")
@@ -206,13 +206,14 @@ def add_tracker_item_to_table(item: str, item_list: list, table_name: str,
     year = int(date.split("-")[0])
     temporary_data.pop(year, None)
 
+    # insert empty line in DB
     lock.acquire(True)
     db_cursor.execute("SELECT * FROM tracker WHERE date = ?", (date,))
     fetched_data = db_cursor.fetchall()
     if len(fetched_data) == 0:
-        db_cursor.execute("INSERT INTO tracker VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        db_cursor.execute("INSERT INTO tracker VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                           (date, "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan",
-                           "nan", "nan", "nan", "nan"))
+                           "nan", "nan", "nan", "nan", "nan"))
         db_connection.commit()
     lock.release()
 
@@ -428,7 +429,7 @@ def generate_db_tables(db_cursor, db_connection, lock):
                  work_hour text,
                  HR_Min text, HR_Max text, BP_Min text, BP_Max text, BO text,
                  sleepTime text, weight text, steps text, hydration text, 
-                 run text, pace text,
+                 run text, pace text, coffee text,
                  mood_name text, log text,
                  activity_tracker_name text, 
                  activity_planner_name text
@@ -754,9 +755,9 @@ def clean_db(table_name: str, db_connection, db_cursor, lock):
         db_cursor.execute("SELECT * FROM tracker WHERE date = ?", (date,))
         fetched_data = db_cursor.fetchall()
         if len(fetched_data) == 0:
-            db_cursor.execute("INSERT INTO tracker VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            db_cursor.execute("INSERT INTO tracker VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                               (date, "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan",
-                               "nan", "nan", "nan", "nan"))
+                               "nan", "nan", "nan", "nan", "nan"))
             db_connection.commit()
 
         db_cursor.execute("UPDATE tracker SET " + "activity_planner_name" + " = ? WHERE date = ?", (str(value), date,))

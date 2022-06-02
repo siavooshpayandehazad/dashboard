@@ -116,6 +116,16 @@
             {% include "trackerModules/singleChart.html" %}
             {% endwith %}
         </div>
+        <div class="col-sm-6 col-lg-4">
+            {% with dataset = ChartData["monthsCoffee"], ChartMonthDays = ChartMonthDays, chartType = "bar",
+            thresholds = [3, 5], trackerName = "coffee", unit="", addAvg="true", tcf="false",
+            pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
+            accumulate = "false", height = "140px", width = "95%", url="/",
+            bgColors = ['rgba(254,227,145, 1)', 'rgba(254,153,41, 1)', 'rgba(153,52,4, 1)'],
+            bColors = ['rgba(254,227,145, 1)', 'rgba(254,153,41, 1)', 'rgba(153,52,4, 1)']%}
+            {% include "trackerModules/singleChart.html" %}
+            {% endwith %}
+        </div>
     </div>
 
     {% with dir="right" %}

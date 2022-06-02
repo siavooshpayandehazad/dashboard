@@ -565,6 +565,7 @@ def get_chart_data(page_month: int, page_year: int, number_of_days: int, c, lock
     chart_data["monthsSleepTimes"] = generate_monthly_chart_data(page_month, page_year, "sleepTracker", c, lock)
     chart_data["monthsSteps"] = generate_monthly_chart_data(page_month, page_year, "stepTracker", c, lock)
     chart_data["monthsHydration"] = generate_monthly_chart_data(page_month, page_year, "hydrationTracker", c, lock)
+    chart_data["monthsCoffee"] = generate_monthly_chart_data(page_month, page_year, "coffeeTracker", c, lock)
     chart_data["monthsRuns"] = generate_monthly_chart_data(page_month, page_year, "runningTracker", c, lock)
     chart_data["ChartMonthDays"] = [str(i) for i in range(1, number_of_days + 1)]
     chart_data["travels"] = get_travel_destinations(c, lock)

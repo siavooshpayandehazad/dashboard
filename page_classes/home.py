@@ -100,7 +100,7 @@ class Dash(Resource):
         delete = False
         if len(args['value'].strip()) == 0:
             delete = True
-        if args['tracker_type'] in ['sleep', 'running', 'pace', 'step', 'weight', 'work', 'hydration']:
+        if args['tracker_type'] in ['sleep', 'running', 'pace', 'step', 'weight', 'work', 'hydration', 'coffee']:
             return add_tracker_item_to_table(args['value'].lower(), [], args['tracker_type'] + "Tracker",
                                              today_date, delete, self.c, self.conn, self.lock)
         if args['tracker_type'] in ['HR', 'BP']:
