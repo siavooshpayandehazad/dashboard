@@ -543,7 +543,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
         <td style="width: 6.5%;  border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff; vertical-align:top"> {{'%02d' %(i)}}:00 </td>
         {%for j in range(1, 8)%}
           {%if j == 1%}
-              {%if (i < 8) or (i > 17)%}
+              {%if (i < 8) or (i > 16)%}
                   <td style = "width: 13.35%; border-left: 1px solid #9ecae1; background-color:#f0f0f0" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
                 {%else%}
                   <td style = "width: 13.35%; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
@@ -553,7 +553,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
               {%if (j == 6) or (j == 7)%}
                 <td style="width: 13.35%; background-color:#deebf7" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
               {%else%}
-                {%if (i < 8) or (i > 17)%}
+                {%if (i < 8) or (i > 16)%}
                   <td style="width: 13.35%; background-color:#f0f0f0" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
                 {%else%}
                   <td style="width: 13.35%;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
@@ -619,7 +619,7 @@ function drawCurrentTime(){
   }
   var cell = table.rows[hours-parseInt({{daysBeginning}})+calOffsetRows].cells.item(todayColl);
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-  div.style.top  =  (hours-parseInt({{daysBeginning}})+calOffsetRows)*38 + 77 + (parseFloat(mins/60)*40) + "px";
+  div.style.top  =  cell.getBoundingClientRect().top - table.getBoundingClientRect().top + 28 + (parseFloat(mins/60)*(cell.getBoundingClientRect().height)) + "px";
   div.style.left = (cell.getBoundingClientRect().x+scrollLeft)+"px";
   table.appendChild(div)
 }
