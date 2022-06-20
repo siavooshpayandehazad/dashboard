@@ -285,10 +285,8 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   timeContainer.style.marginLeft="5px";
   var text1 = document.createElement("span");
   text1.textContent= "Date: ";
-  var daySelector = document.createElement("textarea");
-  daySelector.style.resize="none";
-  daySelector.rows = 1;
-  daySelector.cols = 15;
+  var daySelector = document.createElement("input");
+  daySelector.type="date";
   daySelector.value="{{year|safe}}-"+zeroPad(selectedMonth, 2)+"-"+zeroPad(selectedDay, 2);
   daySelector.setAttribute('id', 'daySelector');
 
@@ -308,40 +306,33 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   alldayContainer.appendChild(allDayCheckBox);
   alldayContainer.appendChild(allDayText);
 
-  var startTime = document.createElement("textarea");
-  var stopTime  = document.createElement("textarea");
+  var startTime = document.createElement("input");
+  var stopTime  = document.createElement("input");
+  startTime.type = "time";
+  stopTime.type = "time";
   startTime.classList.add("calEventTime")
   stopTime.classList.add("calEventTime")
-  startTime.style.resize="none";
-  stopTime.style.resize="none";
-  startTime.rows = 1;
-  stopTime.rows = 1;
-  startTime.cols = 5;
-  stopTime.cols = 5;
 
-  if (inStartTime === null){
+  console.log()
+  if ((inStartTime === null)){
     startTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("startTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows),2)+":00";
     stopTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("stopTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows)+1, 2)+":00";
-    if (calType == "week"){
-      if((senderElement.tagName == "DIV")  && (startTime.value=="None")){
+      if((senderElement.tagName == "DIV")  && ((startTime.value=="None") || (startTime.value==""))){
         allDayCheckBox.checked = true;
         startTime.disabled=true;
         stopTime.disabled=true;
       }
-    }
+
   }else{
     startTime.value = inStartTime;
     stopTime.value  = inEndTime;
   }
 
-  var text2 = document.createElement("span");
   var text3 = document.createElement("span");
-  text2.textContent= "From: ";
-  text3.textContent= "  To: ";
+  text3.textContent= " - ";
   timeContainer.appendChild(text1);
   timeContainer.appendChild(daySelector);
   timeContainer.appendChild(alldayContainer);
-  timeContainer.appendChild(text2);
   timeContainer.appendChild(startTime);
   timeContainer.appendChild(text3);
   timeContainer.appendChild(stopTime);
