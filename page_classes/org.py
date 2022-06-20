@@ -35,6 +35,8 @@ class Org(Resource):
 
         cal_date = get_cal_events_week(today_date, self.c, self.lock)
         cal_month = get_cal_events_month(today_date, self.c, self.lock)
+
+        vacations = get_all_vacations(today_date, self.c, self.lock)
         # ---------------------------
         header_dates = []
         day_val = datetime.datetime.strptime(today_date, '%Y-%m-%d') - datetime.timedelta(days=week_day)  # week's start
@@ -46,7 +48,7 @@ class Org(Resource):
             render_template('org.html', day=day, month=month, year=year, weekDay=days_of_the_week[week_day],
                             monthsBeginning=months_beginning_week_day, todayTodos=today_todos, overDue=all_due_events,
                             numberOfDays=number_of_days, thisMonthsEvents=this_months_events, calDate=cal_date,
-                            calMonth=cal_month, headerDates=header_dates,
+                            calMonth=cal_month, headerDates=header_dates, vacations=vacations,
                             Backlog=scrum_board_lists["backlog"], ScrumTodo=scrum_board_lists["todo"],
                             inProgress=scrum_board_lists["in progress"], done=scrum_board_lists["done"],
                             ChartMonthDays=chart_month_days, ChartDoneTasks=chart_done_tasks,

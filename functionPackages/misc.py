@@ -839,3 +839,17 @@ def generate_month_spending_data(page_month, page_year, db_cursor, lock):
         break_down_values.append(break_down[key])
 
     return months_vals, break_down_values, break_down_titles
+
+
+def get_all_vacations(today_date, db_cursor, lock):
+    day, month, year = separate_day_month_year(today_date)
+    lock.acquire(True)
+    db_cursor.execute("""SELECT * FROM calendar WHERE date >= ? and date <= ?  """,
+                      (str(year)+"-01-01", str(year)+"-12-31",))
+    all_year_events = db_cursor.fetchall()
+    lock.release()
+    vacations = []
+    for item in all_year_events:
+        if "vacation" in item[3].lower():
+            vacations.append(item[0])
+    return sorted(vacations)
