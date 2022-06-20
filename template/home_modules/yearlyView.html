@@ -17,22 +17,22 @@
     {% endwith %}
 
     <div class="row">
-        <div class="col-sm-12 col-lg-6">
+        <div class="col-sm-10 col-lg-5 offset-sm-1">
             {% with dataset = ChartData["yearMood"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [1,2,3,4], trackerName = "yearly mood tracker", unit="", addAvg="true", tcf="true",
             pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
-            accumulate = "false", height = "100px", url="/",
+            accumulate = "false", height = "100px", url="/", width="100%",
             bgColors = ['rgba(244, 165, 130, 1)', 'rgb(253, 219, 199, 1)', 'rgb(222, 235, 247, 1)', 'rgb(159, 222, 208, 1)', 'rgb(29, 145, 192, 1)'],
             bColors =  ['rgba(227,26,28, 1)', 'rgb(253,141,60, 1)', 'rgb(107,174,214, 1)', 'rgb(66,146,198, 1)', 'rgb(8,48,107, 1)']%}
             {% include "trackerModules/singleChart.html" %}
             {% endwith %}
         </div>
 
-        <div class="col-sm-12 col-lg-6">
+        <div class="col-sm-10 col-lg-5 offset-sm-1 offset-lg-0">
             {% with dataset = ChartData["yearWH"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [10, 20, 30, 100], trackerName = "yearly work hour", unit="(hr)", addAvg="true", tcf="true",
             pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
-            accumulate = "false", height = "100px", url="/",
+            accumulate = "false", height = "100px", url="/", width="100%",
             bgColors = ['rgba(252,146,114, 1)', 'rgba(254,196,79, 1)', 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)'],
             bColors = ['rgba(203,24,29, 1)', 'rgba(236,112,20, 1)', 'rgba(33,113,181, 1)', 'rgba(53,151,143, 1)']%}
             {% include "trackerModules/singleChart.html" %}
@@ -45,65 +45,67 @@
     {% endwith %}
 
     <div class="row">
-        <div class="col-sm-12 col-lg-6">
+        <div class="col-sm-10 col-lg-5 offset-sm-1">
             {% with dataset = ChartData["yearRuns"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [10], trackerName = "yearly running", unit="(km)", addAvg="true", tcf="true",
             pointStyle = 'cicle', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
-            accumulate = "false", height = "100px", url="/",
+            accumulate = "false", height = "100px", url="/", width="100%",
             bgColors = ['rgba(254,217,118, 0.8)', 'rgba(253,141,60, 0.8)'],
             bColors = ['rgba(254,178,76, 1)', 'rgba(253,141,60, 1)']%}
             {% include "trackerModules/singleChart.html" %}
             {% endwith %}
         </div>
-        <div class="col-sm-12 col-lg-6">
-            {% with HR_Max = ChartData["yearHR_Max"], HR_Min = ChartData["yearHR_Min"], ChartMonthDays = ChartYearMonths, PageYear = PageYear, PageMonth = PageMonth, yearMonth = "year"%}
+        <div class="col-sm-10 col-lg-5 offset-sm-1 offset-lg-0">
+            {% with HR_Max = ChartData["yearHR_Max"], HR_Min = ChartData["yearHR_Min"], ChartMonthDays=ChartYearMonths,
+            PageYear = PageYear, PageMonth = PageMonth, yearMonth = "year", width="100%"%}
             {% include "trackerModules/heartRateTrackerYear.html" %}
             {% endwith %}
         </div>
 
-        <div class="col-sm-12 col-lg-6">
-            {% with BP_Max = ChartData["yearBP_Max"], BP_Min = ChartData["yearBP_Min"], ChartMonthDays = ChartYearMonths, PageYear = PageYear, PageMonth = PageMonth, yearMonth = "year"%}
+        <div class="col-sm-10 col-lg-5 offset-sm-1">
+            {% with BP_Max = ChartData["yearBP_Max"], BP_Min = ChartData["yearBP_Min"], ChartMonthDays=ChartYearMonths,
+                    PageYear = PageYear, PageMonth = PageMonth, yearMonth = "year", width="100%" %}
             {% include "trackerModules/bloodPressureTrackerYear.html" %}
             {% endwith %}
         </div>
 
-        <div class="col-sm-12 col-lg-6">
+        <div class="col-sm-10 col-lg-5 offset-sm-1 offset-lg-0">
             {% with dataset = ChartData["yearBO"], ChartMonthDays = ChartYearMonths, chartType = "line",
             thresholds = [], trackerName = "yearly blood oxygen", unit="(%)", addAvg="false", tcf="true",
             pointStyle = 'cicle', showTotalVal = False, suggestedMin = 90, yearMonth = "year", clickable="false",
-            accumulate = "false", height = "100px", url="/",
+            accumulate = "false", height = "100px", url="/", width="100%",
             bgColors = ['rgba(252,197,192, 0.3)'],
             bColors = ['rgba(221,52,151, 1)']%}
             {% include "trackerModules/singleChart.html" %}
             {% endwith %}
         </div>
 
-        <div class="col-sm-12 col-lg-6">
+        <div class="col-sm-10 col-lg-5 offset-sm-1">
             {% with dataset = ChartData["yearSleep"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [49], trackerName = "yearly sleep", unit="(hr)", addAvg="true", tcf="true",
             pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
-            accumulate = "false", height = "100px", url="/",
+            accumulate = "false", height = "100px", url="/", width="100%",
             bgColors = ['rgba(188,189,220, 1)', 'rgba(106,81,163, 1)'],
             bColors = ['rgba(158,154,200, 1)', 'rgba(106,81,163, 1)']%}
             {% include "trackerModules/singleChart.html" %}
             {% endwith %}
         </div>
-        <div class="col-sm-12 col-lg-6">
+        <div class="col-sm-10 col-lg-5  offset-sm-1 offset-lg-0">
             {% with dataset = ChartData["yearSteps"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [75000], trackerName = "yearly steps", unit="", addAvg="true", tcf="true",
             pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
-            accumulate = "false", height = "100px", url="/",
+            accumulate = "false", height = "100px", url="/", width="100%",
             bgColors = ['rgba(173,221,142, 1)', 'rgba(0,109,44, 1)'],
             bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
             {% include "trackerModules/singleChart.html" %}
             {% endwith %}
         </div>
 
-        <div class="col-sm-12 col-lg-6">
+        <div class="col-sm-10 col-lg-5 offset-sm-1">
             {% with dataset = ChartData["yearWeight"], ChartMonthDays = ChartYearMonths, chartType = "line",
             thresholds = [], trackerName = "yearly weight", unit="(kg)", addAvg="true", tcf="true",
             pointStyle = 'cicle', showTotalVal = False, suggestedMin = 60, yearMonth = "year", clickable="false",
-            accumulate = "false", height = "100px", url="/",
+            accumulate = "false", height = "100px", url="/", width="100%",
             bgColors = ['rgba(128,205,193, 0.3)'],
             bColors = ['rgba(53,151,143, 1)']%}
             {% include "trackerModules/singleChart.html" %}
@@ -111,11 +113,11 @@
         </div>
 
 
-        <div class="col-sm-12 col-lg-6">
+        <div class="col-sm-10 col-lg-5 offset-sm-1 offset-lg-0">
             {% with dataset = ChartData["yearHydr"], ChartMonthDays = ChartYearMonths, chartType = "bar",
             thresholds = [14], trackerName = "yearly hydration", unit="", addAvg="true", tcf="true",
             pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, yearMonth = "year", clickable="false",
-            accumulate = "false", height = "100px", url="/",
+            accumulate = "false", height = "100px", url="/", width="100%",
             bgColors = ['rgba(158,202,225, 1)', 'rgba(33,113,181, 1)'],
             bColors = ['rgba(116,196,118, 1)', 'rgba(0,109,44, 1)']%}
             {% include "trackerModules/singleChart.html" %}
