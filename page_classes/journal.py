@@ -36,7 +36,7 @@ class Journal(Resource):
         self.c.execute("""SELECT * FROM tracker WHERE date >= ? and date <= ? """,
                        (get_months_beginning(month, year).date(), get_months_end(month, year).date(),))
 
-        logged_days = [int(x[0].split("-")[2]) for x in self.c.fetchall() if x[14] != "nan"]
+        logged_days = [int(x[0].split("-")[2]) for x in self.c.fetchall() if x[tracker_settings["log"]["index"]] != "nan"]
         self.lock.release()
 
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
