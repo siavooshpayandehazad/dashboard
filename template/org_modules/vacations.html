@@ -1,0 +1,81 @@
+<script>
+
+    function updateItem(item){
+        value = item.childNodes[0].textContent;
+        item.childNodes[0].remove();
+        textArea = document.createElement("textarea");
+        textArea.cols = 4;
+        textArea.rows = 1;
+        textArea.id = item.id
+        textArea.style.resize= "none";
+        textArea.placeholder = value;
+        textArea.onkeypress = function(){
+            var key = window.event.keyCode;
+            if (key === 13) {
+                var new_value = this.value;
+                if(new_value == ""){
+                    new_value = this.placeholder;
+                 }
+                strongEl = document.createElement("strong");
+                strongEl.textContent = new_value
+                this.parentElement.appendChild(strongEl)
+                date = "{{year}}-{{'%02d' % (month)}}-{{day}}"
+                $.ajax({ type: "POST",
+                         url: "/org",
+                         data: {"type": "vacation",
+                                "value": JSON.stringify({"name": this.id, "value": new_value}),
+                                "date": date}
+                });
+                this.remove()
+
+                document.getElementById("remaining").textContent = parseInt(document.getElementById("thisYearVacs").textContent) +
+                    parseInt(document.getElementById("lastYearVacs").textContent) -  parseInt("{{vacations|length}}");
+
+            }
+        }
+        item.appendChild(textArea)
+    }
+</script>
+
+<div class="row">
+    <div class="col-sm-12 col-lg-12">
+        <h1 style="margin-top:15px;float:left;">
+            <font style="text-decoration: underline;"> Vacations </font>
+        </h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-2 col-lg-2">
+        <strong>Month's vacations:</strong>
+        <div style="height:150px; overflow-y:scroll">
+            <ul style="padding-left: 20px;">
+                {%for item in vacations%}
+                {%if (year|string)+"-"+('%02d'%month) in item%}
+                <li>{{item}}</li>
+                {%endif%}
+                {%endfor%}
+            </ul>
+        </div>
+    </div>
+    <div class="col-sm-2 col-lg-2" >
+        <strong>Year's vacations:</strong>
+        <div style="height:150px; overflow-y:scroll">
+            <ul style="padding-left: 20px;">
+                {%for item in vacations%}
+                <li>{{item}}</li>
+                {%endfor%}
+            </ul>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-6 offset-sm-2">
+        <strong>Stats:</strong>
+        <table border="0" style="color:white">
+            <tr> <td style="width:240px;">Vacation days this year ...............</td> <td><strong id="thisYearVacs" ondblclick="updateItem(this)">{{thisYearVacations}}</strong></td> </tr>
+            <tr> <td>Vacation days from last year .......</td> <td><strong id="lastYearVacs" ondblclick="updateItem(this)">{{vacationsFromLastYear}}</strong></td> </tr>
+            <tr> <td>Number of vacation days taken  ..</td> <td> <font style="color:#e25500"><strong>{{vacations|length}}</strong></font> </td> </tr>
+            <tr> <td>Remaining days ..........................</td> <td><font style="color:#03515f"><strong id="remaining">{{vacationsFromLastYear|int + thisYearVacations|int - vacations|length}}</strong></font></td> </tr>
+        </table>
+        <img style="position: absolute; right: 15px; bottom: 0; width: 300px;"
+             src="{{url_for('static', filename = 'decorationImages/mountain.png')}}">
+    </div>
+</div>

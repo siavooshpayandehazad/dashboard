@@ -37,6 +37,7 @@ class Org(Resource):
         cal_month = get_cal_events_month(today_date, self.c, self.lock)
 
         vacations = get_all_vacations(today_date, self.c, self.lock)
+        this_year_vacations, vacations_from_last_year = get_number_of_vacation_days(today_date, self.c, self.lock)
         # ---------------------------
         header_dates = []
         day_val = datetime.datetime.strptime(today_date, '%Y-%m-%d') - datetime.timedelta(days=week_day)  # week's start
@@ -49,6 +50,7 @@ class Org(Resource):
                             monthsBeginning=months_beginning_week_day, todayTodos=today_todos, overDue=all_due_events,
                             numberOfDays=number_of_days, thisMonthsEvents=this_months_events, calDate=cal_date,
                             calMonth=cal_month, headerDates=header_dates, vacations=vacations,
+                            vacationsFromLastYear = vacations_from_last_year, thisYearVacations = this_year_vacations,
                             Backlog=scrum_board_lists["backlog"], ScrumTodo=scrum_board_lists["todo"],
                             inProgress=scrum_board_lists["in progress"], done=scrum_board_lists["done"],
                             ChartMonthDays=chart_month_days, ChartDoneTasks=chart_done_tasks,
@@ -59,6 +61,16 @@ class Org(Resource):
         if not self.login.is_logged_in:
             return "user is not logged in", 401
         args = self.parser.parse_args()
+        if args['type'] == 'vacation':
+            value_dict = eval(args['value'])
+            if value_dict["name"] == "thisYearVacs":
+                update_vacation_days(args['date'], "yearsVacation", value_dict["value"],
+                                     self.c, self.conn, self.lock)
+            elif value_dict["name"] == "lastYearVacs":
+                update_vacation_days(args['date'], "vacationFromLastYear", value_dict["value"],
+                                     self.c, self.conn, self.lock)
+            return "done", 200
+
         if args['type'] == 'todo':
             if args['action'] == "search":
                 value_dict = eval((args['value']))

@@ -456,6 +456,9 @@ def generate_db_tables(db_cursor, db_connection, lock):
              name text, done text, type text, note text)""")
     db_cursor.execute("""CREATE TABLE if not exists Notes (
              Notebook text, Chapter text, Content text)""")
+
+    db_cursor.execute("""CREATE TABLE if not exists vacationDays (
+                 year text, yearsVacation text, vacationFromLastYear text)""")
     db_connection.commit()
     lock.release()
 
@@ -853,3 +856,27 @@ def get_all_vacations(today_date, db_cursor, lock):
         if "vacation" in item[3].lower():
             vacations.append(item[0])
     return sorted(vacations)
+
+
+def get_number_of_vacation_days(today_date, db_cursor, lock):
+    day, month, year = separate_day_month_year(today_date)
+    lock.acquire(True)
+    db_cursor.execute("""SELECT * FROM vacationDays WHERE year = ? """, (str(year),))
+    years_vacations = db_cursor.fetchall()[0]
+    lock.release()
+    if len(years_vacations) == 0:
+        years_vacations = [0, 0, 0]
+    return years_vacations[1], years_vacations[2]
+
+
+def update_vacation_days(today_date, label, value, db_cursor, db_connection, lock):
+    day, month, year = separate_day_month_year(today_date)
+    lock.acquire(True)
+    db_cursor.execute("""SELECT * FROM vacationDays WHERE year = ? """, (str(year),))
+    fetched_data = db_cursor.fetchall()
+    if len(fetched_data) == 0:
+        db_cursor.execute("""INSERT INTO vacationDays VALUES(?, ?, ?)""",
+                          (year, "0", "0"))
+    db_cursor.execute("UPDATE vacationDays SET " + label + " = ? WHERE year = ?", (value, str(year),))
+    db_connection.commit()
+    lock.release()
