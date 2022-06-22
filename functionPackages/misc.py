@@ -862,11 +862,11 @@ def get_number_of_vacation_days(today_date, db_cursor, lock):
     day, month, year = separate_day_month_year(today_date)
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM vacationDays WHERE year = ? """, (str(year),))
-    years_vacations = db_cursor.fetchall()[0]
+    years_vacations = db_cursor.fetchall()
     lock.release()
     if len(years_vacations) == 0:
-        years_vacations = [0, 0, 0]
-    return years_vacations[1], years_vacations[2]
+        years_vacations = [[0, 0, 0]]
+    return years_vacations[0][1], years_vacations[0][2]
 
 
 def update_vacation_days(today_date, label, value, db_cursor, db_connection, lock):

@@ -19,7 +19,7 @@
                 strongEl = document.createElement("strong");
                 strongEl.textContent = new_value
                 this.parentElement.appendChild(strongEl)
-                date = "{{year}}-{{'%02d' % (month)}}-{{day}}"
+                date = "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}"
                 $.ajax({ type: "POST",
                          url: "/org",
                          data: {"type": "vacation",
