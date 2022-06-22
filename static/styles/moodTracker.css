@@ -11,18 +11,19 @@
   font-size: 9px;
   color: black;
   border: 0px;
+  background-color: white;
 }
 .moodSelectorCell:hover{
   cursor: pointer;
 }
-th.moodTracker{
+th.moodTrackerHeader{
   border: 1px solid white;
   min-width:20px;
   text-align: center;
   font-size: 9px;
   color: black;
 }
-div.moodTracker {
+#moodTracker {
   width: 160px;
   margin-left: 10px;
   border-radius:12px;
@@ -48,4 +49,25 @@ td.moodselector{
 td.moodselector:hover{
   border: 1px solid black;
   cursor: pointer;
+}
+
+
+.awful{
+    background-color: #f4a582;
+}
+
+.bad{
+    background-color: #fddbc7;
+}
+
+.ok{
+    background-color: #deebf7;
+}
+
+.good{
+    background-color: #9FDED0;
+}
+
+.great{
+    background-color: #1d91c0;
 }

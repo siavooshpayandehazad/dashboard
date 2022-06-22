@@ -35,9 +35,9 @@
     div.classList.add("moodSelectorPopUp");
     scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
     scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    console.log(event, scrollLeft)
+    console.log(item.getBoundingClientRect())
     div.style.left = event.layerX+2+scrollLeft+"px";
-    div.style.top = event.layerY+2+scrollTop+"px";
+    div.style.top = event.layerY+2+"px";
 
     var table = document.createElement("table");
     var moods = ["Great", "Good", "OK", "Bad", "Awful"]
@@ -61,7 +61,7 @@
       table.appendChild(row);
     }
     div.appendChild(table);
-    var moodTracker = document.getElementsByClassName("moodTracker")[0];
+    var moodTracker = document.getElementById("moodTracker");
     moodTracker.appendChild(div);
     console.log(div)
   }
@@ -80,13 +80,13 @@
 </script>
 
 <!-- Mood Tracker-->
-<div class="moodTracker">
+<div id="moodTracker">
   <h4  class="title lightbg" style="margin-left:10px">mood tracker</h4>
   <table class="moodTrackerTable">
-    <tr> <th class="moodTracker"> M </th> <th class="moodTracker"> T </th>
-         <th class="moodTracker"> W </th> <th class="moodTracker"> T </th>
-         <th class="moodTracker"> F </th> <th class="moodTracker"> S </th>
-         <th class="moodTracker"> S </th>
+    <tr>
+        {% for weekday in "MTWTFSS" %}
+          <th class="moodTrackerHeader"> {{weekday}} </th>
+        {%endfor%}
     </tr>
     {% for day in days %}
       {% if day != None  %}
@@ -97,23 +97,12 @@
         {% for item in moods%}
           {%if item[0].split("-")[2]|int == day %}
                 {%set ns1.found = 1 %}
-                {% if item[1] == 'awful' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#f4a582" onclick="moodSelector(event, this)">{{ day }}</td>
-                {% elif item[1] == 'bad' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#fddbc7" onclick="moodSelector(event, this)">{{ day }}</td>
-                {% elif item[1] == 'ok' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#deebf7" onclick="moodSelector(event, this)">{{ day }}</td>
-                {% elif item[1] == 'good' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#9FDED0" onclick="moodSelector(event, this)">{{ day }}</td>
-                {% elif item[1] == 'great' %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="#1d91c0" onclick="moodSelector(event, this)">{{ day }}</td>
-                {% else  %}
-                  <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  onclick="moodSelector(event, this)">{{ day }}</td>
-                {% endif %}
+                  <!--item[1] contains the name of the mood-->
+                  <td id="{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell {{item[1]}}"  onclick="moodSelector(event, this)">{{day}}</td>
           {% endif %}
         {% endfor %}
         {%if ns1.found== 0 %}
-          <td id= "{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell",  bgcolor="white" onclick="moodSelector(event, this)">{{ day }}</td>
+          <td id="{{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}" class="moodSelectorCell"  bgcolor="white" onclick="moodSelector(event, this)">{{day}}</td>
         {% endif %}
       {% else %}
         <td>  </td>
