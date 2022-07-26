@@ -10,6 +10,12 @@
     <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <title>My Journal</title>
+    <style>
+        a{
+            font-size:20px;
+            color: #fa9fb5;
+        }
+    </style>
 </head>
 <body>
 
@@ -31,7 +37,7 @@ function moveFeed(dir){
     }else{
         index -= 1;
         if(index==0){
-            index = 3;
+            index = news_rss.length;
         }
     }
 
@@ -60,7 +66,7 @@ function pause_pressed(item){
     </div>
 
     <div class="row">
-        <div class="col-sm-12 col-xl-4">
+        <div class="col-sm-12 col-xl-8">
             <div style="background-color:#023858; border-radius:10px; margin-top:10px;  max-height:90vh">
                 <div class="row">
                     <div class="col-sm-2">
@@ -77,13 +83,41 @@ function pause_pressed(item){
                 </div>
                 <div style="height: 3px; margin-bottom: 10px; margin-left:10%; background-color:white; width:80%"></div>
                 {%for item in news_rss%}
-                <div id = "feed_div_{{loop.index}}" style="overflow-y: scroll; max-height:80vh; font-size:15px; width:95%; margin-left:2.5%; display: none">
+                <div id = "feed_div_{{loop.index}}" style="overflow-y: scroll; max-height:80vh; font-size:18px; width:95%; margin-left:2.5%; display: none">
                     <script src ={{item[1]}}></script>
                 </div>
                 {%endfor%}
             </div>
         </div>
         <div class="col-sm-12 col-xl-4">
+            <div style="background-color:#023858; border-radius:10px; margin-top:10px;">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div style="float:left; margin-left:10px; margin-top:5px;">
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <i class="fa fa-thermometer-full"  style="font-size:30px;margin-right:5px;margin-top:10px; text-shadow:1px 1px #49006a; color: rgba(255, 0, 0, {{weather_dict['temp']/40.0}});" aria-hidden="true"></i>
+                                </div>
+                                <div class="col-sm-10">
+                                    <p style="margin-top:0px; margin-bottom:0px; font-size:23px; font-weight:bold;">{{weather_dict["temp"]}} °C</p>
+                                    <p style="margin-top:0px; margin-bottom:0px">feels_like: {{weather_dict["feels_like"]}} °C</p>
+                                </div>
+                            </div>
+                            <p style="margin-top:0px; margin-bottom:0px; margin-left:35px;">humidity: {{weather_dict["humidity"]}} %</p>
+                            <p style="margin-top:0px; margin-bottom:0px; margin-left:35px;">pressure: {{weather_dict["pressure"]}} hPa</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 pl-0">
+                        <div style="float:left; margin-top: 10px;">
+                            <p style="font-size:18px">
+                                <i class="fa fa-sun-o" style="color:#feb24c"></i> <i class="fa fa-arrow-up" style="color:#feb24c; margin-right:5px;" aria-hidden="true"></i>{{weather_dict["sunrise"]}}<br>
+                                <i class="fa fa-sun-o" style="color:#df65b0"></i> <i class="fa fa-arrow-down" style="color:#df65b0; margin-right:5px;" aria-hidden="true"></i>{{weather_dict["sunset"]}}<br>
+                                uvi: {{weather_dict["uvi"]}}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div style="background-color:#023858; border-radius:10px; margin-top:10px; padding:10px; width:100%">
                 <h4>News and Podcast</h4>
                 <div id="accordion">
@@ -133,36 +167,7 @@ function pause_pressed(item){
                 </div>
             </div>
         </div>
-        <div class="col-sm-12 col-xl-4">
-            <div style="background-color:#023858; border-radius:10px; margin-top:10px;">
-                <div class="row">
-                    <div class="col-sm-6">
-                        <div style="float:left; margin-left:10px; margin-top:5px;">
-                            <div class="row">
-                                <div class="col-sm-2">
-                                    <i class="fa fa-thermometer-full"  style="font-size:30px;margin-right:5px;margin-top:10px; text-shadow:1px 1px #49006a; color: rgba(255, 0, 0, {{weather_dict['temp']/40.0}});" aria-hidden="true"></i>
-                                </div>
-                                <div class="col-sm-10">
-                                    <p style="margin-top:0px; margin-bottom:0px; font-size:23px; font-weight:bold;">{{weather_dict["temp"]}} °C</p>
-                                    <p style="margin-top:0px; margin-bottom:0px">feels_like: {{weather_dict["feels_like"]}} °C</p>
-                                </div>
-                            </div>
-                            <p style="margin-top:0px; margin-bottom:0px; margin-left:35px;">humidity: {{weather_dict["humidity"]}} %</p>
-                            <p style="margin-top:0px; margin-bottom:0px; margin-left:35px;">pressure: {{weather_dict["pressure"]}} hPa</p>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 pl-0">
-                        <div style="float:left; margin-top: 10px;">
-                            <p style="font-size:18px">
-                                <i class="fa fa-sun-o" style="color:#feb24c"></i> <i class="fa fa-arrow-up" style="color:#feb24c; margin-right:5px;" aria-hidden="true"></i>{{weather_dict["sunrise"]}}<br>
-                                <i class="fa fa-sun-o" style="color:#df65b0"></i> <i class="fa fa-arrow-down" style="color:#df65b0; margin-right:5px;" aria-hidden="true"></i>{{weather_dict["sunset"]}}<br>
-                                uvi: {{weather_dict["uvi"]}}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </div>
 </div>
 
@@ -189,6 +194,10 @@ function pause_pressed(item){
         }
     }
     set_podcast_play_time()
+
+    // clean the titles from the rss feeds
+    all_titles = document.getElementsByClassName("feed-title")
+    while (all_titles.length> 0) all_titles[0].remove();
 </script>
 </body>
 </html>

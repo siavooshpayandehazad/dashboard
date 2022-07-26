@@ -25,6 +25,7 @@ class News(Resource):
         news_rss = [("Democracy now!", "//rss.bloople.net/?url=https%3A%2F%2Fwww.democracynow.org%2Fdemocracynow.rss&detail=50&limit=5&showtitle=false&type=js"),
                     ("Pink News", "//rss.bloople.net/?url=https%3A%2F%2Fwww.pinknews.co.uk%2Ffeed%2F&detail=50&limit=5&showtitle=false&type=js"),
                     ("truthout","//rss.bloople.net/?url=https%3A%2F%2Ftruthout.org%2Flatest%2Ffeed%2F&detail=50&limit=6&showtitle=false&type=js"),
+                    ("Inside Higher-Ed","//rss.bloople.net/?url=https%3A%2F%2Fwww.insidehighered.com%2Fnews%2Ffeed&detail=50&limit=5&showtitle=false&striphtml=true&type=js"),
                     ("BBC World", "//rss.bloople.net/?url=http%3A%2F%2Ffeeds.bbci.co.uk%2Fnews%2Fvideo_and_audio%2Fworld%2Frss.xml%23&detail=50&limit=5&showtitle=false&type=js")]
 
         today = datetime.datetime.today()
