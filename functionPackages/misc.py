@@ -155,8 +155,13 @@ def get_cal_events_month(today_date: str, db_cursor, lock) -> list:
 def get_today_logs(db_cursor, today_date: str, lock):
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM tracker WHERE date = ? """, (today_date,))
-    log_value = db_cursor.fetchall()[0][tracker_settings["log"]["index"]]
+    log_value = db_cursor.fetchall()
     lock.release()
+    try:
+        log_value = log_value[0][tracker_settings["log"]["index"]]
+    except Exception as err:
+        print(err)
+        log_value = []
     if len(log_value) > 0:
         today_log = log_value.replace("\n", "<br>")
         today_log_text = log_value

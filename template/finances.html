@@ -171,11 +171,11 @@ if (page_theme == "Dark"){
               </div>
               <div id="collapse_spending" class="collapse show" aria-labelledby="heading_spending" data-parent="#accordion">
                 {% with dataset = ChartData["MonthlySpending"], ChartMonthDays = ChartData["ChartMonthDays"], chartType = "bar",
-                thresholds = [200, 500, 1000], trackerName = "spending", unit="(kr)", addAvg="true", tcf="true",
-                pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
-                accumulate = "true", height = "100px",  width = "95%", url="/finances",
-                bgColors = ['rgba(128,205,193, 1)', 'rgba(107,174,214, 1)', 'rgba(254,196,79, 1)', 'rgba(252,146,114, 1)'],
-                bColors = ['rgba(53,151,143, 1)', 'rgba(33,113,181, 1)', 'rgba(236,112,20, 1)', 'rgba(203,24,29, 1)']%}
+                  thresholds = [200, 500, 1000], trackerName = "spending", unit="(kr)", addAvg="true", tcf="true",
+                  pointStyle = 'rect', showTotalVal = True, suggestedMin = 0, yearMonth = "month", clickable="true",
+                  accumulate = "true", height = "100px",  width = "95%", url="/finances",
+                  bgColors = [ 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)', 'rgba(254,196,79, 1)', 'rgba(252,146,114, 1)'],
+                  bColors = ['rgba(33,113,181, 1)', 'rgba(53,151,143, 1)', 'rgba(236,112,20, 1)', 'rgba(203,24,29, 1)']%}
                 {% include "trackerModules/spendingTracker.html" %}
                 {% endwith %}
               </div>
@@ -192,11 +192,11 @@ if (page_theme == "Dark"){
               <div id="collapse_breakdown" class="collapse" aria-labelledby="heading_breakdown" data-parent="#accordion">
                 <div style="height:250px; overflow-y:scroll; width:98%; margin-left:1%; background-color: white; color: black; margin-top 10px;">
                   {% with dataset = breakDownValues, ChartMonthDays = breakDownTitles, chartType = "bar",
-                thresholds = [1000, 3000, 5000], trackerName = "spending breakdown", unit="(kr)", addAvg="false", tcf="true",
-                pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, clickable="false",
-                accumulate = "false", height = "110px",  width = "95%", HideLine="ture",
-                bgColors = ['rgba(128,205,193, 1)', 'rgba(107,174,214, 1)', 'rgba(254,196,79, 1)', 'rgba(252,146,114, 1)'],
-                bColors = ['rgba(53,151,143, 1)', 'rgba(33,113,181, 1)', 'rgba(236,112,20, 1)', 'rgba(203,24,29, 1)']%}
+                    thresholds = [1000, 3000, 5000], trackerName = "spending breakdown", unit="(kr)", addAvg="false", tcf="true",
+                    pointStyle = 'rect', showTotalVal = False, suggestedMin = 0, clickable="false",
+                    accumulate = "false", height = "110px",  width = "95%", HideLine="ture",
+                    bgColors = [ 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)', 'rgba(254,196,79, 1)', 'rgba(252,146,114, 1)'],
+                    bColors = ['rgba(33,113,181, 1)', 'rgba(53,151,143, 1)', 'rgba(236,112,20, 1)', 'rgba(203,24,29, 1)']%}
                   {% include "trackerModules/singleChart.html" %}
                 {% endwith %}
 
@@ -238,6 +238,18 @@ if (page_theme == "Dark"){
 
     <div class="col-sm-12 col-lg-6">
       <div class="row">
+        <div class="col-sm-12 col-lg-12">
+          <div style="width:95%">
+            {% with dataset = ChartData["YearlySpending"], ChartMonthDays = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], chartType = "bar",
+              thresholds = [15000, 20000, 30000], trackerName = "yearly spending", unit="(kr)", addAvg="true", tcf="true",
+              pointStyle = 'rect', showTotalVal = true, suggestedMin = 0, yearMonth = "year", clickable="false",
+              accumulate = "false", height = "100px", url="", width="100%", HideLine="ture",
+              bgColors = [ 'rgba(107,174,214, 1)', 'rgba(128,205,193, 1)', 'rgba(254,196,79, 1)', 'rgba(252,146,114, 1)'],
+              bColors = ['rgba(33,113,181, 1)', 'rgba(53,151,143, 1)', 'rgba(236,112,20, 1)', 'rgba(203,24,29, 1)']%}
+              {% include "trackerModules/singleChart.html" %}
+              {% endwith %}
+            </div>
+        </div>
         <div class="col-sm-12 col-lg-12">
           {% with YearsSavings = ChartData["YearsSavings"], ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
           PageYear = PageYear, PageMonth = PageMonth%}
