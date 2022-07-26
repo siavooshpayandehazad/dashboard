@@ -58,9 +58,9 @@ class Journal(Resource):
             self.lock.acquire(True)
             self.c.execute("""SELECT * FROM tracker WHERE date = ? """, (today_date,))
             if len(self.c.fetchall()) == 0:
-                self.c.execute("INSERT INTO tracker VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                self.c.execute("INSERT INTO tracker VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                                (today_date, "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan", "nan",
-                                "nan", "nan", "nan", "nan", "nan"))
+                                "nan", "nan", "nan", "nan", "nan", "nan"))
             self.c.execute("UPDATE tracker SET log = ? WHERE date = ?", (log_entry, today_date,))
             self.conn.commit()
             self.lock.release()
