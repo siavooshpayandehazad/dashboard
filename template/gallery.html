@@ -111,7 +111,7 @@ if (page_theme == "Dark"){
           </div>
           <div style="width:100%;float:left;">
             {% for media in monthsPhotos[i]%}
-            <div style="float:left; position: relative;">
+            <div style="float:left; position: relative; height:120px;">
               {%if ".mp4" in media%}
               <i class = "fa fa-video-camera" style="color:black; position:absolute; left:5px; top:5px; z-index:2; width:15px; height:15px; "></i>
               <video onclick="mediaClicked(this)" class="galleryPhoto">

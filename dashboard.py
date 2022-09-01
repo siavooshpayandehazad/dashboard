@@ -9,6 +9,7 @@ from flask_restful import reqparse, Api
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from werkzeug.utils import secure_filename
+from flask import render_template, make_response
 import os
 from random import randint
 import logging
@@ -66,6 +67,28 @@ generate_finance_db_tables(c_finance, conn_finance, lock)
 generate_ha_db_tables(c_ha, conn_ha, lock)
 
 setup_setting_table(c, conn, lock)
+session_id = ""
+
+
+@app.route("/login", methods=['GET', 'POST'])
+def login_page():
+    page_theme = fetch_setting_param_from_db(c, "Theme", lock)
+    headers = {'Content-Type': 'text/html'}
+    return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
+
+
+@app.route("/login_user", methods=['GET', 'POST'])
+def login_user():
+    password = fetch_setting_param_from_db(c, "password", lock)
+    req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
+    user_logged_in = login.verify_user(password, request.form.get('pass', ""), req_session_id)
+    if user_logged_in:
+        return redirect('/')
+    else:
+        page_theme = fetch_setting_param_from_db(c, "Theme", lock)
+        headers = {'Content-Type': 'text/html'}
+        return make_response(render_template('login.html', pageTheme=page_theme, msg="* ERROR: wrong password"),
+                             200, headers)
 
 
 @app.route("/downloadDB/")
@@ -89,7 +112,7 @@ def upload_file():
         while os.path.isfile("./static/photos/" + year + "/" + folder_name + "/" + file_name):
             file_name = str(randint(1, 100000)) + "_" + f.filename
         f.save(os.path.join("./static/photos/" + year + "/" + folder_name, secure_filename(file_name)))
-        return redirect(url_for('journal') + "?date=" + upload_date, 200)
+        return redirect(url_for('journal') + "?date=" + upload_date)
 
 
 @app.route('/noteUploader', methods=['GET', 'POST'])
@@ -105,16 +128,18 @@ def upload_file_notes():
         while os.path.isfile("./static/photos/notebookPhotos/" + notebook_label + "/" + file_name):
             file_name = str(randint(1, 100)) + "_" + f.filename
         f.save(os.path.join("./static/photos/notebookPhotos/" + notebook_label, secure_filename(file_name)))
-        return redirect(url_for('notes'), 200)
+        return redirect(url_for('notes'))
 
 
 @app.route('/financeUploader', methods=['POST'])
 def upload_file_finance():
     if request.method == 'POST':
         f = request.files['file']
+        if not os.path.isdir("./temp"):
+            os.mkdir("./temp")
         f.save("./temp/finance.csv")
         load_csv_to_finance_db("./temp/finance.csv", c_finance, conn_finance, lock)
-        return redirect(url_for('finances'), 200)
+        return redirect(url_for('finances'))
 
 
 @app.route('/shutdown', methods=['POST'])

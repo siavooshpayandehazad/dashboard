@@ -1,7 +1,7 @@
 from flask_restful import Resource
-from flask import render_template, make_response
+from flask import render_template, make_response, request
 
-from functionPackages.charts import generate_finance_charts, generate_spending_chart_data_yearly
+from functionPackages.charts import generate_finance_charts
 from functionPackages.finance_package import add_data_to_finance_db
 from functionPackages.misc import *
 
@@ -20,9 +20,12 @@ class Finances(Resource):
         self.login = kwargs["login"]
 
     def get(self):
-        args = self.parser.parse_args()
         headers = {'Content-Type': 'text/html'}
-
+        page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
+        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
+        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+            return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
+        args = self.parser.parse_args()
         if args['date'] is not None:
             page_year, page_month, page_day = args['date'].split("-")
         else:
@@ -30,7 +33,6 @@ class Finances(Resource):
             page_year = str(datetime.date.today().year)
 
         number_of_days = number_of_days_in_month(int(page_month), int(page_year))
-        page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
         chart_data = generate_finance_charts(int(page_month), int(page_year), number_of_days,
                                              self.c, self.c_finance, self.lock)
         spending_data, break_down_values, break_down_titles = generate_month_spending_data(int(page_month), int(page_year), self.c_finance, self.lock)

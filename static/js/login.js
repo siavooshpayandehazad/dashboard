@@ -20,7 +20,7 @@ function logout(){
       url: "/",
       data: {"type":"logout"},
   })
-  checkLoggedIn();
+  window.location.replace('/login')
 }
 autoRedirect();
 
@@ -31,24 +31,5 @@ function togglePassword() {
   } else {
     x.type = "password";
   }
-}
-
-function login(){
-  var password = document.getElementById("password").value;
-   document.getElementById("password").value = "";
-  $.ajax({
-      type: "POST",
-      url: "/",
-      data: {"type":"password", "value": password},
-  }).success(function(result){
-    if (result == "success"){
-      localStorage.setItem('token',"true");
-      document.getElementById("overlay").style.display = "none";
-      document.getElementById("password").style.backgroundColor = "white";
-    }
-    else{
-      document.getElementById("password").style.backgroundColor = "#fc9272";
-    }
-  })
 }
 

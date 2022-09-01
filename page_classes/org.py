@@ -1,6 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response
-import time
+from flask import render_template, make_response, request
 from functionPackages.misc import *
 from package import days_of_the_week
 
@@ -17,10 +16,12 @@ class Org(Resource):
         self.login = kwargs["login"]
 
     def get(self):
-        start_time = time.time()
-        page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
-
         headers = {'Content-Type': 'text/html'}
+        page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
+        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
+        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+            return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
+        start_time = time.time()
         args = self.parser.parse_args()
         today_date = parse_date(args['date'])
         day, month, year = separate_day_month_year(today_date)

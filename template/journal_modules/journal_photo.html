@@ -22,10 +22,13 @@
       media.appendChild(source)
     }
     media.id = "mediaOverlayContent"
-    media.style.maxWidth = "70%";
-    media.style.maxHeight = "70%";
+    media.style.maxWidth = "80%";
+    media.style.maxHeight = "80%";
+    media.style.width = "auto";
+    media.style.height = "auto";
+    media.style.margin = "auto";
     media.style.float = "center";
-    media.style.marginTop = "5%";
+    media.style.marginTop = "1%";
     media.onclick= function(event){
       event.preventDefault();
       closeOverlay();
@@ -195,7 +198,7 @@
 <div style="float:left">
   {%if todayPhotos|length >0%}
     {% for media in todayPhotos%}
-      <div style="float:left; position: relative;">
+      <div style="float:left; position: relative; height:120px;">
         {%if ".mp4" in media%}
           <i class = "fa fa-video-camera" style="color:black; position:absolute; left:5px; top:5px; z-index:2; width:15px; height:15px; "></i>
           <video onclick="mediaClicked(this)" src="static/photos/{{ media }}"  type="video/mp4" onmouseover="mediaHover(event, this)" onmouseout="mediaHoverLeave(event)" class="journalMedia">

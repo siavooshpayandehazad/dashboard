@@ -41,7 +41,7 @@ function render_mortgage_tracker_chart(){
                  // update the step value
                  if (isNaN(myAnnualMortgages[selectedMonth-1])){
                    // here we need to find the last valid value and add the current thing to that!
-                   myAnnualMortgages[selectedMonth-1] = parseInt(myAnnualMortgages[selectedMonth-1]) + parseInt(newVal);
+                   myAnnualMortgages[selectedMonth-1] = parseInt(newVal);
                  }else{
                    myAnnualMortgages[selectedMonth-1] = parseInt(myAnnualMortgages[selectedMonth-1]) + parseInt(newVal);
                  }

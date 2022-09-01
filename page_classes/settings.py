@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response
+from flask import render_template, make_response, request
 from pathlib import Path
 from functionPackages.misc import *
 
@@ -18,6 +18,9 @@ class Settings(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
+        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
+        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+            return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
         activity_list = fetch_setting_param_from_db(self.c, "activityList", self.lock)
         audiobooks_path = fetch_setting_param_from_db(self.c, "audiobooksPath", self.lock)
 

@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response
+from flask import render_template, make_response, request
 
 from functionPackages.charts import *
 from functionPackages.misc import *
@@ -7,7 +7,6 @@ from functionPackages.dateTime import *
 from package import *
 
 logger = logging.getLogger(__name__)
-
 
 class Dash(Resource):
     def __init__(self, **kwargs):
@@ -19,14 +18,21 @@ class Dash(Resource):
         self.login = kwargs["login"]
 
     def get(self):
-        start_time = time.time()
-        args = self.parser.parse_args()
+        headers = {'Content-Type': 'text/html'}
         try:
             page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
         except Exception as err:
             logger.error(err)
             page_theme = "Dark"
             logger.info("could not fetch page theme! replacing with default values")
+
+        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
+        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+            return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
+
+        start_time = time.time()
+        args = self.parser.parse_args()
+
         activity_list = fetch_setting_param_from_db(self.c, "activityList", self.lock).replace(" ", "").split(",")
         if args['date'] is not None:
             page_year, page_month, page_day = args['date'].split("-")
@@ -34,7 +40,6 @@ class Dash(Resource):
             page_month = str(datetime.date.today().month).zfill(2)
             page_year = str(datetime.date.today().year)
 
-        headers = {'Content-Type': 'text/html'}
         page_title = "DashBoard"
 
         title_date = weeks_of_the_year[int(page_month) - 1] + "-" + page_year
@@ -72,6 +77,7 @@ class Dash(Resource):
                                              loggedIn=str(self.login.is_logged_in)), 200, headers)
 
     def post(self):
+        headers = {'Content-Type': 'text/html'}
         activity_list = fetch_setting_param_from_db(self.c, "activityList", self.lock).replace(" ", "").split(",")
         args = self.parser.parse_args()
         if args['type'] == "password":
@@ -81,12 +87,9 @@ class Dash(Resource):
             else:
                 return "failed", 400
 
-        if args['type'] == "logout":
+        if (args['type'] == "logout") or (not self.login.is_logged_in):
             self.login.logout()
-            return "user is logged out!", 200
-
-        if not self.login.is_logged_in:
-            return "user is not logged in", 401
+            return make_response(render_template('login.html'), 200, headers)
 
         if args['type'] == "counter":
             counter_value = int(fetch_setting_param_from_db(self.c, "counter", self.lock))

@@ -1,6 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response
-import time
+from flask import render_template, make_response, request
 
 from functionPackages.charts import generate_e_consumption_tracker_chart_data, generate_weather_monthly, \
     generate_weather_daily
@@ -23,6 +22,12 @@ class HomeAutomation(Resource):
         self.login = kwargs["login"]
 
     def get(self):
+        page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
+        headers = {'Content-Type': 'text/html'}
+        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
+        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+            return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
+
         start_time = time.time()
         args = self.parser.parse_args()
         if args['date'] is not None:
@@ -32,8 +37,7 @@ class HomeAutomation(Resource):
             today = datetime.date.today()
             day, month, year = today.day, today.month, today.year
             today_date = today.strftime('%Y-%m-%d')
-        headers = {'Content-Type': 'text/html'}
-        page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
+
 
         my_annual_consumption = generate_e_consumption_tracker_chart_data(str(year), self.c_ha, self.lock)
         monthly_data = generate_weather_monthly(self.c_ha, int(year), self.lock)

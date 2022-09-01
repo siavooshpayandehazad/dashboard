@@ -1,6 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response
-import time
+from flask import render_template, make_response, request
 
 from functionPackages.charts import generate_cpu_stat_monthly, generate_cpu_stat
 from functionPackages.misc import *
@@ -19,6 +18,11 @@ class Server(Resource):
         self.login = kwargs["login"]
 
     def get(self):
+        headers = {'Content-Type': 'text/html'}
+        page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
+        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
+        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+            return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
         start_time = time.time()
         args = self.parser.parse_args()
         if args['date'] is not None:
@@ -28,9 +32,6 @@ class Server(Resource):
             today = datetime.date.today()
             day, month, year = today.day, today.month, today.year
             today_date = today.strftime('%d-%m-%y')
-
-        headers = {'Content-Type': 'text/html'}
-        page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
 
         cpu_temps, cpu_temps_times, cpu_usage, cpu_usage_times, disc_space, up_time = \
             generate_cpu_stat(today_date, str(year))

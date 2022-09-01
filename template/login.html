@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="/static/lib/jquery.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+
+<body>
+<script type="text/javascript">
+var page_theme = "{{pageTheme}}";
+if (page_theme == "Dark"){
+   document.body.classList.add("featured");
+}
+</script>
+
+<div class="container-fluid bg">
+    <div class="row">
+        <div class="col-md-4">
+        </div>
+        <div class="col-md-4">
+            <div style="background-color:#0570b0; width:300px; border: 3px solid #08306b; border-radius:10px; margin-top:100px; padding-left:10px;">
+                <h4>Please sign in!</h4>
+                <div style="width:100%; margin-left:10px;">
+                    <form  method = "POST" action = "/login_user" enctype="multipart/form-data" style="margin-top:5px;">
+                        <span style="width:80px;display: inline-block;"> Password: </span> <input type = "password" name = "pass"  id = "pass"  /> </br>
+                        <input type = "submit" value="sign-in" style="background-color: #023858; margin-top:5px; margin-left:190px;"/><br>
+                    </form>
+                </div>
+                <div style="width:100%">
+                    <p style="color: #fcbba1; font-size:10px;line-height:10px;margin-top: 5px; margin-bottom: 5px;">{{msg}}</p>
+                    <p style="font-size:10px;line-height:10px;margin-bottom: 5px;">* if you forgot your password, ask Siavoosh to reset it for you...</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+</body>
+</html>

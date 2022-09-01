@@ -772,24 +772,42 @@ def clean_db(table_name: str, db_connection, db_cursor, lock):
         db_connection.commit()
     lock.release()
 
+import time
 
 class Login:
+
     def __init__(self):
         print("initializing user login...")
         self.is_logged_in = False
+        self.session_id = ""
+        self.login_time = 0
+        self.lifetime = 60*60*1000
 
-    def verify_user(self, db_pw, user_pw):
+    def verify_user(self, db_pw, user_pw, session_id):
         if (db_pw == "None") or verify_password(db_pw, user_pw):
             self.is_logged_in = True
+            self.session_id = session_id
+            self.login_time = int(time.time() * 1000)
             print("login successful!")
             return True
         print("login attempt failed!")
         self.is_logged_in = False
         return False
 
+    def is_user_logged_in(self):
+        import time
+        if not self.is_logged_in:
+            return False
+        if (time.time() * 1000) - self.login_time > self.lifetime:
+            self.logout()
+            return False
+        return True
+
     def logout(self):
         print("user is logged out!")
         self.is_logged_in = False
+        self.session_id = ""
+        self.login_time = 0
 
 
 def get_today_weather_information(db_connection, lock) -> dict:

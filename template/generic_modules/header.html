@@ -1,13 +1,3 @@
-<div id="overlay">
-  <div style="border-radius: 20px; color:black; margin-left: 40%; margin-top: 20%;width:210px;height:100px;background-color:white; text-align: center;">
-    enter your password </br>
-    <input type="password" id="password"><i class="fa fa-eye" style="margin-left:10px;" onclick="togglePassword()"></i><br>
-    <input type="submit" style="float:right;margin-right: 10%; margin-top: 5px;" onclick="login()">
-  </div>
-</div>
-
-
-
 <script type="text/javascript">
 
 function shutdown(){
@@ -16,6 +6,7 @@ function shutdown(){
   });
   logout();
 }
+
 document.addEventListener('keydown', (e) => {
   if((e.ctrlKey == true) && (e.code === "KeyL")){
     console.log("locking screen!")
@@ -23,19 +14,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-
-function checkLoggedIn () {
-  var loggedIn = "{{loggedIn}}";
-  if (loggedIn!=="True"){
-    document.getElementById("overlay").style.display = "block";
-  }
-  const token = localStorage.getItem('token');
-  if ((token !== "true")){
-    document.getElementById("overlay").style.display = "block";
-  }
-}
-
-checkLoggedIn();
 </script>
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>

@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response
+from flask import render_template, make_response, request
 from functionPackages.misc import *
 
 logger = logging.getLogger(__name__)
@@ -19,8 +19,11 @@ class Learning(Resource):
     def get(self):
         headers = {'Content-Type': 'text/html'}
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
-        set_names, flash_cards = get_flash_cards(self.c_learning, self.lock)
+        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
+        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+            return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
 
+        set_names, flash_cards = get_flash_cards(self.c_learning, self.lock)
         return make_response(render_template('learning.html', pageTheme=page_theme, setNames=set_names,
                                              flashCards=flash_cards,
                                              loggedIn=str(self.login.is_logged_in)), 200, headers)
