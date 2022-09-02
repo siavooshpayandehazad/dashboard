@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response, request
+from flask import render_template, make_response
 
 from functionPackages.charts import *
 from functionPackages.misc import *
@@ -15,13 +15,11 @@ class Journal(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
-        self.login = kwargs["login"]
 
     def get(self):
         headers = {'Content-Type': 'text/html'}
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
-        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
-        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+        if not session.get("name"):
             return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
 
         start_time = time.time()
@@ -49,11 +47,11 @@ class Journal(Resource):
                                              day=day, month=month, year=year, monthsBeginning=months_beginning,
                                              log=today_log, todaysLogText=today_log_text, todayPhotos=today_photos,
                                              logged_days=logged_days, daysWithPhotos=days_with_photos,
-                                             pageTheme=page_theme, loggedIn=str(self.login.is_logged_in)),
+                                             pageTheme=page_theme),
                              200, headers)
 
     def post(self):
-        if not self.login.is_logged_in:
+        if not session.get("name"):
             return "user is not logged in", 401
         args = self.parser.parse_args()
         if args['type'] == 'log':
@@ -96,4 +94,3 @@ class Journal(Resource):
                 if os.path.isfile(file_name):
                     add_tag_to_picture(file_name, tags)
         return "Done", 200
-

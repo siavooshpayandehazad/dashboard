@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response, request
+from flask import render_template, make_response
 
 from functionPackages.charts import *
 from functionPackages.misc import *
@@ -7,6 +7,7 @@ from functionPackages.dateTime import *
 from package import *
 
 logger = logging.getLogger(__name__)
+
 
 class Dash(Resource):
     def __init__(self, **kwargs):
@@ -26,8 +27,7 @@ class Dash(Resource):
             page_theme = "Dark"
             logger.info("could not fetch page theme! replacing with default values")
 
-        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
-        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+        if not session.get("name"):
             return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
 
         start_time = time.time()
@@ -73,21 +73,14 @@ class Dash(Resource):
                                              monthsActivitiesPlanned=months_activities_planned,
                                              activityList=activity_list, days=mood_tracker_days, highlight=highlight,
                                              yearsActivities=years_activities,
-                                             pageTheme=page_theme, counterValue=counter_value,
-                                             loggedIn=str(self.login.is_logged_in)), 200, headers)
+                                             pageTheme=page_theme, counterValue=counter_value), 200, headers)
 
     def post(self):
         headers = {'Content-Type': 'text/html'}
         activity_list = fetch_setting_param_from_db(self.c, "activityList", self.lock).replace(" ", "").split(",")
         args = self.parser.parse_args()
-        if args['type'] == "password":
-            password = fetch_setting_param_from_db(self.c, "password", self.lock)
-            if self.login.verify_user(password, args['value']):
-                return "success", 200
-            else:
-                return "failed", 400
 
-        if (args['type'] == "logout") or (not self.login.is_logged_in):
+        if (args['type'] == "logout") or (not session.get("name")):
             self.login.logout()
             return make_response(render_template('login.html'), 200, headers)
 

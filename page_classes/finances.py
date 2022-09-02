@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response, request
+from flask import render_template, make_response
 
 from functionPackages.charts import generate_finance_charts
 from functionPackages.finance_package import add_data_to_finance_db
@@ -17,13 +17,11 @@ class Finances(Resource):
         self.c_finance = kwargs["c_finance"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
-        self.login = kwargs["login"]
 
     def get(self):
         headers = {'Content-Type': 'text/html'}
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
-        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
-        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+        if not session.get("name"):
             return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
         args = self.parser.parse_args()
         if args['date'] is not None:
@@ -35,16 +33,19 @@ class Finances(Resource):
         number_of_days = number_of_days_in_month(int(page_month), int(page_year))
         chart_data = generate_finance_charts(int(page_month), int(page_year), number_of_days,
                                              self.c, self.c_finance, self.lock)
-        spending_data, break_down_values, break_down_titles = generate_month_spending_data(int(page_month), int(page_year), self.c_finance, self.lock)
+        spending_data, break_down_values, break_down_titles = generate_month_spending_data(int(page_month),
+                                                                                           int(page_year),
+                                                                                           self.c_finance,
+                                                                                           self.lock)
         return make_response(render_template('finances.html', ChartData=chart_data,
                                              PageYear=page_year, PageMonth=page_month,
                                              HideLine="false", today=datetime.date.today().day,
                                              SpendingData=spending_data, breakDownValues=break_down_values,
                                              breakDownTitles=break_down_titles,
-                                             pageTheme=page_theme, loggedIn=str(self.login.is_logged_in)), 200, headers)
+                                             pageTheme=page_theme), 200, headers)
 
     def post(self):
-        if not self.login.is_logged_in:
+        if not session.get("name"):
             return "user is not logged in", 401
 
         args = self.parser.parse_args()

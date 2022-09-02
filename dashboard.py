@@ -30,10 +30,16 @@ from page_classes.audiobooks import Audiobooks
 from page_classes.learning import Learning
 from page_classes.news import News
 from page_classes.finances import Finances
+from flask_session import Session
 
 app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
 mail = Mail()
+
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
 login = Login()
 
 try:
@@ -80,7 +86,7 @@ def login_page():
 @app.route("/login_user", methods=['GET', 'POST'])
 def login_user():
     password = fetch_setting_param_from_db(c, "password", lock)
-    req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
+    req_session_id = request.form.get("user")
     user_logged_in = login.verify_user(password, request.form.get('pass', ""), req_session_id)
     if user_logged_in:
         return redirect('/')

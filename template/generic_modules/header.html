@@ -1,19 +1,10 @@
 <script type="text/javascript">
-
-function shutdown(){
-  $.ajax({ type: "POST",
-      url: "http://"+window.location.hostname+":5000/shutdown"
-  });
-  logout();
-}
-
 document.addEventListener('keydown', (e) => {
   if((e.ctrlKey == true) && (e.code === "KeyL")){
     console.log("locking screen!")
     logout();
   }
 });
-
 </script>
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>
@@ -33,9 +24,11 @@ document.addEventListener('keydown', (e) => {
       <a class="tabBar" href="/finances">       <div {%if page=="finances"%}       class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i class="fa fa-credit-card"></i></b> </div> </a>
       <a class="tabBar" href="/learning">       <div {%if page=="learning"%}       class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i class="fa fa-university"></i></b> </div> </a>
       <a class="tabBar" href="/news">           <div {%if page=="news"%}           class="tabButton tbSelected" {%else%} class="tabButton" {%endif%}> <b> <i style="margin-right:5px;" class="fa fa-newspaper-o"></i></b> </div> </a>
+
       <a class="tabBar" style="float:right; margin-right:5px;" onclick="shutdown()"> <i class="fa fa-power-off hover-red" style="font-size:20px"></i></a>
       <a class="tabBar" style="float:right; margin-right:5px;"><i class="fa fa-sign-out hover-red" style="font-size:20px" aria-hidden="true" onclick="logout()"></i></a>
       <a class="tabBar" style="float:right; margin-right:5px;" href="/settings"><i class="fa myGear hover-red" style="font-size:20px">&#xf013;</i></a>
+      <a class="tabBar" style="float:right; margin-right:5px;"> {{session.name}}</a>
       <div class="divider"></div>
     </div>
   </div>

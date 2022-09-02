@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response, request
+from flask import render_template, make_response
 from functionPackages.misc import *
 from package import days_of_the_week
 
@@ -13,13 +13,11 @@ class Org(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
-        self.login = kwargs["login"]
 
     def get(self):
         headers = {'Content-Type': 'text/html'}
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
-        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
-        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+        if not session.get("name"):
             return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
         start_time = time.time()
         args = self.parser.parse_args()
@@ -51,15 +49,14 @@ class Org(Resource):
                             monthsBeginning=months_beginning_week_day, todayTodos=today_todos, overDue=all_due_events,
                             numberOfDays=number_of_days, thisMonthsEvents=this_months_events, calDate=cal_date,
                             calMonth=cal_month, headerDates=header_dates, vacations=vacations,
-                            vacationsFromLastYear = vacations_from_last_year, thisYearVacations = this_year_vacations,
+                            vacationsFromLastYear=vacations_from_last_year, thisYearVacations=this_year_vacations,
                             Backlog=scrum_board_lists["backlog"], ScrumTodo=scrum_board_lists["todo"],
                             inProgress=scrum_board_lists["in progress"], done=scrum_board_lists["done"],
                             ChartMonthDays=chart_month_days, ChartDoneTasks=chart_done_tasks,
-                            ChartthisMonthTasks=chart_this_month_tasks, pageTheme=page_theme,
-                            loggedIn=str(self.login.is_logged_in)), 200, headers)
+                            ChartthisMonthTasks=chart_this_month_tasks, pageTheme=page_theme), 200, headers)
 
     def post(self):
-        if not self.login.is_logged_in:
+        if not session.get("name"):
             return "user is not logged in", 401
         args = self.parser.parse_args()
         if args['type'] == 'vacation':

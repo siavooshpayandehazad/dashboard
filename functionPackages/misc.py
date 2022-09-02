@@ -8,6 +8,7 @@ import json
 from package import tracker_settings, temporary_data
 import requests
 import logging
+from flask import session
 
 logger = logging.getLogger(__name__)
 
@@ -779,16 +780,15 @@ class Login:
     def __init__(self):
         print("initializing user login...")
         self.is_logged_in = False
-        self.session_id = ""
         self.login_time = 0
         self.lifetime = 60*60*1000
 
     def verify_user(self, db_pw, user_pw, session_id):
         if (db_pw == "None") or verify_password(db_pw, user_pw):
             self.is_logged_in = True
-            self.session_id = session_id
+            session["name"] = session_id
             self.login_time = int(time.time() * 1000)
-            print("login successful!")
+            print(f"login successful for user: {session_id}")
             return True
         print("login attempt failed!")
         self.is_logged_in = False
@@ -796,7 +796,7 @@ class Login:
 
     def is_user_logged_in(self):
         import time
-        if not self.is_logged_in:
+        if not session.get("name"):
             return False
         if (time.time() * 1000) - self.login_time > self.lifetime:
             self.logout()
@@ -806,8 +806,8 @@ class Login:
     def logout(self):
         print("user is logged out!")
         self.is_logged_in = False
-        self.session_id = ""
         self.login_time = 0
+        session["name"] = None
 
 
 def get_today_weather_information(db_connection, lock) -> dict:

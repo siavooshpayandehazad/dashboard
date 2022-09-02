@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import render_template, make_response, request
+from flask import render_template, make_response
 
 from functionPackages.misc import *
 
@@ -13,13 +13,11 @@ class Audiobooks(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
-        self.login = kwargs["login"]
 
     def get(self):
         headers = {'Content-Type': 'text/html'}
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
-        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
-        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+        if not session.get("name"):
             return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
         start_time = time.time()
         path = "static/audiobooks/"
@@ -30,11 +28,11 @@ class Audiobooks(Resource):
             audiobooks = metadata = {}
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(
-            render_template('audiobooks.html', audiobooks=audiobooks, metadata=metadata, pageTheme=page_theme,
-                            loggedIn=str(self.login.is_logged_in)), 200, headers)
+            render_template('audiobooks.html', audiobooks=audiobooks, metadata=metadata,
+                            pageTheme=page_theme), 200, headers)
 
     def post(self):
-        if not self.login.is_logged_in:
+        if not session.get("name"):
             return "user is not logged in", 401
 
         args = self.parser.parse_args()

@@ -19,13 +19,11 @@ class HomeAutomation(Resource):
         self.parser = kwargs["parser"]
         self.conn_ha = kwargs["conn_ha"]
         self.c_ha = kwargs["c_ha"]
-        self.login = kwargs["login"]
 
     def get(self):
         page_theme = fetch_setting_param_from_db(self.c, "Theme", self.lock)
         headers = {'Content-Type': 'text/html'}
-        req_session_id = request.headers.get("Cookie", "session=1;").split("=")[-1].split(";")[0]
-        if (not self.login.is_user_logged_in()) or (req_session_id != self.login.session_id):
+        if not session.get("name"):
             return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
 
         start_time = time.time()
@@ -38,7 +36,6 @@ class HomeAutomation(Resource):
             day, month, year = today.day, today.month, today.year
             today_date = today.strftime('%Y-%m-%d')
 
-
         my_annual_consumption = generate_e_consumption_tracker_chart_data(str(year), self.c_ha, self.lock)
         monthly_data = generate_weather_monthly(self.c_ha, int(year), self.lock)
         daily_data, description = generate_weather_daily(self.c_ha, today_date, self.lock)
@@ -47,11 +44,10 @@ class HomeAutomation(Resource):
                                              monthly_Data=monthly_data, chart_months=chart_months,
                                              myAnnualConsumption=my_annual_consumption, description=description,
                                              pageTheme=page_theme, HideLine="true",
-                                             PageYear=int(year), PageMonth=int(month), day=int(day),
-                                             loggedIn=str(self.login.is_logged_in)), 200, headers)
+                                             PageYear=int(year), PageMonth=int(month), day=int(day)), 200, headers)
 
     def post(self):
-        if not self.login.is_logged_in:
+        if not session.get("name"):
             return "user is not logged in", 401
         args = self.parser.parse_args()
         value = json.loads(args['value'])
