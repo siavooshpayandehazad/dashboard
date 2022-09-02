@@ -9,7 +9,7 @@ from package import tracker_settings, temporary_data
 import requests
 import logging
 from flask import session
-
+import time
 logger = logging.getLogger(__name__)
 
 
@@ -773,41 +773,21 @@ def clean_db(table_name: str, db_connection, db_cursor, lock):
         db_connection.commit()
     lock.release()
 
-import time
 
 class Login:
-
     def __init__(self):
         print("initializing user login...")
-        self.is_logged_in = False
-        self.login_time = 0
-        self.lifetime = 60*60*1000
 
-    def verify_user(self, db_pw, user_pw, session_id):
+    @staticmethod
+    def verify_user(db_pw, user_pw, session_id):
         if (db_pw == "None") or verify_password(db_pw, user_pw):
-            self.is_logged_in = True
             session["name"] = session_id
-            self.login_time = int(time.time() * 1000)
             print(f"login successful for user: {session_id}")
             return True
         print("login attempt failed!")
-        self.is_logged_in = False
         return False
 
-    def is_user_logged_in(self):
-        import time
-        if not session.get("name"):
-            return False
-        if (time.time() * 1000) - self.login_time > self.lifetime:
-            self.logout()
-            return False
-        return True
 
-    def logout(self):
-        print("user is logged out!")
-        self.is_logged_in = False
-        self.login_time = 0
-        session["name"] = None
 
 
 def get_today_weather_information(db_connection, lock) -> dict:

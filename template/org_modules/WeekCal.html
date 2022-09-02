@@ -389,7 +389,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
          url: "/org",
          data: {"type": "calendar",
                 "value": "{" + "\"name\": \""+eventName.value+
-                               "\", \"details\": \""+eventDescription.value+
+                               "\", \"details\": \""+eventDescription.value.replace(/\r?\n|\r/g, " ")+
                                "\", \"startTime\": \""+ ((startTime.disabled) ? "None" : (startTime.value)) +
                                "\", \"stopTime\": \"" + ((stopTime.disabled) ? "None": (stopTime.value)) +
                                "\", \"color\": \""+ color.value+
@@ -420,7 +420,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
          url: "/org",
          data: {"type": "calendar",
                 "value": "{" + "\"name\": \""+eventName.value+
-                               "\", \"details\": \""+eventDescription.value+
+                               "\", \"details\": \""+eventDescription.value.replace(/\r?\n|\r/g, " ")+
                                "\", \"startTime\": \""+ ((startTime.disabled) ? "None" : (startTime.value)) +
                                "\", \"stopTime\": \"" + ((stopTime.disabled) ? "None": (stopTime.value)) +
                                "\", \"color\": \""+ color.value+
@@ -676,7 +676,7 @@ function dropCalEvent(event){
      url: "/org",
      data: {"type": "calendar",
             "value": "{" + "\"name\": \""+eventName+
-                           "\", \"details\": \""+eventDescription+
+                           "\", \"details\": \""+eventDescription.replace(/\r?\n|\r/g, " ")+
                            "\", \"startTime\": \""+ newStartTime +
                            "\", \"stopTime\": \"" + newEndTime+
                            "\", \"color\": \""+ color+

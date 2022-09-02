@@ -1,4 +1,10 @@
 <script type="text/javascript">
+
+function logout(){
+  var session_name = "{{session.name|safe}}";
+  window.location.replace('/logout/'+session_name)
+}
+
 document.addEventListener('keydown', (e) => {
   if((e.ctrlKey == true) && (e.code === "KeyL")){
     console.log("locking screen!")

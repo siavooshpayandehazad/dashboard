@@ -16,7 +16,6 @@ class Dash(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
-        self.login = kwargs["login"]
 
     def get(self):
         headers = {'Content-Type': 'text/html'}
@@ -76,13 +75,8 @@ class Dash(Resource):
                                              pageTheme=page_theme, counterValue=counter_value), 200, headers)
 
     def post(self):
-        headers = {'Content-Type': 'text/html'}
         activity_list = fetch_setting_param_from_db(self.c, "activityList", self.lock).replace(" ", "").split(",")
         args = self.parser.parse_args()
-
-        if (args['type'] == "logout") or (not session.get("name")):
-            self.login.logout()
-            return make_response(render_template('login.html'), 200, headers)
 
         if args['type'] == "counter":
             counter_value = int(fetch_setting_param_from_db(self.c, "counter", self.lock))

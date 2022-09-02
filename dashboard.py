@@ -1,3 +1,5 @@
+import random
+
 from functionPackages.finance_package import generate_finance_db_tables, load_csv_to_finance_db
 from functionPackages.ha_package import generate_ha_db_tables
 from functionPackages.misc import *
@@ -36,11 +38,14 @@ app = Flask(__name__, template_folder='template', static_url_path='/static')
 api = Api(app)
 mail = Mail()
 
+app.secret_key = "".join([random.choice("abcdefghijklmnopqrstuvxyz") for _ in range(128)])
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+
 login = Login()
+
 
 try:
     os.mkdir("./logs")
@@ -83,12 +88,24 @@ def login_page():
     return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
 
 
+@app.route("/logout/<user>", methods=['GET', 'POST'])
+def logout(user):
+    print(f"user is {user} logged out!")
+    page_theme = fetch_setting_param_from_db(c, "Theme", lock)
+    headers = {'Content-Type': 'text/html'}
+    session.clear()
+    return make_response(render_template('login.html', pageTheme=page_theme), 200, headers)
+
+
 @app.route("/login_user", methods=['GET', 'POST'])
 def login_user():
-    password = fetch_setting_param_from_db(c, "password", lock)
+    db_password = fetch_setting_param_from_db(c, "password", lock)
     req_session_id = request.form.get("user")
-    user_logged_in = login.verify_user(password, request.form.get('pass', ""), req_session_id)
-    if user_logged_in:
+    user_password = request.form.get('pass', "")
+
+    if (db_password == "None") or verify_password(db_password, user_password):
+        session["name"] = req_session_id
+        print(f"login successful for user: {req_session_id}")
         return redirect('/')
     else:
         page_theme = fetch_setting_param_from_db(c, "Theme", lock)
@@ -153,7 +170,7 @@ def shutdown_server():
     if request.method == 'POST':
         logger.info("shutdown request received...")
         send_mail("Server:: shutting down", "shut down command received.", app, mail, c, lock)
-        login.logout()
+        session.clear()
         shutdown_req = request.environ.get('werkzeug.server.shutdown')
         if shutdown_req is None:
             raise RuntimeError('Not running with the Werkzeug Server')
@@ -229,8 +246,7 @@ scheduler.start()
 resource_class_args = {"conn": conn, "c": c, "lock": lock, "parser": parser,
                        "conn_ha": conn_ha, "c_ha": c_ha,
                        "c_learning": c_learning, "conn_learning": conn_learning,
-                       "conn_finance": conn_finance, "c_finance": c_finance,
-                       "login": login}
+                       "conn_finance": conn_finance, "c_finance": c_finance}
 
 api.add_resource(Dash, '/', resource_class_kwargs=resource_class_args)
 api.add_resource(Journal, '/journal', resource_class_kwargs=resource_class_args)
