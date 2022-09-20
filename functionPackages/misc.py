@@ -775,6 +775,7 @@ def clean_db(table_name: str, db_connection, db_cursor, lock):
 
 
 class Login:
+    # TODO: fix this class and just change it to a single function
     def __init__(self):
         print("initializing user login...")
 

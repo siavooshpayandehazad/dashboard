@@ -16,6 +16,7 @@
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 tempData = {{daily_data|safe}}
 
+
 function moveDay(delta){
   date = new Date(parseInt("{{PageYear}}"), parseInt("{{PageMonth}}")-1, parseInt("{{day}}"), 0, 0, 0);
   date.setDate(date.getDate() + delta);
@@ -100,8 +101,8 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
   gauge.appendChild(maxValDiv)
 
 }
-function viewroom(item){
 
+function viewroom(item){
   weatherCards = document.getElementsByClassName("weatherCard")
   for (i = 0; i < weatherCards.length; i++) {
     weatherCards[i].style.display="none"
@@ -111,10 +112,6 @@ function viewroom(item){
   }else{
     document.getElementById("weather_overview").style.display="block";
   }
-
-  //document.getElementByClassName("weatherCard");
-
-
 }
 
 function editRoomName(item, roomNumber){
@@ -132,9 +129,8 @@ function editRoomName(item, roomNumber){
         item.textContent = newName;
       }
   });
-
-
 }
+
 </script>
 
 
@@ -181,25 +177,48 @@ if (page_theme == "Dark"){
         {% endwith %}
         {%endfor%}
     </div>
-
     {% with dir="left" %}
     {% include "generic_modules/divider.html" %}
     {% endwith %}
 
     <div class="row">
         <div class="col-sm-6" style="margin-top: 20px;">
+            {% with light = "1", ip="192.168.1.85"  %}
+            {% include "homeAutomation_modules/lightController.html" %}
+            {% endwith %}
+        </div>
+    </div>
+
+    {% with dir="right" %}
+    {% include "generic_modules/divider.html" %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-sm-5 ml-5" style="margin-top: 20px;">
             {% with myAnnualConsumption = myAnnualConsumption, ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
             PageYear = PageYear, PageMonth = PageMonth%}
             {% include "homeAutomation_modules/eConsumptionTracker.html" %}
             {% endwith %}
         </div>
         <div class="col-sm-6" style="margin-top: 20px;">
-            {% with light = "1", ip="192.168.1.85"  %}
-            {% include "homeAutomation_modules/lightController.html" %}
-            {% endwith %}
+
         </div>
     </div>
+
+    {% with dir="left" %}
+    {% include "generic_modules/divider.html" %}
+    {% endwith %}
+
+    {% with prep_data = prep_data  %}
+        {% include "homeAutomation_modules/prepList.html" %}
+    {% endwith %}
+
+    {% with dir="right" %}
+    {% include "generic_modules/divider.html" %}
+    {% endwith %}
+
 </div>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
@@ -208,6 +227,7 @@ if (page_theme == "Dark"){
 </body>
 
 <script type="text/javascript">
+    refreshPrepTable()
     var data = {{daily_data|safe}}
 
     for (item in Object.keys(data)) {
@@ -216,6 +236,7 @@ if (page_theme == "Dark"){
       var gauge_2 = document.getElementById("humidityGauge_"+i.toString())
       var gauge_3 = document.getElementById("pressureGauge_"+i.toString())
       var gauge_4 = document.getElementById("moistureGauge_"+i.toString())
+      console.log(gauge_1, gauge_2, gauge_3, gauge_4)
       drawGauge(gauge_1, tempData[i]["temp"],      "°C", 0.01, 60, [231,225,239], [152,0,67], [0,0,0], [0,0,0]);
       drawGauge(gauge_2, tempData[i]["humidity"],   "%", 0.01, 70, [198,219,239], [8,81,156], [0,0,0], [0,0,0]);
       drawGauge(gauge_3, tempData[i]["pressure"], "bar", 0.01, 2,  [0,0,0],       [217,217,217], [240,240,240],   [240,240,240]);

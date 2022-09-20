@@ -1,0 +1,202 @@
+<script>
+prep_data = {{prep_data|safe}}
+
+function addNewPrepItem(){
+    item_name = document.getElementById("itemName").value
+    item_type = document.getElementById("itemType").value
+    quantity = document.getElementById("itemQuantity").value
+    expiry_date = document.getElementById("expiaryDate").value
+    $.ajax({
+      type: "POST",
+      url: "/homeAutomation",
+      data: {"action": "addPrepItem",
+             "value": JSON.stringify({"item_name": item_name,
+                                      "item_type": item_type,
+                                      "quantity": quantity,
+                                      "expiry_date": expiry_date})},
+      error: function(data) {
+        window.alert("adding prep item failed!")
+      },
+      success: function(data) {
+        prep_data.push([data, item_name, item_type, quantity, expiry_date])
+        refreshPrepTable()
+        $('#addPrepItem').modal('hide');
+      }
+  });
+}
+
+function refreshPrepTable(){
+    tableBody = document.getElementById("prepTableBody")
+    tableBody.innerHTML = '';
+    var sum =  0;
+    for (i = 0; i < prep_data.length; i++) {
+        newRow = document.createElement("tr")
+        c1 = document.createElement("td")
+        c2 = document.createElement("td")
+        c3 = document.createElement("td")
+        c4 = document.createElement("td")
+        c5 = document.createElement("td")
+        c1.textContent = prep_data[i][1]
+        c2.textContent = prep_data[i][2]
+        c3.textContent = prep_data[i][3]
+        c4.textContent = prep_data[i][4]
+
+        sum = sum + parseFloat(prep_data[i][3])
+
+        if(prep_data[i][2] == "Meat"){
+            newRow.style.backgroundColor = "#fee0d2"
+        }else if(prep_data[i][2] == "Beans"){
+            newRow.style.backgroundColor = "#fff7bc"
+        }else if(prep_data[i][2] == "Vegtable"){
+            newRow.style.backgroundColor = "#e5f5e0"
+        }
+
+        editIcon = document.createElement("i")
+        editIcon.classList.add("fa")
+        editIcon.classList.add("fa-pencil-square-o")
+        editIcon.onclick = function(){
+            window.alert("oh god... this is not implemented yet!")
+        }
+
+        deleteIcon = document.createElement("i")
+        deleteIcon.classList.add("fa")
+        deleteIcon.classList.add("fa-trash")
+        deleteIcon.setAttribute("id_number", prep_data[i][0])
+        deleteIcon.onclick = function(){
+            id_number = this.getAttribute("id_number")
+            choice = window.confirm("do you really want to delete this item?")
+            if(choice == false){
+                return;
+            }
+            $.ajax({
+                  type: "POST",
+                  url: "/homeAutomation",
+                  data: {"action": "deletePrepItem",
+                         "value": JSON.stringify({"id_number": id_number})},
+                  error: function(data) {
+                    window.alert("deleting prep item failed!")
+                  },
+                  success: function(data) {
+                    for (var j=0; j<prep_data.length; j++){
+                        if(id_number == prep_data[j][0]){
+                            prep_data.splice(j, 1);
+                            break
+                        }
+                    }
+                    refreshPrepTable()
+                  }
+              });
+        }
+        c2.style.textAlign = "center"
+        c3.style.textAlign = "center"
+        c4.style.textAlign = "center"
+        c5.style.textAlign = "center"
+        c5.appendChild(editIcon)
+        c5.appendChild(deleteIcon)
+
+        newRow.appendChild(c1)
+        newRow.appendChild(c2)
+        newRow.appendChild(c3)
+        newRow.appendChild(c4)
+        newRow.appendChild(c5)
+        tableBody.appendChild(newRow)
+    }
+    document.getElementById("sum").textContent = sum;
+}
+</script>
+
+
+<div class="row" style="margin-bottom: 10px;">
+    <div class="col-sm-3 text-center">
+        <h3>Prep Inventory</h3>
+    </div>
+    <div class="col-sm-8 text-right ml-5" style="margin-top: 20px; margin-bottom: 10px;">
+        <button type="button" class="btn btn-outline-primary mt-2"
+                data-toggle="modal" data-target="#addPrepItem">Add New Item</button>
+    </div>
+
+    <div class="col-sm-11 ml-5 text-justify">
+        <div id="accordion">
+            <div class="card">
+                <div class="card-header" id="heading{{light}}">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{light}}" aria-expanded="true" aria-controls="collapse{{light}}">
+                            Prep List
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapse{{light}}" class="collapse" aria-labelledby="heading{{light}}" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div style="background-color: white; width:98%; margin:auto">
+                                    <table border="1" style="width:100%; margin-bottom:20px;">
+                                        <thead>
+                                        <tr>
+                                            <th style="background-color: lightgray; width:auto"> Item
+                                                <i class="fa fa-filter" aria-hidden="true" style="font-size:15px;"></i>
+                                                <i class="fa fa-sort-desc" aria-hidden="true" style="font-size:20px;"></i>
+                                            </th>
+                                            <th style="background-color: lightgray; width:100px;"> type
+                                                <i class="fa fa-filter" aria-hidden="true" style="font-size:15px;"></i>
+                                                <i class="fa fa-sort-desc" aria-hidden="true" style="font-size:20px;"></i>
+                                            </th>
+                                            <th style="background-color: lightgray; width:100px;"> Quantity (kg/l)
+                                                <i class="fa fa-sort-desc" aria-hidden="true" style="font-size:20px;"></i>
+                                            </th>
+                                            <th style="background-color: lightgray; width:120px;"> Expiry Date
+                                                <i class="fa fa-sort-desc" aria-hidden="true" style="font-size:20px;"></i>
+                                            </th>
+                                            <th style="background-color: lightgray; width:50px;"> </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="prepTableBody">
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <td></td><td></td><td id="sum"></td><td></td><td></td>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal" id="addPrepItem" tabindex="-1" role="dialog" style="color:black;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">add new prep item</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="javascript:addNewPrepItem()" enctype="multipart/form-data" style="margin-top:5px;">
+                <div class="modal-body">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" class="form-control" id="itemName" placeholder="add Item Name" required>
+                    <label for="itemType">Item Type</label>
+                    <input type="text" class="form-control" id="itemType" placeholder="add Item Name" required>
+                    <label for="itemQuantity">Item Quantity (kg/l)</label>
+                    <input type="text" class="form-control" id="itemQuantity" placeholder="Item Quantity" required>
+                    <label for="expiaryDate">Expiry Date</label>
+                    <input type="date" class="form-control" id="expiaryDate" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

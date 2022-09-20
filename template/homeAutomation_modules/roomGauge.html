@@ -5,7 +5,7 @@
         </div>
     </div>
 
-    {% if daily_data[room]["temp"][-1]|int > 0 %}
+    {% if daily_data[room]["temp"][-1]|int >= 0 %}
     <div class="row">
         <div class="col-sm-1">
             <div id="tempGauge_{{room}}" style="float: left; position:relative; width:100px; height:80px; border-radius:20px;">
@@ -34,7 +34,7 @@
     </div>
     {% endif %}
 
-    {% if daily_data[room]["humidity"][-1]|int > 0 %}
+    {% if daily_data[room]["humidity"][-1]|int >= 0 %}
     <div class="row">
         <div class="col-sm-1">
             <div id="humidityGauge_{{room}}" style="float: left; position:relative; width:100px; height:80px; border-radius:20px;">
@@ -65,7 +65,7 @@
     </div>
     {% endif %}
 
-    {% if daily_data[room]["pressure"][-1]|int > 0 %}
+    {% if daily_data[room]["pressure"][-1]|int >= 0 %}
     <div class="row">
         <div class="col-sm-1">
             <div id="pressureGauge_{{room}}" style="float: left; position:relative; width:100px; height:80px; border-radius:20px;">
@@ -94,7 +94,7 @@
     </div>
     {% endif %}
 
-    {% if daily_data[room]["moisture"][-1]|int > 0 %}
+    {% if daily_data[room]["moisture"][-1]|int >= 0 %}
     <div class="row">
         <div class="col-sm-1">
             <div id="moistureGauge_{{room}}" style="float: left;  margin-left: 4%; margin-top: 5px; position:relative; width:100px; height:80px; border-radius:20px;">

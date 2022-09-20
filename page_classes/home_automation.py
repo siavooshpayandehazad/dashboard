@@ -39,18 +39,29 @@ class HomeAutomation(Resource):
         my_annual_consumption = generate_e_consumption_tracker_chart_data(str(year), self.c_ha, self.lock)
         monthly_data = generate_weather_monthly(self.c_ha, int(year), self.lock)
         daily_data, description = generate_weather_daily(self.c_ha, today_date, self.lock)
+        prep_data = get_prep_data(self.c_ha, self.lock)
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('homeAutomation.html', daily_data=daily_data,
                                              monthly_Data=monthly_data, chart_months=chart_months,
+                                             prep_data=prep_data,
                                              myAnnualConsumption=my_annual_consumption, description=description,
                                              pageTheme=page_theme, HideLine="true",
                                              PageYear=int(year), PageMonth=int(month), day=int(day)), 200, headers)
 
     def post(self):
-        if not session.get("name"):
-            return "user is not logged in", 401
         args = self.parser.parse_args()
         value = json.loads(args['value'])
+
+        if args['action'] == "addPrepItem":
+            id_number = str(time.time()).replace(".", "")
+            add_prep_data(id_number, value["item_name"].lower(), value["item_type"].lower(), value["quantity"], value["expiry_date"],
+                          self.c_ha, self.conn_ha, self.lock)
+            return id_number, 200
+
+        if args['action'] == "deletePrepItem":
+            delete_prep_data(value["id_number"], self.c_ha, self.conn_ha, self.lock)
+            return "Done", 200
+
         if args['action'] == "rename":
             rename_room(str(value['roomNumber']), str(value['newValue']), self.c_ha, self.conn_ha, self.lock)
             return "Done", 200

@@ -14,18 +14,15 @@ function itemdblclick(item){
 
   popupDiv = document.createElement("div");
   popupDiv.id = item.id + "popUp";
-  var popUpWidth = 300;
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
   scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  //popupDiv.style.top = parentDiv.getBoundingClientRect().y+scrollTop+(parentDiv.clientHeight)/4+"px";
-  //popupDiv.style.left = parentDiv.getBoundingClientRect().x+scrollLeft+(parentDiv.clientWidth-popUpWidth)/2+"px";
-  popupDiv.style.left = "50px";
+  popupDiv.style.left = "7%";
   popupDiv.style.top = "120px";
   popupDiv.className = "genericPopup";
-  popupDiv.style.width= popUpWidth+"px";
+  popupDiv.style.width= "86%";
 
   subPopupDiv = document.createElement("div");
-  subPopupDiv.style.width = popUpWidth;
+  subPopupDiv.style.width = "100%";
   subPopupDiv.style.float = "right";
 
   var labelText = document.createElement("b");
@@ -47,7 +44,7 @@ function itemdblclick(item){
   itemNameTextArea.style.marginBottom= "10px";
   itemNameTextArea.style.resize = "none";
   itemNameTextArea.rows = 1;
-  itemNameTextArea.cols = 20;
+  itemNameTextArea.style.width = "calc(100% - 110px)";
 
   var itemDetails = document.createElement("span");
   itemDetails.textContent= "Notes: ";
@@ -61,8 +58,8 @@ function itemdblclick(item){
   itemDetailsArea.style.marginRight= "10px";
   itemDetailsArea.style.float= "right";
   itemDetailsArea.style.resize = "none";
-  itemDetailsArea.rows = 5;
-  itemDetailsArea.cols = 20;
+  itemDetailsArea.rows = 8;
+  itemDetailsArea.style.width = "calc(100% - 80px)";
 
   submitBtn = document.createElement("button");
   submitBtn.type = "button";
@@ -197,7 +194,7 @@ function deleteList(item){
       <b class="titleNewTask">Add new item:</b> <input name={{listName}} type="text" style="width: calc(100% - 150px);" onkeypress="submitonEnter(event)">
     </div>
     {% set ns = namespace(done_numbers = 0) %}
-    <div class = "todoTasks" style="width:95%;">
+    <div class = "todoTasks" style="width:100%;">
       <i id = "{{listName}}", class="fa fa-cog hover-red" style="float:right; margin-top:5px; margin-right:5px; color: black;" onclick="listSettings(this)"></i>
       <i name = "{{listName}}" class="fa fa-trash-o hover-red" style="float:right; margin-top:5px; margin-right:5px; color: black;" onclick="deleteList(this)"></i>
       <h2 class="title lightbg">&nbsp;{{listName}}</h2>
