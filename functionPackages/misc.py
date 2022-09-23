@@ -128,7 +128,7 @@ def get_cal_events_week(today_date: str, db_cursor, lock) -> list:
         try:
             d1 = datetime.datetime.strptime(item[0], '%Y-%m-%d')
             delta = d1 - weeks_beginning
-            cal_list.append([delta.days, item[1], item[2], item[3], 1, 1, item[4], item[5]])
+            cal_list.append([delta.days, item[1], item[2], item[3], 1, 1, item[4], item[5], item[6], item[7]])
         except Exception as e:
             logger.error(e)
     return cal_list
@@ -144,13 +144,21 @@ def get_cal_events_month(today_date: str, db_cursor, lock) -> list:
     cal_list = []
     for item in weekly_cal_events:
         try:
-            cal_list.append([item[0], item[1], item[2], item[3], 1, 1, item[4], item[5]])
+            cal_list.append([item[0], item[1], item[2], item[3], 1, 1, item[4], item[5], item[6], item[7]])
         except Exception as e:
             logger.error(e)
     cal_list = sorted(cal_list, key=lambda x: x[1])
     cal_list = sorted(cal_list, key=lambda x: (x[1] != "None"))
     cal_list = sorted(cal_list, key=lambda x: x[0])
     return cal_list
+
+
+def get_unique_id(db_cursor, lock):
+    lock.acquire(True)
+    db_cursor.execute("""SELECT * FROM calendar """)
+    cal_events = db_cursor.fetchall()
+    lock.release()
+    return len(cal_events)+1
 
 
 def get_today_logs(db_cursor, today_date: str, lock):
@@ -442,7 +450,8 @@ def generate_db_tables(db_cursor, db_connection, lock):
                  )""")
 
     db_cursor.execute("""CREATE TABLE if not exists calendar (
-             date text, startTime text, endTime text, eventName text, color text, details text)""")
+             date text, startTime text, endTime text, eventName text, 
+             color text, details text, calendarName text, taskID text)""")
 
     db_cursor.execute("""CREATE TABLE if not exists travelTracker (
              Destination text, latitude text, longitude text)""")

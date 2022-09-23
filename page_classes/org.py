@@ -3,8 +3,6 @@ from flask import render_template, make_response
 from functionPackages.misc import *
 from package import days_of_the_week
 
-logger = logging.getLogger(__name__)
-
 
 class Org(Resource):
     def __init__(self, **kwargs):
@@ -13,6 +11,7 @@ class Org(Resource):
         self.c = kwargs["c"]
         self.lock = kwargs["lock"]
         self.parser = kwargs["parser"]
+        self.logger = logging.getLogger(__name__)
 
     def get(self):
         headers = {'Content-Type': 'text/html'}
@@ -43,7 +42,7 @@ class Org(Resource):
         for i in range(1, 8):
             header_dates.append(str(day_val.date()).split("-")[2])
             day_val = datetime.datetime.strptime(str(day_val.date()), '%Y-%m-%d') + datetime.timedelta(days=1)
-        logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
+        self.logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(
             render_template('org.html', day=day, month=month, year=year, weekDay=days_of_the_week[week_day],
                             monthsBeginning=months_beginning_week_day, todayTodos=today_todos, overDue=all_due_events,
@@ -88,11 +87,11 @@ class Org(Resource):
                 self.c.execute("""DELETE from todoList where date = ? and task = ?""",
                                (date_val, value_dict['value'].lower()))
                 if args['action'] == "delete":
-                    logger.info(f"removed todo {value_dict['value'].lower()} from todoList for date: {date_val}")
+                    self.logger.info(f"removed todo {value_dict['value'].lower()} from todoList for date: {date_val}")
                 else:
                     self.c.execute("""INSERT INTO todoList VALUES(?, ?, ?, ?)""",
                                    (value_dict['value'].lower(), date_val, value_dict['done'], value_dict['color']))
-                    logger.info(
+                    self.logger.info(
                         f"added todo {value_dict['value'].lower()} to todoList for date: {date_val} as "
                         f"{value_dict['done']}")
                 self.conn.commit()
@@ -102,33 +101,35 @@ class Org(Resource):
             if args["action"] == "create":
                 date_value = args['date']
                 values = json.loads(args['value'])
+                task_id = get_unique_id(self.c, self.lock)
                 self.lock.acquire(True)
-                self.c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (
+                self.c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (
                     date_value, values["startTime"], values["stopTime"], values["name"], values["color"],
-                    values["details"]))
+                    values["details"], values["calName"], task_id))
                 self.conn.commit()
                 self.lock.release()
+                self.logger.info(f"created task {values['name']} for date {date_value}")
+                return json.dumps({"taskID": task_id}), 200
             elif args["action"] == "delete":
                 date_value = args['date']
                 values = json.loads(args['value'])
                 self.lock.acquire(True)
-                self.c.execute(
-                    """DELETE from calendar where date = ? and startTime = ? and endTime = ?  and eventName = ? """,
-                    (date_value, values["startTime"], values["stopTime"], values["name"]))
+                self.c.execute("""DELETE from calendar where taskID = ?""", (values["taskID"], ))
                 self.conn.commit()
                 self.lock.release()
+                self.logger.info(f"deleted task {values['name']} from date {date_value}")
             elif args["action"] == "edit":
                 self.lock.acquire(True)
                 values = json.loads(args['oldValue'])
                 new_values = json.loads(args['value'])
-                self.c.execute(
-                    """DELETE from calendar where date = ? and startTime = ? and endTime = ?  and eventName = ? """,
-                    (values["date"], values["startTime"], values["stopTime"], values["name"]))
-                self.c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?)""", (
+                # TODO: change this to UPDATE
+                self.c.execute("""DELETE from calendar where taskID = ?""", (values["taskID"]))
+                self.c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?, ? , ?)""", (
                     new_values["date"], new_values["startTime"], new_values["stopTime"], new_values["name"],
-                    new_values["color"], new_values["details"]))
+                    new_values["color"], new_values["details"], values["calName"], values["taskID"]))
                 self.conn.commit()
                 self.lock.release()
+                self.logger.info(f"updated task {values['name']}")
         elif args['type'] == "scrum":
             scrum_dict = eval((args['value']))
             proj = scrum_dict['cardProj']

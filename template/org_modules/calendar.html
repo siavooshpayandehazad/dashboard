@@ -24,33 +24,53 @@
 
 
     function colorFilterCalendar(){
-      console.log(window["CalType"])
       if (window["CalType"] == "Week" || window["CalType"] == undefined){
         drawEvents();
       }else{
         drawMonthEvents()
       }
     }
+
+    function nameFilterCalendar(){
+      if (window["CalType"] == "Week" || window["CalType"] == undefined){
+        drawEvents();
+      }else{
+        drawMonthEvents()
+      }
+    }
+
 </script>
 
-  <div class="col-sm-12 col-lg-12">
-      <div style="float:right; margin-top:10px; margin-right:10px;">
-         <b ><i class="fa fa-filter" style="color:white; margin-right:4px"></i> </b>
-         <select id="calFilter" onchange="colorFilterCalendar(this)">
-            <option>None</option>
-            {% for color in ["pink", "gold", "powderblue", "tomato", "skyBlue", "teal"]%}
-              <option style="background-color:{{color}}">{{color}}</option>
-            {% endfor %}
-          </select>
-      </div>
-  </div>
-
-  <div class="col-sm-12 col-lg-12">
+<div class="col-sm-2 col-lg-2" >
+    <div class="container-fluid bg" style="color:black; border-radius: 10px; background-color: white; width:90%; padding-left:10%; padding-top:10px; margin-top: 20px; margin-bottom: 20px;">
+        <div class="row">
+                <b> Color <i class="fa fa-filter" style="margin-right:4px"></i>: </b>
+                <select id="calFilter" style="width: calc(100% - 80px); margin-left:5px;" onchange="colorFilterCalendar(this)">
+                    <option>None</option>
+                    {% for color in ["LightYellow", "Khaki", "Goldenrod", "gold", "pink", "LightSalmon", "Salmon",
+                                     "tomato", "powderblue", "skyBlue", "LightSeaGreen", "teal"]%}
+                    <option style="background-color:{{color}}">{{color}}</option>
+                    {% endfor %}
+                </select>
+        </div>
+         <hr/>
+        <div class="row">
+            <h5> Calendars:</h5>
+            <br>
+            {% for item in ["default", "work", "events"]%}
+                <div style="width:90%; margin-left:10%">
+                    <input style="width:20px; height:20px;" id="cal_checkbox_{{item}}" type="checkbox" onchange="nameFilterCalendar()" checked><span> {{item}}</span>
+                </div>
+                {%endfor%}
+        </div>
+        </div>
+</div>
+  <div class="col-sm-10 col-lg-10">
     {% with  month = month, year = year, day = day, calMonth = calMonth%}
              {% include "org_modules/MonthCal.html" %}
     {% endwith %}
 
-    {% with  month = month, year = year, day = day,  daysBeginning = 6, daysEnd = 22,
+    {% with  month = month, year = year, day = day,  daysBeginning = 5, daysEnd = 23,
             headerDates = headerDates, monthsBeginning = monthsBeginning, calDate = calDate%}
             {% include "org_modules/WeekCal.html" %}
     {% endwith %}

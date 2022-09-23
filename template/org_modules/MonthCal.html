@@ -114,6 +114,9 @@ function drawMonthEvents(){
             continue;
           }
         }
+        if (!document.getElementById("cal_checkbox_"+String(calMonths[j][8])).checked){
+          continue;
+        }
         div = document.createElement("div")
         div.classList.add("monthEvent")
         div.textContent=((calMonths[j][1]=="None")?"":calMonths[j][1]) + " " + calMonths[j][3];
@@ -130,6 +133,8 @@ function drawMonthEvents(){
         div.setAttribute("startTime", calMonths[j][1]);
         div.setAttribute("stopTime",  calMonths[j][2]);
         div.setAttribute("color",     calMonths[j][6]);
+        div.setAttribute("calName",   calMonths[j][8]);
+        div.setAttribute("taskID",    calMonths[j][9]);
 
         div.onclick=function editEvent(event){
           event.stopPropagation(); // dont propagate the click the cell bellow

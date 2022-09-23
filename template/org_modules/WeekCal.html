@@ -110,13 +110,13 @@ function drawCell(calDate, idVal){
   div.ondragstart=function dragCal (event) {
     event.dataTransfer.setData("text", event.target.id);
   };
-  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
   startPx = 42*parseInt(calDate[1].slice(3,5))/60
   div.classList.add("weekEvent");
   if (calDate[1]!=="None"){
     div.style.top  = (cell.getBoundingClientRect().y+startPx+32)-tableElement.getBoundingClientRect().y+"px";
     cellwidth = cell.getBoundingClientRect().width
-    div.style.left = (cell.getBoundingClientRect().x+scrollLeft+(cellwidth/calDate[4])*(calDate[5]-1))+"px";
+    outerboxShift = tableElement.parentElement.parentElement.getBoundingClientRect().x
+    div.style.left = (cell.getBoundingClientRect().x-outerboxShift+(cellwidth/calDate[4])*(calDate[5]-1))+"px";
     hoursDiff = parseInt(calDate[2].slice(0,2))-parseInt(calDate[1].slice(0,2))
     minsDiff = (parseInt(calDate[2].slice(3,5))-parseInt(calDate[1].slice(3,5)))*42/60
     div.style.height = ((hoursDiff)*cell.offsetHeight+minsDiff-6)+"px";
@@ -140,6 +140,8 @@ function drawCell(calDate, idVal){
   div.setAttribute("startTime", calDate[1]);
   div.setAttribute("stopTime",  calDate[2]);
   div.setAttribute("color",     calDate[6]);
+  div.setAttribute("calName",   calDate[8]);
+  div.setAttribute("taskID",    calDate[9]);
 
   div.onclick=function editEvent(event){
     event.stopPropagation(); // dont propagate the click the cell bellow
@@ -195,6 +197,9 @@ function drawEvents(){
           continue;
         }
       }
+      if (!document.getElementById("cal_checkbox_"+String(calDates[i][8])).checked){
+        continue;
+      }
       drawCell(calDates[i], i)
     }
     return;
@@ -217,11 +222,40 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   var div = document.createElement("div");
   div.style.border="3px solid #9ecae1";
   div.style.borderRadius="10px 10px 10px 10px";
-  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
-  div.style.left = event.clientX+scrollLeft+"px";
+  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+  var tableElement = document.getElementById("calTab")
+  outerboxShift = tableElement.parentElement.parentElement.getBoundingClientRect().x;
+  div.style.left = event.clientX-outerboxShift+scrollLeft+"px";
   div.style.top  = event.target.getBoundingClientRect().y-item.getBoundingClientRect().y+40+"px";
   div.classList.add("calendarPopUp");
   div.style.textAlign = "left";
+
+  var taskIDContainer = document.createElement("div");
+  taskIDContainer.style.marginLeft="10px";
+  var taskIDText = document.createElement("span");
+  if (senderElement.tagName == "DIV"){ // edit or delete
+    taskIDText.textContent= "taskID:" + senderElement.getAttribute("taskID");
+  }else{
+    taskIDText.textContent= "taskID: ---- ";
+  }
+  taskIDContainer.appendChild(taskIDText);
+
+  var calNameContainer = document.createElement("div");
+  calNameContainer.style.marginLeft="10px";
+  var calText = document.createElement("span");
+  calText.textContent= "Calendar:";
+
+  var calName = document.createElement("select");
+  calName.style.width="95%";
+  cals = ["default", "work", "events"]
+  for (let i = 0; i < cals.length; i++){
+     var option = document.createElement("option");
+     option.text = cals[i];
+     calName.appendChild(option);
+  }
+  calName.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("calName") : "default";
+  calNameContainer.appendChild(calText);
+  calNameContainer.appendChild(calName);
 
   var eventNameContainer = document.createElement("div");
   eventNameContainer.style.marginLeft="10px";
@@ -313,7 +347,6 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   startTime.classList.add("calEventTime")
   stopTime.classList.add("calEventTime")
 
-  console.log()
   if ((inStartTime === null)){
     startTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("startTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows),2)+":00";
     stopTime.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("stopTime") : zeroPad(parseInt({{daysBeginning}})+(cell.parentElement.rowIndex-calOffsetRows)+1, 2)+":00";
@@ -350,7 +383,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   colorContainer.style.margin="5px 0px 5px 5px";
   var color = document.createElement("select");
 
-  colors = ["pink", "gold", "powderblue", "tomato", "skyBlue", "teal"]
+  colors = ["LightYellow", "Khaki", "Goldenrod", "gold", "pink", "LightSalmon", "Salmon", "tomato", "powderblue", "skyBlue", "LightSeaGreen", "teal"]
   for (let i = 0; i < colors.length; i++){
      var option = document.createElement("option");
      option.style.backgroundColor = colors[i];
@@ -393,6 +426,8 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
                                "\", \"startTime\": \""+ ((startTime.disabled) ? "None" : (startTime.value)) +
                                "\", \"stopTime\": \"" + ((stopTime.disabled) ? "None": (stopTime.value)) +
                                "\", \"color\": \""+ color.value+
+                               "\", \"calName\": \""+ calName.value+
+                               "\", \"taskID\": \""+ senderElement.getAttribute("taskID")+
                                "\", \"date\": \""+ daySelector.value+
                                "\"}",
                 // item's old values, we need to be able to find it in the database
@@ -401,6 +436,8 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
                               "\", \"startTime\": \""+senderElement.getAttribute("startTime")+
                               "\", \"stopTime\": \"" + senderElement.getAttribute("stopTime")+
                               "\", \"color\": \""+ senderElement.getAttribute("color")+
+                              "\", \"calName\": \""+ calName.value+
+                              "\", \"taskID\": \""+ senderElement.getAttribute("taskID")+
                               "\", \"date\": \""+ oldDate +
                               "\"}",
                 "date": daySelector.value,
@@ -408,11 +445,11 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
       });
       if (calType == "week"){
         removeEventFromCalDates(calDates, senderElement.getAttribute("weekDay"), senderElement.getAttribute("name"), senderElement.getAttribute("startTime"), senderElement.getAttribute("stopTime"))
-        calDates.push([parseInt(colNum), ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value])
+        calDates.push([parseInt(colNum), ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value, calName.value])
         drawEvents();
       }else{
         removeEventFromCalDates(calMonths, oldDate, senderElement.getAttribute("name"), senderElement.getAttribute("startTime"), senderElement.getAttribute("stopTime"))
-        calMonths.push([daySelector.value, ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value])
+        calMonths.push([daySelector.value, ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value, calName.value])
         drawMonthEvents()
       }
     }else{ // just create a new event
@@ -424,20 +461,25 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
                                "\", \"startTime\": \""+ ((startTime.disabled) ? "None" : (startTime.value)) +
                                "\", \"stopTime\": \"" + ((stopTime.disabled) ? "None": (stopTime.value)) +
                                "\", \"color\": \""+ color.value+
+                               "\", \"calName\": \""+ calName.value+
                                "\"}",
                 "date": daySelector.value,
-                "action": 'create'}
+                "action": 'create'},
+         success: function(data) {
+            taskID  = JSON.parse(data)["taskID"]
+            if (calType == "week"){
+              calDates.push([parseInt(colNum),
+                            ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
+                            eventName.value, 1, 1, color.value, eventDescription.value, calName.value, taskID])
+              drawEvents();
+            }else{
+              calMonths.push([daySelector.value,((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
+                            eventName.value, 1, 1, color.value, eventDescription.value, calName.value, taskID])
+              drawMonthEvents()
+            }
+         }
       });
-      if (calType == "week"){
-        calDates.push([parseInt(colNum),
-                      ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
-                      eventName.value, 1, 1, color.value, eventDescription.value])
-        drawEvents();
-      }else{
-        calMonths.push([daySelector.value,((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
-                      eventName.value, 1, 1, color.value, eventDescription.value])
-        drawMonthEvents()
-      }
+
     }
     if(document.getElementById("calendarDrag")!==null){
       document.getElementById("calendarDrag").remove()
@@ -472,6 +514,8 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
                                  "\", \"startTime\": \""+startTime.value +
                                  "\", \"stopTime\": \"" + stopTime.value+
                                  "\", \"color\": \""+ color.value+
+                                 "\", \"calName\": \""+ calName.value+
+                                 "\", \"taskID\": \""+ senderElement.getAttribute("taskID")+
                                  "\"}",
                   "date": daySelector.value,
                   "action": 'delete'}
@@ -494,6 +538,8 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   btnContainer.appendChild(submitBtn)
   btnContainer.appendChild(closeBtn)
 
+  div.appendChild(taskIDContainer)
+  div.appendChild(calNameContainer)
   div.appendChild(eventNameContainer)
   div.appendChild(timeContainer)
   div.appendChild(colorContainer)
@@ -523,9 +569,9 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
         </td>
         {%for j in range(1, 8)%}
           {%if j == 1%}
-              <td style = "width: 13.35%; border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)"> </td>
+              <td style = "width: 13.35%; border-bottom: 1px solid #9ecae1; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowDropCalEvent(event)"> </td>
           {%else%}
-              <td style = "width: 13.35%; border-bottom: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+              <td style = "width: 13.35%; border-bottom: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowDropCalEvent(event)">  </td>
           {%endif%}
         {%endfor%}
       </tr>
@@ -535,19 +581,19 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
         {%for j in range(1, 8)%}
           {%if j == 1%}
               {%if (i < 8) or (i > 16)%}
-                  <td style = "width: 13.35%; border-left: 1px solid #9ecae1; background-color:#f0f0f0" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                  <td style = "width: 13.35%; border-left: 1px solid #9ecae1; background-color:#f0f0f0" ondrop="dropCalEvent(event)" ondragover="allowDropCalEvent(event)">  </td>
                 {%else%}
-                  <td style = "width: 13.35%; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                  <td style = "width: 13.35%; border-left: 1px solid #9ecae1;" ondrop="dropCalEvent(event)" ondragover="allowDropCalEvent(event)">  </td>
                 {%endif%}
 
           {%else%}
               {%if (j == 6) or (j == 7)%}
-                <td style="width: 13.35%; background-color:#deebf7" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                <td style="width: 13.35%; background-color:#deebf7" ondrop="dropCalEvent(event)" ondragover="allowDropCalEvent(event)">  </td>
               {%else%}
                 {%if (i < 8) or (i > 16)%}
-                  <td style="width: 13.35%; background-color:#f0f0f0" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                  <td style="width: 13.35%; background-color:#f0f0f0" ondrop="dropCalEvent(event)" ondragover="allowDropCalEvent(event)">  </td>
                 {%else%}
-                  <td style="width: 13.35%;" ondrop="dropCalEvent(event)" ondragover="allowdropCalEvent(event)">  </td>
+                  <td style="width: 13.35%;" ondrop="dropCalEvent(event)" ondragover="allowDropCalEvent(event)">  </td>
                 {%endif%}
               {%endif%}
           {%endif%}
@@ -611,7 +657,9 @@ function drawCurrentTime(){
   var cell = table.rows[hours-parseInt({{daysBeginning}})+calOffsetRows].cells.item(todayColl);
   scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
   div.style.top  =  cell.getBoundingClientRect().top - table.getBoundingClientRect().top + 28 + (parseFloat(mins/60)*(cell.getBoundingClientRect().height)) + "px";
-  div.style.left = (cell.getBoundingClientRect().x+scrollLeft)+"px";
+  var tableElement = document.getElementById("calTab")
+  outerboxShift = tableElement.parentElement.parentElement.getBoundingClientRect().x;
+  div.style.left = (cell.getBoundingClientRect().x+scrollLeft-outerboxShift)+"px";
   table.appendChild(div)
 }
 
@@ -639,6 +687,8 @@ function dropCalEvent(event){
   var eventDescription = calEvent.getAttribute("details");
   var oldStartTime = calEvent.getAttribute("startTime");
   var oldEndTime = calEvent.getAttribute("stopTime");
+  var calName = calEvent.getAttribute("calName");
+  var taskID = calEvent.getAttribute("taskID");
 
   var oldWeekday = calEvent.getAttribute("weekDay");
   var color = calEvent.style.backgroundColor;
@@ -664,10 +714,10 @@ function dropCalEvent(event){
     var newDateObj = new Date(newDate.getTime() + minutes*60000);
     var newEndTime = zeroPad(newDateObj.getHours(), 2) +":"+ zeroPad(newDateObj.getMinutes(), 2)
     if(newDateObj.getHours() >= parseInt({{daysEnd}})){
-      newEndTime = "22:00"
+      newEndTime = "{{daysEnd}}:00"
     }
     if(newDateObj.getHours() < parseInt({{daysBeginning}})){
-      newEndTime = "22:00"
+      newEndTime = "{{daysEnd}}:00"
     }
 
   }
@@ -680,6 +730,8 @@ function dropCalEvent(event){
                            "\", \"startTime\": \""+ newStartTime +
                            "\", \"stopTime\": \"" + newEndTime+
                            "\", \"color\": \""+ color+
+                           "\", \"calName\": \""+ calName+
+                           "\", \"taskID\": \""+ taskID+
                            "\", \"date\": \""+ calculateDateofCol(destCol)+
                            "\"}",
             // item's old values, we need to be able to find it in the database
@@ -688,17 +740,19 @@ function dropCalEvent(event){
                           "\", \"startTime\": \""+oldStartTime+
                           "\", \"stopTime\": \"" + oldEndTime+
                           "\", \"color\": \""+ color+
+                          "\", \"calName\": \""+ calName+
+                          "\", \"taskID\": \""+ taskID+
                           "\", \"date\": \""+ oldDate +
                           "\"}",
             "date": currentDay,
             "action": 'edit'}
   });
-  removeEventFromCalDates(calDates, oldWeekday, eventName, oldStartTime, oldEndTime)
-  calDates.push([destCol-1, newStartTime, newEndTime, eventName, 1, 1, color, eventDescription])
+  removeEventFromCalDates(calDates, oldWeekday, eventName, oldStartTime, oldEndTime, calName)
+  calDates.push([destCol-1, newStartTime, newEndTime, eventName, 1, 1, color, eventDescription, calName, taskID])
   drawEvents();
 }
 
-function allowdropCalEvent(ev) {
+function allowDropCalEvent(ev) {
   ev.preventDefault();
 }
 function closeCalendarPopup(){
