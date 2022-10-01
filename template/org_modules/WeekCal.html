@@ -1,4 +1,3 @@
-
 <script type="text/javascript">
 var draggin = false
 var calOffsetRows = 2;
@@ -132,6 +131,9 @@ function drawCell(calDate, idVal){
 
   div.textContent = calDate[3];
   div.style.backgroundColor = calDate[6];
+  if(calDate[6] == "teal"){
+    div.style.color = "white";
+  }
 
   // set the attributes:
   div.setAttribute("weekDay",   calDate[0]);
@@ -276,6 +278,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   eventDescription.style.marginTop="5px";
   eventDescription.style.marginBottom="5px";
   eventDescription.rows = 4;
+  eventDescription.type="text"
   eventDescription.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("details") : "none";
   var detailText = document.createElement("span");
   detailText.textContent= "Details:";
@@ -421,25 +424,27 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
       $.ajax({ type: "POST",
          url: "/org",
          data: {"type": "calendar",
-                "value": "{" + "\"name\": \""+eventName.value+
-                               "\", \"details\": \""+eventDescription.value.replace(/\r?\n|\r/g, " ")+
-                               "\", \"startTime\": \""+ ((startTime.disabled) ? "None" : (startTime.value)) +
-                               "\", \"stopTime\": \"" + ((stopTime.disabled) ? "None": (stopTime.value)) +
-                               "\", \"color\": \""+ color.value+
-                               "\", \"calName\": \""+ calName.value+
-                               "\", \"taskID\": \""+ senderElement.getAttribute("taskID")+
-                               "\", \"date\": \""+ daySelector.value+
-                               "\"}",
+                "value": JSON.stringify({
+                               "name"      : eventName.value,
+                               "details"   : eventDescription.value,
+                               "startTime" : ((startTime.disabled) ? "None" : (startTime.value)),
+                               "stopTime"  : ((stopTime.disabled) ? "None": (stopTime.value)),
+                               "color"     : color.value,
+                               "calName"   : calName.value,
+                               "taskID"    : senderElement.getAttribute("taskID"),
+                               "date"      : daySelector.value
+                               }),
                 // item's old values, we need to be able to find it in the database
-                "oldValue": "{" + "\"name\": \""+senderElement.getAttribute("name")+
-                              "\", \"details\": \""+senderElement.getAttribute("details")+
-                              "\", \"startTime\": \""+senderElement.getAttribute("startTime")+
-                              "\", \"stopTime\": \"" + senderElement.getAttribute("stopTime")+
-                              "\", \"color\": \""+ senderElement.getAttribute("color")+
-                              "\", \"calName\": \""+ calName.value+
-                              "\", \"taskID\": \""+ senderElement.getAttribute("taskID")+
-                              "\", \"date\": \""+ oldDate +
-                              "\"}",
+                "oldValue": JSON.stringify({
+                              "name"       : senderElement.getAttribute("name"),
+                              "details"    : senderElement.getAttribute("details").toString(),
+                              "startTime"  : senderElement.getAttribute("startTime"),
+                              "stopTime"   : senderElement.getAttribute("stopTime"),
+                              "color"      : senderElement.getAttribute("color"),
+                              "calName"    : calName.value,
+                              "taskID"     : senderElement.getAttribute("taskID"),
+                              "date"       : oldDate
+                              }),
                 "date": daySelector.value,
                 "action": 'edit'}
       });
@@ -456,13 +461,14 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
       $.ajax({ type: "POST",
          url: "/org",
          data: {"type": "calendar",
-                "value": "{" + "\"name\": \""+eventName.value+
-                               "\", \"details\": \""+eventDescription.value.replace(/\r?\n|\r/g, " ")+
-                               "\", \"startTime\": \""+ ((startTime.disabled) ? "None" : (startTime.value)) +
-                               "\", \"stopTime\": \"" + ((stopTime.disabled) ? "None": (stopTime.value)) +
-                               "\", \"color\": \""+ color.value+
-                               "\", \"calName\": \""+ calName.value+
-                               "\"}",
+                "value": JSON.stringify({
+                               "name"       : eventName.value,
+                               "details"   : eventDescription.value,
+                               "startTime"  : ((startTime.disabled) ? "None" : (startTime.value)),
+                               "stopTime"   : ((stopTime.disabled) ? "None": (stopTime.value)),
+                               "color"      :  color.value,
+                               "calName"    : calName.value
+                               }),
                 "date": daySelector.value,
                 "action": 'create'},
          success: function(data) {
@@ -509,14 +515,15 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
         $.ajax({ type: "POST",
            url: "/org",
            data: {"type": "calendar",
-                  "value": "{" + "\"name\": \""+eventName.value+
-                                 "\", \"details\": \""+eventDescription.value+
-                                 "\", \"startTime\": \""+startTime.value +
-                                 "\", \"stopTime\": \"" + stopTime.value+
-                                 "\", \"color\": \""+ color.value+
-                                 "\", \"calName\": \""+ calName.value+
-                                 "\", \"taskID\": \""+ senderElement.getAttribute("taskID")+
-                                 "\"}",
+                  "value": JSON.stringify({
+                               "name"       : eventName.value,
+                               "details"    : eventDescription.value,
+                               "startTime"  : startTime.value,
+                               "stopTime"   : stopTime.value,
+                               "color"      : color.value,
+                               "calName"    : calName.value,
+                               "taskID"     : senderElement.getAttribute("taskID")
+                                }),
                   "date": daySelector.value,
                   "action": 'delete'}
         });
@@ -548,6 +555,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   return;
 }
 </script>
+
 
 <div class= "classContainer" id="WeekCal" style="display: none;">
   <table id="calTab" border="0" style="width: 100%; border-spacing: 0px;" onclick="calendarClick(event, this, 'week')">
@@ -725,25 +733,27 @@ function dropCalEvent(event){
   $.ajax({ type: "POST",
      url: "/org",
      data: {"type": "calendar",
-            "value": "{" + "\"name\": \""+eventName+
-                           "\", \"details\": \""+eventDescription.replace(/\r?\n|\r/g, " ")+
-                           "\", \"startTime\": \""+ newStartTime +
-                           "\", \"stopTime\": \"" + newEndTime+
-                           "\", \"color\": \""+ color+
-                           "\", \"calName\": \""+ calName+
-                           "\", \"taskID\": \""+ taskID+
-                           "\", \"date\": \""+ calculateDateofCol(destCol)+
-                           "\"}",
+            "value": JSON.stringify({
+                           "name"       : eventName,
+                           "details"    : eventDescription,
+                           "startTime"  : newStartTime,
+                           "stopTime"   : newEndTime,
+                           "color"      : color,
+                           "calName"    : calName,
+                           "taskID"     : taskID,
+                           "date"       : calculateDateofCol(destCol)
+                           }),
             // item's old values, we need to be able to find it in the database
-            "oldValue": "{" + "\"name\": \""+eventName+
-                          "\", \"details\": \""+eventDescription+
-                          "\", \"startTime\": \""+oldStartTime+
-                          "\", \"stopTime\": \"" + oldEndTime+
-                          "\", \"color\": \""+ color+
-                          "\", \"calName\": \""+ calName+
-                          "\", \"taskID\": \""+ taskID+
-                          "\", \"date\": \""+ oldDate +
-                          "\"}",
+            "oldValue": JSON.stringify({
+                          "name"        : eventName,
+                          "details"     : eventDescription,
+                          "startTime"   : oldStartTime,
+                          "stopTime"    : oldEndTime,
+                          "color"       : color,
+                          "calName"     : calName,
+                          "taskID"      : taskID,
+                          "date"        : oldDate
+                          }),
             "date": currentDay,
             "action": 'edit'}
   });

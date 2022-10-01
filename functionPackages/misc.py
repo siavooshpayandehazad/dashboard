@@ -1,4 +1,5 @@
 import os
+import random
 import sqlite3
 import hashlib
 import binascii
@@ -97,6 +98,7 @@ def delete_flash_cards(set_name: str, side1: str, side2: str, db_cursor, db_conn
 
 def change_flash_cards(set_name: str, side1: str, side2: str, last_time_reviewed: str, db_cursor, db_connection, lock):
     lock.acquire(True)
+    # TODO: change to UPDATE
     db_cursor.execute("""DELETE from flashcards where setName = ? and side1 = ? and side2 = ?""",
                       (set_name, side1, side2,))
     db_cursor.execute("""INSERT INTO flashcards VALUES(?, ?, ?, ?)""",
@@ -154,11 +156,19 @@ def get_cal_events_month(today_date: str, db_cursor, lock) -> list:
 
 
 def get_unique_id(db_cursor, lock):
+    import sys
     lock.acquire(True)
     db_cursor.execute("""SELECT * FROM calendar """)
     cal_events = db_cursor.fetchall()
+    event_numbers = [int(x[7]) for x in cal_events]
+    if len(event_numbers) != len(list(set(event_numbers))):
+        print("duplicate cal item exists in calendar")
+        return False
+    random_id = random.randint(0, sys.maxsize)
+    while random_id in event_numbers:
+        random_id = random.randint(0, sys.maxsize)
     lock.release()
-    return len(cal_events)+1
+    return random_id
 
 
 def get_today_logs(db_cursor, today_date: str, lock):

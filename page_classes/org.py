@@ -89,6 +89,7 @@ class Org(Resource):
                 if args['action'] == "delete":
                     self.logger.info(f"removed todo {value_dict['value'].lower()} from todoList for date: {date_val}")
                 else:
+                    # TODO: change to UPDATE
                     self.c.execute("""INSERT INTO todoList VALUES(?, ?, ?, ?)""",
                                    (value_dict['value'].lower(), date_val, value_dict['done'], value_dict['color']))
                     self.logger.info(
@@ -102,6 +103,8 @@ class Org(Resource):
                 date_value = args['date']
                 values = json.loads(args['value'])
                 task_id = get_unique_id(self.c, self.lock)
+                if task_id is False:
+                    return "failed to generate unique id", 400
                 self.lock.acquire(True)
                 self.c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?, ?, ?)""", (
                     date_value, values["startTime"], values["stopTime"], values["name"], values["color"],
@@ -119,14 +122,14 @@ class Org(Resource):
                 self.lock.release()
                 self.logger.info(f"deleted task {values['name']} from date {date_value}")
             elif args["action"] == "edit":
-                self.lock.acquire(True)
                 values = json.loads(args['oldValue'])
                 new_values = json.loads(args['value'])
-                # TODO: change this to UPDATE
-                self.c.execute("""DELETE from calendar where taskID = ?""", (values["taskID"]))
-                self.c.execute("""INSERT INTO calendar VALUES(?, ?, ?, ?, ?, ?, ? , ?)""", (
-                    new_values["date"], new_values["startTime"], new_values["stopTime"], new_values["name"],
-                    new_values["color"], new_values["details"], values["calName"], values["taskID"]))
+                self.lock.acquire(True)
+                self.c.execute("UPDATE calendar SET date = ?, startTime = ?, endTime = ?, eventName = ?, \
+                                color = ?, details = ?, calendarName = ? WHERE taskID = ?",
+                               (new_values["date"], new_values["startTime"], new_values["stopTime"],
+                                new_values["name"], new_values["color"], new_values["details"], values["calName"],
+                                values["taskID"], ))
                 self.conn.commit()
                 self.lock.release()
                 self.logger.info(f"updated task {values['name']}")
@@ -158,6 +161,7 @@ class Org(Resource):
                         self.c.execute("""SELECT * FROM scrumBoard WHERE project = ? and task = ? """, (proj, task))
                         date_value = self.c.fetchall()[0][-1]
                         self.lock.release()
+                        # TODO: change to UPDATE
                         delete_scrum_task(proj, task, self.c, self.conn, self.lock)
                         add_scrum_task(proj, task, destination_list, priority, str(date_value), self.c, self.conn,
                                        self.lock)

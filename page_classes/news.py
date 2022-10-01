@@ -64,6 +64,7 @@ class News(Resource):
                                              news_show_link=news_show_link,
                                              news_show_date=news_show_date,
                                              podcast_links=podcast_links), 200, headers)
+
     @staticmethod
     def post():
         if not session.get("name"):

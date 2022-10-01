@@ -94,6 +94,7 @@ class Notes(Resource):
                 return "all good!", 200
         else:
             self.lock.acquire(True)
+            # todo: change to UPDATE
             self.c.execute("""DELETE from Notes where Notebook = ? and Chapter = ?  """,
                            (value_dict["notebook"], value_dict["chapter"]))
             self.c.execute("""INSERT into Notes VALUES(?, ?, ?)  """,

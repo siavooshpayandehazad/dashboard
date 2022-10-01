@@ -121,6 +121,9 @@ function drawMonthEvents(){
         div.classList.add("monthEvent")
         div.textContent=((calMonths[j][1]=="None")?"":calMonths[j][1]) + " " + calMonths[j][3];
         div.style.backgroundColor=calMonths[j][6];
+        if(calMonths[j][6] == "teal"){
+          div.style.color = "white";
+        }
         scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
         scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         div.style.top  = (cell.getBoundingClientRect().y+scrollTop)+"px";

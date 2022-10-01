@@ -76,6 +76,7 @@ class Lists(Resource):
         else:
             value_dict = eval((args['value']))
             logger.info(f"added {value_dict['name'].lower()} to {value_dict['type']} as {value_dict['done']} ")
+            # TODO: change to UPDATE
             self.c.execute("""DELETE from lists where name = ? and type = ? """,
                            (value_dict["name"].lower(), value_dict["type"]))
             self.c.execute("""INSERT INTO lists VALUES(?, ?, ?, ?)""",
