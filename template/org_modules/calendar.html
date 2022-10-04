@@ -41,11 +41,13 @@
 
 </script>
 
-<div class="col-sm-2 col-lg-2" >
-    <div class="container-fluid bg" style="color:black; border-radius: 10px; background-color: white; width:90%; padding-left:10%; padding-top:10px; margin-top: 20px; margin-bottom: 20px;">
+<div class="col-sm-2 col-lg-2">
+    <div  style="color:black; border-radius: 10px; background-color: white; width:90%;
+                                           padding-left:10%; padding-top:10px; margin-top: 20px;
+                                           margin-bottom: 20px;">
         <div class="row">
                 <b> Color <i class="fa fa-filter" style="margin-right:4px"></i>: </b>
-                <select id="calFilter" style="width: calc(100% - 80px); margin-left:5px;" onchange="colorFilterCalendar(this)">
+                <select id="calFilter" style="width: calc(100% - 100px); margin-left:5px;" onchange="colorFilterCalendar(this)">
                     <option>None</option>
                     {% for color in ["LightYellow", "Khaki", "Goldenrod", "gold", "pink", "LightSalmon", "Salmon",
                                      "tomato", "powderblue", "skyBlue", "LightSeaGreen", "teal"]%}
@@ -54,7 +56,7 @@
                 </select>
         </div>
          <hr/>
-        <div class="row">
+        <div class="row" style="padding-bottom: 10px">
             <h5> Calendars:</h5>
             <br>
             {% for item in ["default", "work", "events"]%}
