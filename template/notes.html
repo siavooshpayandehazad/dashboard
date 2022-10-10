@@ -89,6 +89,7 @@ if (page_theme == "Dark"){
       <h2 class="title"> <span id ="chapterName">{{Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first}}</span></h2>
       {% include "notes_modules/edit_entry.html" %}
       {% include "notes_modules/pic_uploader.html" %}
+      <span style="float:right;margin-right: 10px; margin-top: 5px;"> word count: <span id="wordcountVal"> 0 </span> </span>
       <br>
       <div id="chapterContent">
         {{Notebooks[Notebooks.keys()|sort()|first][Notebooks[Notebooks.keys()|sort()|first].keys()|sort()|first]|safe}}

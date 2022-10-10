@@ -64,9 +64,12 @@ function selectChapter(chapter){
   document.getElementsByClassName("uploadIcon")[0].style.display="block";
   notebookName = document.getElementById("notebookName").textContent;
   chapterContent = document.getElementById("chapterContent");
+  wordcountVal = document.getElementById("wordcountVal");
   chapterName = document.getElementById("chapterName");
   chapterName.innerHTML = chapter.textContent;
-  chapterContent.innerHTML = tempNotebooks[notebookName][chapter.textContent];
+  content=tempNotebooks[notebookName][chapter.textContent]
+  chapterContent.innerHTML = content;
+  wordcountVal.textContent = content.replace("<br>", "").split(' ').filter(function(n) { return n != '' }).length;
 }
 function addChapter(item){
   item.style.display = "none";
@@ -101,7 +104,7 @@ function createNewChapter(item){
   tocListItem.onclick = function () {selectChapter(this)}
   tocListSpan = document.createElement("span")
   tocListSpan.className = "ToCLabelText";
-  tocListSpan.innerHTML = item.value
+  tocListSpan.innerHTML = item.value;
   tocListItem.appendChild(tocListSpan)
   ToC.appendChild(tocListItem)
   item.value = ""
@@ -303,7 +306,7 @@ function chapterMouseIn(item){
   cross.classList.add("fa-times")
   cross.style.color="white";
   cross.style.marginLeft = "5px";
-  cross.style.paddingTop = "3px";
+  cross.style.paddingTop = "5px";
   cross.style.float = "left";
   cross.classList.add("chapterCloseButton");
   cross.onclick=function deleteChapter(){
