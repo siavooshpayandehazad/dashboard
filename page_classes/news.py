@@ -4,7 +4,7 @@ from flask_restful import Resource
 from flask import render_template, make_response, request, redirect, url_for
 import feedparser
 from functionPackages.misc import *
-from functionPackages.news_package import get_news_rss_data, add_rss_data
+from functionPackages.news_package import *
 import time
 logger = logging.getLogger(__name__)
 
@@ -36,17 +36,20 @@ class News(Resource):
             news_show_link = entry["media_content"][0]["url"]
 
             podcast_links = []
-            podcast_feed = feedparser.parse("http://dissidentisland.org/rss")
-            entry = podcast_feed.entries[0]
-            podcast_links.append(["Dissident Island Radio",
-                                  entry["image"]["href"],
-                                  entry["links"][1]["href"]])
 
-            podcast_feed = feedparser.parse("https://archive.org/services/collection-rss.php?collection=thefinalstrawradio")
-            entry = podcast_feed.entries[0]
-            podcast_links.append(["The Final Straw Radio",
-                                  entry["summary_detail"]["value"].split("\"")[1],
-                                  entry["links"][-1]["href"]])
+            podcasts = get_news_podcast_data(self.c_news, self.lock)
+            for pod in podcasts:
+                podcast_feed = feedparser.parse(pod[1])
+                entry = podcast_feed.entries[0]
+                for item in entry["links"]:
+                    if item.get("type", None) == "audio/mpeg":
+                        try:
+                            image = entry["image"]["href"]
+                        except:
+                            image = ""
+                        podcast_links.append([pod[0],
+                                              image,
+                                              item["href"]])
 
             temporary_data["podcasts"] = {"podcast_links": podcast_links,
                                           "news_show_link": news_show_link,
@@ -68,6 +71,9 @@ class News(Resource):
         if not session.get("name"):
             return "user is not logged in", 401
         if request.form["action"] == "add RSS":
-            print(request.form["rss-title"], request.form["rss-link"])
             add_rss_data(request.form["rss-title"], request.form["rss-link"], self.c_news, self.conn_news, self.lock)
+            return redirect(url_for('news'))
+        if request.form["action"] == "add podcast":
+            print(request.form["podcast-title"], request.form["podcast-link"])
+            add_podcast_data(request.form["podcast-title"], request.form["podcast-link"], self.c_news, self.conn_news, self.lock)
             return redirect(url_for('news'))
