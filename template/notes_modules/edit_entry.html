@@ -19,7 +19,7 @@
       var chapterName = document.getElementById("chapterName").innerHTML
       var notebookName = document.getElementById("notebookName").innerHTML
       $.ajax({ type: "POST",
-          url: "http://"+window.location.hostname+":5000/notes",
+          url: "/notes",
           data: {"type:"  : "notes",
                  "value"  : JSON.stringify({"entry":notebookEntry,
                                             "notebook": notebookName,
@@ -30,6 +30,8 @@
       tempNotebooks[notebookName][chapterName]=notebookEntry;
       document.getElementsByClassName("editIcon")[0].style.display = "block";
       document.getElementsByClassName("uploadIcon")[0].style.display = "block";
+      wordcountVal = document.getElementById("wordcountVal");
+      wordcountVal.textContent = notebookEntry.replace("<br>", "").split(' ').filter(function(n) { return n != '' }).length;
     }
 
     var submitButton = document.createElement("input");

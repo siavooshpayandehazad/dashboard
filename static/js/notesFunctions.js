@@ -64,11 +64,11 @@ function selectChapter(chapter){
   document.getElementsByClassName("uploadIcon")[0].style.display="block";
   notebookName = document.getElementById("notebookName").textContent;
   chapterContent = document.getElementById("chapterContent");
-  wordcountVal = document.getElementById("wordcountVal");
   chapterName = document.getElementById("chapterName");
   chapterName.innerHTML = chapter.textContent;
   content=tempNotebooks[notebookName][chapter.textContent]
   chapterContent.innerHTML = content;
+  wordcountVal = document.getElementById("wordcountVal");
   wordcountVal.textContent = content.replace("<br>", "").split(' ').filter(function(n) { return n != '' }).length;
 }
 function addChapter(item){
