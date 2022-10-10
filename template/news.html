@@ -15,6 +15,19 @@
             font-size:20px;
             color: #fa9fb5;
         }
+        .addRSS{
+            width:20px;
+            height:20px;
+            background-color:white;
+            line-height:18px;
+            border-radius: 20px;
+            color: black;
+            text-align: center;
+            margin-top:10px;
+        }
+        .addRSS:hover{
+            background-color:#fa9fb5;
+        }
     </style>
 </head>
 <body>
@@ -69,16 +82,24 @@ function pause_pressed(item){
         <div class="col-sm-12 col-xl-8">
             <div style="background-color:#023858; border-radius:10px; margin-top:10px;  max-height:90vh">
                 <div class="row">
+                    <div class="col-sm-1">
+
+                    </div>
                     <div class="col-sm-2">
                         <a class= "arrow hover-red" onclick="moveFeed(-1)" style="float:right; font-size:25px">&#9668;</a>
                     </div>
-                    <div class="col-sm-8 text-center">
+                    <div class="col-sm-6 text-center">
                         {%for item in news_rss%}
                         <h4 id="feed_name_{{loop.index}}" style="display: none"> {{item[0]}} </h4>
                         {%endfor%}
                     </div>
                     <div class="col-sm-2">
                         <a class= "arrow hover-red" onclick="moveFeed(1)" style="font-size:25px">&#9658; </a>
+                    </div>
+                    <div class="col-sm-1">
+                        <div class="addRSS"  data-toggle="modal" data-target="#rssModal">
+                            +
+                        </div>
                     </div>
                 </div>
                 <div style="height: 3px; margin-bottom: 10px; margin-left:10%; background-color:white; width:80%"></div>
@@ -169,6 +190,30 @@ function pause_pressed(item){
         </div>
 
     </div>
+    <!-- Modal -->
+    <div class="modal fade" id="rssModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="color:black;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add RSS</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form  method = "POST" action = "/news" enctype="multipart/form-data">
+                        <input type="hidden" name="action" value="add RSS"/>
+                        <label for="rss-title" class="col-form-label">RSS Title:</label>
+                        <input type="text" class="form-control" id="rss-title" name="rss-title" required/>
+                        <label for="rss-link" class="col-form-label">RSS Link:</label>
+                        <textarea class="form-control" id="rss-link" name="rss-link" required></textarea>
+                        <input type = "submit" value="Submit" style="margin-top:5px"/>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
@@ -187,7 +232,6 @@ function pause_pressed(item){
         podcasts = document.getElementsByClassName("podcast")
         for(let i=0; i<podcasts.length;i++){
             var podcast_name=podcasts[i].getAttribute("name");
-            console.log(podcast_name)
             if(podcasts_mem[podcast_name][0] == podcasts[i].currentSrc){
                 podcasts[i].currentTime = podcasts_mem[podcast_name][1]
             }
@@ -198,6 +242,7 @@ function pause_pressed(item){
     // clean the titles from the rss feeds
     all_titles = document.getElementsByClassName("feed-title")
     while (all_titles.length> 0) all_titles[0].remove();
+
 </script>
 </body>
 </html>
