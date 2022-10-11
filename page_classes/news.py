@@ -36,7 +36,6 @@ class News(Resource):
             news_show_link = entry["media_content"][0]["url"]
 
             podcast_links = []
-
             podcasts = get_news_podcast_data(self.c_news, self.lock)
             for pod in podcasts:
                 podcast_feed = feedparser.parse(pod[1])
@@ -59,7 +58,6 @@ class News(Resource):
             podcast_links = temporary_data["podcasts"]["podcast_links"]
             news_show_link = temporary_data["podcasts"]["news_show_link"]
             news_show_date = temporary_data["podcasts"]["news_show_date"]
-
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('news.html', pageTheme=page_theme, news_rss=news_rss,
                                              weather_dict=weather_dict,
@@ -74,6 +72,6 @@ class News(Resource):
             add_rss_data(request.form["rss-title"], request.form["rss-link"], self.c_news, self.conn_news, self.lock)
             return redirect(url_for('news'))
         if request.form["action"] == "add podcast":
-            print(request.form["podcast-title"], request.form["podcast-link"])
+            temporary_data["podcasts"] = {}
             add_podcast_data(request.form["podcast-title"], request.form["podcast-link"], self.c_news, self.conn_news, self.lock)
             return redirect(url_for('news'))
