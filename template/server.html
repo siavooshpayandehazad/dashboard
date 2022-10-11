@@ -51,26 +51,33 @@ if (page_theme == "Dark"){
     </div>
 
     <div class="row">
-        <div class="col-sm-2 col-lg-2">
-            <div style="text-align: center; background-color: white; color: black; width:100%; line-height:40px; float:left; margin-top: 10px; border-radius:10px 10px 10px 10px;">
-                <b>Server up time: <br><span style="color:red">{{upTime}}</span> hr(s) </b>
+        <div class="col-sm-4 col-lg-4">
+            <div class="row">
+                <div style="text-align: center; background-color: white; color: black; width:100%; line-height:40px; float:left; margin-top: 10px; border-radius:10px 10px 10px 10px;">
+                    <b>Server up time: <br><span style="color:red">{{upTime}}</span> hr(s) </b>
+                </div>
             </div>
 
-            <div style="background-color: white; width:100%; float:left; border-radius:10px 10px 10px 10px; margin-top: 10px;">
-                <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Disk Space</h2><br>
-                <div style="width:100%; margin-top:10px;"> <canvas id="diskSpace1" ></canvas> </div>
-                <div style="width:100%; margin-top:10px; margin-bottom:10px;"> <canvas id="diskSpace2" ></canvas> </div>
-            </div>
-
-            <div style="background-color: white; width:100%; float:left; border-radius:10px 10px 10px 10px; margin-top: 10px;">
-                <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Memory</h2><br>
-                <div style="width:100%; margin-top:10px;"> <canvas id="diskSpace3" ></canvas> </div>
-                <div style="width:100%; margin-top:10px; margin-bottom:10px;"> <canvas id="diskSpace4" ></canvas> </div>
+            <div class="row">
+                <div class="col-sm-6 col-lg-6">
+                    <div style="background-color: white; width:100%; float:left; border-radius:10px 10px 10px 10px; margin-top: 10px;">
+                        <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Disk Space</h2><br>
+                        <div style="width:100%; margin-top:10px;"> <canvas id="diskSpace1" ></canvas> </div>
+                        <div style="width:100%; margin-top:10px; margin-bottom:10px;"> <canvas id="diskSpace2" ></canvas> </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-6">
+                    <div style="background-color: white; width:100%; float:left; border-radius:10px 10px 10px 10px; margin-top: 10px;">
+                        <h2  class="title lightbg"  style="float:left; margin-left: 10px;">Memory</h2><br>
+                        <div style="width:100%; margin-top:10px;"> <canvas id="diskSpace3" ></canvas> </div>
+                        <div style="width:100%; margin-top:10px; margin-bottom:10px;"> <canvas id="diskSpace4" ></canvas> </div>
+                    </div>
+                </div>
             </div>
 
         </div>
 
-        <div class="col-sm-10 col-lg-10">
+        <div class="col-sm-8 col-lg-8">
             <div class="row">
                 <div class="col-sm-12 col-lg-12">
                     {% with dataset = cpuTemps, ChartMonthDays = cpuTempsTimes, chartType = "bar",
