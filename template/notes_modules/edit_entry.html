@@ -32,6 +32,15 @@
       document.getElementsByClassName("uploadIcon")[0].style.display = "block";
       wordcountVal = document.getElementById("wordcountVal");
       wordcountVal.textContent = notebookEntry.replace("<br>", "").split(' ').filter(function(n) { return n != '' }).length;
+
+      var count = 0;
+      Array.from(Object.keys(tempNotebooks[selectedNoteBookName]).sort()).forEach(tocItem =>{
+            content = tempNotebooks[selectedNoteBookName][tocItem];
+            count += content.replace("<br>", "").split(' ').filter(function(n) { return n != '' }).length;
+        })
+        wordcountVal = document.getElementById("notebookWordCount");
+        wordcountVal.textContent = count;
+
     }
 
     var submitButton = document.createElement("input");

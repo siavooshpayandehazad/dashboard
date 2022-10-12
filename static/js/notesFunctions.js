@@ -132,6 +132,7 @@ function selectNoteBook(notebook, event){
   var tocContent = document.getElementById("tocContent");
   var tocList = document.createElement("ol")
   tocList.className = "ToC";
+  var count = 0;
   Array.from(Object.keys(tempNotebooks[selectedNoteBookName]).sort()).forEach(tocItem =>{
     var tocListItem = document.createElement("li")
     tocListItem.className="ToCLabel hover-red";
@@ -144,6 +145,9 @@ function selectNoteBook(notebook, event){
     tocListSpan.innerHTML = tocItem
     tocListItem.appendChild(tocListSpan)
     tocList.appendChild(tocListItem)
+
+    content = tempNotebooks[selectedNoteBookName][tocItem];
+    count += content.replace("<br>", "").split(' ').filter(function(n) { return n != '' }).length;
   })
   tocContent.innerHTML = "";
   tocContent.appendChild(tocList)
@@ -185,7 +189,10 @@ function selectNoteBook(notebook, event){
   var notebookName = document.getElementById("notebookName");
   notebookName.innerHTML = selectedNoteBookName;
   selectChapter(tocList.childNodes[0])
+  wordcountVal = document.getElementById("notebookWordCount");
+  wordcountVal.textContent = count;
 }
+
 function addNotebook(item){
   // hide the text, and display the textArea box...
   document.getElementsByClassName("addNotebookText")[0].style.display="none";

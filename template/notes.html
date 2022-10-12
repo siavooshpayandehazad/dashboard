@@ -45,7 +45,7 @@ if (page_theme == "Dark"){
   <div id="notebookLabels">
     {% for notebook in Notebooks.keys()|sort() %}
     {%if notebook == Notebooks.keys()|sort()|first %}
-    <div class= "notebookLabel selected" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)" onmouseenter="noteBookMouseIn(this)" onmouseleave="noteBookMouseOut(this)" >{{notebook}}</div>
+    <div id="firstNoteBook" class= "notebookLabel" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)" onmouseenter="noteBookMouseIn(this)" onmouseleave="noteBookMouseOut(this)" >{{notebook}}</div>
     {%else%}
     <div class= "notebookLabel" onclick="selectNoteBook(this)" ondblclick="editNoteBook(this)" onmouseenter="noteBookMouseIn(this)" onmouseleave="noteBookMouseOut(this)">{{notebook}}</div>
     {%endif%}
@@ -103,6 +103,8 @@ if (page_theme == "Dark"){
 
 <script>
   var backGround = document.getElementById("notebook_background");
+  var firstNoteBook = document.getElementById("firstNoteBook");
+  selectNoteBook(firstNoteBook);
   var div = document.getElementById("notebookLabels");
   div.style.height = ((Math.floor((backGround.clientHeight-40)/46)-1)*46)+51+"px";
   </script>
