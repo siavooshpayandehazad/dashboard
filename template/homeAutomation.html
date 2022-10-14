@@ -35,7 +35,7 @@ function drawGauge(gauge, dataset, unit, MinVal, MaxVal, bgc_cold, bgc_warm, tc_
     return;
   }
   if (lastVal < MinVal){
-    //gauge.style.display = "none";
+    gauge.style.display = "none";
     //console.log("value bellow min! value:", lastVal);
     return;
   }
