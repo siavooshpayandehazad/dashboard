@@ -35,21 +35,7 @@ class News(Resource):
             news_show_date = "-".join(entry["published"].split((" "))[1:4])
             news_show_link = entry["media_content"][0]["url"]
 
-            podcast_links = []
-            podcasts = get_news_podcast_data(self.c_news, self.lock)
-            for pod in podcasts:
-                podcast_feed = feedparser.parse(pod[1])
-                entry = podcast_feed.entries[0]
-                for item in entry["links"]:
-                    if item.get("type", None) == "audio/mpeg":
-                        try:
-                            image = entry["image"]["href"]
-                        except:
-                            image = ""
-                        podcast_links.append([pod[0],
-                                              image,
-                                              item["href"]])
-
+            podcast_links = get_podcasts(self.c_news, self.lock)
             temporary_data["podcasts"] = {"podcast_links": podcast_links,
                                           "news_show_link": news_show_link,
                                           "news_show_date": news_show_date,
@@ -58,11 +44,14 @@ class News(Resource):
             podcast_links = temporary_data["podcasts"]["podcast_links"]
             news_show_link = temporary_data["podcasts"]["news_show_link"]
             news_show_date = temporary_data["podcasts"]["news_show_date"]
+        twitter_items = get_twitter_data(self.c_news, self.lock)
+
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('news.html', pageTheme=page_theme, news_rss=news_rss,
                                              weather_dict=weather_dict,
                                              news_show_link=news_show_link,
                                              news_show_date=news_show_date,
+                                             twitter_items=twitter_items,
                                              podcast_links=podcast_links), 200, headers)
 
     def post(self):
@@ -75,3 +64,14 @@ class News(Resource):
             temporary_data["podcasts"] = {}
             add_podcast_data(request.form["podcast-title"], request.form["podcast-link"], self.c_news, self.conn_news, self.lock)
             return redirect(url_for('news'))
+        if request.form["action"] == "delete podcast":
+            temporary_data["podcasts"] = {}
+            delete_podcast_data(request.form["name"], self.c_news, self.conn_news, self.lock)
+            return "Done", 200
+        if request.form["action"] == "add twitter":
+            temporary_data["podcasts"] = {}
+            add_twitter_data(request.form["twitter-title"], request.form["twitter-link"], self.c_news, self.conn_news, self.lock)
+            return redirect(url_for('news'))
+        if request.form["action"] == "delete twitter":
+            delete_twitter_data(request.form["name"], self.c_news, self.conn_news, self.lock)
+            return "Done", 200

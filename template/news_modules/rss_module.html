@@ -1,0 +1,24 @@
+<div style="background-color:#023858; border-radius:10px; margin-top:10px;  max-height:90vh">
+    <div class="row">
+        <div class="col-sm-3">
+            <a class= "arrow hover-red" onclick="moveFeed(-1)" style="float:right; font-size:25px">&#9668;</a>
+        </div>
+        <div class="col-sm-6 text-center">
+            {%for item in news_rss%}
+            <h4 id="feed_name_{{loop.index}}" style="display: none"> {{item[0]}} </h4>
+            {%endfor%}
+        </div>
+        <div class="col-sm-3">
+            <a class= "arrow hover-red" onclick="moveFeed(1)" style="font-size:25px">&#9658; </a>
+            <div class="addButton"  data-toggle="modal" data-target="#rssModal" style="float:right; margin-right:20px">
+                +
+            </div>
+        </div>
+    </div>
+    <div style="height: 3px; margin-bottom: 10px; margin-left:10%; background-color:white; width:80%"></div>
+    {%for item in news_rss%}
+    <div id = "feed_div_{{loop.index}}" style="overflow-y: scroll; max-height:80vh; font-size:18px; width:95%; margin-left:2.5%; display: none">
+        <script src ={{item[1]}}></script>
+    </div>
+    {%endfor%}
+</div>

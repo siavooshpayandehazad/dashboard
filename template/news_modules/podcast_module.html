@@ -1,0 +1,100 @@
+<script>
+function deletePodcast(item){
+    res = window.confirm("are you sure you want to delete "+ item + " podcast?")
+    if(res){
+        $.ajax({ type: "POST",
+          url: "/news",
+          data: "action="+"delete podcast"+"&name="+item,
+      }).success(function(data) {
+          console.log("deleting item "+item+":"+data)
+          card = document.getElementById("podcast: "+item)
+          card.parentNode.removeChild(card);
+      });
+    }
+}
+</script>
+
+<div style="background-color:#023858; border-radius:10px; margin-top:10px; padding:10px; width:100%">
+    <h4>News and Podcast</h4>
+    <div id="accordion">
+        <div class="card" style="background-color:#bdbdbd;">
+            <div class="card-header" id="heading_news" style="padding-top:0px; padding-bottom:0px;">
+                <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_news" aria-expanded="false" aria-controls="collapse_news">
+                        News hour!
+                    </button>
+                </h5>
+            </div>
+            <div id="collapse_news" class="collapse" aria-labelledby="heading_news" data-parent="#accordion">
+                <p style="margin-left: 10px; color: black">Published: {{news_show_date}}</p>
+                <div class="card-body" style="background-color:black; padding: 10px 20px 5px 20px; border-radius: 0px 0px 5px 5px;">
+                    <iframe style="border-radius:15px; width:100%; min-height:200px" src="{{news_show_link}}" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+        <div class="card" style="background-color:#bdbdbd;">
+            <div class="card-header" id="heading_podcast" style="padding-top:0px; padding-bottom:0px;">
+                <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_pod" aria-expanded="false" aria-controls="collapse_pod">
+                        Podcasts
+                    </button>
+                    <div class="addButton" data-toggle="modal" data-target="#podModal" style="float: right;">
+                        +
+                    </div>
+                </h5>
+            </div>
+            <div id="collapse_pod" class="collapse" aria-labelledby="heading_podcast" data-parent="#accordion">
+                <div class="card-body" style="background-color:#525252; padding: 10px 20px 5px 20px; border-radius: 0px 0px 5px 5px;height: 300px; overflow: auto;">
+                    {%for item in podcast_links%}
+                    <div class="row mb-2" id="podcast: {{item[0]}}" style="background-color: black; border-radius:10px;">
+                        <div class="col-sm-3 pr-0">
+                            <img style="width:100%; float:right; margin-top:5px; margin-bottom:5px;" src="{{item[1]}}">
+                        </div>
+                        <div class="col-sm-8 pr-0 pl-1">
+                            <div style="width:100%; ">
+                                <h6 style="margin-left:15px; font-size:20px; margin-top: 5px">{{item[0]}}</h6>
+                                <p style="margin-left:15px; font-size:10px;">{{item[3]}}</p>
+                                <p style="margin-left:15px; font-size:10px;">{{item[4]}}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-1 pr-0 pl-1">
+                            <div class="addButton" style="float: right; margin-right:10px;">
+                                <i class="fa fa-trash" onclick="deletePodcast('{{item[0]}}')"></i>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 pr-0 pl-1">
+                            <audio class="podcast" name="{{item[0]}}" controls style="width:100%; height:30px;" onpause="pause_pressed(this)" onplay="set_podcast_play_time()">
+                                <source src="{{item[2]}}" type="audio/mpeg">
+                            </audio>
+                        </div>
+                    </div>
+                    {%endfor%}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="podModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="color:black;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Podcast</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form  method = "POST" action = "/news" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="add podcast"/>
+                    <label for="podcast-title" class="col-form-label">Podcast Title:</label>
+                    <input type="text" class="form-control" id="podcast-title" name="podcast-title" required/>
+                    <label for="podcast-link" class="col-form-label">Podcast Link:</label>
+                    <textarea class="form-control" id="podcast-link" name="podcast-link" required></textarea>
+                    <input type = "submit" value="Submit" style="margin-top:5px"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

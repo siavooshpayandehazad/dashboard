@@ -1,0 +1,28 @@
+<div style="background-color:#023858; border-radius:10px; margin-top:10px;">
+    <div class="row">
+        <div class="col-sm-6">
+            <div style="float:left; margin-left:10px; margin-top:5px;">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <i class="fa fa-thermometer-full"  style="font-size:30px;margin-right:5px;margin-top:10px; text-shadow:1px 1px #49006a; color: rgba(255, 0, 0, {{weather_dict['temp']/40.0}});" aria-hidden="true"></i>
+                    </div>
+                    <div class="col-sm-10">
+                        <p style="margin-top:0px; margin-bottom:0px; font-size:23px; font-weight:bold;">{{weather_dict["temp"]}} °C</p>
+                        <p style="margin-top:0px; margin-bottom:0px">feels_like: {{weather_dict["feels_like"]}} °C</p>
+                    </div>
+                </div>
+                <p style="margin-top:0px; margin-bottom:0px; margin-left:35px;">humidity: {{weather_dict["humidity"]}} %</p>
+                <p style="margin-top:0px; margin-bottom:0px; margin-left:35px;">pressure: {{weather_dict["pressure"]}} hPa</p>
+            </div>
+        </div>
+        <div class="col-sm-6 pl-0">
+            <div style="float:left; margin-top: 10px;">
+                <p style="font-size:18px">
+                    <i class="fa fa-sun-o" style="color:#feb24c"></i> <i class="fa fa-arrow-up" style="color:#feb24c; margin-right:5px;" aria-hidden="true"></i>{{weather_dict["sunrise"]}}<br>
+                    <i class="fa fa-sun-o" style="color:#df65b0"></i> <i class="fa fa-arrow-down" style="color:#df65b0; margin-right:5px;" aria-hidden="true"></i>{{weather_dict["sunset"]}}<br>
+                    uvi: {{weather_dict["uvi"]}}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
