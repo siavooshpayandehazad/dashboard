@@ -151,70 +151,98 @@ if (page_theme == "Dark"){
     {% include "generic_modules/header.html" %}
     {% endwith %}
 
-    <div class="row">
-        <div class="col-sm-12 text-justify">
-            <h2 class="title journal" style="margin-left:40%">
-                <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
-                {{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}
-                <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
-            </h2>
+    <div id="twitter_accordion" style="width:98%; margin-left:1%; margin-top:10px;">
+        <div class="card" style="background-color:#bdbdbd;">
+            <div class="card-header" id="heading_weather" style="padding-top:0px; padding-bottom:0px;">
+                <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_weather" aria-expanded="false" aria-controls="collapse_weather">
+                        Weather Station
+                    </button>
+                </h5>
+            </div>
+            <div id="collapse_weather" class="collapse" aria-labelledby="heading_twitter" data-parent="#accordion">
+                <div class="card-body" style="background-color:black; padding: 10px 20px 5px 20px; border-radius: 0px 0px 5px 5px;height: 400px; overflow: auto;">
+                    <div class="row">
+                        <div class="col-sm-12 text-justify">
+                            <h2 class="title journal" style="margin-left:40%">
+                                <a class= "arrow hover-red"  onclick="moveDay(-1)">&#9668;</a>
+                                {{PageYear}}-{{'%02d' % (PageMonth)}}-{{'%02d' % (day)}}
+                                <a class= "arrow hover-red"  onclick="moveDay(1)">&#9658;</a>
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-1 pl-0 pr-0" style="padding-top:20px;">
+                            <button type="button" class="btn btn-primary" style="font-size: 10px; margin-top: 5px; width:100%" number="0" onclick="viewroom(this)">Overview</button>
+                            {% for item in daily_data|sort() %}
+                            <button type="button" class="btn btn-primary" style="font-size: 10px; margin-top: 5px; width:100%" number="{{item}}" onclick="viewroom(this)">{{description[item|string]}}</button>
+                            {%endfor%}
+                        </div>
+
+                        {% include "homeAutomation_modules/overview.html" %}
+
+                        {% for item in daily_data %}
+                        {% with room=item, description=description%}
+                        {% include "homeAutomation_modules/roomGauge.html" %}
+                        {% endwith %}
+                        {%endfor%}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-sm-1" style="padding-top:20px;">
-            <button type="button" class="btn btn-primary" style="font-size: 10px; margin-top: 5px; width:100%" number="0" onclick="viewroom(this)">Overview</button>
-            {% for item in daily_data|sort() %}
-            <button type="button" class="btn btn-primary" style="font-size: 10px; margin-top: 5px; width:100%" number="{{item}}" onclick="viewroom(this)">{{description[item|string]}}</button>
-            {%endfor%}
-        </div>
 
-        {% include "homeAutomation_modules/overview.html" %}
-
-        {% for item in daily_data %}
-        {% with room=item, description=description%}
-        {% include "homeAutomation_modules/roomGauge.html" %}
-        {% endwith %}
-        {%endfor%}
-    </div>
-    {% with dir="left" %}
-    {% include "generic_modules/divider.html" %}
-    {% endwith %}
-
-    <div class="row">
-        <div class="col-sm-6" style="margin-top: 20px;">
-            {% with light = "1", ip="192.168.1.85"  %}
-            {% include "homeAutomation_modules/lightController.html" %}
-            {% endwith %}
+    <div id="lights_accordion" style="width:98%; margin-left:1%; margin-top:10px;">
+        <div class="card" style="background-color:#bdbdbd;">
+            <div class="card-header" id="heading_lights" style="padding-top:0px; padding-bottom:0px;">
+                <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_lights" aria-expanded="false" aria-controls="collapse_lights">
+                        Lights
+                    </button>
+                </h5>
+            </div>
+            <div id="collapse_lights" class="collapse" aria-labelledby="heading_lights" data-parent="#accordion">
+                <div class="card-body" style="background-color:black; padding: 10px 20px 5px 20px; border-radius: 0px 0px 5px 5px;height: 400px; overflow: auto;">
+                    <div class="row">
+                        <div class="col-sm-6" style="margin-top: 20px;">
+                            {% with light = "1", ip="192.168.1.85"  %}
+                            {% include "homeAutomation_modules/lightController.html" %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    {% with dir="right" %}
-    {% include "generic_modules/divider.html" %}
-    {% endwith %}
-
-    <div class="row">
-        <div class="col-sm-5 ml-5" style="margin-top: 20px;">
-            {% with myAnnualConsumption = myAnnualConsumption, ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-            PageYear = PageYear, PageMonth = PageMonth%}
-            {% include "homeAutomation_modules/eConsumptionTracker.html" %}
-            {% endwith %}
-        </div>
-        <div class="col-sm-6" style="margin-top: 20px;">
-
+    <div id="consumption_accordion" style="width:98%; margin-left:1%; margin-top:10px;">
+        <div class="card" style="background-color:#bdbdbd;">
+            <div class="card-header" id="heading_consumption" style="padding-top:0px; padding-bottom:0px;">
+                <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse_consumption" aria-expanded="false" aria-controls="collapse_consumption">
+                        E-Consumption
+                    </button>
+                </h5>
+            </div>
+            <div id="collapse_consumption" class="collapse" aria-labelledby="heading_lights" data-parent="#accordion">
+                <div class="card-body" style="background-color:black; padding: 10px 20px 5px 20px; border-radius: 0px 0px 5px 5px;height: 400px; overflow: auto;">
+                    <div class="row">
+                        <div class="col-sm-5 ml-5" style="margin-top: 20px;">
+                            {% with myAnnualConsumption = myAnnualConsumption, ChartYearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                            PageYear = PageYear, PageMonth = PageMonth%}
+                            {% include "homeAutomation_modules/eConsumptionTracker.html" %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    {% with dir="left" %}
-    {% include "generic_modules/divider.html" %}
-    {% endwith %}
 
     {% with prep_data = prep_data  %}
-        {% include "homeAutomation_modules/prepList.html" %}
-    {% endwith %}
-
-    {% with dir="right" %}
-    {% include "generic_modules/divider.html" %}
+    {% include "homeAutomation_modules/prepList.html" %}
     {% endwith %}
 
 </div>

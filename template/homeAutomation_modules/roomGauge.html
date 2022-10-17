@@ -12,7 +12,7 @@
                 <h5 style="font-size:14px; float: left; margin-left: 10px; margin-top:5px; color:black;">Temperature</h5>
             </div>
         </div>
-        <div class="col-sm-10">
+        <div class="col-sm-10 ml-3">
             <div class="row">
                 <div class="col-sm-12 col-xl-6">
                     {% with dataset = daily_data[room]["temp"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
@@ -45,7 +45,7 @@
                 <h5 style="font-size:14px; float: left; margin-left: 20px; margin-top:5px; color:black;">Humidty</h5>
             </div>
         </div>
-        <div class="col-sm-10">
+        <div class="col-sm-10 ml-3">
             <div class="row">
                 <div class="col-sm-12 col-xl-6">
                     {% with dataset = daily_data[room]["humidity"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
@@ -78,7 +78,7 @@
                 <h5 style="font-size:14px; float: left; margin-left: 20px; margin-top:5px; color:black;">Pressure</h5>
             </div>
         </div>
-        <div class="col-sm-10">
+        <div class="col-sm-10 ml-3">
             <div class="row">
                 <div class="col-sm-12 col-xl-6">
                     {% with dataset = daily_data[room]["pressure"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
@@ -111,7 +111,7 @@
                 <h5 style="font-size:14px; float: left; margin-left: 20px; margin-top:5px; color:black;">Moisture</h5>
             </div>
         </div>
-        <div class="col-sm-10">
+        <div class="col-sm-10 ml-3">
             <div class="row">
                 <div class="col-sm-12 col-xl-6">
                     {% with dataset = daily_data[room]["moisture"], ChartMonthDays = daily_data[room]["time"], chartType = "line",
