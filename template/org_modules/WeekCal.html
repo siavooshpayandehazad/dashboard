@@ -77,10 +77,9 @@ function calculateDateofCol(colNum){
 
 
 
-function removeEventFromCalDates(calEvents, weekDay, eventName, eventStartTime, eventStopTime){
+function removeEventFromCalDates(calEvents, taskID){
   for (i = 0; i < calEvents.length; i++) {
-    if ((calEvents[i][0] == weekDay) && (calEvents[i][1] == eventStartTime) &&
-        (calEvents[i][2] == eventStopTime) && (calEvents[i][3] == eventName)){
+    if (calEvents[i][9] == taskID){
       calEvents.splice(i, 1);
       return;
     }
@@ -144,6 +143,8 @@ function drawCell(calDate, idVal){
   div.setAttribute("color",     calDate[6]);
   div.setAttribute("calName",   calDate[8]);
   div.setAttribute("taskID",    calDate[9]);
+  div.setAttribute("location",  calDate[10]);
+  div.setAttribute("files",     calDate[11]);
 
   div.onclick=function editEvent(event){
     event.stopPropagation(); // dont propagate the click the cell bellow
@@ -193,7 +194,7 @@ function drawEvents(){
   color = document.getElementById("calFilter").value
   removeAllEvents();
   updateEventPlacement();
-    for (var i=0; i<calDates.length; i++){
+  for (var i=0; i<calDates.length; i++){
       if (color !== "None"){
         if(calDates[i][6].toLowerCase() !== color.toLowerCase()){
           continue;
@@ -203,8 +204,65 @@ function drawEvents(){
         continue;
       }
       drawCell(calDates[i], i)
-    }
-    return;
+  }
+  return;
+}
+
+function get_file(url, name){
+  return fetch(url).then((res) => { return res.blob(); }).then((data) => {
+          let metadata = {
+          type: 'image/jpeg'
+          };
+          let file = new File([data], name, metadata);
+          files.push(file);
+        });
+
+}
+
+var files = [];
+
+function load_attachment(attachmentContainer, existing_files){
+  allAttachments = document.getElementsByClassName("attachment_label")
+  while (allAttachments.length>0) {
+    allAttachments[0].remove();
+  }
+
+  for (i = 0; i < existing_files.length; i++) {
+
+      name = existing_files[i].split("/")[existing_files[i].split("/").length-1]
+      url = existing_files[i]
+      get_file(url, name)
+
+      delete_attachment = document.createElement("i");
+      delete_attachment.classList.add("fa");
+      delete_attachment.classList.add("fa-trash");
+      delete_attachment.style.marginLeft = "10px";
+      delete_attachment.onclick = function(){
+         var decision = confirm("you are permanently deleting an event! are you sure?");
+         if(decision == false){
+            return;
+         }
+         label = this.parentElement.querySelector('.attachment_text').textContent
+         for (j = 0; j < files.length; j++) {
+            if (files[j].name == label){
+              files.splice(j, 1);
+            }
+          }
+          this.parentElement.remove()
+      }
+      attachment_label = document.createElement("div");
+      attachment_label.classList.add("attachmentLabel");
+
+      attachment_text = document.createElement("a");
+      attachment_text.classList.add("attachment_text");
+      attachment_text.href = existing_files[i];
+      attachment_text.target="_blank";
+      attachment_text.textContent = existing_files[i].split("/")[existing_files[i].split("/").length-1];
+
+      attachment_label.appendChild(attachment_text)
+      attachment_label.appendChild(delete_attachment)
+      attachmentContainer.appendChild(attachment_label)
+  }
 }
 
 function calendarClick(event, item, calType, inStartTime = null, inEndTime = null){
@@ -215,6 +273,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   }else{
     return;
   }
+
   var cell = event.path[0];
   // return if clicked on table headers
   if ((cell.tagName === "TH") || (cell.cellIndex === 0)){
@@ -222,15 +281,10 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
 
   }
   var div = document.createElement("div");
-  div.style.border="3px solid #9ecae1";
-  div.style.borderRadius="10px 10px 10px 10px";
-  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
   var tableElement = document.getElementById("calTab")
-  outerboxShift = tableElement.parentElement.parentElement.getBoundingClientRect().x;
-  div.style.left = event.clientX-outerboxShift+scrollLeft+"px";
-  div.style.top  = event.target.getBoundingClientRect().y-item.getBoundingClientRect().y+40+"px";
+  div.style.left = "calc((100% - 585px)/2)";
+  div.style.top  = 200 + "px";
   div.classList.add("calendarPopUp");
-  div.style.textAlign = "left";
 
   var taskIDContainer = document.createElement("div");
   taskIDContainer.style.marginLeft="10px";
@@ -248,7 +302,8 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   calText.textContent= "Calendar:";
 
   var calName = document.createElement("select");
-  calName.style.width="95%";
+  calName.style.width="100px";
+  calName.style.marginLeft="10px";
   cals = ["default", "work", "events"]
   for (let i = 0; i < cals.length; i++){
      var option = document.createElement("option");
@@ -263,30 +318,82 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   eventNameContainer.style.marginLeft="10px";
   var eventName = document.createElement("textarea");
   eventName.setAttribute('id', 'eventName');
-  eventName.style.resize="none";
-  eventName.style.width="95%";
-  eventName.style.marginTop="5px";
-  eventName.style.marginBottom="5px";
+  eventName.classList.add("calPopupDescriptor");
   eventName.rows = 1;
   eventName.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("name") : "";
   var text0 = document.createElement("span");
   text0.textContent= "Event Title:";
 
+  var locationText = document.createElement("span");
+  locationText.textContent= "Location:";
+  var locationDescription = document.createElement("textarea");
+  locationDescription.classList.add("calPopupDescriptor");
+  locationDescription.rows = 1;
+  locationDescription.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("location") : "";
+
+  attachmentDiv = document.createElement("div");
+  var attachmentText = document.createElement("span");
+  attachmentText.textContent= "Attachments:";
+  attachmentContainer = document.createElement("div");
+  attachmentContainer.id = "attachmentContainer"
+
+  fileBrowser = document.createElement("input");
+  fileBrowser.style.display="block";
+  fileBrowser.type="file";
+  fileBrowser.id="attachmentUploader";
+
+  fileBrowser.addEventListener('input', function(e){
+      files.push(e.target.files[0])
+      attachmentContainer = document.getElementById("attachmentContainer")
+      delete_attachment = document.createElement("i");
+      delete_attachment.classList.add("fa");
+      delete_attachment.classList.add("fa-trash");
+      delete_attachment.style.marginLeft = "10px";
+      delete_attachment.onclick = function(){
+         var decision = confirm("you are permanently deleting an event! are you sure?");
+         if(decision == false){
+            return;
+         }
+         label = this.parentElement.querySelector('.attachment_text').textContent
+         for (i = 0; i < files.length; i++) {
+            if (files[i].name == label){
+              files.splice(i, 1);
+            }
+          }
+          this.parentElement.remove()
+      }
+      attachment_label = document.createElement("div");
+      attachment_label.classList.add("attachmentLabel");
+
+      attachment_text = document.createElement("a");
+      attachment_text.classList.add("attachment_text");
+      attachment_text.target="_blank";
+      attachment_text.textContent = e.target.files[0].name;
+
+      attachment_label.appendChild(attachment_text)
+      attachment_label.appendChild(delete_attachment)
+      attachmentContainer.appendChild(attachment_label)
+      e.target.value = ""
+  });
+  existing_files = []
+  if (senderElement.tagName == "DIV"){
+    if (senderElement.getAttribute("files").length>0){
+        existing_files = senderElement.getAttribute("files").split(",")
+    }
+  }
+  load_attachment(attachmentContainer, existing_files)
+
+  attachmentDiv.appendChild(attachmentText)
+  attachmentDiv.appendChild(fileBrowser)
+  attachmentDiv.appendChild(attachmentContainer)
+
   var eventDescription = document.createElement("textarea");
-  eventDescription.style.resize="none";
-  eventDescription.style.width="95%";
-  eventDescription.style.marginTop="5px";
-  eventDescription.style.marginBottom="5px";
+  eventDescription.classList.add("calPopupDescriptor");
   eventDescription.rows = 4;
   eventDescription.type="text"
   eventDescription.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("details") : "none";
   var detailText = document.createElement("span");
   detailText.textContent= "Details:";
-
-  eventNameContainer.appendChild(text0);
-  eventNameContainer.appendChild(eventName);
-  eventNameContainer.appendChild(detailText);
-  eventNameContainer.appendChild(eventDescription);
 
   var todayColl = (parseInt({{day|safe}})+(parseInt({{ monthsBeginning |safe}})))%7;
   if (todayColl==0){
@@ -326,11 +433,14 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   daySelector.type="date";
   daySelector.value="{{year|safe}}-"+zeroPad(selectedMonth, 2)+"-"+zeroPad(selectedDay, 2);
   daySelector.setAttribute('id', 'daySelector');
+  daySelector.style.width="120px"
 
   // all day event checkbox
   var alldayContainer = document.createElement("div");
+  alldayContainer.style.marginLeft="15px";
   var allDayCheckBox = document.createElement("input");
   allDayCheckBox.type = "checkbox";
+  allDayCheckBox.style.marginLeft="15px";
   allDayCheckBox.onchange = function AllDayChanged() {
     var timeElements = this.parentElement.parentElement.getElementsByClassName("calEventTime");
     for (i=0; i <timeElements.length; i++){
@@ -340,14 +450,13 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   var allDayText = document.createElement("span");
   allDayText.textContent = "all day";
   allDayText.style.marginLeft="5px";
-  alldayContainer.appendChild(allDayCheckBox);
-  alldayContainer.appendChild(allDayText);
 
   var startTime = document.createElement("input");
   var stopTime  = document.createElement("input");
   startTime.type = "time";
   stopTime.type = "time";
   startTime.classList.add("calEventTime")
+  startTime.style.marginLeft="41px";
   stopTime.classList.add("calEventTime")
 
   if ((inStartTime === null)){
@@ -363,15 +472,20 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
     startTime.value = inStartTime;
     stopTime.value  = inEndTime;
   }
-
   var text3 = document.createElement("span");
   text3.textContent= " - ";
+
+  var timeDiv = document.createElement("div");
+  timeDiv.style.width = "100%";
+  timeDiv.appendChild(startTime);
+  timeDiv.appendChild(text3);
+  timeDiv.appendChild(stopTime);
+  timeDiv.appendChild(allDayCheckBox);
+  timeDiv.appendChild(allDayText);
+
   timeContainer.appendChild(text1);
   timeContainer.appendChild(daySelector);
-  timeContainer.appendChild(alldayContainer);
-  timeContainer.appendChild(startTime);
-  timeContainer.appendChild(text3);
-  timeContainer.appendChild(stopTime);
+  timeContainer.appendChild(timeDiv);
 
   // set to all day if the event is on first row
   if(cell.parentElement.rowIndex == 1){
@@ -420,67 +534,80 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
       return;
     }
     if (senderElement.tagName == "DIV"){ // edit or delete
-      var oldDate = "{{year|safe}}-{{'%02d' % (month)}}-"+zeroPad(selectedDay, 2)
+      var oldDate = "{{year|safe}}-{{'%02d' % (month)}}-"+zeroPad(selectedDay, 2);
+
+      let formData = new FormData();
+      formData.append("type", "calendar");
+      for (var x = 0; x < files.length; x++) {
+		formData.append("files[]", files[x]);
+	  }
+      formData.append("name",    eventName.value);
+      formData.append("details", eventDescription.value);
+      formData.append("startTime", ((startTime.disabled) ? "None" : (startTime.value)));
+      formData.append("stopTime", ((stopTime.disabled) ? "None": (stopTime.value)));
+      formData.append("color",   color.value);
+      formData.append("calName", calName.value);
+      formData.append("taskID",  senderElement.getAttribute("taskID"));
+      formData.append("date", daySelector.value);
+      formData.append("location", locationDescription.value);
+      formData.append("action", "edit");
+
       $.ajax({ type: "POST",
          url: "/org",
-         data: {"type": "calendar",
-                "value": JSON.stringify({
-                               "name"      : eventName.value,
-                               "details"   : eventDescription.value,
-                               "startTime" : ((startTime.disabled) ? "None" : (startTime.value)),
-                               "stopTime"  : ((stopTime.disabled) ? "None": (stopTime.value)),
-                               "color"     : color.value,
-                               "calName"   : calName.value,
-                               "taskID"    : senderElement.getAttribute("taskID"),
-                               "date"      : daySelector.value
-                               }),
-                // item's old values, we need to be able to find it in the database
-                "oldValue": JSON.stringify({
-                              "name"       : senderElement.getAttribute("name"),
-                              "details"    : senderElement.getAttribute("details").toString(),
-                              "startTime"  : senderElement.getAttribute("startTime"),
-                              "stopTime"   : senderElement.getAttribute("stopTime"),
-                              "color"      : senderElement.getAttribute("color"),
-                              "calName"    : calName.value,
-                              "taskID"     : senderElement.getAttribute("taskID"),
-                              "date"       : oldDate
-                              }),
-                "date": daySelector.value,
-                "action": 'edit'}
+         data: formData,
+         contentType: false,
+         processData: false,
+         success: function(data) {
+              files   = JSON.parse(data)["files"]
+              if (calType == "week"){
+                removeEventFromCalDates(calDates, senderElement.getAttribute("taskID"))
+                calDates.push([parseInt(colNum), ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
+                               eventName.value, 1, 1, color.value, eventDescription.value, calName.value,
+                               senderElement.getAttribute("taskID"), locationDescription.value, files])
+                drawEvents();
+              }else{
+                removeEventFromCalDates(calMonths, senderElement.getAttribute("taskID"))
+                calMonths.push([daySelector.value, ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
+                                eventName.value, 1, 1, color.value, eventDescription.value, calName.value,
+                                senderElement.getAttribute("taskID"), locationDescription.value, files])
+                drawMonthEvents()
+              }
+         }
       });
-      if (calType == "week"){
-        removeEventFromCalDates(calDates, senderElement.getAttribute("weekDay"), senderElement.getAttribute("name"), senderElement.getAttribute("startTime"), senderElement.getAttribute("stopTime"))
-        calDates.push([parseInt(colNum), ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value, calName.value])
-        drawEvents();
-      }else{
-        removeEventFromCalDates(calMonths, oldDate, senderElement.getAttribute("name"), senderElement.getAttribute("startTime"), senderElement.getAttribute("stopTime"))
-        calMonths.push([daySelector.value, ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)), eventName.value, 1, 1, color.value, eventDescription.value, calName.value])
-        drawMonthEvents()
-      }
+
     }else{ // just create a new event
+      let formData = new FormData();
+      formData.append("type", "calendar");
+      for (var x = 0; x < files.length; x++) {
+		formData.append("files[]", files[x]);
+	  }
+      formData.append("name", eventName.value);
+      formData.append("details", eventDescription.value);
+      formData.append("startTime", ((startTime.disabled) ? "None" : (startTime.value)));
+      formData.append("stopTime", ((stopTime.disabled) ? "None": (stopTime.value)));
+      formData.append("color", color.value);
+      formData.append("calName", calName.value);
+      formData.append("location", locationDescription.value);
+      formData.append("date", daySelector.value);
+      formData.append("action", "create");
       $.ajax({ type: "POST",
          url: "/org",
-         data: {"type": "calendar",
-                "value": JSON.stringify({
-                               "name"       : eventName.value,
-                               "details"   : eventDescription.value,
-                               "startTime"  : ((startTime.disabled) ? "None" : (startTime.value)),
-                               "stopTime"   : ((stopTime.disabled) ? "None": (stopTime.value)),
-                               "color"      :  color.value,
-                               "calName"    : calName.value
-                               }),
-                "date": daySelector.value,
-                "action": 'create'},
+         data: formData,
+         contentType: false,
+         processData: false,
          success: function(data) {
             taskID  = JSON.parse(data)["taskID"]
+            files   = JSON.parse(data)["files"]
             if (calType == "week"){
               calDates.push([parseInt(colNum),
                             ((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
-                            eventName.value, 1, 1, color.value, eventDescription.value, calName.value, taskID])
+                            eventName.value, 1, 1, color.value, eventDescription.value, calName.value, taskID,
+                            locationDescription.value, files])
               drawEvents();
             }else{
               calMonths.push([daySelector.value,((startTime.disabled) ? "None" : (startTime.value)), ((stopTime.disabled) ? "None": (stopTime.value)),
-                            eventName.value, 1, 1, color.value, eventDescription.value, calName.value, taskID])
+                            eventName.value, 1, 1, color.value, eventDescription.value, calName.value, taskID,
+                            locationDescription.value, files])
               drawMonthEvents()
             }
          }
@@ -510,31 +637,24 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
     deleteBtn.innerHTML = "delete";
     deleteBtn.style.float="left";
     deleteBtn.onclick=function deleteEvent(){
-      var decision = confirm("you are permenently deleting an event! are you sure?");
+      var decision = confirm("you are permanently deleting an event! are you sure?");
       if(decision == true){
+        taskID = senderElement.getAttribute("taskID");
         $.ajax({ type: "POST",
            url: "/org",
            data: {"type": "calendar",
-                  "value": JSON.stringify({
-                               "name"       : eventName.value,
-                               "details"    : eventDescription.value,
-                               "startTime"  : startTime.value,
-                               "stopTime"   : stopTime.value,
-                               "color"      : color.value,
-                               "calName"    : calName.value,
-                               "taskID"     : senderElement.getAttribute("taskID")
-                                }),
+                  "taskID": taskID,
                   "date": daySelector.value,
                   "action": 'delete'}
         });
-        removeEventFromCalDates(calDates, senderElement.getAttribute("weekDay"), eventName.value, startTime.value, stopTime.value);
+        removeEventFromCalDates(calDates, taskID);
         drawEvents();
 
         if (calType == "week"){
-          removeEventFromCalDates(calDates, senderElement.getAttribute("weekDay"), eventName.value, startTime.value, stopTime.value);
+          removeEventFromCalDates(calDates, taskID);
           drawEvents();
         }else{
-          removeEventFromCalDates(calMonths, daySelector.value, eventName.value, startTime.value, stopTime.value)
+          removeEventFromCalDates(calMonths, taskID)
           drawMonthEvents()
         }
       }
@@ -545,10 +665,18 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   btnContainer.appendChild(submitBtn)
   btnContainer.appendChild(closeBtn)
 
+  eventNameContainer.appendChild(text0);
+  eventNameContainer.appendChild(eventName);
+  eventNameContainer.appendChild(timeContainer)
+  eventNameContainer.appendChild(locationText);
+  eventNameContainer.appendChild(locationDescription);
+  eventNameContainer.appendChild(attachmentDiv);
+  eventNameContainer.appendChild(detailText);
+  eventNameContainer.appendChild(eventDescription);
+
   div.appendChild(taskIDContainer)
   div.appendChild(calNameContainer)
   div.appendChild(eventNameContainer)
-  div.appendChild(timeContainer)
   div.appendChild(colorContainer)
   div.appendChild(btnContainer);
   item.appendChild(div);
@@ -697,6 +825,7 @@ function dropCalEvent(event){
   var oldEndTime = calEvent.getAttribute("stopTime");
   var calName = calEvent.getAttribute("calName");
   var taskID = calEvent.getAttribute("taskID");
+  var location = calEvent.getAttribute("location");
 
   var oldWeekday = calEvent.getAttribute("weekDay");
   var color = calEvent.style.backgroundColor;
@@ -727,7 +856,6 @@ function dropCalEvent(event){
     if(newDateObj.getHours() < parseInt({{daysBeginning}})){
       newEndTime = "{{daysEnd}}:00"
     }
-
   }
 
   $.ajax({ type: "POST",
@@ -741,24 +869,14 @@ function dropCalEvent(event){
                            "color"      : color,
                            "calName"    : calName,
                            "taskID"     : taskID,
-                           "date"       : calculateDateofCol(destCol)
+                           "date"       : calculateDateofCol(destCol),
+                           "location"   : location
                            }),
-            // item's old values, we need to be able to find it in the database
-            "oldValue": JSON.stringify({
-                          "name"        : eventName,
-                          "details"     : eventDescription,
-                          "startTime"   : oldStartTime,
-                          "stopTime"    : oldEndTime,
-                          "color"       : color,
-                          "calName"     : calName,
-                          "taskID"      : taskID,
-                          "date"        : oldDate
-                          }),
             "date": currentDay,
             "action": 'edit'}
   });
-  removeEventFromCalDates(calDates, oldWeekday, eventName, oldStartTime, oldEndTime, calName)
-  calDates.push([destCol-1, newStartTime, newEndTime, eventName, 1, 1, color, eventDescription, calName, taskID])
+  removeEventFromCalDates(calDates, taskID)
+  calDates.push([destCol-1, newStartTime, newEndTime, eventName, 1, 1, color, eventDescription, calName, taskID, location])
   drawEvents();
 }
 

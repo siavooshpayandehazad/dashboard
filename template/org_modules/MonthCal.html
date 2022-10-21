@@ -138,6 +138,8 @@ function drawMonthEvents(){
         div.setAttribute("color",     calMonths[j][6]);
         div.setAttribute("calName",   calMonths[j][8]);
         div.setAttribute("taskID",    calMonths[j][9]);
+        div.setAttribute("location",  calMonths[j][10]);
+        div.setAttribute("files",  calMonths[j][11]);
 
         div.onclick=function editEvent(event){
           event.stopPropagation(); // dont propagate the click the cell bellow

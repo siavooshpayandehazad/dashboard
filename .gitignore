@@ -1,5 +1,6 @@
 .DS_Store
 __pycache__
+static/calendarAttachments/
 static/photos/
 static/books/
 static/docs/

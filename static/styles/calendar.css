@@ -13,9 +13,18 @@ tbody.calendartb td{
 }
 .calendarPopUp{
   z-index: 10;
-  width: 270px;
+  width: 700px;
   position: absolute;
   background-color: #c6dbef;
+  text-align: left;
+  border: 3px solid #9ecae1;
+  border-radius: 10px;
+}
+.calPopupDescriptor{
+  width: 95%;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  resize: none;
 }
 .weekEvent{
   z-index: 2;
@@ -93,4 +102,23 @@ th.calHeader{
 #calTabMonth{
   width: 100%;
   border-spacing: 0px;
+}
+.attachmentLabel{
+    line-height:20px;
+    background-color: #2171b5;
+    color: white;
+    width: fit-content;
+    padding: 5px 5px 5px 5px;
+    float:left;
+    margin-left:5px;
+    border-radius: 5px;
+}
+.attachment_text{
+    color:white;
+}
+#attachmentContainer{
+    width: 100%;
+    min-height: 30px;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }

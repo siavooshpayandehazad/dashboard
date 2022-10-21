@@ -10,6 +10,7 @@ from package import tracker_settings, temporary_data
 import requests
 import logging
 from flask import session
+from werkzeug.utils import secure_filename
 import time
 logger = logging.getLogger(__name__)
 
@@ -130,7 +131,8 @@ def get_cal_events_week(today_date: str, db_cursor, lock) -> list:
         try:
             d1 = datetime.datetime.strptime(item[0], '%Y-%m-%d')
             delta = d1 - weeks_beginning
-            cal_list.append([delta.days, item[1], item[2], item[3], 1, 1, item[4], item[5], item[6], item[7]])
+            cal_list.append([delta.days, item[1], item[2], item[3], 1, 1, item[4], item[5], item[6], item[7],
+                             item[8], get_all_cal_events_files(item[7])])
         except Exception as e:
             logger.error(e)
     return cal_list
@@ -146,7 +148,8 @@ def get_cal_events_month(today_date: str, db_cursor, lock) -> list:
     cal_list = []
     for item in weekly_cal_events:
         try:
-            cal_list.append([item[0], item[1], item[2], item[3], 1, 1, item[4], item[5], item[6], item[7]])
+            cal_list.append([item[0], item[1], item[2], item[3], 1, 1, item[4], item[5], item[6], item[7],
+                             item[8], get_all_cal_events_files(item[7])])
         except Exception as e:
             logger.error(e)
     cal_list = sorted(cal_list, key=lambda x: x[1])
@@ -461,7 +464,7 @@ def generate_db_tables(db_cursor, db_connection, lock):
 
     db_cursor.execute("""CREATE TABLE if not exists calendar (
              date text, startTime text, endTime text, eventName text, 
-             color text, details text, calendarName text, taskID text)""")
+             color text, details text, calendarName text, taskID text, location text)""")
 
     db_cursor.execute("""CREATE TABLE if not exists travelTracker (
              Destination text, latitude text, longitude text)""")
@@ -808,8 +811,6 @@ class Login:
         return False
 
 
-
-
 def get_today_weather_information(db_connection, lock) -> dict:
     if temporary_data.get("weather_info", {"date": None}).get("date", None) == datetime.date.today():
         # weather info already exists
@@ -903,3 +904,35 @@ def update_vacation_days(today_date, label, value, db_cursor, db_connection, loc
     db_cursor.execute("UPDATE vacationDays SET " + label + " = ? WHERE year = ?", (value, str(year),))
     db_connection.commit()
     lock.release()
+
+
+def get_all_cal_events_files(task_id):
+    attachment_root = "./static/calendarAttachments/"+str(task_id)
+    files = []
+    if os.path.isdir(attachment_root):
+        for file in os.listdir(attachment_root):
+            files.append(attachment_root+"/"+file)
+    return files
+
+
+def upload_cal_attachments(task_id, attachments):
+    if len(attachments) == 0:
+        return None
+    attachment_root = "./static/calendarAttachments/"
+    if not os.path.isdir(attachment_root):
+        os.mkdir(attachment_root)
+    if not os.path.isdir(attachment_root + str(task_id)):
+        os.mkdir(attachment_root + str(task_id))
+    for attachment in attachments:
+        attachment.save(os.path.join(attachment_root + str(task_id), secure_filename(attachment.filename)))
+    return None
+
+
+def delete_all_attachments(task_id):
+    attachment_root = "./static/calendarAttachments/" + str(task_id)
+    if not os.path.isdir(attachment_root):
+        return None
+    for a in os.scandir(attachment_root):
+        os.remove(a)
+    os.rmdir(attachment_root)
+    return None
