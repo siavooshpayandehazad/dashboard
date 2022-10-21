@@ -1,15 +1,18 @@
 <script type="text/javascript">
   function validateForm() {
-    var fileName = document.forms["photoUploader"]["file"].value;
-    if (fileName == "") {
-      alert("Name must be filled out");
-      return false;
-    }
-    extension = fileName.split(".")[1].toLowerCase()
-    if((extension !="jpeg") && (extension !="jpg") && (extension !="png") && (extension !="tiff")  && (extension !="bmp") && (extension !="gif") && (extension !="mp4") ){
-      alert("only the following extensions are allowed: jpg, jpeg, png, tiff, bmp, gif and mp4");
-      return false;
-    }
+    files = document.getElementById("journalFiles").files;
+     for (i = 0; i < files.length; i++) {
+        var fileName = files[i].name;
+        if (fileName == "") {
+          alert("Name must be filled out");
+          return false;
+        }
+        extension = fileName.split(".")[fileName.split(".").length-1].toLowerCase()
+        if((extension !="jpeg") && (extension !="jpg") && (extension !="png") && (extension !="tiff")  && (extension !="bmp") && (extension !="gif") && (extension !="mp4") ){
+          alert("only the following extensions are allowed: jpg, jpeg, png, tiff, bmp, gif and mp4");
+          return false;
+        }
+     }
   }
   function uploadMedia(){
     var uploader = document.getElementById("uploader")
@@ -29,7 +32,7 @@
     <div  id = "uploader">
       Upload your media:
       <form  name="photoUploader" action = "/uploader" method = "POST" enctype = "multipart/form-data" style="margin-top:5px;" onsubmit="return validateForm()">
-          <input type = "file" name = "file" />
+          <input type = "file" id="journalFiles" name="files[]" multiple="true"/>
           <input type="text" name="date" value = "{{year}}-{{'%02d' % (month)}}-{{'%02d' % (day)}}" style ="display:none;">
           <input type = "submit" style="float:right;" value="Upload" />
       </form>

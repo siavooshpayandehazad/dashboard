@@ -133,11 +133,11 @@ def upload_file():
             os.mkdir("./static/photos/" + year)
         if not os.path.isdir("./static/photos/" + year + "/" + folder_name):
             os.mkdir("./static/photos/" + year + "/" + folder_name)
-        f = request.files['file']
-        file_name = f.filename
-        while os.path.isfile("./static/photos/" + year + "/" + folder_name + "/" + file_name):
-            file_name = str(randint(1, 100000)) + "_" + f.filename
-        f.save(os.path.join("./static/photos/" + year + "/" + folder_name, secure_filename(file_name)))
+        for f in request.files.getlist('files[]'):
+            file_name = f.filename
+            while os.path.isfile("./static/photos/" + year + "/" + folder_name + "/" + file_name):
+                file_name = str(randint(1, 100000)) + "_" + f.filename
+            f.save(os.path.join("./static/photos/" + year + "/" + folder_name, secure_filename(file_name)))
         return redirect(url_for('journal') + "?date=" + upload_date)
 
 
