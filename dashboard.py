@@ -241,9 +241,27 @@ def send_daily_digest():
         send_mail("Daily Digest for: " + today_date, body, app, mail, c, lock)
 
 
+def turn_on_lamp():
+    with app.app_context():
+        print("turn on the lamp")
+        requests.get("http://192.168.1.85/33/val=255")
+        requests.get("http://192.168.1.85/25/val=255")
+        requests.get("http://192.168.1.85/32/val=255")
+
+
+def turn_off_lamp():
+    with app.app_context():
+        print("turn off the lamp")
+        requests.get(url="http://192.168.1.85/33/val=0")
+        requests.get(url="http://192.168.1.85/25/val=0")
+        requests.get(url="http://192.168.1.85/32/val=0")
+
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=send_cal_notification, trigger="interval", seconds=60)
 scheduler.add_job(func=send_daily_digest, trigger=CronTrigger.from_crontab('0 6 * * *'))
+scheduler.add_job(func=turn_on_lamp, trigger=CronTrigger.from_crontab('00 6 * * *'))
+scheduler.add_job(func=turn_off_lamp, trigger=CronTrigger.from_crontab('00 19 * * *'))
 scheduler.start()
 
 resource_class_args = {"conn": conn, "c": c, "lock": lock, "parser": parser,

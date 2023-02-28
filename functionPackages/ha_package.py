@@ -10,6 +10,8 @@ def generate_ha_db_tables(db_cursor, db_connection, lock):
                  id text, item_name text,  quantity text, expiry_date text)""")
         db_cursor.execute("""CREATE TABLE if not exists settings (
                         room text, description text)""")
+        db_cursor.execute("""CREATE TABLE if not exists lights (
+                                id text, ip text, val1 text, val2 text, val3 text, state text)""")
         db_connection.commit()
         lock.release()
         return True
@@ -78,3 +80,25 @@ def delete_prep_data(id_number, db_cursor, db_connection, lock):
     db_connection.commit()
     lock.release()
     return None
+
+
+def get_light_vals(db_cursor, lock):
+    lock.acquire(True)
+    db_cursor.execute("""SELECT * FROM lights """)
+    lights = [list(x) for x in db_cursor.fetchall()]
+    lock.release()
+    return lights
+
+
+def add_val_to_light(light_id, val_id, val, db_cursor, db_connection, lock):
+    lock.acquire(True)
+    db_cursor.execute("UPDATE lights SET val"+val_id+" = ? WHERE id = ?", (val, light_id, ))
+    db_connection.commit()
+    lock.release()
+
+
+def switch_light(light_id, state, db_cursor, db_connection, lock):
+    lock.acquire(True)
+    db_cursor.execute("UPDATE lights SET state = ? WHERE id = ?", (state, light_id, ))
+    db_connection.commit()
+    lock.release()

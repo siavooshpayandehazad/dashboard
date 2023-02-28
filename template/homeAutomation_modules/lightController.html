@@ -1,39 +1,81 @@
 <script type="text/javascript">
+ var val1 = '{{light1}}'
+ var val2 = '{{light2}}'
+ var val3 = '{{light3}}'
  function release(item, id){
-    console.log(item.value);
-    fetch("http://{{ip}}/"+id+"/val="+item.value);
+    if(document.getElementById("switch{{light_id}}").checked == true){
+      // the light is off!
+      fetch("http://{{ip}}/"+id+"/val="+item.value).catch(e => console.log(e.message));
+    }
+
+    let formData = new FormData();
+    formData.append("light_id", {{light_id}});
+    if(id == 33){
+      val_id = 1;
+      val1 = item.value;
+    }else if(id == 25){
+      val_id = 2;
+      val2 = item.value;
+    }else{
+      val_id = 3;
+      val3 = item.value;
+    }
+    formData.append("val_id", val_id);
+    formData.append("value", item.value);
+    formData.append("action", "change light");
+    $.ajax({ type: "POST",
+        url: "/homeAutomation",
+        data: formData,
+        contentType: false,
+        processData: false,
+    });
  }
 
 </script>
 
 
-<div class="col-sm-10 offset-sm-1 text-justify mb-3">
+<div class="col-sm-10 text-justify mb-3">
   <div id="accordion">
     <div class="card">
-      <div class="card-header" id="heading{{light}}">
+      <div class="card-header" id="heading{{light_id}}">
         <h5 class="mb-0">
-          <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{light}}" aria-expanded="true" aria-controls="collapse{{light}}">
-            light {{light}}
+          <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{light_id}}" aria-expanded="true" aria-controls="collapse{{light_id}}">
+            light {{light_id}}
           </button>
         </h5>
       </div>
 
-      <div id="collapse{{light}}" class="collapse" aria-labelledby="heading{{light}}" data-parent="#accordion">
+      <div id="collapse{{light_id}}" class="collapse" aria-labelledby="collapse{{light_id}}" data-parent="#accordion">
         <div class="card-body">
           <div class="row">
+             <div class="col-sm-3 text-justify" style="color:black">
+               turn off/on:
+             </div>
+             <div class="col-sm-1 text-justify">
+              <div class="custom-control custom-switch">
+                {%if state == "off"%}
+                  <input type="checkbox" class="custom-control-input" id="switch{{light_id}}">
+                {%else%}
+                  <input type="checkbox" class="custom-control-input" id="switch{{light_id}}" checked>
+                {%endif%}
+                <label class="custom-control-label" for="switch{{light_id}}"></label>
+              </div>
+            </div>
+            <div class="col-sm-8 text-justify">
+            </div>
             <div class="col-sm-2  text-justify" style="color:black">R</div>
             <div class="col-sm-10 text-justify">
-              <input type="range" min="0" max="255" value="0" style="width:80%" onchange="release(this, 33)">
+              <input type="range" min="0" max="255" value='{{light1}}' style="width:90%" onchange="release(this, 33)">
             </div>
 
             <div class="col-sm-2  text-justify" style="color:black">G</div>
             <div class="col-sm-10 text-justify">
-              <input type="range" min="0" max="255" value="0" style="width:80%" onchange="release(this, 25)">
+              <input type="range" min="0" max="255" value='{{light2}}' style="width:90%" onchange="release(this, 25)">
             </div>
 
             <div class="col-sm-2  text-justify" style="color:black">B</div>
             <div class="col-sm-10 text-justify">
-              <input type="range" min="0" max="255" value="0" style="width:80%" onchange="release(this, 32)">
+              <input type="range" min="0" max="255" value='{{light3}}' style="width:90%" onchange="release(this, 32)">
             </div>
           </div>
         </div>
@@ -41,5 +83,40 @@
     </div>
   </div>
 </div>
+
+<script>
+
+document.getElementById("switch{{light_id}}").addEventListener('input', function (evt) {
+    let formData = new FormData();
+    formData.append("light_id", {{light_id}});
+    formData.append("action", "switch light");
+    if(document.getElementById("switch{{light_id}}").checked == true){
+        fetch("http://{{ip}}/33/val="+val1.toString()).catch(e => console.log(e.message)).then(response =>
+           setTimeout(function() {
+              fetch("http://{{ip}}/25/val="+val2.toString()).catch(e => console.log(e.message)).then(response =>
+                 setTimeout(function() {
+                    fetch("http://{{ip}}/32/val="+val3.toString()).catch(e => console.log(e.message))
+                }, 100))
+           }, 100));
+           formData.append("state", "on");
+    }else{
+      fetch("http://{{ip}}/33/val=0").catch(e => console.log(e.message)).then(response =>
+           setTimeout(function() {
+              fetch("http://{{ip}}/25/val=0").catch(e => console.log(e.message)).then(response =>
+                 setTimeout(function() {
+                    fetch("http://{{ip}}/32/val=0").catch(e => console.log(e.message))
+                }, 100))
+           }, 100));
+           formData.append("state", "off");
+    };
+    $.ajax({ type: "POST",
+                url: "/homeAutomation",
+                data: formData,
+                contentType: false,
+                processData: false,
+            });
+});
+
+</script>
 
 

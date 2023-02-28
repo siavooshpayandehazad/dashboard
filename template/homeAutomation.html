@@ -160,7 +160,7 @@ if (page_theme == "Dark"){
                     </button>
                 </h5>
             </div>
-            <div id="collapse_weather" class="collapse" aria-labelledby="heading_twitter" data-parent="#accordion">
+            <div id="collapse_weather" class="collapse show" aria-labelledby="heading_twitter" data-parent="#accordion">
                 <div class="card-body" style="background-color:black; padding: 10px 20px 5px 20px; border-radius: 0px 0px 5px 5px;height: 400px; overflow: auto;">
                     <div class="row">
                         <div class="col-sm-12 text-justify">
@@ -207,7 +207,8 @@ if (page_theme == "Dark"){
                 <div class="card-body" style="background-color:black; padding: 10px 20px 5px 20px; border-radius: 0px 0px 5px 5px;height: 400px; overflow: auto;">
                     <div class="row">
                         <div class="col-sm-6" style="margin-top: 20px;">
-                            {% with light = "1", ip="192.168.1.85"  %}
+                            {% with light_id = lights[0][0]|safe, ip= lights[0][1]|safe, light1 = lights[0][2],
+                            light2 = lights[0][3], light3 = lights[0][4], state = lights[0][5]%}
                             {% include "homeAutomation_modules/lightController.html" %}
                             {% endwith %}
                         </div>
@@ -264,7 +265,7 @@ if (page_theme == "Dark"){
       var gauge_2 = document.getElementById("humidityGauge_"+i.toString())
       var gauge_3 = document.getElementById("pressureGauge_"+i.toString())
       var gauge_4 = document.getElementById("moistureGauge_"+i.toString())
-      console.log(gauge_1, gauge_2, gauge_3, gauge_4)
+      //console.log(gauge_1, gauge_2, gauge_3, gauge_4)
       drawGauge(gauge_1, tempData[i]["temp"],      "°C", 0.01, 60, [231,225,239], [152,0,67], [0,0,0], [0,0,0]);
       drawGauge(gauge_2, tempData[i]["humidity"],   "%", 0.01, 70, [198,219,239], [8,81,156], [0,0,0], [0,0,0]);
       drawGauge(gauge_3, tempData[i]["pressure"], "bar", 0.01, 2,  [0,0,0],       [217,217,217], [240,240,240],   [240,240,240]);

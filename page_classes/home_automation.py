@@ -40,15 +40,26 @@ class HomeAutomation(Resource):
         monthly_data = generate_weather_monthly(self.c_ha, int(year), self.lock)
         daily_data, description = generate_weather_daily(self.c_ha, today_date, self.lock)
         prep_data = get_prep_data(self.c_ha, self.lock)
+        lights = get_light_vals(self.c_ha, self.lock)
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(render_template('homeAutomation.html', daily_data=daily_data,
                                              monthly_Data=monthly_data, chart_months=chart_months,
-                                             prep_data=prep_data,
+                                             prep_data=prep_data, lights=lights,
                                              myAnnualConsumption=my_annual_consumption, description=description,
                                              pageTheme=page_theme, HideLine="true",
                                              PageYear=int(year), PageMonth=int(month), day=int(day)), 200, headers)
 
     def post(self):
+
+        if request.form.get("action") == "change light":
+            add_val_to_light(request.form['light_id'], request.form['val_id'], request.form["value"],
+                             self.c_ha, self.conn_ha, self.lock)
+            return "Done", 200
+
+        if request.form.get("action") == "switch light":
+            switch_light(request.form['light_id'], request.form['state'], self.c_ha, self.conn_ha, self.lock)
+            return "Done", 200
+
         args = self.parser.parse_args()
         value = json.loads(args['value'])
 
