@@ -195,6 +195,7 @@ function updateAuthors(){
       borderDiv = document.createElement("div");
       borderDiv.setAttribute("name", author);
       borderDiv.classList.add("audiobook")
+      borderDiv.classList.add("col-sm-2")
       borderDiv.onclick=function(){
         loadBooks(this.getAttribute("name"));
       }
