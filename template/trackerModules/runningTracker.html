@@ -75,6 +75,12 @@ function render_running_tracker_chart(){
                   if(newVal !== ""){
                     distance = newVal.split(",")[0]
                     pace = newVal.split(",")[1]
+                    if (pace.includes(":")){
+                        // here im assuming its time in form of HH:MM
+                        splitVal = pace.split(":");
+                        if (isNaN(splitVal[0]) || isNaN(splitVal[1])){return;}
+                        pace = parseInt(splitVal[0]) + Math.round((parseInt(splitVal[1])/60) * 100) / 100;
+                      }
                     if (isNaN(distance) || isNaN(pace)){return;}
                   }else{
                     console.log("deleting data for day: ", date)
