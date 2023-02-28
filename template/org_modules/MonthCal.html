@@ -28,7 +28,7 @@ function setupMonthCal(){
   startWeekNum = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getWeek();
   for (var j=1; j<=lastDayWeek-startWeekNum+1; j++){
     tr = document.createElement("tr")
-    tr.style="height:130px;"
+    tr.style="height:120px;"
     td1 = document.createElement("td")
     td1.style="width:6.5%; border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff;";
     td2 = document.createElement("td")

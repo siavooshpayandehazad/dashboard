@@ -6,7 +6,7 @@ thead.calendarth th{
 }
 tbody.calendartb td{
   text-align: center;
-  height:40px;
+  height:30px;
   border-bottom: 1px solid #9ecae1;
   border-right:  1px solid #9ecae1;
   background-color:white
