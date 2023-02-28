@@ -20,25 +20,15 @@
   <script src="/static/lib/Chart.min.js" charset="utf-8"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <script type="text/javascript">
-    const zeroPad = (num, places) => String(num).padStart(places, '0')
 
 
-  function moveMonth(delta){
-    date = new Date(parseInt("{{PageYear}}"), parseInt("{{PageMonth}}")-1, 1, 0, 0, 0);
+  function moveYear(delta){
+    date = new Date(parseInt("{{PageYear}}")+delta, 1, 1, 0, 0, 0);
     console.log(date)
     date.setDate(date.getDate());
     var dd = date.getDate();
     var mm = date.getMonth()+1+delta; //January is 0!`
     var yyyy = date.getFullYear();
-    if (mm == 0){
-      mm = 12;
-      yyyy = yyyy-1;
-    }
-    if (mm == 13){
-      mm = 1;
-      yyyy = yyyy+1;
-    }
-
     window.location.href = "/finances?date="+zeroPad(yyyy, 2)+"-"+zeroPad(mm, 2)+"-"+zeroPad(dd, 2);
   }
 
@@ -138,15 +128,22 @@ if (page_theme == "Dark"){
   <div class="row">
     <div class="col-sm-12 text-justify">
       <h4 class="title journal" style="margin-left:40%">
-        <a class= "arrow hover-red"  onclick="moveMonth(-1)">&#9668;</a>
-        {{PageYear}}-{{'%02d' % (PageMonth|int)}}
-        <a class= "arrow hover-red"  onclick="moveMonth(1)">&#9658;</a>
+        <a class= "arrow hover-red"  onclick="moveYear(-1)">&#9668;</a>
+        {{PageYear}}
+        <a class= "arrow hover-red"  onclick="moveYear(1)">&#9658;</a>
       </h4>
     </div>
   </div>
 
   <div class="row" style="margin-top:10px;">
-    <div class="col-sm-12 col-lg-6">
+
+    <div class="col-sm-1 col-xl-1">
+            {% with PageYear=PageYear, PageMonth=PageMonth%}
+            {% include "generic_modules/monthSelector.html" %}
+            {% endwith %}
+    </div>
+
+    <div class="col-sm-11 col-lg-6">
       <div class="row">
         <div class="col-sm-12 col-lg-12">
           <div style="background-color:white; margin-top:10px; margin-bottom:5px; border-radius:10px; padding:7px;">
@@ -236,7 +233,7 @@ if (page_theme == "Dark"){
     </div>
 
 
-    <div class="col-sm-12 col-lg-6">
+    <div class="col-sm-11 col-lg-5">
       <div class="row">
         <div class="col-sm-12 col-lg-12">
           <div style="width:95%">
