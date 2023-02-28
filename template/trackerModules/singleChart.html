@@ -97,6 +97,9 @@ function renderTrackerChart(){
                         return;
                       }
                       var selectedDay = this.scales['x-axis-0'].getValueForPixel(event.layerX)-1;
+                      if (selectedDay == 0){
+                          selectedDay = 1;
+                      }
                       var selectedVal =  parseFloat(window['dataset_{{trackerName}}'][selectedDay-1]) || 0;
                       var newVal;
                       if(window['accumulate_{{trackerName}}'] == true){
