@@ -2,7 +2,7 @@
 
 <div style="width:80%; padding-top: 20px; float: left;">
   {% for listMonth in ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]%}
-    {% if loop.index0+1==PageMonth  %}
+    {% if loop.index0+1==PageMonth|int  %}
     <div class="monthTab selected" onclick="goToMonth({{PageYear}}, {{loop.index0}})">
       <span style="margin-top:12px; margin-left:10px;"> <b> {{listMonth}} </b> </span>
     </div>
