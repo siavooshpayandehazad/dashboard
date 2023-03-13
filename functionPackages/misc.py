@@ -52,7 +52,8 @@ def get_audiobooks(path):
                         for i in range(len(audiobooks[author][b.name])):
                             books[b.name]["chapter "+str(i+1)] = {
                                 "timestamp": 0,
-                                "progress": "0.0"
+                                "progress": "0.0",
+                                "notes": ""
                             }
                         path = os.path.realpath(b)+"/metadata.json"
                         f = open(path, 'w+')

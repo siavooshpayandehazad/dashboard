@@ -100,6 +100,7 @@ function loadPlayer(author, bookName, chapterName){
 
   ChapterMetadata = metadata[audio.getAttribute("author")][audio.getAttribute("book")]["chapter "+chapterNumber];
   audio.currentTime = ChapterMetadata["timestamp"];
+  document.getElementById("chapterNotes").value = ChapterMetadata["notes"];
 }
 
 function loadChapters(bookName, author){
@@ -171,7 +172,7 @@ function loadBooks(author){
         ChapterMetadata = metadata[author][bookName]["chapter "+(k+1)];
         progress = progress + ChapterMetadata["progress"]/Object.keys(metadata[author][bookName]).length
       }
-      progressLine.style.width = (95*parseFloat(ChapterMetadata["progress"])) + "%";
+      progressLine.style.width = (95*parseFloat(progress)) + "%";
 
       span = document.createElement("span");
       span.style = "color:white";
@@ -216,7 +217,7 @@ function updateAuthors(){
           progress = progress + ChapterMetadata["progress"]/(numberOfChapters*numberOfBooks)
         }
       }
-      progressLine.style.width = (95*parseFloat(ChapterMetadata["progress"])) + "%";
+      progressLine.style.width = (95*parseFloat(progress)) + "%";
 
       span = document.createElement("span");
       span.style = "color:white";
@@ -227,6 +228,29 @@ function updateAuthors(){
       borderDiv.appendChild(span);
       authorsDiv.appendChild(borderDiv);
     }
+}
+
+function skip(timeDelta){
+    player   = document.getElementById("audio");
+    currentTime = player.currentTime;
+    player.currentTime = currentTime + parseInt(timeDelta)
+}
+
+function submitEntry(){
+    notes = document.getElementById("chapterNotes").value;
+    player   = document.getElementById("audio");
+    author   = player.getAttribute("author")
+    book     = player.getAttribute("book")
+    chapter  = document.getElementById("chapter").textContent;
+    $.ajax({ type: "POST",
+           url: "/audiobooks",
+           data: {"value":JSON.stringify({"author": author,
+                                           "book": book,
+                                           "chapter": chapter,
+                                           "notes": notes,
+                                           }),
+                 },
+          });
 }
 </script>
 
@@ -253,17 +277,48 @@ function updateAuthors(){
       </div>
 
       <div class="col-sm-12" id="player" style="margin-top:20px; float: left; display:none;">
-        <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToChapters()"></i>
-        <div  style="margin-left:30%; width:40%; float: left;">
-          <img id = "playerCover" style="margin-left: 10%; height:75vh;" >
-          <div style="margin-left: 10%; width: 90%; margin-bottom:10px;">
-            <span style="color:white"><b>Title:  </b> <b id="title">   </b> </span><br>
-            <span style="color:white"><b>Chapter:</b> <b id="chapter"> </b> </span><br>
+          <div class="row">
+              <div class="col-sm-6" align="center">
+                  <img id = "playerCover" style="max-height:60%; max-width:60%; width: auto;
+                                                 height: auto; margin: auto;" >
+                  <div style="width: 100%; margin-bottom:10px;">
+                    <span style="color:white"><b>Title:  </b> <b id="title">   </b> </span><br>
+                    <span style="color:white"><b>Chapter:</b> <b id="chapter"> </b> </span><br>
+                  </div>
+
+                        <div class="row">
+                          <audio id="audio" controls style="width:100%; height:20px;" onpause="updateTheTime()" >
+                             <source id="mp3Source" type="audio/mpeg"></source>
+                          </audio>
+                        </div>
+                        <div class="row" style="margin-top:10px; margin-bottom:10px;">
+                            <div class="col-sm-6">
+                                <button type="button" class="btn btn-dark rounded-circle" style="float:right"
+                                       onclick="skip(-15)">
+                                    15 <i class="fa fa-backward" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div class="col-sm-6">
+                                <button type="button" class="btn btn-dark rounded-circle" style="float:left"
+                                       onclick="skip(15)">
+                                    <i class="fa fa-forward" aria-hidden="true"> </i> 15
+                                </button>
+                            </div>
+                        </div>
+              </div>
+              <div class="col-sm-5">
+                  <div style="margin-left: 10%;">
+                  Notes on the chapter:
+                  <form action="javascript:;" onsubmit="return submitEntry();">
+                      <textarea id="chapterNotes" type="text" cols="40" style="width:90%; height: 60%;"></textarea><br>
+                      <input type="submit" style="float: right; margin-right: 10%;">
+                   </form>
+                  </div>
+              </div>
+              <div class="col-sm-1">
+                  <i style = "font-size: 40px;" class="fa fa-arrow-circle-left hover-red" onclick="goToChapters()"></i>
+              </div>
           </div>
-          <audio id="audio" controls style="width:100%;" onpause="updateTheTime()" >
-             <source id="mp3Source" type="audio/mpeg"></source>
-          </audio>
-        </div>
       </div>
   </div>
 </div>

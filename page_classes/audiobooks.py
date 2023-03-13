@@ -40,8 +40,12 @@ class Audiobooks(Resource):
         metadata_file_path = "static/audiobooks/" + value["author"] + "/" + value["book"] + "/metadata.json"
         with open(metadata_file_path, "r") as metadataFile:
             data = json.load(metadataFile)
-            data["chapter " + value["chapter"]]["timestamp"] = value["timestamp"]
-            data["chapter " + value["chapter"]]["progress"] = value["progress"]
+            data["chapter " + value["chapter"]]["timestamp"] = \
+                value.get("timestamp", data["chapter " + value["chapter"]]["timestamp"])
+            data["chapter " + value["chapter"]]["progress"] = \
+                value.get("progress", data["chapter " + value["chapter"]]["progress"])
+            data["chapter " + value["chapter"]]["notes"] = \
+                value.get("notes", data["chapter " + value["chapter"]].get("notes", ""))
         metadataFile.close()
         with open(metadata_file_path, "w") as metadataFile:
             json.dump(data, metadataFile)
