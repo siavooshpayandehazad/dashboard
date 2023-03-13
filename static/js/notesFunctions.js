@@ -156,14 +156,14 @@ function selectNoteBook(notebook, event){
   var AddChapterItem = document.createElement("li")
   AddChapter.className = "addToC"
   AddChapterItem.className = "ToCLabel hover-red"
-  AddChapterItem.innerHTML = "+ add new chapter"
+  AddChapterItem.innerHTML = "+ new chapter"
   AddChapterItem.onclick = function(){addChapter(this)}
 
   var showGalleryItem = document.createElement("li")
   showGalleryItem.className = "ToCLabel hover-red";
   showGalleryItem.onclick = function(){showGallery(this)}
   var showGalleryText = document.createElement("span")
-  showGalleryText.textContent = " Notebook Gallery";
+  showGalleryText.textContent = " Gallery";
   var showGalleryIcon = document.createElement("i");
   showGalleryIcon.className = "fa fa-camera";
   showGalleryItem.appendChild(showGalleryIcon);
@@ -345,11 +345,13 @@ function showGallery(item){
    chapterContent.innerHTML = "";
    document.getElementById("chapterName").textContent = "Notebook Gallery"
    NB_photos = photos[notebookName];
-   for (var i=0; i<NB_photos.length; i++){
-     img = document.createElement("img");
-     img.src = "/static/photos/notebookPhotos/"+notebookName+"/"+NB_photos[i];
-     img.style = "width:200px; margin-right:10px; margin-bottom:10px;";
-     chapterContent.appendChild(img);
+   if (typeof NB_photos !== 'undefined'){
+       for (var i=0; i<NB_photos.length; i++){
+         img = document.createElement("img");
+         img.src = "/static/photos/notebookPhotos/"+notebookName+"/"+NB_photos[i];
+         img.style = "width:200px; margin-right:10px; margin-bottom:10px;";
+         chapterContent.appendChild(img);
+       }
    }
 }
 

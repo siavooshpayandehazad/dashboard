@@ -23,6 +23,8 @@ div.NoteBookCloseButton:hover{
   padding-top: 2%;
   border-radius:15px 0px 0px 15px;
   color:white;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .notebookLabel.selected {
   background-color: #cc4c02;
@@ -59,53 +61,61 @@ div.NoteBookCloseButton:hover{
   width: 100%;
   padding-left: 10px;
   float:left;
+  overflow: hidden;
 }
 #notebookLabels{
-  width:12%;
+  width:5%;
   overflow-y: auto;
   overflow-x: hidden;
   margin-right: 0px;
   float:left;
   margin-top: 30px;
 }
+#notebookLabels:hover{
+  width:12%;
+}
+
 #chapterContent{
   overflow-y: auto;
-  height:calc(100% - 120px);
+  height:calc(100% - 50px);
   width:96%;
   margin-left:15px;
-  margin-top: 15px;
 }
 #notebook_background{
-  width:86%;
   height:100%;
   background-color: var(--bckgrnd-clr);
   border: 3px solid var(--logText-clr);
   border-radius:20px;
-  margin-top: 10px;
-  float:left;
+  margin-top: 5px;
+  float:none;
+  overflow: hidden;
 }
 div.ToCDiv{
-  width:16%;
+  width:80px;
   height:calc(85vh - 40px);
   overflow-y: auto;
   background-color:var(--bckgrnd-clr);
   border: 3px solid var(--logText-clr);
   border-radius:20px;
   margin-left: 1%;
-  margin-top: 10px;
+  margin-top: 5px;
+  margin-right: 10px;
   margin-bottom: 10px;
   float:left; color:var(--logText-clr);
 }
+div.ToCDiv:hover{
+  width:16%;
+}
 div.chapterContent{
-  width:80%;
   height:calc(85vh - 40px);
   background-color:var(--bckgrnd-clr);
   border: 3px solid var(--logText-clr);
   border-radius:20px;
   margin-left: 1%;
-  margin-top: 10px;
+  margin-top: 5px;
   margin-bottom: 10px;
-  float:left;
+  float:none;
+  overflow:hidden;
   color:var(--logText-clr);
 }
 i.searchIcon{
