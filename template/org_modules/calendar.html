@@ -39,6 +39,10 @@
       }
     }
 
+    function addNewCal(){
+        value = window.prompt("Enter new calendar name:", "None")
+        console.log(value)
+    }
 </script>
 
 <div class="col-sm-2 col-lg-2">
@@ -46,24 +50,30 @@
                                            padding-left:10%; padding-top:10px; margin-top: 20px;
                                            margin-bottom: 20px;">
         <div class="row">
+            <div class="col-sm-12">
                 <b> Color <i class="fa fa-filter" style="margin-right:4px"></i>: </b>
-                <select id="calFilter" style="width: calc(100% - 100px); margin-left:5px;" onchange="colorFilterCalendar(this)">
+                <select id="calFilter" style="width: calc(100% - 100px); float:right; margin-right: 10px;" onchange="colorFilterCalendar(this)">
                     <option>None</option>
                     {% for color in ["LightYellow", "Khaki", "Goldenrod", "gold", "pink", "LightSalmon", "Salmon",
                                      "tomato", "powderblue", "skyBlue", "LightSeaGreen", "teal"]%}
                     <option style="background-color:{{color}}">{{color}}</option>
                     {% endfor %}
                 </select>
+            </div>
         </div>
-         <hr/>
         <div class="row" style="padding-bottom: 10px">
-            <h5> Calendars:</h5>
-            <br>
-            {% for item in ["default", "work", "events"]%}
+            <div class="col-sm-12">
+                <b>Calendars:</b>
+                <i style="float:right; margin-right:10px; margin-top:7px;" class="fa fa-plus-circle" onclick="addNewCal()"></i>
+            </div>
+            <div class="col-sm-12">
+                {% for item in ["default", "work", "events"]%}
                 <div style="width:90%; margin-left:10%">
-                    <input style="width:20px; height:20px;" id="cal_checkbox_{{item}}" type="checkbox" onchange="nameFilterCalendar()" checked><span> {{item}}</span>
+                    <input style="width:15px; height:15px;" id="cal_checkbox_{{item}}" type="checkbox" onchange="nameFilterCalendar()" checked>
+                    <span style="font-size: 15px; line-height: 15px;"> {{item}}</span>
                 </div>
                 {%endfor%}
+            </div>
         </div>
         </div>
 </div>

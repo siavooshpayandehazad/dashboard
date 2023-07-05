@@ -28,7 +28,7 @@ function setupMonthCal(){
   startWeekNum = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getWeek();
   for (var j=1; j<=lastDayWeek-startWeekNum+1; j++){
     tr = document.createElement("tr")
-    tr.style="height:120px;"
+    tr.style="height:100px;"
     td1 = document.createElement("td")
     td1.style="width:6.5%; border-left: 1px solid #7bccc4; border-right: 0px solid #7bccc4; background-color:#f7fbff;";
     td2 = document.createElement("td")
@@ -69,6 +69,10 @@ function setupMonthCal(){
   // mark today
   today_col = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getDay();
   today_row = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getWeek()-startWeekNum;
+  if(today_col == 0){
+    today_col = 7;
+    today_row = today_row-1;
+  }
   table.rows[today_row+1].cells.item(today_col).style.backgroundColor="#e5f5e0";
 
   // highlight the days after end
@@ -85,7 +89,7 @@ function setupMonthCal(){
     span.classList.add("calCellLabel")
     span.classList.add("hover-red")
     span.onclick= function(){
-      window.location ="http://localhost:5000/org?date={{year}}-{{'%02d'%(month)}}-"+zeroPad(this.textContent, 2)+"&CalType=Week#WeekCal";
+      window.location ="/org?date={{year}}-{{'%02d'%(month)}}-"+zeroPad(this.textContent, 2)+"&CalType=Month";
     }
     span.textContent = i+1
     table.rows[parseInt((i+startdayNum)/7)+1].cells.item((i+startdayNum)%7+1).appendChild(span)

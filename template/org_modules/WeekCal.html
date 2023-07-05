@@ -1,6 +1,7 @@
 <script type="text/javascript">
 var draggin = false
 var calOffsetRows = 2;
+cellHeight = 25
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 var calDates = {{calDate|safe}};
 
@@ -283,7 +284,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   var div = document.createElement("div");
   var tableElement = document.getElementById("calTab")
   div.style.left = "calc((100% - 585px)/2)";
-  div.style.top  = 200 + "px";
+  div.style.top  = 110 + "px";
   div.classList.add("calendarPopUp");
 
   var taskIDContainer = document.createElement("div");
@@ -303,7 +304,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
 
   var calName = document.createElement("select");
   calName.style.width="100px";
-  calName.style.marginLeft="10px";
+  calName.style.marginLeft="15px";
   cals = ["default", "work", "events"]
   for (let i = 0; i < cals.length; i++){
      var option = document.createElement("option");
@@ -320,15 +321,27 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   eventName.setAttribute('id', 'eventName');
   eventName.classList.add("calPopupDescriptor");
   eventName.rows = 1;
+  eventName.style.width="83%";
   eventName.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("name") : "";
   var text0 = document.createElement("span");
   text0.textContent= "Event Title:";
+  text0.style.float = "left";
+  text0.style.marginTop = "5px";
+  text0.style.marginRight = "5px";
 
-  var locationText = document.createElement("span");
-  locationText.textContent= "Location:";
+  var locationIcon = document.createElement("i");
+  locationIcon.classList.add("fa");
+  locationIcon.classList.add("fa-map-marker");
+  locationIcon.style.marginLeft = "5px"
+  locationIcon.style.fontSize = "25px"
+  locationIcon.style.lineHeight = "25px"
+  locationIcon.style.float = "left"
+
   var locationDescription = document.createElement("textarea");
   locationDescription.classList.add("calPopupDescriptor");
   locationDescription.rows = 1;
+  locationDescription.style.marginLeft = "10px";
+  locationDescription.style.width = "91%";
   locationDescription.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("location") : "";
 
   attachmentDiv = document.createElement("div");
@@ -427,8 +440,11 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
 
   var timeContainer = document.createElement("div");
   timeContainer.style.marginLeft="5px";
-  var text1 = document.createElement("span");
-  text1.textContent= "Date: ";
+  var dateIcon = document.createElement("i");
+  dateIcon.classList.add("fa");
+  dateIcon.classList.add("fa-calendar");
+  dateIcon.style.marginRight = "10px";
+
   var daySelector = document.createElement("input");
   daySelector.type="date";
   daySelector.value="{{year|safe}}-"+zeroPad(selectedMonth, 2)+"-"+zeroPad(selectedDay, 2);
@@ -456,7 +472,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   startTime.type = "time";
   stopTime.type = "time";
   startTime.classList.add("calEventTime")
-  startTime.style.marginLeft="41px";
+  startTime.style.marginLeft="20px";
   stopTime.classList.add("calEventTime")
 
   if ((inStartTime === null)){
@@ -475,20 +491,16 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   var text3 = document.createElement("span");
   text3.textContent= " - ";
 
-  var timeDiv = document.createElement("div");
-  timeDiv.style.width = "100%";
-  timeDiv.appendChild(startTime);
-  timeDiv.appendChild(text3);
-  timeDiv.appendChild(stopTime);
-  timeDiv.appendChild(allDayCheckBox);
-  timeDiv.appendChild(allDayText);
-
-  timeContainer.appendChild(text1);
+  timeContainer.appendChild(dateIcon);
   timeContainer.appendChild(daySelector);
-  timeContainer.appendChild(timeDiv);
+  timeContainer.appendChild(startTime);
+  timeContainer.appendChild(text3);
+  timeContainer.appendChild(stopTime);
+  timeContainer.appendChild(allDayCheckBox);
+  timeContainer.appendChild(allDayText);
 
-  // set to all day if the event is on first row
-  if(cell.parentElement.rowIndex == 1){
+  // set to all day if the event is on first row in week cal
+  if((cell.parentElement.rowIndex == 1) && (senderElement.className === "weekEvent")){
     allDayCheckBox.checked = true;
     var timeElements = allDayCheckBox.parentElement.parentElement.getElementsByClassName("calEventTime");
     for (i=0; i <timeElements.length; i++){
@@ -510,6 +522,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
 
   var text4 = document.createElement("span");
   text4.textContent= "Color: ";
+  text4.style.marginLeft="10px";
   color.value = (senderElement.tagName == "DIV") ? senderElement.getAttribute("color") : "powderblue";
   colorContainer.appendChild(text4);
   colorContainer.appendChild(color);
@@ -521,6 +534,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   submitBtn.innerHTML = "submit";
   submitBtn.style.float="right";
   submitBtn.style.marginRight="5px";
+  submitBtn.style.marginLeft="5px";
   submitBtn.style.marginBottom="5px";
   if (cell.tagName == "DIV"){ // this is for the editing of the existing events
     columnNumber = cell.parentElement.cellIndex - 1
@@ -637,6 +651,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
     deleteBtn.type = "input";
     deleteBtn.innerHTML = "delete";
     deleteBtn.style.float="left";
+    deleteBtn.style.marginLeft="15px";
     deleteBtn.onclick=function deleteEvent(){
       var decision = confirm("you are permanently deleting an event! are you sure?");
       if(decision == true){
@@ -669,7 +684,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   eventNameContainer.appendChild(text0);
   eventNameContainer.appendChild(eventName);
   eventNameContainer.appendChild(timeContainer)
-  eventNameContainer.appendChild(locationText);
+  eventNameContainer.appendChild(locationIcon);
   eventNameContainer.appendChild(locationDescription);
   eventNameContainer.appendChild(attachmentDiv);
   eventNameContainer.appendChild(detailText);
@@ -928,7 +943,6 @@ document.getElementById("calTab").addEventListener("mousemove", function(event){
     calendarDrag.style.top = (event.clientY+32)-table.getBoundingClientRect().y+"px";
     calendarDrag.style.position = "absolute";
 
-    cellHeight = 30
     eventTop = event.clientY- cell.getBoundingClientRect().top
     mins = parseInt((parseInt(eventTop)/cellHeight)*60)
     startTime = table.rows[cellRow].cells.item(0).textContent
@@ -953,7 +967,7 @@ document.getElementById("calTab").addEventListener("mouseup", function(event){
   if((draggin===true) && (document.getElementById("calendarDrag")!==null)){ // released!
     draggin = false
     calendarDrag = document.getElementById("calendarDrag");
-    cellHeight = 30
+
     mins = (parseInt(calendarDrag.style.height)/cellHeight)*60
     startTime = calendarDrag.getAttribute("startTime")
     date = new Date();
