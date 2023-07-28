@@ -343,6 +343,10 @@ span.task{
   cursor: pointer;
   color:#b2182b;
 }
+.hover-green:hover{
+  cursor: pointer;
+  color:#006d2c;
+}
 input[type=submit], input[type=button]{
     padding:5px 15px;
     border:0 none;
