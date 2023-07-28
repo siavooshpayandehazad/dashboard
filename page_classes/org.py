@@ -43,11 +43,12 @@ class Org(Resource):
             header_dates.append(str(day_val.date()).split("-")[2])
             day_val = datetime.datetime.strptime(str(day_val.date()), '%Y-%m-%d') + datetime.timedelta(days=1)
         self.logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
+        calendars = fetch_setting_param_from_db(self.c, "calendars", self.lock).replace(" ", "").split(",")
         return make_response(
             render_template('org.html', day=day, month=month, year=year, weekDay=days_of_the_week[week_day],
                             monthsBeginning=months_beginning_week_day, todayTodos=today_todos, overDue=all_due_events,
                             numberOfDays=number_of_days, thisMonthsEvents=this_months_events, calDate=cal_date,
-                            calMonth=cal_month, headerDates=header_dates, vacations=vacations,
+                            calMonth=cal_month, headerDates=header_dates, vacations=vacations, calendars=calendars,
                             vacationsFromLastYear=vacations_from_last_year, thisYearVacations=this_year_vacations,
                             Backlog=scrum_board_lists["backlog"], ScrumTodo=scrum_board_lists["todo"],
                             inProgress=scrum_board_lists["in progress"], done=scrum_board_lists["done"],
@@ -103,7 +104,20 @@ class Org(Resource):
                 self.logger.info(f"deleted task {request.form['taskID']} from date {date_value}")
         else:
             args = self.parser.parse_args()
-            if args['type'] == 'vacation':
+            if args['type'] == 'createCal':
+                calendars = fetch_setting_param_from_db(self.c, "calendars", self.lock).split(",")
+                value_dict = eval(args['value'])
+                calendars.append(value_dict['name'])
+                update_setting_param(self.c, self.conn, "calendars",
+                                     str(calendars)[1:-1].replace("\'", "").replace(" ", ""), self.lock)
+                return "done", 200
+            elif args['type'] == 'deleteCal':
+                calendars = fetch_setting_param_from_db(self.c, "calendars", self.lock).split(",")
+                value_dict = eval(args['value'])
+                calendars.remove(value_dict['name'])
+                update_setting_param(self.c, self.conn, "calendars",
+                                     str(calendars)[1:-1].replace("\'", "").replace(" ", ""), self.lock)
+            elif args['type'] == 'vacation':
                 value_dict = eval(args['value'])
                 if value_dict["name"] == "thisYearVacs":
                     update_vacation_days(args['date'], "yearsVacation", value_dict["value"],
@@ -112,7 +126,7 @@ class Org(Resource):
                     update_vacation_days(args['date'], "vacationFromLastYear", value_dict["value"],
                                          self.c, self.conn, self.lock)
                 return "done", 200
-            if args['type'] == 'todo':
+            elif args['type'] == 'todo':
                 if args['action'] == "search":
                     value_dict = eval((args['value']))
                     search_result = []

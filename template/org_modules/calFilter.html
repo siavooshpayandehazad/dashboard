@@ -1,0 +1,66 @@
+<script>
+    function addNewCal(){
+        value = window.prompt("Enter new calendar name:", "None")
+        $.ajax({ type: "POST",
+                 url: "/org",
+                 data: {"type": "createCal",
+                            "value": JSON.stringify({"name": value})},
+                 success: function(data) {
+                            topDiv = document.getElementById("filter_div");
+                            item_div = document.createElement("div")
+                            item_div.id = value+"_container"
+                            item_div.style="width:85%; margin-left:10%"
+
+                            item_input = document.createElement("input")
+                            item_input.style = "width:15px; height:15px;"
+                            item_input.id="cal_checkbox_"+value
+                            item_input.setAttribute("type", "checkbox");
+                            item_input.checked = "checked";
+                            item_input.onchange = function(){nameFilterCalendar()}
+
+                            item_span = document.createElement("span")
+                            item_span.style = "font-size: 15px; line-height: 15px;"
+                            item_span.textContent = value;
+
+                            item_i = document.createElement("i")
+                            item_i.className = "fa fa-trash-o hover-red";
+                            item_i.style="float:right"
+                            item_i.onclick= function(){deleteCalFilter(value)}
+
+                            item_div.appendChild(item_input)
+                            item_div.appendChild(item_span)
+                            item_div.appendChild(item_i)
+                            topDiv.appendChild(item_div)
+                         }
+                });
+    }
+    function deleteCalFilter(calName){
+        value = window.prompt("Enter calendar name to delete it:", "None")
+        if (value == calName){
+        $.ajax({ type: "POST",
+                         url: "/org",
+                         data: {"type": "deleteCal",
+                                "value": JSON.stringify({"name": value})},
+                         success: function(data) {
+                                document.getElementById(calName+"_container").remove()
+                         }
+                });
+        }
+    }
+</script>
+
+<div class="row" style="padding-bottom: 10px">
+    <div class="col-sm-12" style="margin-botton:10px;">
+        <b>Calendars:</b>
+        <i style="float:right; margin-right:10px; margin-top:7px;" class="fa fa-plus-circle" onclick="addNewCal()"></i>
+    </div>
+    <div class="col-sm-12" id="filter_div">
+        {% for item in calendars%}
+        <div style="width:85%; margin-left:10%" id="{{item}}_container">
+            <input style="width:15px; height:15px;" id="cal_checkbox_{{item}}" type="checkbox" onchange="nameFilterCalendar()" checked>
+            <span style="font-size: 15px; line-height: 15px;"> {{item}}</span>
+            <i class="fa fa-trash-o hover-red" style="float:right" onclick="deleteCalFilter('{{item}}')"></i>
+        </div>
+        {%endfor%}
+    </div>
+</div>

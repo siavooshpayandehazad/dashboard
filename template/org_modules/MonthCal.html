@@ -118,6 +118,10 @@ function drawMonthEvents(){
             continue;
           }
         }
+        if (document.getElementById("cal_checkbox_"+String(calMonths[j][8])) == null){
+          console.log("something is wrong with item:", calDates[j])
+          continue;
+        }
         if (!document.getElementById("cal_checkbox_"+String(calMonths[j][8])).checked){
           continue;
         }

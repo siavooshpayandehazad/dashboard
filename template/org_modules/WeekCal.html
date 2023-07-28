@@ -201,6 +201,10 @@ function drawEvents(){
           continue;
         }
       }
+      if (document.getElementById("cal_checkbox_"+String(calDates[i][8])) == null){
+          console.log("something is wrong with item:", calDates[i])
+          continue;
+        }
       if (!document.getElementById("cal_checkbox_"+String(calDates[i][8])).checked){
         continue;
       }
@@ -305,7 +309,7 @@ function calendarClick(event, item, calType, inStartTime = null, inEndTime = nul
   var calName = document.createElement("select");
   calName.style.width="100px";
   calName.style.marginLeft="15px";
-  cals = ["default", "work", "events"]
+  cals = {{calendars|safe}}
   for (let i = 0; i < cals.length; i++){
      var option = document.createElement("option");
      option.text = cals[i];

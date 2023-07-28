@@ -533,6 +533,12 @@ def setup_setting_table(db_cursor, db_connection, lock):
     except IndexError:
         db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", ("longitude", "ex. 13.411440"))
 
+    db_cursor.execute("""SELECT * FROM settings WHERE parameter = ?  """, ("calendars",))
+    try:
+        db_cursor.fetchall()[0][1]
+    except IndexError:
+        db_cursor.execute("""INSERT INTO settings VALUES(?, ?)""", ("calendars", "default, work"))
+
     db_connection.commit()
     lock.release()
 
