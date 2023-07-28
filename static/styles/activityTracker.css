@@ -15,16 +15,31 @@ td.planned {
 td.trackerLabel{
   height: 15px;
   border: 1px solid white;
+  background-color: #white;
   font-size: 12px;
   color: black;
   margin-top: 2px;
 }
+
+td.trackerLabelHighlight{
+  background-color: #fdbf6f;
+}
+
 td.trackerHeader{
   border: 1px solid white;
   text-align: center;
   font-size: 12px;
   color:black;
 }
+
+td.trackerHeaderHighlight{
+  background-color: #fdbf6f;
+}
+
+td.endofweek{
+    border-right:1px solid #1d91c0;
+}
+
 td.todayMarker{
   background-color: var(--todayMarker-bg-clr);
   border: 1px solid white;
