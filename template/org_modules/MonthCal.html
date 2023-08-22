@@ -23,10 +23,20 @@
 var calMonths = {{calMonth|safe}};
 
 function setupMonthCal(){
+  lastDay = (new Date(parseInt("{{year}}"), parseInt("{{month}}"), parseInt("0"), 0, 0, 0));
   lastDayWeek = (new Date(parseInt("{{year}}"), parseInt("{{month}}"), parseInt("0"), 0, 0, 0)).getWeek();
   // add numbers to weeks
-  startWeekNum = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getWeek();
-  for (var j=1; j<=lastDayWeek-startWeekNum+1; j++){
+  startDay = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0));
+  startWeekNum = startDay.getWeek()-1;
+
+  offset = 0;
+  if ((startDay.getDay() == 0) && (lastDay.getDay() != 0)){
+    offset = 1
+  }
+  if(lastDay.getDay() == 0){
+    offset -=1;
+  }
+  for (var j=1; j<=lastDayWeek-startWeekNum + offset; j++){
     tr = document.createElement("tr")
     tr.style="height:100px;"
     td1 = document.createElement("td")
@@ -45,7 +55,7 @@ function setupMonthCal(){
     document.getElementById("calendartbMonth").appendChild(tr)
   }
   var table = document.getElementById("calTabMonth");
-  for (var i=1; i<=lastDayWeek-startWeekNum+1; i++){
+  for (var i=1; i<=lastDayWeek-startWeekNum+offset; i++){
     var cell = table.rows[i].cells.item(0);
     cell.style.paddingTop="10px;"
     cell.innerHTML = "week<br>"+(startWeekNum+i-1);
@@ -60,7 +70,7 @@ function setupMonthCal(){
   }
 
   // highlight the days before start
-  startdayNum = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getDay()-1;
+  startdayNum = (((new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getDay()-1)%7+7)%7;
   for (var i=1; i<startdayNum+1; i++){
     var cell = table.rows[1].cells.item(i);
     cell.style.backgroundColor="#d9d9d9"
@@ -76,9 +86,10 @@ function setupMonthCal(){
   table.rows[today_row+1].cells.item(today_col).style.backgroundColor="#e5f5e0";
 
   // highlight the days after end
-  lastDay = (new Date(parseInt("{{year}}"), parseInt("{{month}}"), parseInt("0"), 0, 0, 0)).getDay();
-  for (var i=lastDay+1; i<8; i++){
-    var cell = table.rows[lastDayWeek-startWeekNum+1].cells.item(i);
+  for (var i=lastDay.getDay()+1; i<8; i++){
+    if (lastDay.getDay()==0){ // because days start at sunday!
+    break;}
+    var cell = table.rows[lastDayWeek-startWeekNum+offset].cells.item(i);
     cell.style.backgroundColor="#d9d9d9";
   }
 
@@ -107,7 +118,7 @@ function drawMonthEvents(){
   color = document.getElementById("calFilter").value
   removeAllMonthEvents();
   var table = document.getElementById("calTabMonth");
-  startdayNum = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getDay()-1;
+  startdayNum = (((new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getDay()-1)%7+7)%7;
   for (var i=startdayNum; i<=lastDate+startdayNum-1; i++){
     cell = table.rows[parseInt(i/7)+1].cells.item(i%7+1);
     for (var j=0; j<calMonths.length; j++){
