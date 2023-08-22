@@ -26,6 +26,7 @@ class Audiobooks(Resource):
         except Exception as err:
             logger.error(err)
             audiobooks = metadata = {}
+        print(metadata["Malmo Queer Stories Archive"])
         logger.info("---- page prepared in  %s seconds ---" % (time.time() - start_time))
         return make_response(
             render_template('audiobooks.html', audiobooks=audiobooks, metadata=metadata,

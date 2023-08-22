@@ -9,9 +9,9 @@ import json
 from package import tracker_settings, temporary_data
 import requests
 import logging
+import time
 from flask import session
 from werkzeug.utils import secure_filename
-import time
 logger = logging.getLogger(__name__)
 
 
@@ -36,29 +36,29 @@ def get_audiobooks(path):
             books = {}
             for b in os.scandir(a):
                 if b.is_dir():
+                    books[b.name] = {}
+                    for i in range(len(audiobooks[author][b.name])):
+                        books[b.name]["chapter " + str(i + 1)] = {
+                            "timestamp": 0,
+                            "progress": "0.0",
+                            "notes": ""
+                        }
                     for f in os.scandir(b):
                         if ".json" in f.name:
                             try:
                                 f = open(f, 'r')
                                 data = json.load(f)
-                                books[b.name] = data
+                                for item in data.keys():
+                                    if item in books[b.name].keys():
+                                        books[b.name][item] = data[item]
                             except Exception as e:
                                 logger.error(e)
                                 logger.error("something is wrong with" + str(f.name))
                             break
-                    # if book metadate doesn't exist add it
-                    if b.name not in books.keys():
-                        books[b.name] = {}
-                        for i in range(len(audiobooks[author][b.name])):
-                            books[b.name]["chapter "+str(i+1)] = {
-                                "timestamp": 0,
-                                "progress": "0.0",
-                                "notes": ""
-                            }
-                        path = os.path.realpath(b)+"/metadata.json"
-                        f = open(path, 'w+')
-                        json.dump(books[b.name], f)
-                        f.close()
+                    path = os.path.realpath(b)+"/metadata.json"
+                    f = open(path, 'w+')
+                    json.dump(books[b.name], f)
+                    f.close()
             metadata[author] = books
     return audiobooks, metadata
 
