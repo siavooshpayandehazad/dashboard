@@ -78,7 +78,7 @@ function setupMonthCal(){
 
   // mark today
   today_col = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getDay();
-  today_row = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getWeek()-startWeekNum;
+  today_row = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getWeek()-startWeekNum-1;
   if(today_col == 0){
     today_col = 7;
     today_row = today_row-1;
