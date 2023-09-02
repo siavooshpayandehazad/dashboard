@@ -70,6 +70,7 @@ div.NoteBookCloseButton:hover{
   margin-right: 0px;
   float:left;
   margin-top: 30px;
+  transition: width 1s;
 }
 #notebookLabels:hover{
   width:12%;
@@ -102,6 +103,7 @@ div.ToCDiv{
   margin-right: 10px;
   margin-bottom: 10px;
   float:left; color:var(--logText-clr);
+  transition: width 1s;
 }
 div.ToCDiv:hover{
   width:16%;
