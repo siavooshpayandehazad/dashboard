@@ -57,7 +57,7 @@
   --submit-bg-clr:#737373;
   --submit-bg-hvr-clr:#969696;
   --newTodo-brdr-clr:#737373;
-  --titleNewTask-clr:white;
+  --titleNewTask-clr:black;
   --todayMarker-bg-clr:#d9d9d9;
 }
 
@@ -116,10 +116,10 @@ div.tabBar{
   height:30px;
 }
 div.tabButton{
-   width: 45px;
-   height: 25px;
+   width: 55px;
+   height: 35px;
    margin-right: 3px;
-   padding-top:5px;
+   padding-top:10px;
    border-radius:5px 5px 0px 0px;
    color:var(--tabbtn-font-clr);
    float:left;
@@ -138,14 +138,16 @@ div.todoTasks{
   margin-bottom: 10px;
   float:left;
   width:32%;
-  height:350px;
   border: 3px solid var(--todoTasks-brdr-clr);
   background-color: #d9d9d9;
   border-radius: 6px;
 }
 div.todoTasksScorlable{
   overflow-y: scroll;
-  height: 290px;
+  height: 270px;
+  padding-top:5px;
+  background: linear-gradient(180deg, rgba(217,217,217,1) 1%, rgba(189,189,189,1) 5%);
+;
 }
 div.taskColorLabel{
   float:right;

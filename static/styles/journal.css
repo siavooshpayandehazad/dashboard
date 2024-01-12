@@ -28,7 +28,9 @@
   min-height:200px;
   width:98%;
   outline:None;
-  resize:None
+  resize:None;
+  font-family:Sans-Serif;
+  font-size:18px;
 }
 i.uploadIcon{
   float: right;
@@ -82,4 +84,6 @@ div.tag{
 #todayslog {
   width: calc(100% - 40px);
   float: left;
+  font-family:Sans-Serif;
+  font-size:18px;
 }

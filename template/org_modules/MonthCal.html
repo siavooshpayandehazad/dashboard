@@ -23,13 +23,22 @@
 var calMonths = {{calMonth|safe}};
 
 function setupMonthCal(){
+
   lastDay = (new Date(parseInt("{{year}}"), parseInt("{{month}}"), parseInt("0"), 0, 0, 0));
   lastDayWeek = (new Date(parseInt("{{year}}"), parseInt("{{month}}"), parseInt("0"), 0, 0, 0)).getWeek();
   // add numbers to weeks
-  startDay = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0));
-  startWeekNum = startDay.getWeek()-1;
+  if(parseInt("{{month}}") == 1){
+     startDay = (new Date(parseInt("{{year-1}}"), 12, parseInt("0"), 0, 0, 0));
+  } else{
+    startDay = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("0"), 0, 0, 0));
+  }
 
-  offset = 0;
+  startWeekNum = startDay.getWeek();
+  if(startWeekNum>52){
+    startWeekNum = 1;
+  }
+
+  offset = 1;
   if ((startDay.getDay() == 0) && (lastDay.getDay() != 0)){
     offset = 1
   }
@@ -77,8 +86,16 @@ function setupMonthCal(){
   }
 
   // mark today
-  today_col = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getDay();
-  today_row = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getWeek()-startWeekNum-1;
+  if(parseInt("{{month}}") == 1){
+    today_col = (new Date(parseInt("{{year}}")-1, 12, parseInt("{{day}}"), 0, 0, 0)).getDay();
+    today_row = (new Date(parseInt("{{year}}")-1, 12, parseInt("{{day}}"), 0, 0, 0)).getWeek()-
+                (new Date(parseInt("{{year}}")-1, 12, 0, 0, 0, 0)).getWeek();
+  }else{
+    today_col = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getDay();
+    today_row = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getWeek()-
+                (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, 0, 0, 0, 0)).getWeek();
+  }
+  today_row = today_row % 52;
   if(today_col == 0){
     today_col = 7;
     today_row = today_row-1;
@@ -118,6 +135,7 @@ function drawMonthEvents(){
   color = document.getElementById("calFilter").value
   removeAllMonthEvents();
   var table = document.getElementById("calTabMonth");
+  lastDate = (new Date(parseInt("{{year}}"), parseInt("{{month}}"), parseInt("0"), 0, 0, 0)).getDate();
   startdayNum = (((new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("1"), 0, 0, 0)).getDay()-1)%7+7)%7;
   for (var i=startdayNum; i<=lastDate+startdayNum-1; i++){
     cell = table.rows[parseInt(i/7)+1].cells.item(i%7+1);
