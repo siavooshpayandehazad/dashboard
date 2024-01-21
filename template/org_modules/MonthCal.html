@@ -95,7 +95,7 @@ function setupMonthCal(){
     today_row = (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, parseInt("{{day}}"), 0, 0, 0)).getWeek()-
                 (new Date(parseInt("{{year}}"), parseInt("{{month}}")-1, 0, 0, 0, 0)).getWeek();
   }
-  today_row = today_row % 52;
+  today_row = (today_row + 52)  % 52;
   if(today_col == 0){
     today_col = 7;
     today_row = today_row-1;
